@@ -1,7 +1,6 @@
 # Wrot
 
 [![release](https://img.shields.io/github/release/villyoshioka/Wrot.svg)](https://github.com/villyoshioka/Wrot/releases/latest)
-![downloads](https://img.shields.io/github/downloads/villyoshioka/Wrot/total)
 
 [Obsidian](https://obsidian.md/) 用のツイート風デイリーメモプラグイン。カードベースのUIで日々のメモを素早く記録・閲覧できます。
 
