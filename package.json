@@ -1,6 +1,6 @@
 {
   "name": "wrot",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Tweet-like daily memo tool for Obsidian",
   "type": "module",
   "scripts": {

@@ -152,10 +152,10 @@ export default class WrotPlugin extends Plugin {
       body .wr-toolbar-btn.wr-toolbar-active {
         color: var(--text-accent) !important;
       }
-      body .wr-tag-highlight,
-      body .wr-url-highlight,
-      body .wr-internal-link-highlight,
-      body .wr-math-highlight {
+      body .cm-line.wr-codeblock-line .wr-tag-highlight,
+      body .cm-line.wr-codeblock-line .wr-url-highlight,
+      body .cm-line.wr-codeblock-line .wr-internal-link-highlight,
+      body .cm-line.wr-codeblock-line .wr-math-highlight {
         color: var(--text-accent) !important;
       }
       body .wr-blockquote-wrap,

@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, Notice, TFile, EventRef, setIcon, Menu } from "obsidian";
+import { ItemView, WorkspaceLeaf, Notice, TFile, EventRef, setIcon, Menu, Scope } from "obsidian";
 import { VIEW_TYPE_WROT } from "../constants";
 import { parseMemos, Memo } from "../utils/memoParser";
 import { appendMemo, toggleCheckbox } from "../utils/memoWriter";
@@ -13,7 +13,7 @@ export class WrotView extends ItemView {
   private currentDate: ReturnType<typeof moment>;
   private listContainer: HTMLElement;
   private dateLabel: HTMLElement;
-  private textarea: HTMLTextAreaElement;
+  textarea: HTMLTextAreaElement;
   submitLabelEl: HTMLElement;
   private fileChangeRef: EventRef | null = null;
   private fileDeleteRef: EventRef | null = null;
@@ -25,6 +25,7 @@ export class WrotView extends ItemView {
     super(leaf);
     this.plugin = plugin;
     this.currentDate = moment();
+    this.scope = new Scope(this.app.scope);
   }
 
   getViewType(): string {
@@ -52,6 +53,16 @@ export class WrotView extends ItemView {
 
     // Memo list
     this.listContainer = container.createDiv({ cls: "wr-list" });
+
+    // Mod+Enter to submit memo (register on view scope to override Obsidian's built-in hotkey)
+    this.scope!.register(["Mod"], "Enter", (evt) => {
+      if (document.activeElement === this.textarea) {
+        evt.preventDefault();
+        evt.stopPropagation();
+        this.submitMemo();
+        return false;
+      }
+    });
 
     await this.refresh();
 
@@ -163,9 +174,7 @@ export class WrotView extends ItemView {
     this.textarea.addEventListener("keydown", (e: KeyboardEvent) => {
       if (e.isComposing) return; // IME変換中は無視
       if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-        e.preventDefault();
-        this.submitMemo();
-        return;
+        return; // Handled by Obsidian command
       }
       if (e.key === "Enter" && !e.shiftKey) {
         const ta = this.textarea;
@@ -215,7 +224,7 @@ export class WrotView extends ItemView {
           ta.dispatchEvent(new Event("input"));
         }
       }
-    });
+    }, true);
 
     // Bottom toolbar (Misskey-style icon buttons)
     const toolbar = inputArea.createDiv({ cls: "wr-input-toolbar" });
@@ -375,7 +384,7 @@ export class WrotView extends ItemView {
     this.textarea.addEventListener("select", updateActive);
   }
 
-  private async submitMemo(): Promise<void> {
+  async submitMemo(): Promise<void> {
     // Auto-close format mode before submit
     if (this.activeFormatMode) {
       const marker = this.activeFormatMode === "bold" ? "**" : "*";
