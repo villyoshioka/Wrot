@@ -62,6 +62,10 @@
 .wr-date-label:hover {
   color: var(--text-accent);
 }
+.wr-date-label:active,
+.wr-date-label-active {
+  opacity: 0.7;
+}
 
 .wr-today-btn {
   background: none !important;

@@ -126,6 +126,8 @@ export class WrotView extends ItemView {
 
     this.dateLabel = nav.createEl("span", { cls: "wr-date-label" });
     this.dateLabel.addEventListener("click", async () => {
+      this.dateLabel.classList.add("wr-date-label-active");
+      setTimeout(() => this.dateLabel.classList.remove("wr-date-label-active"), 300);
       const file = getDailyNoteFile(this.app, this.currentDate)
         ?? await getOrCreateDailyNote(this.app, this.currentDate);
       this.app.workspace.getLeaf("tab").openFile(file);
