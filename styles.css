@@ -930,6 +930,19 @@ div.block-language-wr pre {
   font-size: 11px;
 }
 
+/* Prevent lingering :hover background on mobile (iOS/Android).
+   Keep :active feedback while the finger is down. */
+.is-mobile .wr-nav-btn:hover,
+.is-mobile .wr-today-btn:hover {
+  background: transparent !important;
+}
+
+.is-mobile .wr-nav-btn:active,
+.is-mobile .wr-today-btn:active {
+  background: rgba(0, 0, 0, 0.08) !important;
+  color: var(--text-accent);
+}
+
 .is-mobile .wr-date-label {
   font-size: 13px;
 }
