@@ -109,7 +109,7 @@ Wrot は、以下の素晴らしいプロジェクトからインスピレーシ
 - [Obsidian Memos](https://github.com/Quorafind/Obsidian-Memos)（現: [Thino](https://github.com/Quorafind/Obsidian-Thino)）by Quorafind
 - [Mobile First Daily Interface (MFDI)](https://github.com/tadashi-aikawa/mobile-first-daily-interface) by tadashi-aikawa
 
-これらのプロジェクトへの敬意と、似た役割のプラグインが競合しないよう、Wrot は[コミュニティプラグイン](https://help.obsidian.md/Advanced+topics/Community+plugins)には登録していません。
+これらのプロジェクトへの敬意と、似た役割のプラグインが競合しないよう、Wrot はコミュニティプラグインには登録していません。
 
 ---
 

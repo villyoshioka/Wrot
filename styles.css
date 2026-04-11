@@ -515,11 +515,10 @@ pre > .wr-blockquote {
 }
 
 
-/* Ensure copy button stays clickable above list/quote elements */
-.block-language-wr .copy-code-button,
-pre .copy-code-button {
+/* Keep copy button clickable above Wrot's list/quote elements (do not
+   touch position/opacity so Obsidian's hover-to-show behavior stays intact) */
+.block-language-wr .copy-code-button {
   z-index: 10 !important;
-  position: absolute !important;
 }
 
 .wr-spacer {
@@ -679,11 +678,17 @@ div.block-language-wr {
 }
 
 div.block-language-wr *:not(.wr-inline-code-highlight),
-.wr-flair-bg,
-.wr-codeblock-line .code-block-flair,
-.wr-codeblock-line .copy-code-button {
+.wr-flair-bg {
   background: var(--wr-bg-color, #f0efeb) !important;
   background-color: var(--wr-bg-color, #f0efeb) !important;
+}
+
+/* LV: .code-block-flair doubles as the copy button in Live Preview. Its hit area
+   extends leftward across the memo text, so we must not fill it with the card
+   background color. Force transparent so the memo text shows through. */
+.wr-codeblock-line .code-block-flair {
+  background: transparent !important;
+  background-color: transparent !important;
 }
 
 /* 個別背景色を持つ要素は除外 */

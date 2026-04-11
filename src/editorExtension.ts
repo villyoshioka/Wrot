@@ -35,6 +35,9 @@ const tagMark = Decoration.mark({ class: "wr-tag-highlight" });
 const urlMark = Decoration.mark({ class: "wr-url-highlight" });
 const olMark = Decoration.mark({ class: "wr-ol-highlight" });
 const internalLinkMark = Decoration.mark({ class: "wr-internal-link-highlight" });
+const internalLinkUnresolvedMark = Decoration.mark({
+  class: "wr-internal-link-highlight wr-internal-link-unresolved",
+});
 const inlineCodeMark = Decoration.mark({ class: "wr-inline-code-highlight" });
 const mathMark = Decoration.mark({ class: "wr-math-highlight" });
 const boldMark = Decoration.mark({ class: "wr-bold-highlight" });
@@ -108,10 +111,12 @@ class ObsidianLinkWidget extends WidgetType {
 }
 
 class InternalLinkWidget extends WidgetType {
-  constructor(private fileName: string, private app: App) { super(); }
+  constructor(private fileName: string, private app: App, private resolved: boolean) { super(); }
   toDOM(): HTMLElement {
     const link = document.createElement("a");
-    link.className = "wr-internal-link";
+    link.className = this.resolved
+      ? "wr-internal-link"
+      : "wr-internal-link wr-internal-link-unresolved";
     link.textContent = this.fileName;
     link.addEventListener("click", (e) => {
       e.preventDefault();
@@ -120,7 +125,9 @@ class InternalLinkWidget extends WidgetType {
     });
     return link;
   }
-  eq(other: InternalLinkWidget): boolean { return this.fileName === other.fileName; }
+  eq(other: InternalLinkWidget): boolean {
+    return this.fileName === other.fileName && this.resolved === other.resolved;
+  }
   ignoreEvent(): boolean { return false; }
 }
 
@@ -428,22 +435,29 @@ function buildDecorations(
           const from = l.from + match.index;
           const to = from + match[0].length;
           const isEmbed = match[0].startsWith("!");
-          if (isEmbed && !showRaw) {
-            const fileName = match[0].slice(3, -2); // strip ![[...]]
-            if (IMAGE_EXT_RE.test(fileName)) {
-              const file = app.metadataCache.getFirstLinkpathDest(fileName, "");
+          // Extract the inner link name: strip leading `![[` or `[[` and trailing `]]`
+          const innerName = isEmbed ? match[0].slice(3, -2) : match[0].slice(2, -2);
+          const resolved = app.metadataCache.getFirstLinkpathDest(innerName, "") !== null;
+          if (!showRaw) {
+            if (isEmbed && IMAGE_EXT_RE.test(innerName)) {
+              const file = app.metadataCache.getFirstLinkpathDest(innerName, "");
               if (file) {
                 const src = app.vault.getResourcePath(file);
                 entries.push({ from, to, deco: replaceHidden });
-                embedImages.push({ src, alt: fileName });
+                embedImages.push({ src, alt: innerName });
                 continue;
               }
             }
-            // Non-image embed: show as clickable link
-            entries.push({ from, to, deco: Decoration.replace({ widget: new InternalLinkWidget(fileName, app) }) });
+            // Non-image embed and plain internal link: replace with a clickable link widget
+            entries.push({
+              from,
+              to,
+              deco: Decoration.replace({ widget: new InternalLinkWidget(innerName, app, resolved) }),
+            });
             continue;
           }
-          entries.push({ from, to, deco: internalLinkMark });
+          // showRaw (cursor on this line): keep raw `![[...]]` / `[[...]]` but still color it
+          entries.push({ from, to, deco: resolved ? internalLinkMark : internalLinkUnresolvedMark });
         }
 
         // Inline code

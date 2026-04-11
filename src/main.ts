@@ -62,6 +62,7 @@ export default class WrotPlugin extends Plugin {
     );
     const mutedColor = this.blendColor(textColor, bgColor, 0.45);
     const faintColor = this.blendColor(textColor, bgColor, 0.6);
+    const unresolvedLinkColor = this.blendColor(textColor, bgColor, 0.3);
 
     // Remove and re-append to ensure it's always last in <head>
     if (this.bgStyleEl) {
@@ -96,10 +97,14 @@ export default class WrotPlugin extends Plugin {
       body div.block-language-wr .wr-highlight {
         background: var(--text-highlight-bg) !important;
       }
-      body .wr-codeblock-line .code-block-flair,
-      body .wr-codeblock-line .copy-code-button {
-        background: ${bgColor} !important;
-        background-color: ${bgColor} !important;
+      /* LV: the .code-block-flair span doubles as the copy button in Live Preview and
+         its absolute-positioned hit area extends leftward across the memo text. Keeping
+         a filled background here would hide the end of long memos. Force transparent so
+         the underlying card background shows through. RV is unaffected because the
+         .wr-codeblock-line class is Live Preview only. */
+      body .wr-codeblock-line .code-block-flair {
+        background: transparent !important;
+        background-color: transparent !important;
       }
       body .wr-ogp-card:hover {
         background: ${hoverColor} !important;
@@ -180,8 +185,15 @@ export default class WrotPlugin extends Plugin {
       body div.block-language-wr a.wr-internal-link,
       body div.block-language-wr .wr-reading-tag,
       body div.block-language-wr .wr-reading-url,
-      body div.block-language-wr a {
+      body div.block-language-wr a,
+      body .cm-line.wr-codeblock-line .wr-internal-link,
+      body .cm-line.wr-codeblock-line .wr-url {
         color: var(--text-accent) !important;
+      }
+      body .cm-line.wr-codeblock-line .wr-internal-link.wr-internal-link-unresolved,
+      body div.block-language-wr a.wr-internal-link.wr-internal-link-unresolved,
+      body .wr-internal-link.wr-internal-link-unresolved {
+        color: ${unresolvedLinkColor} !important;
       }
       body .wr-submit-btn.wr-submit-active {
         color: var(--text-on-accent) !important;

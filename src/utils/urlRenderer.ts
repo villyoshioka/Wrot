@@ -88,6 +88,7 @@ export function renderTextWithTagsAndUrls(
     onCheckToggle?: (lineIndex: number, checked: boolean) => void;
     onInternalLinkClick?: (linkName: string) => void;
     resolveImagePath?: (fileName: string) => string | null;
+    resolveLinkTarget?: (linkName: string) => boolean;
     checkStrikethrough?: boolean;
   }
 ): ParsedUrl[] {
@@ -173,6 +174,7 @@ function renderInlineTokens(
     onTagClick?: (tag: string) => void;
     onInternalLinkClick?: (linkName: string) => void;
     resolveImagePath?: (fileName: string) => string | null;
+    resolveLinkTarget?: (linkName: string) => boolean;
   },
   urls: ParsedUrl[],
   seen: Set<string>
@@ -227,7 +229,9 @@ function renderInlineTokens(
         }
       } else {
         // Non-image embed: show as link
-        const linkEl = container.createEl("a", { cls: "wr-internal-link", text: fileName });
+        const resolved = callbacks.resolveLinkTarget ? callbacks.resolveLinkTarget(fileName) : true;
+        const cls = resolved ? "wr-internal-link" : "wr-internal-link wr-internal-link-unresolved";
+        const linkEl = container.createEl("a", { cls, text: fileName });
         if (callbacks.onInternalLinkClick) {
           const cb = callbacks.onInternalLinkClick;
           linkEl.addEventListener("click", (e) => {
@@ -240,7 +244,9 @@ function renderInlineTokens(
     } else if (linkMatch) {
       // Internal link: [[note]]
       const linkName = linkMatch[1];
-      const linkEl = container.createEl("a", { cls: "wr-internal-link", text: linkName });
+      const resolved = callbacks.resolveLinkTarget ? callbacks.resolveLinkTarget(linkName) : true;
+      const cls = resolved ? "wr-internal-link" : "wr-internal-link wr-internal-link-unresolved";
+      const linkEl = container.createEl("a", { cls, text: linkName });
       if (callbacks.onInternalLinkClick) {
         const cb = callbacks.onInternalLinkClick;
         linkEl.addEventListener("click", (e) => {

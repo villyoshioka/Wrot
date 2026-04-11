@@ -17,6 +17,7 @@ export class WrotView extends ItemView {
   submitLabelEl: HTMLElement;
   private fileChangeRef: EventRef | null = null;
   private fileDeleteRef: EventRef | null = null;
+  private fileCreateRef: EventRef | null = null;
   private ignoreNextModify = false;
   private activeFormatMode: "bold" | "italic" | null = null;
   private refreshing = false;
@@ -91,15 +92,18 @@ export class WrotView extends ItemView {
         this.refresh();
       }
     });
-    // Also watch for file deletion
+    // Watch for file deletion — refresh to update unresolved-link styling as well
     this.fileDeleteRef = this.app.vault.on("delete", (file) => {
       if (!(file instanceof TFile)) return;
-      // After deletion, getDailyNoteFile returns null, so compare path directly
-      // refresh() will show "メモはありません" when file is gone
-      const currentFile = getDailyNoteFile(this.app, this.currentDate);
-      if (!currentFile) {
-        this.refresh();
-      }
+      if (file.extension !== "md") return;
+      this.refresh();
+    });
+    // Watch for file creation so that previously-unresolved `[[X]]` links pick up their
+    // newly-created target and re-render in normal (resolved) style.
+    this.fileCreateRef = this.app.vault.on("create", (file) => {
+      if (!(file instanceof TFile)) return;
+      if (file.extension !== "md") return;
+      this.refresh();
     });
   }
 
@@ -111,6 +115,10 @@ export class WrotView extends ItemView {
     if (this.fileDeleteRef) {
       this.app.vault.offref(this.fileDeleteRef);
       this.fileDeleteRef = null;
+    }
+    if (this.fileCreateRef) {
+      this.app.vault.offref(this.fileCreateRef);
+      this.fileCreateRef = null;
     }
   }
 
@@ -257,7 +265,12 @@ export class WrotView extends ItemView {
 
     // Click handlers
     embedBtn.addEventListener("click", () => {
-      this.toggleInlineWrap("![[", "]]");
+      const ta = this.textarea;
+      if (ta.selectionStart !== ta.selectionEnd) {
+        this.wrapSelectionWithEmbedBrackets();
+      } else {
+        this.toggleInlineWrap("![[", "]]");
+      }
       this.updateEmbedBtnActive(embedBtn);
     });
     const updateFormatBtns = () => {
@@ -483,6 +496,9 @@ export class WrotView extends ItemView {
         }
         return null;
       },
+      resolveLinkTarget: (linkName) => {
+        return this.app.metadataCache.getFirstLinkpathDest(linkName, "") !== null;
+      },
     });
 
     // Rich previews (images, OGP cards, Twitter cards)
@@ -584,12 +600,21 @@ export class WrotView extends ItemView {
 
   private updateEmbedBtnActive(embedBtn: HTMLElement): void {
     const ta = this.textarea;
-    const pos = ta.selectionStart;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
     const val = ta.value;
-    const before = val.slice(Math.max(0, pos - 100), pos);
-    const after = val.slice(pos, pos + 100);
 
-    const isEmbed = !!before.match(/!\[\[([^\]]*?)$/) && !!after.match(/^([^\]]*?)\]\]/);
+    let isEmbed = false;
+    if (start !== end) {
+      // Selection mode: the whole selection is a complete `![[...]]` or `[[...]]` link
+      isEmbed = /^!?\[\[[^\]]*\]\]$/.test(val.slice(start, end));
+    } else {
+      // Caret mode: the caret sits inside an existing `![[...]]`
+      const before = val.slice(Math.max(0, start - 100), start);
+      const after = val.slice(start, start + 100);
+      isEmbed = !!before.match(/!\[\[([^\]]*?)$/) && !!after.match(/^([^\]]*?)\]\]/);
+    }
+
     embedBtn.toggleClass("wr-toolbar-active", isEmbed);
   }
 
@@ -691,6 +716,48 @@ export class WrotView extends ItemView {
     ta.dispatchEvent(new Event("input"));
   }
 
+  /**
+   * Wrap the current selection with `![[...]]` embed brackets, or unwrap if the selection is
+   * already a complete `![[...]]` or `[[...]]` link (including the brackets and the optional `!`).
+   * If the selection contains a `[[...]]` or `![[...]]` inside but is not a clean wrap,
+   * does nothing to avoid producing nested or malformed link syntax.
+   * After either action, the selection is cleared and the caret is placed at the end of the result.
+   */
+  private wrapSelectionWithEmbedBrackets(): void {
+    const ta = this.textarea;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    if (start === end) return;
+    const val = ta.value;
+    const selected = val.slice(start, end);
+
+    // Unwrap case: the selection itself is a complete `![[...]]` or `[[...]]` link
+    const unwrapMatch = selected.match(/^(!?)\[\[([^\]]*)\]\]$/);
+    if (unwrapMatch) {
+      const inner = unwrapMatch[2];
+      const newVal = val.slice(0, start) + inner + val.slice(end);
+      ta.value = newVal;
+      const caret = start + inner.length;
+      ta.selectionStart = ta.selectionEnd = caret;
+      ta.focus();
+      ta.dispatchEvent(new Event("input"));
+      return;
+    }
+
+    // If the selection contains any partial `[[...]]` / `![[...]]` inside but is not
+    // the clean unwrap case above, bail out to avoid nesting.
+    if (/!?\[\[[^\]]*\]\]/.test(selected)) return;
+
+    // Wrap with `![[...]]` and drop the selection, placing the caret after the closing `]]`.
+    const wrapped = "![[" + selected + "]]";
+    const newVal = val.slice(0, start) + wrapped + val.slice(end);
+    ta.value = newVal;
+    const caret = start + wrapped.length;
+    ta.selectionStart = ta.selectionEnd = caret;
+    ta.focus();
+    ta.dispatchEvent(new Event("input"));
+  }
+
   private toggleBlockPrefix(prefix: string): void {
     const ta = this.textarea;
     const start = ta.selectionStart;
@@ -731,4 +798,5 @@ export class WrotView extends ItemView {
       new Notice("\u691c\u7d22\u30d7\u30e9\u30b0\u30a4\u30f3\u304c\u898b\u3064\u304b\u308a\u307e\u305b\u3093");
     }
   }
+
 }

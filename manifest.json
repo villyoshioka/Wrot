@@ -1,7 +1,7 @@
 {
   "id": "wrot",
   "name": "Wrot",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "minAppVersion": "0.15.0",
   "description": "Tweet-like daily memo tool with card-based UI",
   "author": "vill",

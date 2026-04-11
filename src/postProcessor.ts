@@ -194,7 +194,8 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
           }
         } else {
           const a = document.createElement("a");
-          a.className = "wr-internal-link";
+          const resolved = plugin.app.metadataCache.getFirstLinkpathDest(fileName, "") !== null;
+          a.className = resolved ? "wr-internal-link" : "wr-internal-link wr-internal-link-unresolved";
           a.textContent = fileName;
           a.addEventListener("click", (e) => {
             e.preventDefault();
@@ -207,7 +208,8 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
       } else if (linkMatch) {
         const linkName = linkMatch[1];
         const a = document.createElement("a");
-        a.className = "wr-internal-link";
+        const resolved = plugin.app.metadataCache.getFirstLinkpathDest(linkName, "") !== null;
+        a.className = resolved ? "wr-internal-link" : "wr-internal-link wr-internal-link-unresolved";
         a.textContent = linkName;
         a.addEventListener("click", (e) => {
           e.preventDefault();
