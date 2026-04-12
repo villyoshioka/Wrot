@@ -9,6 +9,7 @@ export interface WrotSettings {
   textColorLight: string;
   textColorDark: string;
   submitLabel: string;
+  submitIcon: string;
   enableOgpFetch: boolean;
   checkStrikethrough: boolean;
 }
@@ -21,6 +22,7 @@ export const DEFAULT_SETTINGS: WrotSettings = {
   textColorLight: "#454545",
   textColorDark: "#dcddde",
   submitLabel: "投稿",
+  submitIcon: "send",
   enableOgpFetch: true,
   checkStrikethrough: false,
 };
@@ -190,6 +192,35 @@ export class WrotSettingTab extends PluginSettingTab {
           await this.plugin.saveSettings();
           submitText.setValue(DEFAULT_SETTINGS.submitLabel);
           this.plugin.updateSubmitLabel();
+        })
+      );
+
+    let iconText: TextComponent;
+    const iconSetting = new Setting(containerEl)
+      .setName("投稿ボタンのアイコン");
+    const descEl = iconSetting.descEl;
+    descEl.appendText("投稿ボタンのアイコンを変更できます。アイコン名は ");
+    const link = descEl.createEl("a", { text: "こちら", href: "https://lucide.dev/icons/" });
+    link.setAttr("target", "_blank");
+    descEl.appendText(" からコピーしてください。");
+    iconSetting
+      .addText((text) => {
+        iconText = text;
+        text
+          .setPlaceholder("send")
+          .setValue(this.plugin.settings.submitIcon)
+          .onChange(async (value) => {
+            this.plugin.settings.submitIcon = value.trim() || DEFAULT_SETTINGS.submitIcon;
+            await this.plugin.saveSettings();
+            this.plugin.updateSubmitIcon();
+          });
+      })
+      .addExtraButton((btn) =>
+        btn.setIcon("reset").setTooltip("初期値に戻す").onClick(async () => {
+          this.plugin.settings.submitIcon = DEFAULT_SETTINGS.submitIcon;
+          await this.plugin.saveSettings();
+          iconText.setValue(DEFAULT_SETTINGS.submitIcon);
+          this.plugin.updateSubmitIcon();
         })
       );
 

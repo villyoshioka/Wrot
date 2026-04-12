@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, Notice, TFile, EventRef, setIcon, Menu, Scope } from "obsidian";
+import { ItemView, WorkspaceLeaf, Notice, TFile, EventRef, setIcon, Menu, Scope, Platform, WorkspaceSidedock } from "obsidian";
 import { VIEW_TYPE_WROT } from "../constants";
 import { parseMemos, Memo } from "../utils/memoParser";
 import { appendMemo, toggleCheckbox } from "../utils/memoWriter";
@@ -15,12 +15,14 @@ export class WrotView extends ItemView {
   private dateLabel: HTMLElement;
   textarea: HTMLTextAreaElement;
   submitLabelEl: HTMLElement;
+  submitIconEl: HTMLElement;
   private fileChangeRef: EventRef | null = null;
   private fileDeleteRef: EventRef | null = null;
   private fileCreateRef: EventRef | null = null;
   private ignoreNextModify = false;
   private activeFormatMode: "bold" | "italic" | null = null;
   private refreshing = false;
+  private isCollapsed = false;
 
   constructor(leaf: WorkspaceLeaf, plugin: WrotPlugin) {
     super(leaf);
@@ -64,6 +66,12 @@ export class WrotView extends ItemView {
         return false;
       }
     });
+
+    // Collapse toolbar on iPad pinned sidebar (WorkspaceSidedock = pinned)
+    if (Platform.isTablet && this.leaf.getRoot() instanceof WorkspaceSidedock) {
+      this.isCollapsed = true;
+      container.addClass("wr-collapsed");
+    }
 
     await this.refresh();
 
@@ -164,8 +172,8 @@ export class WrotView extends ItemView {
       cls: "wr-submit-btn",
     });
     this.submitLabelEl = submitBtn.createSpan({ text: `${this.plugin.settings.submitLabel} ` });
-    const submitIcon = submitBtn.createSpan({ cls: "wr-submit-icon" });
-    setIcon(submitIcon, "send");
+    this.submitIconEl = submitBtn.createSpan({ cls: "wr-submit-icon" });
+    setIcon(this.submitIconEl, this.plugin.settings.submitIcon || "send");
     submitBtn.addEventListener("click", () => this.submitMemo());
 
     // Textarea
@@ -239,27 +247,27 @@ export class WrotView extends ItemView {
     // Bottom toolbar (Misskey-style icon buttons)
     const toolbar = inputArea.createDiv({ cls: "wr-input-toolbar" });
 
-    const embedBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn" });
+    const embedBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn wr-toolbar-collapsible" });
     setIcon(embedBtn, "paperclip");
     embedBtn.addEventListener("mousedown", (e) => e.preventDefault());
 
-    const boldBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn" });
+    const boldBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn wr-toolbar-collapsible" });
     setIcon(boldBtn, "bold");
     boldBtn.addEventListener("mousedown", (e) => e.preventDefault());
 
-    const italicBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn" });
+    const italicBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn wr-toolbar-collapsible" });
     setIcon(italicBtn, "italic");
     italicBtn.addEventListener("mousedown", (e) => e.preventDefault());
 
-    const listBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn" });
+    const listBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn wr-toolbar-collapsible" });
     setIcon(listBtn, "list");
     listBtn.addEventListener("mousedown", (e) => e.preventDefault());
 
-    const checkBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn" });
+    const checkBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn wr-toolbar-collapsible" });
     setIcon(checkBtn, "list-checks");
     checkBtn.addEventListener("mousedown", (e) => e.preventDefault());
 
-    const olBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn" });
+    const olBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn wr-toolbar-collapsible" });
     setIcon(olBtn, "list-ordered");
     olBtn.addEventListener("mousedown", (e) => e.preventDefault());
 
@@ -358,6 +366,15 @@ export class WrotView extends ItemView {
       const ta = this.textarea;
       const hasSelection = ta.selectionStart !== ta.selectionEnd;
       const menu = new Menu();
+      if (this.isCollapsed) {
+        menu.addItem((item) => item.setTitle("埋め込み").setIcon("paperclip").onClick(() => embedBtn.click()));
+        menu.addItem((item) => item.setTitle("太字").setIcon("bold").onClick(() => boldBtn.click()));
+        menu.addItem((item) => item.setTitle("斜体").setIcon("italic").onClick(() => italicBtn.click()));
+        menu.addItem((item) => item.setTitle("リスト").setIcon("list").onClick(() => listBtn.click()));
+        menu.addItem((item) => item.setTitle("チェックリスト").setIcon("list-checks").onClick(() => checkBtn.click()));
+        menu.addItem((item) => item.setTitle("番号付きリスト").setIcon("list-ordered").onClick(() => olBtn.click()));
+        menu.addSeparator();
+      }
       menu.addItem((item) => item.setTitle("コード").setIcon("code").onClick(() => this.toggleInlineWrap("`", "`")));
       menu.addItem((item) => item.setTitle("数式").setIcon("sigma").onClick(() => {
         if (this.textarea.selectionStart !== this.textarea.selectionEnd) {
@@ -397,6 +414,7 @@ export class WrotView extends ItemView {
     this.textarea.addEventListener("keyup", updateActive);
     this.textarea.addEventListener("click", updateActive);
     this.textarea.addEventListener("select", updateActive);
+
   }
 
   async submitMemo(): Promise<void> {
@@ -432,7 +450,9 @@ export class WrotView extends ItemView {
     try {
       // Update date label
       const isToday = this.currentDate.isSame(moment(), "day");
-      const dateText = this.currentDate.format("YYYY\u5e74MM\u6708DD\u65e5");
+      const dateText = this.isCollapsed
+        ? this.currentDate.format("MM/DD")
+        : this.currentDate.format("YYYY\u5e74MM\u6708DD\u65e5");
       this.dateLabel.setText(isToday ? `${dateText}\uff08\u4eca\u65e5\uff09` : dateText);
 
       // Clear list

@@ -926,12 +926,12 @@ div.block-language-wr pre {
 }
 
 .is-mobile .wr-nav-btn {
-  padding: 2px 6px;
+  padding: 2px 6px !important;
   font-size: 12px;
 }
 
 .is-mobile .wr-today-btn {
-  padding: 2px 8px;
+  padding: 2px 8px !important;
   font-size: 11px;
 }
 
@@ -950,6 +950,10 @@ div.block-language-wr pre {
 
 .is-mobile .wr-date-label {
   font-size: 13px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .is-mobile .wr-input-area {
@@ -987,7 +991,7 @@ div.block-language-wr pre {
 }
 
 .is-mobile .wr-toolbar-btn {
-  padding: 2px;
+  padding: 2px !important;
 }
 
 .is-mobile .wr-toolbar-btn .svg-icon {
@@ -1052,5 +1056,28 @@ div.block-language-wr pre {
   border-radius: 50% !important;
   width: 48px !important;
   height: 48px !important;
+}
+
+/* ========================================
+   iPad (tablet) adjustments
+   ======================================== */
+@media (min-width: 768px) {
+  .is-mobile .wr-input-area {
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
+  .is-mobile .wr-container {
+    overflow-x: hidden;
+  }
+}
+
+/* Collapsed mode: iPad pinned sidebar */
+.wr-collapsed .wr-toolbar-collapsible {
+  display: none !important;
+}
+
+.wr-collapsed .wr-date-nav {
+  flex-wrap: nowrap;
 }
 

@@ -1,4 +1,4 @@
-import { Plugin, WorkspaceLeaf, loadMathJax } from "obsidian";
+import { Plugin, WorkspaceLeaf, loadMathJax, setIcon } from "obsidian";
 import { VIEW_TYPE_WROT } from "./constants";
 import { WrotSettings, DEFAULT_SETTINGS, WrotSettingTab } from "./settings";
 import { WrotView } from "./views/WrotView";
@@ -267,6 +267,17 @@ export default class WrotPlugin extends Plugin {
       const view = leaf.view as WrotView;
       if (view.submitLabelEl) {
         view.submitLabelEl.textContent = `${this.settings.submitLabel} `;
+      }
+    }
+  }
+
+  updateSubmitIcon(): void {
+    const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_WROT);
+    for (const leaf of leaves) {
+      const view = leaf.view as WrotView;
+      if (view.submitIconEl) {
+        view.submitIconEl.empty();
+        setIcon(view.submitIconEl, this.settings.submitIcon || "send");
       }
     }
   }
