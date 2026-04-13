@@ -10,6 +10,7 @@ export interface WrotSettings {
   textColorDark: string;
   submitLabel: string;
   submitIcon: string;
+  inputPlaceholder: string;
   enableOgpFetch: boolean;
   checkStrikethrough: boolean;
 }
@@ -23,6 +24,7 @@ export const DEFAULT_SETTINGS: WrotSettings = {
   textColorDark: "#dcddde",
   submitLabel: "投稿",
   submitIcon: "send",
+  inputPlaceholder: "あなたが書くのを待っています...",
   enableOgpFetch: true,
   checkStrikethrough: false,
 };
@@ -102,29 +104,6 @@ export class WrotSettingTab extends PluginSettingTab {
         })
       );
 
-    let darkPicker: ColorComponent;
-    new Setting(containerEl)
-      .setName("背景色（ダークモード）")
-      .setDesc("カード・入力エリアの背景色（ダークテーマ）")
-      .addColorPicker((picker) => {
-        darkPicker = picker;
-        picker
-          .setValue(this.plugin.settings.bgColorDark)
-          .onChange(async (value) => {
-            this.plugin.settings.bgColorDark = value;
-            await this.plugin.saveSettings();
-            this.plugin.applyBgColor();
-          });
-      })
-      .addExtraButton((btn) =>
-        btn.setIcon("reset").setTooltip("初期値に戻す").onClick(async () => {
-          this.plugin.settings.bgColorDark = DEFAULT_SETTINGS.bgColorDark;
-          await this.plugin.saveSettings();
-          this.plugin.applyBgColor();
-          darkPicker.setValue(DEFAULT_SETTINGS.bgColorDark);
-        })
-      );
-
     let textLightPicker: ColorComponent;
     new Setting(containerEl)
       .setName("文字色（ライトモード）")
@@ -145,6 +124,29 @@ export class WrotSettingTab extends PluginSettingTab {
           await this.plugin.saveSettings();
           this.plugin.applyBgColor();
           textLightPicker.setValue(DEFAULT_SETTINGS.textColorLight);
+        })
+      );
+
+    let darkPicker: ColorComponent;
+    new Setting(containerEl)
+      .setName("背景色（ダークモード）")
+      .setDesc("カード・入力エリアの背景色（ダークテーマ）")
+      .addColorPicker((picker) => {
+        darkPicker = picker;
+        picker
+          .setValue(this.plugin.settings.bgColorDark)
+          .onChange(async (value) => {
+            this.plugin.settings.bgColorDark = value;
+            await this.plugin.saveSettings();
+            this.plugin.applyBgColor();
+          });
+      })
+      .addExtraButton((btn) =>
+        btn.setIcon("reset").setTooltip("初期値に戻す").onClick(async () => {
+          this.plugin.settings.bgColorDark = DEFAULT_SETTINGS.bgColorDark;
+          await this.plugin.saveSettings();
+          this.plugin.applyBgColor();
+          darkPicker.setValue(DEFAULT_SETTINGS.bgColorDark);
         })
       );
 
@@ -221,6 +223,30 @@ export class WrotSettingTab extends PluginSettingTab {
           await this.plugin.saveSettings();
           iconText.setValue(DEFAULT_SETTINGS.submitIcon);
           this.plugin.updateSubmitIcon();
+        })
+      );
+
+    let placeholderText: TextComponent;
+    new Setting(containerEl)
+      .setName("入力欄の空欄メッセージ")
+      .setDesc("メモ入力欄が空の時に表示されるテキストを変更できます")
+      .addText((text) => {
+        placeholderText = text;
+        text
+          .setPlaceholder(DEFAULT_SETTINGS.inputPlaceholder)
+          .setValue(this.plugin.settings.inputPlaceholder)
+          .onChange(async (value) => {
+            this.plugin.settings.inputPlaceholder = value || DEFAULT_SETTINGS.inputPlaceholder;
+            await this.plugin.saveSettings();
+            this.plugin.updateInputPlaceholder();
+          });
+      })
+      .addExtraButton((btn) =>
+        btn.setIcon("reset").setTooltip("初期値に戻す").onClick(async () => {
+          this.plugin.settings.inputPlaceholder = DEFAULT_SETTINGS.inputPlaceholder;
+          await this.plugin.saveSettings();
+          placeholderText.setValue(DEFAULT_SETTINGS.inputPlaceholder);
+          this.plugin.updateInputPlaceholder();
         })
       );
 

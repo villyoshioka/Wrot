@@ -282,6 +282,16 @@ export default class WrotPlugin extends Plugin {
     }
   }
 
+  updateInputPlaceholder(): void {
+    const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_WROT);
+    for (const leaf of leaves) {
+      const view = leaf.view as WrotView;
+      if (view.textarea) {
+        view.textarea.setAttribute("placeholder", this.settings.inputPlaceholder);
+      }
+    }
+  }
+
   onunload(): void {
     this.bgStyleEl?.remove();
     this.bgStyleEl = null;

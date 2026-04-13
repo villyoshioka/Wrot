@@ -179,7 +179,7 @@ function renderInlineTokens(
   urls: ParsedUrl[],
   seen: Set<string>
 ): void {
-  const TOKEN_REGEX = /(\$[^$]+\$|`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*|~~[^~]+~~|==[^=]+=+|!\[\[[^\]]+\]\]|\[\[[^\]]+\]\]|#[^\s#]+|(?:https?|obsidian):\/\/[^\s<>"'\]]+)/g;
+  const TOKEN_REGEX = /(\$[^$]+\$|`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*|~~[^~]+~~|==[^=]+=+|!\[\[[^\]]+\]\]|\[\[[^\]]+\]\]|\[[^\[\]\n]+\]\((?:https?|obsidian):\/\/[^\s)]+\)|#[^\s#]+|(?:https?|obsidian):\/\/[^\s<>"'\]]+)/g;
   const parts = text.split(TOKEN_REGEX);
 
   for (const part of parts) {
@@ -208,6 +208,32 @@ function renderInlineTokens(
     const highlightMatch = part.match(/^==(.+)==$/);
     if (highlightMatch) {
       container.createEl("mark", { cls: "wr-highlight", text: highlightMatch[1] });
+      continue;
+    }
+
+    const mdLinkMatch = part.match(/^\[([^\[\]\n]+)\]\(((?:https?|obsidian):\/\/[^\s)]+)\)$/);
+    if (mdLinkMatch) {
+      const label = mdLinkMatch[1];
+      const url = mdLinkMatch[2];
+      if (isSafeUrl(url)) {
+        const link = container.createEl("a", {
+          cls: "wr-url",
+          text: label,
+          href: url,
+        });
+        link.setAttr("target", "_blank");
+        link.setAttr("rel", "noopener");
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          if (isSafeUrl(url)) window.open(url, "_blank");
+        });
+        if (!seen.has(url)) {
+          seen.add(url);
+          urls.push({ url, type: classifyUrl(url) });
+        }
+      } else {
+        container.appendText(part);
+      }
       continue;
     }
 

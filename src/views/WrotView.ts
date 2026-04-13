@@ -179,7 +179,7 @@ export class WrotView extends ItemView {
     // Textarea
     this.textarea = inputArea.createEl("textarea", {
       cls: "wr-textarea",
-      attr: { placeholder: "\u3042\u306a\u305f\u304c\u66f8\u304f\u306e\u3092\u5f85\u3063\u3066\u3044\u307e\u3059..." },
+      attr: { placeholder: this.plugin.settings.inputPlaceholder },
     });
 
     // Auto-grow: expand textarea as content grows
@@ -287,6 +287,24 @@ export class WrotView extends ItemView {
       boldBtn.toggleClass("wr-toolbar-disabled", this.activeFormatMode === "italic");
       italicBtn.toggleClass("wr-toolbar-disabled", this.activeFormatMode === "bold");
     };
+    const validateActiveFormatMode = () => {
+      if (this.activeFormatMode === null) return;
+      const ta = this.textarea;
+      const pos = ta.selectionStart;
+      const before = ta.value.slice(0, pos);
+      if (this.activeFormatMode === "bold") {
+        if (!before.includes("**")) {
+          this.activeFormatMode = null;
+          updateFormatBtns();
+        }
+      } else if (this.activeFormatMode === "italic") {
+        const stripped = before.replace(/\*\*/g, "");
+        if (!stripped.includes("*")) {
+          this.activeFormatMode = null;
+          updateFormatBtns();
+        }
+      }
+    };
 
     boldBtn.addEventListener("click", () => {
       if (this.activeFormatMode === "italic") return;
@@ -386,6 +404,10 @@ export class WrotView extends ItemView {
       menu.addItem((item) => item.setTitle("引用").setIcon("quote").onClick(() => this.toggleBlockPrefix("> ")));
       menu.addSeparator();
       menu.addItem((item) => {
+        item.setTitle("リンク").setIcon("link").onClick(() => this.insertMarkdownLink());
+        if (!hasSelection) item.setDisabled(true);
+      });
+      menu.addItem((item) => {
         item.setTitle("取り消し線").setIcon("strikethrough").onClick(() => this.wrapSelection("~~", "~~"));
         if (!hasSelection) item.setDisabled(true);
       });
@@ -405,6 +427,7 @@ export class WrotView extends ItemView {
 
     // Update active state on cursor move / input
     const updateActive = () => {
+      validateActiveFormatMode();
       this.updateToolbarActive(listBtn, checkBtn, olBtn);
       this.updateEmbedBtnActive(embedBtn);
       updateFormatBtns();
@@ -817,6 +840,20 @@ export class WrotView extends ItemView {
     } else {
       new Notice("\u691c\u7d22\u30d7\u30e9\u30b0\u30a4\u30f3\u304c\u898b\u3064\u304b\u308a\u307e\u305b\u3093");
     }
+  }
+
+  private insertMarkdownLink(): void {
+    const ta = this.textarea;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    if (start === end) return;
+    const val = ta.value;
+    const selected = val.slice(start, end);
+    ta.value = val.slice(0, start) + "[" + selected + "](" + ")" + val.slice(end);
+    const cursorPos = start + 1 + selected.length + 2;
+    ta.selectionStart = ta.selectionEnd = cursorPos;
+    ta.focus();
+    ta.dispatchEvent(new Event("input"));
   }
 
 }

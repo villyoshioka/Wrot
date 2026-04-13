@@ -110,6 +110,25 @@ class ObsidianLinkWidget extends WidgetType {
   ignoreEvent(): boolean { return false; }
 }
 
+class MdLinkWidget extends WidgetType {
+  constructor(private label: string, private url: string) { super(); }
+  toDOM(): HTMLElement {
+    const link = document.createElement("a");
+    link.className = "wr-url-highlight";
+    link.textContent = this.label;
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (isSafeUrl(this.url)) window.open(this.url, "_blank");
+    });
+    return link;
+  }
+  eq(other: MdLinkWidget): boolean {
+    return this.url === other.url && this.label === other.label;
+  }
+  ignoreEvent(): boolean { return false; }
+}
+
 class InternalLinkWidget extends WidgetType {
   constructor(private fileName: string, private app: App, private resolved: boolean) { super(); }
   toDOM(): HTMLElement {
@@ -404,11 +423,36 @@ function buildDecorations(
           entries.push({ from: l.from + match.index, to: l.from + match.index + match[0].length, deco: tagMark });
         }
 
+        // Markdown links [label](url) — processed before plain URLs to prevent overlap
+        const mdLinkRanges: { from: number; to: number }[] = [];
+        const mdLinkRegex = /\[([^\[\]\n]+)\]\(((?:https?|obsidian):\/\/[^\s)]+)\)/g;
+        while ((match = mdLinkRegex.exec(l.text)) !== null) {
+          const from = l.from + match.index;
+          const to = from + match[0].length;
+          const label = match[1];
+          const url = match[2];
+          if (!isSafeUrl(url)) continue;
+          mdLinkRanges.push({ from, to });
+          if (showRaw) {
+            entries.push({ from, to, deco: urlMark });
+          } else {
+            entries.push({
+              from,
+              to,
+              deco: Decoration.replace({ widget: new MdLinkWidget(label, url) }),
+            });
+          }
+        }
+
+        const insideMdLink = (f: number, t: number) =>
+          mdLinkRanges.some((r) => f >= r.from && t <= r.to);
+
         // URLs
         const urlRegex = /(?:https?|obsidian):\/\/[^\s<>"'\]]+/g;
         while ((match = urlRegex.exec(l.text)) !== null) {
           const from = l.from + match.index;
           const to = from + match[0].length;
+          if (insideMdLink(from, to)) continue;
           if (match[0].startsWith("obsidian://") && !showRaw) {
             let displayName = match[0];
             try {

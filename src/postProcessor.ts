@@ -112,7 +112,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
     if (!text.includes("#") && !text.match(/(?:https?|obsidian):\/\//) && !text.includes("[[") && !text.includes("`") && !text.includes("*") && !text.includes("~") && !text.includes("=") && !text.includes("$")) continue;
 
     const frag = document.createDocumentFragment();
-    const parts = text.split(/(\$[^$]+\$|`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*|~~[^~]+~~|==[^=]+=+|!\[\[[^\]]+\]\]|\[\[[^\]]+\]\]|#[^\s#]+|(?:https?|obsidian):\/\/[^\s<>"'\]]+)/g);
+    const parts = text.split(/(\$[^$]+\$|`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*|~~[^~]+~~|==[^=]+=+|!\[\[[^\]]+\]\]|\[\[[^\]]+\]\]|\[[^\[\]\n]+\]\((?:https?|obsidian):\/\/[^\s)]+\)|#[^\s#]+|(?:https?|obsidian):\/\/[^\s<>"'\]]+)/g);
     let hasMatch = false;
 
     const IMAGE_EXT = /\.(png|jpg|jpeg|gif|svg|webp|bmp)$/i;
@@ -167,6 +167,28 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
         }
       }
       if (formatHandled) continue;
+
+      const mdLinkMatch = part.match(/^\[([^\[\]\n]+)\]\(((?:https?|obsidian):\/\/[^\s)]+)\)$/);
+      if (mdLinkMatch) {
+        const label = mdLinkMatch[1];
+        const url = mdLinkMatch[2];
+        if (isSafeUrl(url)) {
+          const span = document.createElement("span");
+          span.className = "wr-reading-url";
+          span.textContent = label;
+          span.addEventListener("pointerup", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (isSafeUrl(url)) window.open(url, "_blank");
+          });
+          frag.appendChild(span);
+          if (url.startsWith("http")) allUrls.push(url);
+          hasMatch = true;
+        } else {
+          frag.appendChild(document.createTextNode(part));
+        }
+        continue;
+      }
 
       const embedMatch = part.match(/^!\[\[(.+)\]\]$/);
       const linkMatch = !embedMatch && part.match(/^\[\[(.+)\]\]$/);
