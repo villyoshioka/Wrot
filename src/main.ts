@@ -277,7 +277,9 @@ export default class WrotPlugin extends Plugin {
       const view = leaf.view as WrotView;
       if (view.submitIconEl) {
         view.submitIconEl.empty();
-        setIcon(view.submitIconEl, this.settings.submitIcon || "send");
+        if (this.settings.submitIcon) {
+          setIcon(view.submitIconEl, this.settings.submitIcon);
+        }
       }
     }
   }

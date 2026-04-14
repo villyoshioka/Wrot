@@ -1020,6 +1020,7 @@ div.block-language-wr pre {
 
 .is-mobile .wr-list {
   gap: 10px;
+  padding-bottom: 16px;
 }
 
 /* Settings: color picker fix for mobile */

@@ -204,7 +204,7 @@ export class WrotSettingTab extends PluginSettingTab {
     descEl.appendText("投稿ボタンのアイコンを変更できます。アイコン名は ");
     const link = descEl.createEl("a", { text: "こちら", href: "https://lucide.dev/icons/" });
     link.setAttr("target", "_blank");
-    descEl.appendText(" からコピーしてください。");
+    descEl.appendText(" からコピーしてください。空欄にするとアイコンを非表示にできます。");
     iconSetting
       .addText((text) => {
         iconText = text;
@@ -212,7 +212,7 @@ export class WrotSettingTab extends PluginSettingTab {
           .setPlaceholder("send")
           .setValue(this.plugin.settings.submitIcon)
           .onChange(async (value) => {
-            this.plugin.settings.submitIcon = value.trim() || DEFAULT_SETTINGS.submitIcon;
+            this.plugin.settings.submitIcon = value.trim();
             await this.plugin.saveSettings();
             this.plugin.updateSubmitIcon();
           });
@@ -229,14 +229,14 @@ export class WrotSettingTab extends PluginSettingTab {
     let placeholderText: TextComponent;
     new Setting(containerEl)
       .setName("入力欄の空欄メッセージ")
-      .setDesc("メモ入力欄が空の時に表示されるテキストを変更できます")
+      .setDesc("メモ入力欄が空の時に表示されるテキストを変更できます。空欄にすると非表示になります。")
       .addText((text) => {
         placeholderText = text;
         text
           .setPlaceholder(DEFAULT_SETTINGS.inputPlaceholder)
           .setValue(this.plugin.settings.inputPlaceholder)
           .onChange(async (value) => {
-            this.plugin.settings.inputPlaceholder = value || DEFAULT_SETTINGS.inputPlaceholder;
+            this.plugin.settings.inputPlaceholder = value;
             await this.plugin.saveSettings();
             this.plugin.updateInputPlaceholder();
           });

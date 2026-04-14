@@ -173,7 +173,9 @@ export class WrotView extends ItemView {
     });
     this.submitLabelEl = submitBtn.createSpan({ text: `${this.plugin.settings.submitLabel} ` });
     this.submitIconEl = submitBtn.createSpan({ cls: "wr-submit-icon" });
-    setIcon(this.submitIconEl, this.plugin.settings.submitIcon || "send");
+    if (this.plugin.settings.submitIcon) {
+      setIcon(this.submitIconEl, this.plugin.settings.submitIcon);
+    }
     submitBtn.addEventListener("click", () => this.submitMemo());
 
     // Textarea
