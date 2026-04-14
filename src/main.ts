@@ -1,15 +1,16 @@
-import { Plugin, WorkspaceLeaf, loadMathJax, setIcon } from "obsidian";
+import { Plugin, WorkspaceLeaf, loadMathJax, setIcon, MarkdownView } from "obsidian";
 import { VIEW_TYPE_WROT } from "./constants";
-import { WrotSettings, DEFAULT_SETTINGS, WrotSettingTab } from "./settings";
+import { WrotSettings, DEFAULT_SETTINGS, WrotSettingTab, TagColorRule } from "./settings";
 import { WrotView } from "./views/WrotView";
 import { registerWrotPostProcessor } from "./postProcessor";
-import { createWrEditorExtension } from "./editorExtension";
+import { createWrEditorExtension, tagRulesChanged } from "./editorExtension";
 import { OGPCache } from "./utils/ogpCache";
 
 export default class WrotPlugin extends Plugin {
   settings: WrotSettings;
   ogpCache: OGPCache;
   private bgStyleEl: HTMLStyleElement | null = null;
+  private tagRuleStyleEl: HTMLStyleElement | null = null;
 
   async onload(): Promise<void> {
     await this.loadSettings();
@@ -35,13 +36,17 @@ export default class WrotPlugin extends Plugin {
     registerWrotPostProcessor(this);
 
     // Live Preview: highlight #tags and URLs + rich previews in qm code blocks
-    this.registerEditorExtension([createWrEditorExtension(this.ogpCache, this.app, () => this.settings.checkStrikethrough)]);
+    this.registerEditorExtension([createWrEditorExtension(this.ogpCache, this.app, this, () => this.settings.checkStrikethrough)]);
 
     this.addSettingTab(new WrotSettingTab(this.app, this));
 
     this.applyBgColor();
+    this.applyTagColorRules();
     this.registerEvent(
-      this.app.workspace.on("css-change", () => this.applyBgColor())
+      this.app.workspace.on("css-change", () => {
+        this.applyBgColor();
+        this.applyTagColorRules();
+      })
     );
   }
 
@@ -234,6 +239,228 @@ export default class WrotPlugin extends Plugin {
     `;
   }
 
+  findTagColorRule(memoTags: string[]): TagColorRule | null {
+    if (!this.settings.tagColorRulesEnabled) return null;
+    const rules = this.settings.tagColorRules;
+    if (!rules || rules.length === 0 || !memoTags || memoTags.length === 0) return null;
+    // Walk memo tags in the order they appear in the post body; first tag that has
+    // a matching rule wins. The order of rules in settings does not matter.
+    for (const raw of memoTags) {
+      const tag = raw.replace(/^#/, "").toLowerCase().trim();
+      if (!tag) continue;
+      for (const rule of rules) {
+        const ruleTag = rule.tag.replace(/^#/, "").toLowerCase().trim();
+        if (!ruleTag) continue;
+        if (ruleTag === tag) return rule;
+      }
+    }
+    return null;
+  }
+
+  applyTagColorRules(): void {
+    if (this.tagRuleStyleEl) {
+      this.tagRuleStyleEl.remove();
+      this.tagRuleStyleEl = null;
+    }
+    if (!this.settings.tagColorRulesEnabled) return;
+    const rules = this.settings.tagColorRules || [];
+    if (rules.length === 0) return;
+
+    const hexRe = /^#[0-9a-fA-F]{6}$/;
+    const parts: string[] = [];
+    rules.forEach((rule, i) => {
+      if (!hexRe.test(rule.bgColor) || !hexRe.test(rule.textColor)) return;
+      const bg = rule.bgColor;
+      const fg = rule.textColor;
+      const muted = this.blendColor(fg, bg, 0.45);
+      const cls = `wr-tag-rule-${i}`;
+
+      parts.push(`
+      /* --- Rule ${i}: background --- */
+      body .wr-card.${cls},
+      body div.block-language-wr.${cls},
+      body pre.${cls},
+      body .cm-line.wr-codeblock-line.${cls},
+      body .wr-flair-bg.${cls} {
+        background: ${bg} !important;
+        background-color: ${bg} !important;
+      }
+      body div.block-language-wr.${cls} *:not(.wr-inline-code):not(.wr-highlight):not(input[type="checkbox"]),
+      body pre.${cls} *:not(.wr-inline-code):not(.wr-highlight):not(input[type="checkbox"]) {
+        background: ${bg} !important;
+        background-color: ${bg} !important;
+      }
+
+      /* --- Rule ${i}: text color (excluding tags/links/urls) --- */
+      body .wr-card.${cls} .wr-content,
+      body .wr-card.${cls} .wr-content *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *) {
+        color: ${fg} !important;
+      }
+      body div.block-language-wr.${cls},
+      body div.block-language-wr.${cls} *:not(.wr-reading-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-url):not(input[type="checkbox"]):not(.wr-reading-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-url *),
+      body pre.${cls},
+      body pre.${cls} *:not(.wr-reading-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-url):not(input[type="checkbox"]):not(.wr-reading-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-url *) {
+        color: ${fg} !important;
+      }
+      body .cm-line.wr-codeblock-line.${cls},
+      body .cm-line.wr-codeblock-line.${cls} *:not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-url-highlight):not(input[type="checkbox"]):not(.wr-tag-highlight *):not(.wr-internal-link-highlight *):not(.wr-url-highlight *) {
+        color: ${fg} !important;
+      }
+
+      /* --- Rule ${i}: muted elements --- */
+      body .wr-card.${cls} .wr-timestamp,
+      body .wr-card.${cls} .wr-copy-btn,
+      body .wr-card.${cls} .wr-copy-btn .svg-icon,
+      body .wr-card.${cls} .wr-blockquote,
+      body .wr-card.${cls} .wr-blockquote-wrap,
+      body .wr-card.${cls} .wr-bullet-list > li:not(.wr-check-item)::before,
+      body .wr-card.${cls} .wr-ordered-list > li::before,
+      body .wr-card.${cls} .wr-check-done,
+      body .wr-card.${cls} .wr-check-unchecked,
+      body .wr-card.${cls} .wr-check-checked,
+      body .wr-card.${cls} .wr-list-highlight,
+      body .wr-card.${cls} .wr-ol-highlight,
+      body .wr-card.${cls} .wr-quote-highlight,
+      body div.block-language-wr.${cls} .wr-reading-time,
+      body div.block-language-wr.${cls} .wr-reading-copy-btn,
+      body div.block-language-wr.${cls} .wr-blockquote,
+      body div.block-language-wr.${cls} ul.wr-reading-list > li:not(.wr-check-item)::before,
+      body div.block-language-wr.${cls} ol.wr-reading-list > li::before,
+      body pre.${cls} .wr-reading-time,
+      body pre.${cls} .wr-reading-copy-btn,
+      body pre.${cls} .wr-blockquote,
+      body pre.${cls} ul.wr-reading-list > li:not(.wr-check-item)::before,
+      body pre.${cls} ol.wr-reading-list > li::before,
+      body .cm-line.wr-codeblock-line.${cls}.wr-blockquote-line,
+      body .cm-line.wr-codeblock-line.${cls} .wr-blockquote-wrap,
+      body .cm-line.wr-codeblock-line.${cls} .wr-list-highlight,
+      body .cm-line.wr-codeblock-line.${cls} .wr-check-unchecked,
+      body .cm-line.wr-codeblock-line.${cls} .wr-check-checked,
+      body .cm-line.wr-codeblock-line.${cls} .wr-check-done,
+      body .cm-line.wr-codeblock-line.${cls} .wr-ol-highlight,
+      body .cm-line.wr-codeblock-line.${cls} .wr-lp-marker {
+        color: ${muted} !important;
+      }
+      body .wr-card.${cls} .wr-blockquote,
+      body .wr-card.${cls} .wr-blockquote-wrap,
+      body div.block-language-wr.${cls} .wr-blockquote,
+      body pre.${cls} .wr-blockquote {
+        border-left-color: ${muted} !important;
+      }
+      body .wr-card.${cls} .wr-copy-btn .svg-icon {
+        stroke: ${muted} !important;
+      }
+      body .wr-card.${cls} .wr-copy-btn.wr-copy-done .svg-icon {
+        color: var(--text-accent) !important;
+        stroke: var(--text-accent) !important;
+      }
+
+      /* --- Rule ${i}: OGP / Twitter cards --- */
+      body .wr-card.${cls} .wr-ogp-card,
+      body div.block-language-wr.${cls} .wr-ogp-card,
+      body pre.${cls} .wr-ogp-card,
+      body .wr-lp-media.${cls} .wr-ogp-card {
+        background: ${bg} !important;
+        background-color: ${bg} !important;
+      }
+      body .wr-card.${cls} .wr-ogp-title,
+      body div.block-language-wr.${cls} .wr-ogp-title,
+      body pre.${cls} .wr-ogp-title,
+      body .wr-lp-media.${cls} .wr-ogp-title {
+        color: ${fg} !important;
+      }
+      body .wr-card.${cls} .wr-ogp-desc,
+      body .wr-card.${cls} .wr-ogp-site,
+      body .wr-card.${cls} .wr-ogp-loading,
+      body div.block-language-wr.${cls} .wr-ogp-desc,
+      body div.block-language-wr.${cls} .wr-ogp-site,
+      body div.block-language-wr.${cls} .wr-ogp-loading,
+      body pre.${cls} .wr-ogp-desc,
+      body pre.${cls} .wr-ogp-site,
+      body pre.${cls} .wr-ogp-loading,
+      body .wr-lp-media.${cls} .wr-ogp-desc,
+      body .wr-lp-media.${cls} .wr-ogp-site,
+      body .wr-lp-media.${cls} .wr-ogp-loading {
+        color: ${muted} !important;
+      }
+      `);
+    });
+
+    if (parts.length === 0) return;
+
+    this.tagRuleStyleEl = document.createElement("style");
+    this.tagRuleStyleEl.id = "wr-tag-rule-override";
+    this.tagRuleStyleEl.textContent = parts.join("\n");
+    document.head.appendChild(this.tagRuleStyleEl);
+  }
+
+  refreshReadingViews(): void {
+    // Sweep lingering per-rule classes (wr-tag-rule-0, wr-tag-rule-1, ...) on blocks
+    // we no longer touch. Constrain to element types we actually apply the class to
+    // and match only trailing-digit class names so settings UI classes like
+    // .wr-tag-rule-label-setting / .wr-tag-rule-separator / .wr-tag-rules-container
+    // are left alone.
+    const sweepSelector =
+      '.wr-card[class*="wr-tag-rule-"], ' +
+      'div.block-language-wr[class*="wr-tag-rule-"], ' +
+      'pre[class*="wr-tag-rule-"], ' +
+      '.cm-line[class*="wr-tag-rule-"], ' +
+      '.code-block-flair[class*="wr-tag-rule-"], ' +
+      '.copy-code-button[class*="wr-tag-rule-"], ' +
+      '.wr-flair-bg[class*="wr-tag-rule-"]';
+    document.querySelectorAll<HTMLElement>(sweepSelector).forEach((el) => {
+      const existing = Array.from(el.classList);
+      for (const cls of existing) {
+        if (/^wr-tag-rule-\d+$/.test(cls)) el.classList.remove(cls);
+      }
+    });
+
+    if (!this.settings.tagColorRulesEnabled) return;
+
+    document.querySelectorAll('code.language-wr, .block-language-wr code, pre > code[class*="language-wr"]').forEach((code) => {
+      const block = code.closest(".block-language-wr") || code.closest("pre");
+      if (!(block instanceof HTMLElement)) return;
+
+      const targets: HTMLElement[] = [block];
+      const container = block.parentElement;
+      if (container) {
+        container.querySelectorAll(".code-block-flair, .copy-code-button").forEach((el) => {
+          if (el instanceof HTMLElement) targets.push(el);
+        });
+      }
+      block.querySelectorAll(".code-block-flair, .copy-code-button").forEach((el) => {
+        if (el instanceof HTMLElement) targets.push(el);
+      });
+
+      const rawText = code.getAttribute("data-wr-original") || code.textContent || "";
+      const blockTags = rawText.match(/#[^\s#]+/g) || [];
+      const rule = this.findTagColorRule(blockTags);
+      if (!rule) return;
+      const idx = this.settings.tagColorRules.indexOf(rule);
+      if (idx < 0) return;
+
+      const cls = `wr-tag-rule-${idx}`;
+      for (const t of targets) t.classList.add(cls);
+    });
+  }
+
+  refreshAllWrDecorations(): void {
+    this.refreshViews();
+    this.refreshReadingViews();
+    this.app.workspace.iterateAllLeaves((leaf) => {
+      const view = leaf.view;
+      if (!(view instanceof MarkdownView)) return;
+      const cm = (view.editor as any)?.cm;
+      if (cm?.dispatch) {
+        try {
+          cm.dispatch({ effects: tagRulesChanged.of(null) });
+        } catch {
+          // ignore
+        }
+      }
+    });
+  }
+
   private blendColor(fg: string, bg: string, ratio: number): string {
     const fR = parseInt(fg.slice(1, 3), 16);
     const fG = parseInt(fg.slice(3, 5), 16);
@@ -297,6 +524,8 @@ export default class WrotPlugin extends Plugin {
   onunload(): void {
     this.bgStyleEl?.remove();
     this.bgStyleEl = null;
+    this.tagRuleStyleEl?.remove();
+    this.tagRuleStyleEl = null;
   }
 
   async activateView(): Promise<void> {

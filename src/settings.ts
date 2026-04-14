@@ -1,6 +1,12 @@
 import { App, ColorComponent, PluginSettingTab, Setting, TextComponent } from "obsidian";
 import type WrotPlugin from "./main";
 
+export interface TagColorRule {
+  tag: string;
+  bgColor: string;
+  textColor: string;
+}
+
 export interface WrotSettings {
   viewPlacement: "left" | "right" | "main";
   timestampFormat: string;
@@ -13,6 +19,8 @@ export interface WrotSettings {
   inputPlaceholder: string;
   enableOgpFetch: boolean;
   checkStrikethrough: boolean;
+  tagColorRulesEnabled: boolean;
+  tagColorRules: TagColorRule[];
 }
 
 export const DEFAULT_SETTINGS: WrotSettings = {
@@ -27,6 +35,8 @@ export const DEFAULT_SETTINGS: WrotSettings = {
   inputPlaceholder: "あなたが書くのを待っています...",
   enableOgpFetch: true,
   checkStrikethrough: false,
+  tagColorRulesEnabled: false,
+  tagColorRules: [],
 };
 
 export class WrotSettingTab extends PluginSettingTab {
@@ -35,6 +45,50 @@ export class WrotSettingTab extends PluginSettingTab {
   constructor(app: App, plugin: WrotPlugin) {
     super(app, plugin);
     this.plugin = plugin;
+  }
+
+  /** Collect all scrollable ancestors of containerEl. Different Obsidian
+   * versions/platforms put scroll on different elements (`.modal-content`,
+   * `.vertical-tab-content`, the tab's own containerEl, etc.), so we track
+   * every candidate and restore whichever one actually moved. */
+  private collectScrollCandidates(): HTMLElement[] {
+    const list: HTMLElement[] = [];
+    // Include containerEl itself — some Obsidian builds scroll it directly.
+    if (this.containerEl.scrollHeight > this.containerEl.clientHeight) {
+      list.push(this.containerEl);
+    }
+    let el: HTMLElement | null = this.containerEl.parentElement;
+    while (el) {
+      const style = getComputedStyle(el);
+      const overflowY = style.overflowY;
+      const scrolls =
+        (overflowY === "auto" || overflowY === "scroll" || overflowY === "overlay") &&
+        el.scrollHeight > el.clientHeight;
+      // Also include elements whose scrollTop is already non-zero even if
+      // computed overflow is visible (some WebViews report it that way).
+      if (scrolls || el.scrollTop > 0) {
+        list.push(el);
+      }
+      el = el.parentElement;
+      if (!el || el === document.body || el === document.documentElement) break;
+    }
+    return list;
+  }
+
+  /** Run `work` while preserving the settings scroll position. */
+  private withScrollPreserved(work: () => void): void {
+    const before = this.collectScrollCandidates().map((el) => ({ el, top: el.scrollTop }));
+    work();
+    const restore = () => {
+      for (const { el, top } of before) {
+        if (el.scrollTop !== top) el.scrollTop = top;
+      }
+    };
+    // Multiple restore attempts — synchronous, next frame, and a fallback tick.
+    restore();
+    requestAnimationFrame(restore);
+    setTimeout(restore, 0);
+    setTimeout(restore, 50);
   }
 
   display(): void {
@@ -274,5 +328,196 @@ export class WrotSettingTab extends PluginSettingTab {
             this.plugin.refreshViews();
           })
       );
+
+    // --- Tag color rules ---
+    new Setting(containerEl)
+      .setName("タグ別に色を変える")
+      .setDesc(
+        "指定タグを含む投稿の背景色と文字色を変更します。複数ルールに該当する場合は本文で先に出たタグが優先されます。Wrot サイドバー / Reading View / Live Preview すべてで反映されます。"
+      )
+      .addToggle((toggle) =>
+        toggle.setValue(this.plugin.settings.tagColorRulesEnabled).onChange(async (v) => {
+          this.plugin.settings.tagColorRulesEnabled = v;
+          await this.plugin.saveSettings();
+          this.plugin.applyTagColorRules();
+          this.plugin.refreshAllWrDecorations();
+          // Rebuild the whole settings tab so the rules block shows/hides cleanly.
+          this.withScrollPreserved(() => this.display());
+        })
+      );
+
+    const rulesContainer = containerEl.createDiv({ cls: "wr-tag-rules-container" });
+    const addBtnContainer = containerEl.createDiv();
+
+    const renderRulesInner = () => {
+      rulesContainer.empty();
+      addBtnContainer.empty();
+
+      if (!this.plugin.settings.tagColorRulesEnabled) return;
+
+      const buildRuleGroup = (
+        isFirst: boolean,
+        ruleNumber: number,
+        initial: TagColorRule,
+        onTagChange: (v: string) => Promise<void>,
+        onBgChange: (v: string) => Promise<void>,
+        onFgChange: (v: string) => Promise<void>,
+        trailing: { kind: "delete"; handler: () => Promise<void> } | { kind: "reset"; handler: () => Promise<void> } | null
+      ) => {
+        if (!isFirst) {
+          rulesContainer.createEl("hr", { cls: "wr-tag-rule-separator" });
+        }
+
+        const labelSetting = new Setting(rulesContainer)
+          .setName(`ルール ${ruleNumber}`)
+          .setClass("wr-tag-rule-label-setting");
+        if (trailing) {
+          labelSetting.addExtraButton((btn) =>
+            btn
+              .setIcon(trailing.kind === "delete" ? "trash-2" : "reset")
+              .setTooltip(trailing.kind === "delete" ? "このルールを削除" : "初期値に戻す")
+              .onClick(async () => { await trailing.handler(); })
+          );
+        }
+
+        new Setting(rulesContainer)
+          .setName("タグ")
+          .setDesc("色を変えたいタグ名(# なしでも構いません)")
+          .addText((text) => {
+            text
+              .setPlaceholder("タグ名")
+              .setValue(initial.tag)
+              .onChange(async (v) => {
+                await onTagChange(v.replace(/^#/, "").trim());
+              });
+          });
+
+        new Setting(rulesContainer)
+          .setName("背景色")
+          .setDesc("このタグを含む投稿カードの背景色")
+          .addColorPicker((picker) => {
+            picker
+              .setValue(/^#[0-9a-fA-F]{6}$/.test(initial.bgColor) ? initial.bgColor : DEFAULT_SETTINGS.bgColorLight)
+              .onChange(async (v) => { await onBgChange(v); });
+          });
+
+        new Setting(rulesContainer)
+          .setName("文字色")
+          .setDesc("このタグを含む投稿カードの本文文字色(タグ・リンク・URLは既存色のまま)")
+          .addColorPicker((picker) => {
+            picker
+              .setValue(/^#[0-9a-fA-F]{6}$/.test(initial.textColor) ? initial.textColor : DEFAULT_SETTINGS.textColorLight)
+              .onChange(async (v) => { await onFgChange(v); });
+          });
+      };
+
+      const isEmpty = this.plugin.settings.tagColorRules.length === 0;
+
+      if (isEmpty) {
+        const placeholder: TagColorRule = {
+          tag: "",
+          bgColor: DEFAULT_SETTINGS.bgColorLight,
+          textColor: DEFAULT_SETTINGS.textColorLight,
+        };
+        const promoteIfNeeded = async () => {
+          const hasTag = placeholder.tag.trim() !== "";
+          const bgChanged = placeholder.bgColor !== DEFAULT_SETTINGS.bgColorLight;
+          const fgChanged = placeholder.textColor !== DEFAULT_SETTINGS.textColorLight;
+          if (hasTag || bgChanged || fgChanged) {
+            this.plugin.settings.tagColorRules.push({ ...placeholder });
+            await this.plugin.saveSettings();
+            this.plugin.applyTagColorRules();
+            this.plugin.refreshAllWrDecorations();
+            renderRules();
+          }
+        };
+
+        buildRuleGroup(
+          true,
+          1,
+          placeholder,
+          async (v) => { placeholder.tag = v; await promoteIfNeeded(); },
+          async (v) => { placeholder.bgColor = v; await promoteIfNeeded(); },
+          async (v) => { placeholder.textColor = v; await promoteIfNeeded(); },
+          null,
+        );
+
+        addBtnContainer.empty();
+        return;
+      }
+
+      const ruleCount = this.plugin.settings.tagColorRules.length;
+      this.plugin.settings.tagColorRules.forEach((rule, idx) => {
+        const trailing =
+          ruleCount === 1
+            ? {
+                kind: "reset" as const,
+                handler: async () => {
+                  rule.tag = "";
+                  rule.bgColor = DEFAULT_SETTINGS.bgColorLight;
+                  rule.textColor = DEFAULT_SETTINGS.textColorLight;
+                  await this.plugin.saveSettings();
+                  this.plugin.applyTagColorRules();
+                  this.plugin.refreshAllWrDecorations();
+                  renderRules();
+                },
+              }
+            : {
+                kind: "delete" as const,
+                handler: async () => {
+                  this.plugin.settings.tagColorRules.splice(idx, 1);
+                  await this.plugin.saveSettings();
+                  this.plugin.applyTagColorRules();
+                  this.plugin.refreshAllWrDecorations();
+                  renderRules();
+                },
+              };
+        buildRuleGroup(
+          idx === 0,
+          idx + 1,
+          rule,
+          async (v) => {
+            rule.tag = v;
+            await this.plugin.saveSettings();
+            this.plugin.applyTagColorRules();
+            this.plugin.refreshAllWrDecorations();
+          },
+          async (v) => {
+            rule.bgColor = v;
+            await this.plugin.saveSettings();
+            this.plugin.applyTagColorRules();
+          },
+          async (v) => {
+            rule.textColor = v;
+            await this.plugin.saveSettings();
+            this.plugin.applyTagColorRules();
+          },
+          trailing,
+        );
+      });
+
+      addBtnContainer.empty();
+      new Setting(addBtnContainer).addButton((btn) =>
+        btn
+          .setButtonText("ルールを追加")
+          .setCta()
+          .onClick(async () => {
+            this.plugin.settings.tagColorRules.push({
+              tag: "",
+              bgColor: DEFAULT_SETTINGS.bgColorLight,
+              textColor: DEFAULT_SETTINGS.textColorLight,
+            });
+            await this.plugin.saveSettings();
+            this.plugin.applyTagColorRules();
+            renderRules();
+          })
+      );
+    };
+
+    const renderRules = () => {
+      this.withScrollPreserved(() => renderRulesInner());
+    };
+
+    renderRulesInner();
   }
 }

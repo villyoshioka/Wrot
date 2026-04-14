@@ -67,10 +67,9 @@ export class WrotView extends ItemView {
       }
     });
 
-    // Collapse toolbar on iPad pinned sidebar (WorkspaceSidedock = pinned)
+    // Shorten date label on iPad pinned sidebar (WorkspaceSidedock = pinned)
     if (Platform.isTablet && this.leaf.getRoot() instanceof WorkspaceSidedock) {
       this.isCollapsed = true;
-      container.addClass("wr-collapsed");
     }
 
     await this.refresh();
@@ -249,27 +248,27 @@ export class WrotView extends ItemView {
     // Bottom toolbar (Misskey-style icon buttons)
     const toolbar = inputArea.createDiv({ cls: "wr-input-toolbar" });
 
-    const embedBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn wr-toolbar-collapsible" });
+    const embedBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn" });
     setIcon(embedBtn, "paperclip");
     embedBtn.addEventListener("mousedown", (e) => e.preventDefault());
 
-    const boldBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn wr-toolbar-collapsible" });
+    const boldBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn" });
     setIcon(boldBtn, "bold");
     boldBtn.addEventListener("mousedown", (e) => e.preventDefault());
 
-    const italicBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn wr-toolbar-collapsible" });
+    const italicBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn" });
     setIcon(italicBtn, "italic");
     italicBtn.addEventListener("mousedown", (e) => e.preventDefault());
 
-    const listBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn wr-toolbar-collapsible" });
+    const listBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn" });
     setIcon(listBtn, "list");
     listBtn.addEventListener("mousedown", (e) => e.preventDefault());
 
-    const checkBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn wr-toolbar-collapsible" });
+    const checkBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn" });
     setIcon(checkBtn, "list-checks");
     checkBtn.addEventListener("mousedown", (e) => e.preventDefault());
 
-    const olBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn wr-toolbar-collapsible" });
+    const olBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn" });
     setIcon(olBtn, "list-ordered");
     olBtn.addEventListener("mousedown", (e) => e.preventDefault());
 
@@ -386,15 +385,6 @@ export class WrotView extends ItemView {
       const ta = this.textarea;
       const hasSelection = ta.selectionStart !== ta.selectionEnd;
       const menu = new Menu();
-      if (this.isCollapsed) {
-        menu.addItem((item) => item.setTitle("埋め込み").setIcon("paperclip").onClick(() => embedBtn.click()));
-        menu.addItem((item) => item.setTitle("太字").setIcon("bold").onClick(() => boldBtn.click()));
-        menu.addItem((item) => item.setTitle("斜体").setIcon("italic").onClick(() => italicBtn.click()));
-        menu.addItem((item) => item.setTitle("リスト").setIcon("list").onClick(() => listBtn.click()));
-        menu.addItem((item) => item.setTitle("チェックリスト").setIcon("list-checks").onClick(() => checkBtn.click()));
-        menu.addItem((item) => item.setTitle("番号付きリスト").setIcon("list-ordered").onClick(() => olBtn.click()));
-        menu.addSeparator();
-      }
       menu.addItem((item) => item.setTitle("コード").setIcon("code").onClick(() => this.toggleInlineWrap("`", "`")));
       menu.addItem((item) => item.setTitle("数式").setIcon("sigma").onClick(() => {
         if (this.textarea.selectionStart !== this.textarea.selectionEnd) {
@@ -416,6 +406,16 @@ export class WrotView extends ItemView {
       menu.addItem((item) => {
         item.setTitle("ハイライト").setIcon("highlighter").onClick(() => this.wrapSelection("==", "=="));
         if (!hasSelection) item.setDisabled(true);
+      });
+      menu.addSeparator();
+      menu.addItem((item) => {
+        item.setTitle("設定").setIcon("settings").onClick(() => {
+          const settingApi = (this.app as any).setting;
+          if (settingApi?.open && settingApi?.openTabById) {
+            settingApi.open();
+            settingApi.openTabById("wrot");
+          }
+        });
       });
       const menuDom = (menu as any).dom as HTMLElement | undefined;
       menuDom?.classList.add("wr-menu");
@@ -518,6 +518,11 @@ export class WrotView extends ItemView {
 
   private renderMemoCard(memo: Memo): void {
     const card = this.listContainer.createDiv({ cls: "wr-card" });
+    const rule = this.plugin.findTagColorRule(memo.tags);
+    if (rule) {
+      const idx = this.plugin.settings.tagColorRules.indexOf(rule);
+      if (idx >= 0) card.classList.add(`wr-tag-rule-${idx}`);
+    }
 
     // Content with inline tag + URL highlighting
     const contentEl = card.createDiv({ cls: "wr-content" });

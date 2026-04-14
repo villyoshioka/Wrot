@@ -42,14 +42,51 @@ function highlightAllWrBlocks(el: HTMLElement, plugin: WrotPlugin): void {
     const text = code.textContent || "";
     if (!text.trim()) return;
 
-    // Already processed
+    // Always (re-)apply tag color rule class so post-edit/re-layout DOMs stay in sync
     const parentBlock = code.closest(".block-language-wr") || code.closest("pre");
+    if (parentBlock instanceof HTMLElement) {
+      applyTagRuleClass(parentBlock, codeEl, plugin);
+    }
+
+    // Already processed
     const hasProcessedInCode = code.querySelector(".wr-reading-tag, .wr-reading-url, .wr-internal-link, .wr-inline-code");
     const hasProcessedInBlock = parentBlock?.querySelector(".wr-reading-list, .wr-blockquote, .wr-embed-img, .wr-plain-text");
     if (hasProcessedInCode || hasProcessedInBlock) return;
 
     processCodeBlock(codeEl, plugin);
   });
+}
+
+function applyTagRuleClass(block: HTMLElement, code: HTMLElement, plugin: WrotPlugin): void {
+  // Copy buttons / flair elements may live as siblings of the block in the parent container,
+  // so collect candidates from both sides and keep their tag-rule class in sync with the block.
+  const container = block.parentElement;
+  const targets: HTMLElement[] = [block];
+  if (container) {
+    container.querySelectorAll(".code-block-flair, .copy-code-button").forEach((el) => {
+      if (el instanceof HTMLElement) targets.push(el);
+    });
+  }
+  block.querySelectorAll(".code-block-flair, .copy-code-button").forEach((el) => {
+    if (el instanceof HTMLElement) targets.push(el);
+  });
+
+  for (const t of targets) {
+    const existing = Array.from(t.classList);
+    for (const cls of existing) {
+      if (/^wr-tag-rule-\d+$/.test(cls)) t.classList.remove(cls);
+    }
+  }
+
+  const rawText = code.getAttribute("data-wr-original") || code.textContent || "";
+  const blockTags = rawText.match(/#[^\s#]+/g) || [];
+  const rule = plugin.findTagColorRule(blockTags);
+  if (!rule) return;
+  const idx = plugin.settings.tagColorRules.indexOf(rule);
+  if (idx < 0) return;
+
+  const cls = `wr-tag-rule-${idx}`;
+  for (const t of targets) t.classList.add(cls);
 }
 
 function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {

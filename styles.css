@@ -138,7 +138,9 @@
 .wr-input-toolbar {
   display: flex;
   align-items: center;
-  gap: 8px;
+  flex-wrap: wrap;
+  row-gap: 4px;
+  column-gap: 8px;
   margin-top: 4px;
 }
 
@@ -148,10 +150,13 @@
   border: none !important;
   box-shadow: none !important;
   outline: none !important;
-  padding: 2px;
+  padding: 6px 2px;
   cursor: pointer;
   color: var(--text-muted);
   min-width: auto;
+  min-height: 0 !important;
+  height: auto !important;
+  margin: 0 !important;
 }
 
 .wr-toolbar-btn:hover {
@@ -354,6 +359,7 @@ ol.wr-reading-list > li::before {
   margin: 0 !important;
   overflow: hidden !important;
 }
+
 
 /* Live Preview: list/checklist highlights */
 .wr-list-highlight {
@@ -917,7 +923,7 @@ div.block-language-wr pre {
    Mobile adjustments
    ======================================== */
 .is-mobile .wr-container {
-  padding: 6px 8px;
+  padding: 6px 12px;
 }
 
 .is-mobile .wr-date-nav {
@@ -986,12 +992,13 @@ div.block-language-wr pre {
 }
 
 .is-mobile .wr-input-toolbar {
-  gap: 8px;
+  row-gap: 4px;
+  column-gap: 8px;
   margin-top: 2px;
 }
 
 .is-mobile .wr-toolbar-btn {
-  padding: 2px !important;
+  padding: 6px 2px !important;
 }
 
 .is-mobile .wr-toolbar-btn .svg-icon {
@@ -1073,12 +1080,38 @@ div.block-language-wr pre {
   }
 }
 
-/* Collapsed mode: iPad pinned sidebar */
-.wr-collapsed .wr-toolbar-collapsible {
-  display: none !important;
+/* Settings: tag rule separator between rules */
+.wr-settings .wr-tag-rule-separator {
+  border: none;
+  border-top: 1px solid var(--background-modifier-border);
+  margin: 14px 0;
 }
 
-.wr-collapsed .wr-date-nav {
-  flex-wrap: nowrap;
+/* Mobile: keep non-text-input setting rows on a single line (matches Obsidian
+   core appearance tab where label stays left and control sits on the right).
+   Text inputs keep the existing wrap-below layout so long values stay usable. */
+.is-mobile .wr-settings .setting-item:not(:has(.setting-item-control input[type="text"])) {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 12px;
+}
+
+.is-mobile .wr-settings .setting-item:not(:has(.setting-item-control input[type="text"])) > .setting-item-info {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  width: auto !important;
+  margin: 0 !important;
+}
+
+.is-mobile .wr-settings .setting-item:not(:has(.setting-item-control input[type="text"])) > .setting-item-control {
+  flex: 0 0 auto !important;
+  justify-content: flex-end !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 

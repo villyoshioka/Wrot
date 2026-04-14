@@ -8,9 +8,13 @@ import {
 } from "@codemirror/view";
 import { RangeSetBuilder, StateEffect } from "@codemirror/state";
 import type { App } from "obsidian";
+import type WrotPlugin from "./main";
 
 // StateEffect to trigger re-decoration after OGP fetch completes
 const ogpFetched = StateEffect.define<null>();
+
+// StateEffect to trigger re-decoration after tag color rules change
+export const tagRulesChanged = StateEffect.define<null>();
 import {
   extractUrls,
   renderImagePreview,
@@ -45,9 +49,19 @@ const italicMark = Decoration.mark({ class: "wr-italic-highlight" });
 const strikeMark = Decoration.mark({ class: "wr-strike-highlight" });
 const highlightMark = Decoration.mark({ class: "wr-highlight-highlight" });
 const replaceHidden = Decoration.replace({});
-const blockquoteLine = Decoration.line({ class: "wr-codeblock-line wr-blockquote-line" });
-const wrBlockLine = Decoration.line({ class: "wr-codeblock-line" });
 const hiddenLine = Decoration.line({ class: "wr-hidden-line" });
+
+// Cached line decorations keyed by class string so CodeMirror sees stable Decoration instances
+const lineDecoCache = new Map<string, Decoration>();
+function makeLineDeco(classes: (string | null | undefined)[]): Decoration {
+  const key = classes.filter(Boolean).join(" ");
+  let deco = lineDecoCache.get(key);
+  if (!deco) {
+    deco = Decoration.line({ class: key });
+    lineDecoCache.set(key, deco);
+  }
+  return deco;
+}
 
 // --- Widgets for list markers ---
 
@@ -171,10 +185,14 @@ class MathWidget extends WidgetType {
 const IMAGE_EXT_RE = /\.(png|jpg|jpeg|gif|svg|webp|bmp)$/i;
 
 class EmbedImageWidget extends WidgetType {
-  constructor(private images: { src: string; alt: string }[]) { super(); }
+  constructor(
+    private images: { src: string; alt: string }[],
+    private ruleClass: string | null
+  ) { super(); }
   toDOM(): HTMLElement {
     const container = document.createElement("div");
     container.className = "wr-media-area wr-lp-media";
+    if (this.ruleClass) container.classList.add(this.ruleClass);
     for (const { src, alt } of this.images) {
       const img = document.createElement("img");
       img.className = "wr-embed-img";
@@ -186,6 +204,7 @@ class EmbedImageWidget extends WidgetType {
     return container;
   }
   eq(other: EmbedImageWidget): boolean {
+    if (this.ruleClass !== other.ruleClass) return false;
     if (this.images.length !== other.images.length) return false;
     return this.images.every((img, i) => img.src === other.images[i].src);
   }
@@ -200,7 +219,8 @@ class UrlPreviewWidget extends WidgetType {
 
   constructor(
     private parsedUrls: ParsedUrl[],
-    private ogpCache: OGPCache
+    private ogpCache: OGPCache,
+    private ruleClass: string | null
   ) {
     super();
     this.cachedSnapshot = parsedUrls.map(
@@ -212,6 +232,7 @@ class UrlPreviewWidget extends WidgetType {
   }
 
   eq(other: UrlPreviewWidget): boolean {
+    if (this.ruleClass !== other.ruleClass) return false;
     if (this.parsedUrls.length !== other.parsedUrls.length) return false;
     for (let i = 0; i < this.parsedUrls.length; i++) {
       if (this.parsedUrls[i].url !== other.parsedUrls[i].url) return false;
@@ -224,6 +245,7 @@ class UrlPreviewWidget extends WidgetType {
   toDOM(): HTMLElement {
     const container = document.createElement("div");
     container.className = "wr-media-area wr-lp-media";
+    if (this.ruleClass) container.classList.add(this.ruleClass);
 
     for (const pu of this.parsedUrls) {
       if (pu.type === "image") {
@@ -255,9 +277,10 @@ interface WrBlock {
   startLn: number;
   endLn: number;
   urlTexts: string[];
+  ruleClass: string | null;
 }
 
-function findWrBlocks(view: EditorView): WrBlock[] {
+function findWrBlocks(view: EditorView, plugin: WrotPlugin | null): WrBlock[] {
   const blocks: WrBlock[] = [];
   const doc = view.state.doc;
 
@@ -277,6 +300,7 @@ function findWrBlocks(view: EditorView): WrBlock[] {
     if (endLn === 0) continue;
 
     const urlTexts: string[] = [];
+    const tags: string[] = [];
     for (let j = startLn + 1; j < endLn; j++) {
       const l = doc.line(j);
       const urlRegex = /(?:https?|obsidian):\/\/[^\s<>"'\]]+/g;
@@ -286,9 +310,20 @@ function findWrBlocks(view: EditorView): WrBlock[] {
           urlTexts.push(match[0]);
         }
       }
+      const tagMatches = l.text.match(/#[^\s#]+/g);
+      if (tagMatches) tags.push(...tagMatches);
     }
 
-    blocks.push({ startLn, endLn, urlTexts });
+    let ruleClass: string | null = null;
+    if (plugin) {
+      const rule = plugin.findTagColorRule(tags);
+      if (rule) {
+        const idx = plugin.settings.tagColorRules.indexOf(rule);
+        if (idx >= 0) ruleClass = `wr-tag-rule-${idx}`;
+      }
+    }
+
+    blocks.push({ startLn, endLn, urlTexts, ruleClass });
     ln = endLn;
   }
 
@@ -328,7 +363,7 @@ function buildDecorations(
     for (const block of blocks) {
       // Apply background color to opening fence line
       const openLine = doc.line(block.startLn);
-      builder.add(openLine.from, openLine.from, wrBlockLine);
+      builder.add(openLine.from, openLine.from, makeLineDeco(["wr-codeblock-line", block.ruleClass]));
 
       // In live preview: if cursor is anywhere in this block, show raw markdown
       const blockHasCursor = cursorInBlock(block);
@@ -349,11 +384,11 @@ function buildDecorations(
         if (isEmbedOnlyLine) {
           builder.add(l.from, l.from, hiddenLine);
         } else if (isQuoteLine && !showRaw) {
-          builder.add(l.from, l.from, blockquoteLine);
+          builder.add(l.from, l.from, makeLineDeco(["wr-codeblock-line", "wr-blockquote-line", block.ruleClass]));
         } else if (hasObsidianUrl) {
-          builder.add(l.from, l.from, Decoration.line({ class: "wr-codeblock-line wr-obsidian-url-line" }));
+          builder.add(l.from, l.from, makeLineDeco(["wr-codeblock-line", "wr-obsidian-url-line", block.ruleClass]));
         } else {
-          builder.add(l.from, l.from, wrBlockLine);
+          builder.add(l.from, l.from, makeLineDeco(["wr-codeblock-line", block.ruleClass]));
         }
 
         // Collect all decorations for this line, then sort and add
@@ -621,7 +656,7 @@ function buildDecorations(
 
       // Apply background color to closing fence line
       const closeLine = doc.line(block.endLn);
-      builder.add(closeLine.from, closeLine.from, wrBlockLine);
+      builder.add(closeLine.from, closeLine.from, makeLineDeco(["wr-codeblock-line", block.ruleClass]));
 
       // Preview widgets after closing ```
       const endLine = doc.line(block.endLn);
@@ -631,7 +666,7 @@ function buildDecorations(
           endLine.to,
           endLine.to,
           Decoration.widget({
-            widget: new EmbedImageWidget(embedImages),
+            widget: new EmbedImageWidget(embedImages, block.ruleClass),
             side: 1,
           })
         );
@@ -644,7 +679,7 @@ function buildDecorations(
             endLine.to,
             endLine.to,
             Decoration.widget({
-              widget: new UrlPreviewWidget(parsedUrls, ogpCache),
+              widget: new UrlPreviewWidget(parsedUrls, ogpCache, block.ruleClass),
               side: 2,
             })
           );
@@ -660,7 +695,7 @@ function buildDecorations(
 
 // --- Export ---
 
-export function createWrEditorExtension(ogpCache: OGPCache, app: App, getCheckStrikethrough: () => boolean) {
+export function createWrEditorExtension(ogpCache: OGPCache, app: App, plugin: WrotPlugin, getCheckStrikethrough: () => boolean) {
   return ViewPlugin.fromClass(
     class {
       decorations: DecorationSet;
@@ -669,7 +704,7 @@ export function createWrEditorExtension(ogpCache: OGPCache, app: App, getCheckSt
 
       constructor(view: EditorView) {
         this.currentView = view;
-        this.blocks = findWrBlocks(view);
+        this.blocks = findWrBlocks(view, plugin);
         this.decorations = buildDecorations(view, ogpCache, this.blocks, app, getCheckStrikethrough());
         // Trigger fetch after CM initialization is complete
         requestAnimationFrame(() => this.fetchMissing());
@@ -680,9 +715,12 @@ export function createWrEditorExtension(ogpCache: OGPCache, app: App, getCheckSt
         const hasOgpEffect = update.transactions.some((tr) =>
           tr.effects.some((e) => e.is(ogpFetched))
         );
+        const hasTagRulesEffect = update.transactions.some((tr) =>
+          tr.effects.some((e) => e.is(tagRulesChanged))
+        );
 
-        if (update.docChanged || update.viewportChanged || update.selectionSet || hasOgpEffect) {
-          this.blocks = findWrBlocks(update.view);
+        if (update.docChanged || update.viewportChanged || update.selectionSet || hasOgpEffect || hasTagRulesEffect) {
+          this.blocks = findWrBlocks(update.view, plugin);
           this.decorations = buildDecorations(update.view, ogpCache, this.blocks, app, getCheckStrikethrough());
           if (!hasOgpEffect) {
             this.fetchMissing();
