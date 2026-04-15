@@ -272,6 +272,7 @@ export default class WrotPlugin extends Plugin {
       if (!hexRe.test(rule.bgColor) || !hexRe.test(rule.textColor)) return;
       const bg = rule.bgColor;
       const fg = rule.textColor;
+      const accent = rule.accentColor && hexRe.test(rule.accentColor) ? rule.accentColor : null;
       const muted = this.blendColor(fg, bg, 0.45);
       const cls = `wr-tag-rule-${i}`;
 
@@ -351,9 +352,30 @@ export default class WrotPlugin extends Plugin {
         stroke: ${muted} !important;
       }
       body .wr-card.${cls} .wr-copy-btn.wr-copy-done .svg-icon {
-        color: var(--text-accent) !important;
-        stroke: var(--text-accent) !important;
+        color: ${accent ?? "var(--text-accent)"} !important;
+        stroke: ${accent ?? "var(--text-accent)"} !important;
       }
+      ${accent ? `
+      /* --- Rule ${i}: accent color override --- */
+      body .wr-card.${cls} .wr-tag,
+      body .wr-card.${cls} .wr-internal-link,
+      body .wr-card.${cls} .wr-url,
+      body div.block-language-wr.${cls} .wr-reading-tag,
+      body div.block-language-wr.${cls} .wr-internal-link,
+      body div.block-language-wr.${cls} .wr-reading-url,
+      body div.block-language-wr.${cls} a,
+      body pre.${cls} .wr-reading-tag,
+      body pre.${cls} .wr-internal-link,
+      body pre.${cls} .wr-reading-url,
+      body .cm-line.wr-codeblock-line.${cls} .wr-tag-highlight,
+      body .cm-line.wr-codeblock-line.${cls} .wr-internal-link-highlight,
+      body .cm-line.wr-codeblock-line.${cls} .wr-url-highlight,
+      body .cm-line.wr-codeblock-line.${cls} .wr-math-highlight,
+      body .cm-line.wr-codeblock-line.${cls} .wr-internal-link,
+      body .cm-line.wr-codeblock-line.${cls} .wr-url {
+        color: ${accent} !important;
+      }
+      ` : ""}
 
       /* --- Rule ${i}: OGP / Twitter cards --- */
       body .wr-card.${cls} .wr-ogp-card,

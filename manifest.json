@@ -1,7 +1,7 @@
 {
   "id": "wrot",
   "name": "Wrot",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "minAppVersion": "0.15.0",
   "description": "Daily memo tool with timeline UI for Obsidian",
   "author": "Vill Yoshioka",

@@ -5,6 +5,7 @@ export interface TagColorRule {
   tag: string;
   bgColor: string;
   textColor: string;
+  accentColor?: string;
 }
 
 export interface WrotSettings {
@@ -39,12 +40,23 @@ export const DEFAULT_SETTINGS: WrotSettings = {
   tagColorRules: [],
 };
 
+const SETTINGS_NARROW_THRESHOLD_PX = 600;
+
 export class WrotSettingTab extends PluginSettingTab {
   plugin: WrotPlugin;
+  private narrowObserver: ResizeObserver | null = null;
 
   constructor(app: App, plugin: WrotPlugin) {
     super(app, plugin);
     this.plugin = plugin;
+  }
+
+  hide(): void {
+    if (this.narrowObserver) {
+      this.narrowObserver.disconnect();
+      this.narrowObserver = null;
+    }
+    super.hide();
   }
 
   /** Collect all scrollable ancestors of containerEl. Different Obsidian
@@ -96,6 +108,24 @@ export class WrotSettingTab extends PluginSettingTab {
     containerEl.empty();
     containerEl.addClass("wr-settings");
 
+    if (this.narrowObserver) {
+      this.narrowObserver.disconnect();
+      this.narrowObserver = null;
+    }
+    const updateNarrow = () => {
+      const narrow = containerEl.clientWidth > 0 && containerEl.clientWidth < SETTINGS_NARROW_THRESHOLD_PX;
+      containerEl.toggleClass("wr-settings-narrow", narrow);
+    };
+    requestAnimationFrame(updateNarrow);
+    if (typeof ResizeObserver !== "undefined") {
+      this.narrowObserver = new ResizeObserver(() => {
+        requestAnimationFrame(updateNarrow);
+      });
+      this.narrowObserver.observe(containerEl);
+    }
+
+    new Setting(containerEl).setName("基本設定").setHeading();
+
     new Setting(containerEl)
       .setName("表示位置")
       .setDesc("Wrotパネルの表示位置")
@@ -139,6 +169,7 @@ export class WrotSettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName("背景色（ライトモード）")
       .setDesc("カード・入力エリアの背景色（ライトテーマ）")
+      .setClass("wr-reverse-controls")
       .addColorPicker((picker) => {
         lightPicker = picker;
         picker
@@ -162,6 +193,7 @@ export class WrotSettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName("文字色（ライトモード）")
       .setDesc("テキスト・アイコンの色（ライトテーマ）")
+      .setClass("wr-reverse-controls")
       .addColorPicker((picker) => {
         textLightPicker = picker;
         picker
@@ -185,6 +217,7 @@ export class WrotSettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName("背景色（ダークモード）")
       .setDesc("カード・入力エリアの背景色（ダークテーマ）")
+      .setClass("wr-reverse-controls")
       .addColorPicker((picker) => {
         darkPicker = picker;
         picker
@@ -208,6 +241,7 @@ export class WrotSettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName("文字色（ダークモード）")
       .setDesc("テキスト・アイコンの色（ダークテーマ）")
+      .setClass("wr-reverse-controls")
       .addColorPicker((picker) => {
         textDarkPicker = picker;
         picker
@@ -226,6 +260,8 @@ export class WrotSettingTab extends PluginSettingTab {
           textDarkPicker.setValue(DEFAULT_SETTINGS.textColorDark);
         })
       );
+
+    new Setting(containerEl).setName("その他の設定").setHeading();
 
     let submitText: TextComponent;
     new Setting(containerEl)
@@ -355,6 +391,12 @@ export class WrotSettingTab extends PluginSettingTab {
 
       if (!this.plugin.settings.tagColorRulesEnabled) return;
 
+      const getDefaultAccent = (): string => {
+        const raw = getComputedStyle(document.body).getPropertyValue("--text-accent").trim();
+        if (/^#[0-9a-fA-F]{6}$/.test(raw)) return raw;
+        return DEFAULT_SETTINGS.textColorLight;
+      };
+
       const buildRuleGroup = (
         isFirst: boolean,
         ruleNumber: number,
@@ -362,6 +404,7 @@ export class WrotSettingTab extends PluginSettingTab {
         onTagChange: (v: string) => Promise<void>,
         onBgChange: (v: string) => Promise<void>,
         onFgChange: (v: string) => Promise<void>,
+        onAccentChange: (v: string | undefined) => Promise<void>,
         trailing: { kind: "delete"; handler: () => Promise<void> } | { kind: "reset"; handler: () => Promise<void> } | null
       ) => {
         if (!isFirst) {
@@ -395,6 +438,7 @@ export class WrotSettingTab extends PluginSettingTab {
         new Setting(rulesContainer)
           .setName("背景色")
           .setDesc("このタグを含む投稿カードの背景色")
+          .setClass("wr-reverse-controls")
           .addColorPicker((picker) => {
             picker
               .setValue(/^#[0-9a-fA-F]{6}$/.test(initial.bgColor) ? initial.bgColor : DEFAULT_SETTINGS.bgColorLight)
@@ -403,12 +447,35 @@ export class WrotSettingTab extends PluginSettingTab {
 
         new Setting(rulesContainer)
           .setName("文字色")
-          .setDesc("このタグを含む投稿カードの本文文字色(タグ・リンク・URLは既存色のまま)")
+          .setDesc("このタグを含む投稿カードの本文文字色(タグ・リンク・URLはアクセントカラー側で設定)")
+          .setClass("wr-reverse-controls")
           .addColorPicker((picker) => {
             picker
               .setValue(/^#[0-9a-fA-F]{6}$/.test(initial.textColor) ? initial.textColor : DEFAULT_SETTINGS.textColorLight)
               .onChange(async (v) => { await onFgChange(v); });
           });
+
+        let accentPicker: ColorComponent;
+        new Setting(rulesContainer)
+          .setName("アクセントカラー")
+          .setDesc("タグ・リンク・URL・コピー完了アイコンなどアクセントカラーが使われる要素の色。未設定時はデフォルト(テーマのアクセントカラー)を使います。")
+          .setClass("wr-reverse-controls")
+          .addColorPicker((picker) => {
+            accentPicker = picker;
+            const initialAccent =
+              initial.accentColor && /^#[0-9a-fA-F]{6}$/.test(initial.accentColor)
+                ? initial.accentColor
+                : getDefaultAccent();
+            picker
+              .setValue(initialAccent)
+              .onChange(async (v) => { await onAccentChange(v); });
+          })
+          .addExtraButton((btn) =>
+            btn.setIcon("reset").setTooltip("初期値に戻す").onClick(async () => {
+              await onAccentChange(undefined);
+              accentPicker.setValue(getDefaultAccent());
+            })
+          );
       };
 
       const isEmpty = this.plugin.settings.tagColorRules.length === 0;
@@ -423,7 +490,8 @@ export class WrotSettingTab extends PluginSettingTab {
           const hasTag = placeholder.tag.trim() !== "";
           const bgChanged = placeholder.bgColor !== DEFAULT_SETTINGS.bgColorLight;
           const fgChanged = placeholder.textColor !== DEFAULT_SETTINGS.textColorLight;
-          if (hasTag || bgChanged || fgChanged) {
+          const accentChanged = placeholder.accentColor !== undefined;
+          if (hasTag || bgChanged || fgChanged || accentChanged) {
             this.plugin.settings.tagColorRules.push({ ...placeholder });
             await this.plugin.saveSettings();
             this.plugin.applyTagColorRules();
@@ -439,6 +507,7 @@ export class WrotSettingTab extends PluginSettingTab {
           async (v) => { placeholder.tag = v; await promoteIfNeeded(); },
           async (v) => { placeholder.bgColor = v; await promoteIfNeeded(); },
           async (v) => { placeholder.textColor = v; await promoteIfNeeded(); },
+          async (v) => { placeholder.accentColor = v; await promoteIfNeeded(); },
           null,
         );
 
@@ -456,6 +525,7 @@ export class WrotSettingTab extends PluginSettingTab {
                   rule.tag = "";
                   rule.bgColor = DEFAULT_SETTINGS.bgColorLight;
                   rule.textColor = DEFAULT_SETTINGS.textColorLight;
+                  delete rule.accentColor;
                   await this.plugin.saveSettings();
                   this.plugin.applyTagColorRules();
                   this.plugin.refreshAllWrDecorations();
@@ -489,6 +559,15 @@ export class WrotSettingTab extends PluginSettingTab {
           },
           async (v) => {
             rule.textColor = v;
+            await this.plugin.saveSettings();
+            this.plugin.applyTagColorRules();
+          },
+          async (v) => {
+            if (v === undefined) {
+              delete rule.accentColor;
+            } else {
+              rule.accentColor = v;
+            }
             await this.plugin.saveSettings();
             this.plugin.applyTagColorRules();
           },

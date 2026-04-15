@@ -107,9 +107,21 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
     ...Array.from(container.querySelectorAll(".copy-code-button")),
     ...Array.from(block.querySelectorAll(".copy-code-button")),
   ];
+  const resolveAccentForBlock = (): string => {
+    // If this block is currently matched by a tag-color rule, prefer that rule's accent.
+    const ruleClass = Array.from(block.classList).find((c) => /^wr-tag-rule-\d+$/.test(c));
+    if (ruleClass) {
+      const idx = parseInt(ruleClass.slice("wr-tag-rule-".length), 10);
+      const rule = plugin.settings.tagColorRules?.[idx];
+      if (rule?.accentColor && /^#[0-9a-fA-F]{6}$/.test(rule.accentColor)) {
+        return rule.accentColor;
+      }
+    }
+    return getComputedStyle(document.body).getPropertyValue("--text-accent").trim() || "#adc718";
+  };
   for (const btn of copyButtons) {
     btn.addEventListener("click", () => {
-      const successColor = getComputedStyle(document.body).getPropertyValue("--text-accent").trim() || "#adc718";
+      const successColor = resolveAccentForBlock();
       const applySvgColor = () => {
         btn.querySelectorAll("svg, svg *").forEach((svg) => {
           svg.setAttribute("stroke", successColor);

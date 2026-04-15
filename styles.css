@@ -139,9 +139,13 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.wr-input-toolbar.wr-toolbar-wrapped {
   row-gap: 4px;
   column-gap: 8px;
-  margin-top: 4px;
 }
 
 
@@ -150,10 +154,14 @@
   border: none !important;
   box-shadow: none !important;
   outline: none !important;
-  padding: 6px 2px;
+  padding: 2px;
   cursor: pointer;
   color: var(--text-muted);
   min-width: auto;
+}
+
+.wr-input-toolbar.wr-toolbar-wrapped .wr-toolbar-btn {
+  padding: 6px 2px;
   min-height: 0 !important;
   height: auto !important;
   margin: 0 !important;
@@ -992,12 +1000,20 @@ div.block-language-wr pre {
 }
 
 .is-mobile .wr-input-toolbar {
-  row-gap: 4px;
-  column-gap: 8px;
+  gap: 8px;
   margin-top: 2px;
 }
 
+.is-mobile .wr-input-toolbar.wr-toolbar-wrapped {
+  row-gap: 4px;
+  column-gap: 8px;
+}
+
 .is-mobile .wr-toolbar-btn {
+  padding: 2px !important;
+}
+
+.is-mobile .wr-input-toolbar.wr-toolbar-wrapped .wr-toolbar-btn {
   padding: 6px 2px !important;
 }
 
@@ -1113,5 +1129,46 @@ div.block-language-wr pre {
   max-width: none !important;
   margin: 0 !important;
   padding: 0 !important;
+}
+
+/* Settings: reverse visual order of control row (color picker + reset button)
+   so the reset ends up on the left of the picker. Uses `order` instead of
+   `row-reverse` to avoid changing the flex main-axis layout behaviour. */
+.wr-settings .setting-item.wr-reverse-controls .setting-item-control > :first-child {
+  order: 2;
+}
+.wr-settings .setting-item.wr-reverse-controls .setting-item-control > :last-child {
+  order: 1;
+}
+
+/* Settings: narrow layout (e.g. iPad mini portrait). Stack label above
+   control full-width ONLY for rows containing a text input, since those are
+   the rows that get cramped. Color pickers, toggles, dropdowns, and
+   delete/reset buttons stay on a single line. */
+.wr-settings.wr-settings-narrow .setting-item:has(.setting-item-control input[type="text"]) {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 6px;
+}
+
+.wr-settings.wr-settings-narrow .setting-item:has(.setting-item-control input[type="text"]) > .setting-item-info {
+  width: 100% !important;
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+}
+
+.wr-settings.wr-settings-narrow .setting-item:has(.setting-item-control input[type="text"]) > .setting-item-control {
+  width: 100% !important;
+  flex: 0 0 auto !important;
+  justify-content: flex-start !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Narrow-layout text inputs should fill the row. */
+.wr-settings.wr-settings-narrow .setting-item:has(.setting-item-control input[type="text"]) .setting-item-control input[type="text"] {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 

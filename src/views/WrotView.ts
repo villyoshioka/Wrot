@@ -23,6 +23,7 @@ export class WrotView extends ItemView {
   private activeFormatMode: "bold" | "italic" | null = null;
   private refreshing = false;
   private isCollapsed = false;
+  private toolbarResizeObserver: ResizeObserver | null = null;
 
   constructor(leaf: WorkspaceLeaf, plugin: WrotPlugin) {
     super(leaf);
@@ -80,6 +81,10 @@ export class WrotView extends ItemView {
 
   async onClose(): Promise<void> {
     this.unregisterFileWatcher();
+    if (this.toolbarResizeObserver) {
+      this.toolbarResizeObserver.disconnect();
+      this.toolbarResizeObserver = null;
+    }
     this.contentEl.empty();
   }
 
@@ -440,6 +445,24 @@ export class WrotView extends ItemView {
     this.textarea.addEventListener("click", updateActive);
     this.textarea.addEventListener("select", updateActive);
 
+    // Detect toolbar wrapping: compare first and last button offsetTop.
+    // offsetTop is unaffected by padding changes, so toggling the wrapped class
+    // will not feedback-loop through ResizeObserver.
+    const updateToolbarWrapped = () => {
+      const buttons = toolbar.querySelectorAll<HTMLElement>(".wr-toolbar-btn");
+      if (buttons.length < 2) return;
+      const first = buttons[0];
+      const last = buttons[buttons.length - 1];
+      const wrapped = last.offsetTop > first.offsetTop;
+      toolbar.toggleClass("wr-toolbar-wrapped", wrapped);
+    };
+    requestAnimationFrame(updateToolbarWrapped);
+    if (typeof ResizeObserver !== "undefined") {
+      this.toolbarResizeObserver = new ResizeObserver(() => {
+        requestAnimationFrame(updateToolbarWrapped);
+      });
+      this.toolbarResizeObserver.observe(toolbar);
+    }
   }
 
   async submitMemo(): Promise<void> {
