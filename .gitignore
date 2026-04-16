@@ -2,3 +2,4 @@ node_modules/
 .claude/
 .env
 data.json
+CLAUDE.md

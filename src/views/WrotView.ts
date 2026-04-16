@@ -589,7 +589,10 @@ export class WrotView extends ItemView {
     setIcon(copyBtn, "copy");
     copyBtn.addEventListener("click", async () => {
       await navigator.clipboard.writeText(memo.content);
-      const successColor = getComputedStyle(document.body).getPropertyValue("--text-accent").trim() || "#adc718";
+      const successColor =
+        rule?.accentColor && /^#[0-9a-fA-F]{6}$/.test(rule.accentColor)
+          ? rule.accentColor
+          : getComputedStyle(document.body).getPropertyValue("--text-accent").trim() || "#adc718";
       copyBtn.empty();
       copyBtn.classList.add("wr-copy-done");
       const checkSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
