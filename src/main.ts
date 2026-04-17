@@ -11,6 +11,7 @@ export default class WrotPlugin extends Plugin {
   ogpCache: OGPCache;
   private bgStyleEl: HTMLStyleElement | null = null;
   private tagRuleStyleEl: HTMLStyleElement | null = null;
+  private fontStyleEl: HTMLStyleElement | null = null;
 
   async onload(): Promise<void> {
     await this.loadSettings();
@@ -40,6 +41,7 @@ export default class WrotPlugin extends Plugin {
 
     this.addSettingTab(new WrotSettingTab(this.app, this));
 
+    this.applyFontFollow();
     this.applyBgColor();
     this.applyTagColorRules();
     this.registerEvent(
@@ -48,6 +50,35 @@ export default class WrotPlugin extends Plugin {
         this.applyTagColorRules();
       })
     );
+  }
+
+  applyFontFollow(): void {
+    if (this.fontStyleEl) {
+      this.fontStyleEl.remove();
+    }
+    this.fontStyleEl = document.createElement("style");
+    this.fontStyleEl.id = "wr-font-override";
+    document.head.appendChild(this.fontStyleEl);
+
+    if (this.settings.followObsidianFontSize) {
+      this.fontStyleEl.textContent = `
+        body {
+          --wr-font-text: var(--font-text-size);
+          --wr-font-ui-small: var(--font-ui-small);
+          --wr-font-ui-smaller: var(--font-ui-smaller);
+          --wr-font-date: min(var(--font-text-size), 24px);
+        }
+      `;
+    } else {
+      this.fontStyleEl.textContent = `
+        body {
+          --wr-font-text: 14px;
+          --wr-font-ui-small: 13px;
+          --wr-font-ui-smaller: 12px;
+          --wr-font-date: 14px;
+        }
+      `;
+    }
   }
 
   private validHex(hex: string, fallback: string): string {
@@ -548,6 +579,8 @@ export default class WrotPlugin extends Plugin {
     this.bgStyleEl = null;
     this.tagRuleStyleEl?.remove();
     this.tagRuleStyleEl = null;
+    this.fontStyleEl?.remove();
+    this.fontStyleEl = null;
   }
 
   async activateView(): Promise<void> {

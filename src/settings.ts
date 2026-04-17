@@ -22,6 +22,7 @@ export interface WrotSettings {
   checkStrikethrough: boolean;
   tagColorRulesEnabled: boolean;
   tagColorRules: TagColorRule[];
+  followObsidianFontSize: boolean;
 }
 
 export const DEFAULT_SETTINGS: WrotSettings = {
@@ -38,6 +39,7 @@ export const DEFAULT_SETTINGS: WrotSettings = {
   checkStrikethrough: false,
   tagColorRulesEnabled: false,
   tagColorRules: [],
+  followObsidianFontSize: false,
 };
 
 const SETTINGS_NARROW_THRESHOLD_PX = 600;
@@ -138,6 +140,19 @@ export class WrotSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             this.plugin.settings.viewPlacement = value as WrotSettings["viewPlacement"];
             await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName("Obsidianのフォントサイズに追従")
+      .setDesc("Obsidianの外観設定にWrotの文字サイズを合わせます。")
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.followObsidianFontSize)
+          .onChange(async (value) => {
+            this.plugin.settings.followObsidianFontSize = value;
+            await this.plugin.saveSettings();
+            this.plugin.applyFontFollow();
           })
       );
 
@@ -391,10 +406,23 @@ export class WrotSettingTab extends PluginSettingTab {
 
       if (!this.plugin.settings.tagColorRulesEnabled) return;
 
+      const isDarkTheme = (): boolean => document.body.classList.contains("theme-dark");
+      const getDefaultBg = (): string =>
+        isDarkTheme() ? this.plugin.settings.bgColorDark : this.plugin.settings.bgColorLight;
+      const getDefaultText = (): string =>
+        isDarkTheme() ? this.plugin.settings.textColorDark : this.plugin.settings.textColorLight;
+
+      const isLightDefaultBg = (v: string): boolean => v === DEFAULT_SETTINGS.bgColorLight;
+      const isLightDefaultText = (v: string): boolean => v === DEFAULT_SETTINGS.textColorLight;
+      const resolveRuleBg = (v: string): string =>
+        /^#[0-9a-fA-F]{6}$/.test(v) && !(isDarkTheme() && isLightDefaultBg(v)) ? v : getDefaultBg();
+      const resolveRuleText = (v: string): string =>
+        /^#[0-9a-fA-F]{6}$/.test(v) && !(isDarkTheme() && isLightDefaultText(v)) ? v : getDefaultText();
+
       const getDefaultAccent = (): string => {
         const raw = getComputedStyle(document.body).getPropertyValue("--text-accent").trim();
         if (/^#[0-9a-fA-F]{6}$/.test(raw)) return raw;
-        return DEFAULT_SETTINGS.textColorLight;
+        return getDefaultText();
       };
 
       const buildRuleGroup = (
@@ -441,7 +469,7 @@ export class WrotSettingTab extends PluginSettingTab {
           .setClass("wr-reverse-controls")
           .addColorPicker((picker) => {
             picker
-              .setValue(/^#[0-9a-fA-F]{6}$/.test(initial.bgColor) ? initial.bgColor : DEFAULT_SETTINGS.bgColorLight)
+              .setValue(resolveRuleBg(initial.bgColor))
               .onChange(async (v) => { await onBgChange(v); });
           });
 
@@ -451,7 +479,7 @@ export class WrotSettingTab extends PluginSettingTab {
           .setClass("wr-reverse-controls")
           .addColorPicker((picker) => {
             picker
-              .setValue(/^#[0-9a-fA-F]{6}$/.test(initial.textColor) ? initial.textColor : DEFAULT_SETTINGS.textColorLight)
+              .setValue(resolveRuleText(initial.textColor))
               .onChange(async (v) => { await onFgChange(v); });
           });
 
@@ -481,15 +509,17 @@ export class WrotSettingTab extends PluginSettingTab {
       const isEmpty = this.plugin.settings.tagColorRules.length === 0;
 
       if (isEmpty) {
+        const placeholderBg = getDefaultBg();
+        const placeholderText = getDefaultText();
         const placeholder: TagColorRule = {
           tag: "",
-          bgColor: DEFAULT_SETTINGS.bgColorLight,
-          textColor: DEFAULT_SETTINGS.textColorLight,
+          bgColor: placeholderBg,
+          textColor: placeholderText,
         };
         const promoteIfNeeded = async () => {
           const hasTag = placeholder.tag.trim() !== "";
-          const bgChanged = placeholder.bgColor !== DEFAULT_SETTINGS.bgColorLight;
-          const fgChanged = placeholder.textColor !== DEFAULT_SETTINGS.textColorLight;
+          const bgChanged = placeholder.bgColor !== placeholderBg;
+          const fgChanged = placeholder.textColor !== placeholderText;
           const accentChanged = placeholder.accentColor !== undefined;
           if (hasTag || bgChanged || fgChanged || accentChanged) {
             this.plugin.settings.tagColorRules.push({ ...placeholder });
@@ -523,8 +553,8 @@ export class WrotSettingTab extends PluginSettingTab {
                 kind: "reset" as const,
                 handler: async () => {
                   rule.tag = "";
-                  rule.bgColor = DEFAULT_SETTINGS.bgColorLight;
-                  rule.textColor = DEFAULT_SETTINGS.textColorLight;
+                  rule.bgColor = getDefaultBg();
+                  rule.textColor = getDefaultText();
                   delete rule.accentColor;
                   await this.plugin.saveSettings();
                   this.plugin.applyTagColorRules();
