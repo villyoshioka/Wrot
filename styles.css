@@ -1033,6 +1033,10 @@ div.block-language-wr pre {
   gap: 6px;
 }
 
+.is-mobile .wr-timestamp {
+  font-size: 0.75em;
+}
+
 .is-mobile .wr-list {
   gap: 10px;
   padding-bottom: 16px;
