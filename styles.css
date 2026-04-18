@@ -1033,8 +1033,28 @@ div.block-language-wr pre {
   gap: 6px;
 }
 
-.is-mobile .wr-timestamp {
-  font-size: 0.75em;
+body:not(.wr-font-follow).is-mobile .wr-today-btn {
+  font-size: 11px !important;
+}
+
+body:not(.wr-font-follow).is-mobile .wr-date-label {
+  font-size: 13px;
+}
+
+body:not(.wr-font-follow).is-mobile .wr-submit-btn {
+  font-size: 13px;
+}
+
+body:not(.wr-font-follow).is-mobile .wr-textarea {
+  font-size: 13px;
+}
+
+body:not(.wr-font-follow).is-mobile .wr-content {
+  font-size: 13px;
+}
+
+body:not(.wr-font-follow).is-mobile .wr-timestamp {
+  font-size: 10px;
 }
 
 .is-mobile .wr-list {

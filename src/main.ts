@@ -53,6 +53,7 @@ export default class WrotPlugin extends Plugin {
   }
 
   applyFontFollow(): void {
+    document.body.classList.toggle("wr-font-follow", this.settings.followObsidianFontSize);
     if (this.fontStyleEl) {
       this.fontStyleEl.remove();
     }
@@ -581,6 +582,7 @@ export default class WrotPlugin extends Plugin {
     this.tagRuleStyleEl = null;
     this.fontStyleEl?.remove();
     this.fontStyleEl = null;
+    document.body.classList.remove("wr-font-follow");
   }
 
   async activateView(): Promise<void> {
