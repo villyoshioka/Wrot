@@ -8,7 +8,9 @@ import {
 } from "@codemirror/view";
 import { RangeSetBuilder, StateEffect } from "@codemirror/state";
 import type { App } from "obsidian";
+import { MarkdownRenderer, loadPrism } from "obsidian";
 import type WrotPlugin from "./main";
+import { findBlockRanges, type BlockRange } from "./utils/blockSegmenter";
 
 // StateEffect to trigger re-decoration after OGP fetch completes
 const ogpFetched = StateEffect.define<null>();
@@ -182,6 +184,64 @@ class MathWidget extends WidgetType {
   eq(other: MathWidget): boolean { return this.tex === other.tex; }
 }
 
+class CodeBlockWidget extends WidgetType {
+  constructor(
+    private code: string,
+    private lang: string,
+    private app: App,
+    private plugin: WrotPlugin,
+    private ruleClass: string | null
+  ) { super(); }
+  toDOM(): HTMLElement {
+    const container = document.createElement("div");
+    container.className = "wr-codeblock-display wr-lp-codeblock wr-codeblock-line";
+    if (this.ruleClass) container.classList.add(this.ruleClass);
+
+    const pre = container.createEl("pre");
+    if (this.lang) pre.className = `language-${this.lang}`;
+    const codeEl = pre.createEl("code");
+    if (this.lang) codeEl.className = `language-${this.lang}`;
+    codeEl.textContent = this.code;
+
+    // Apply Prism syntax highlighting via Obsidian's public loadPrism() API.
+    // Obsidian's built-in Prism token colors (.token.keyword, etc.) are defined
+    // globally in app.css, so they apply to the widget DOM without extra work.
+    if (this.lang) {
+      loadPrism().then((Prism: any) => {
+        Prism.highlightElement(codeEl);
+      }).catch(() => { /* fall back to plain text */ });
+    }
+
+    return container;
+  }
+  eq(other: CodeBlockWidget): boolean {
+    return this.code === other.code && this.lang === other.lang && this.ruleClass === other.ruleClass;
+  }
+  ignoreEvent(): boolean { return false; }
+}
+
+class MathBlockWidget extends WidgetType {
+  constructor(private tex: string, private ruleClass: string | null) { super(); }
+  toDOM(): HTMLElement {
+    const container = document.createElement("div");
+    container.className = "wr-math-display wr-lp-mathblock wr-codeblock-line";
+    if (this.ruleClass) container.classList.add(this.ruleClass);
+    try {
+      const { renderMath, finishRenderMath } = require("obsidian");
+      const rendered = renderMath(this.tex, true);
+      container.appendChild(rendered);
+      finishRenderMath();
+    } catch {
+      container.textContent = this.tex;
+    }
+    return container;
+  }
+  eq(other: MathBlockWidget): boolean {
+    return this.tex === other.tex && this.ruleClass === other.ruleClass;
+  }
+  ignoreEvent(): boolean { return false; }
+}
+
 const IMAGE_EXT_RE = /\.(png|jpg|jpeg|gif|svg|webp|bmp)$/i;
 
 class EmbedImageWidget extends WidgetType {
@@ -278,6 +338,7 @@ interface WrBlock {
   endLn: number;
   urlTexts: string[];
   ruleClass: string | null;
+  innerBlocks: BlockRange[];
 }
 
 function findWrBlocks(view: EditorView, plugin: WrotPlugin | null): WrBlock[] {
@@ -299,9 +360,25 @@ function findWrBlocks(view: EditorView, plugin: WrotPlugin | null): WrBlock[] {
     }
     if (endLn === 0) continue;
 
+    // Extract inner body lines (between opening and closing fence) for block detection
+    const bodyLines: string[] = [];
+    for (let j = startLn + 1; j < endLn; j++) {
+      bodyLines.push(doc.line(j).text);
+    }
+    const innerBlocks = findBlockRanges(bodyLines);
+
+    // Mark doc-line indices that are inside a nested code/math block
+    const blockedDocLines = new Set<number>();
+    for (const br of innerBlocks) {
+      for (let k = br.startLine; k <= br.endLine; k++) {
+        blockedDocLines.add(startLn + 1 + k);
+      }
+    }
+
     const urlTexts: string[] = [];
     const tags: string[] = [];
     for (let j = startLn + 1; j < endLn; j++) {
+      if (blockedDocLines.has(j)) continue;
       const l = doc.line(j);
       const urlRegex = /(?:https?|obsidian):\/\/[^\s<>"'\]]+/g;
       let match;
@@ -323,7 +400,7 @@ function findWrBlocks(view: EditorView, plugin: WrotPlugin | null): WrBlock[] {
       }
     }
 
-    blocks.push({ startLn, endLn, urlTexts, ruleClass });
+    blocks.push({ startLn, endLn, urlTexts, ruleClass, innerBlocks });
     ln = endLn;
   }
 
@@ -335,6 +412,7 @@ function buildDecorations(
   ogpCache: OGPCache,
   blocks: WrBlock[],
   app: App,
+  plugin: WrotPlugin,
   checkStrikethrough: boolean
 ): DecorationSet {
   const builder = new RangeSetBuilder<Decoration>();
@@ -371,10 +449,86 @@ function buildDecorations(
       // Collect embed images for preview after closing fence
       const embedImages: { src: string; alt: string }[] = [];
 
+      // Map of doc line number -> inner block info (start line only gets the widget).
+      // Lines inside a block but not the start get a background class only (no widget).
+      const innerBlockStartByDocLine = new Map<number, { range: BlockRange; docStart: number; docEnd: number }>();
+      const innerBlockInsideDocLines = new Set<number>();
+      for (const br of block.innerBlocks) {
+        const docStart = block.startLn + 1 + br.startLine;
+        const docEnd = block.startLn + 1 + br.endLine;
+        innerBlockStartByDocLine.set(docStart, { range: br, docStart, docEnd });
+        for (let k = docStart; k <= docEnd; k++) {
+          innerBlockInsideDocLines.add(k);
+        }
+      }
+
       // Tags, URLs, and format marks with marker hiding
       for (let j = block.startLn + 1; j < block.endLn; j++) {
         const l = doc.line(j);
         const showRaw = isSourceMode || blockHasCursor;
+
+        // Handle nested fenced-code / display-math blocks
+        const innerStart = innerBlockStartByDocLine.get(j);
+
+        // While editing the outer memo, keep raw text visible for nested blocks too.
+        // Skip inline format/tag processing inside nested block range.
+        if (showRaw && innerBlockInsideDocLines.has(j)) {
+          builder.add(l.from, l.from, makeLineDeco(["wr-codeblock-line", block.ruleClass]));
+          continue;
+        }
+
+        if (innerStart && !showRaw) {
+          const { range, docStart, docEnd } = innerStart;
+
+          // Extract inner text lines (the fence-delimited body)
+          const innerBodyLines: string[] = [];
+          const bodyStart = docStart + 1;
+          const bodyEnd = docEnd - 1;
+          for (let k = bodyStart; k <= bodyEnd; k++) {
+            innerBodyLines.push(doc.line(k).text);
+          }
+          // Handle single-line math ($$x$$) or unclosed blocks (docStart === docEnd)
+          let widgetContent: string;
+          if (range.kind === "mathblock" && docStart === docEnd) {
+            const lineText = doc.line(docStart).text.trim();
+            const inner = lineText.startsWith("$$") && lineText.endsWith("$$") && lineText.length >= 4
+              ? lineText.slice(2, -2)
+              : lineText;
+            widgetContent = inner;
+          } else {
+            widgetContent = innerBodyLines.join("\n");
+          }
+
+          // Apply line bg to the start line only
+          builder.add(l.from, l.from, makeLineDeco(["wr-codeblock-line", block.ruleClass]));
+
+          // Replace the start-line text with the widget (inline replace is allowed
+          // from a ViewPlugin; block replace is not).
+          const startLine = doc.line(docStart);
+          const widget = range.kind === "codeblock"
+            ? Decoration.replace({ widget: new CodeBlockWidget(widgetContent, range.lang || "", app, plugin, block.ruleClass) })
+            : Decoration.replace({ widget: new MathBlockWidget(widgetContent, block.ruleClass) });
+          builder.add(startLine.from, startLine.to, widget);
+
+          // Hide each subsequent line by replacing its content with nothing and
+          // collapsing the line itself (hiddenLine deco hides the row).
+          for (let k = docStart + 1; k <= docEnd; k++) {
+            const kl = doc.line(k);
+            builder.add(kl.from, kl.from, hiddenLine);
+            if (kl.to > kl.from) {
+              builder.add(kl.from, kl.to, Decoration.replace({}));
+            }
+          }
+
+          // Advance outer loop past this block
+          j = docEnd;
+          continue;
+        }
+
+        // Inside an inner block but not the start — handled already at innerStart branch
+        if (innerBlockInsideDocLines.has(j)) {
+          continue;
+        }
 
         // Apply background color class (or combined blockquote+bg class) to this line
         const quotePrefix = l.text.startsWith("> ") ? 2 : l.text.startsWith(">") ? 1 : 0;
@@ -705,7 +859,7 @@ export function createWrEditorExtension(ogpCache: OGPCache, app: App, plugin: Wr
       constructor(view: EditorView) {
         this.currentView = view;
         this.blocks = findWrBlocks(view, plugin);
-        this.decorations = buildDecorations(view, ogpCache, this.blocks, app, getCheckStrikethrough());
+        this.decorations = buildDecorations(view, ogpCache, this.blocks, app, plugin, getCheckStrikethrough());
         // Trigger fetch after CM initialization is complete
         requestAnimationFrame(() => this.fetchMissing());
       }
@@ -721,7 +875,7 @@ export function createWrEditorExtension(ogpCache: OGPCache, app: App, plugin: Wr
 
         if (update.docChanged || update.viewportChanged || update.selectionSet || hasOgpEffect || hasTagRulesEffect) {
           this.blocks = findWrBlocks(update.view, plugin);
-          this.decorations = buildDecorations(update.view, ogpCache, this.blocks, app, getCheckStrikethrough());
+          this.decorations = buildDecorations(update.view, ogpCache, this.blocks, app, plugin, getCheckStrikethrough());
           if (!hasOgpEffect) {
             this.fetchMissing();
           }

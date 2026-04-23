@@ -493,6 +493,72 @@ code.wr-code-hidden {
   color: var(--text-accent) !important;
 }
 
+/* Display math block */
+.wr-math-display {
+  display: block;
+  margin: 0.5em 0;
+  overflow-x: auto;
+  text-align: center;
+}
+
+.wr-math-display mjx-container {
+  margin: 0 auto;
+}
+
+/* Fenced code block (Timeline / RV / LV) */
+.wr-codeblock-display {
+  margin: 0.5em 0;
+}
+
+/* Inherit outer memo background only (so tag-color rules flow through).
+   Text color / token color should follow Obsidian's Prism theme, so we do NOT
+   set `color` on pre/code here. */
+.wr-codeblock-display pre,
+.wr-codeblock-display pre code {
+  background: inherit !important;
+  background-color: inherit !important;
+}
+
+.wr-codeblock-display pre {
+  margin: 0 !important;
+  padding: 0.6em 0.8em !important;
+  border-radius: 6px;
+  overflow-x: auto;
+  border: none !important;
+}
+
+.wr-codeblock-display pre code {
+  font-family: var(--font-monospace);
+  font-size: 0.9em;
+  line-height: 1.5;
+  white-space: pre;
+}
+
+/* Inside Reading View, the outer wr code block hides its own code element;
+   our nested code-block display should not be hidden */
+.block-language-wr .wr-codeblock-display,
+.block-language-wr .wr-math-display {
+  display: block;
+}
+
+/* Live Preview: make widget occupy its own line cleanly */
+.wr-lp-codeblock,
+.wr-lp-mathblock {
+  display: block;
+  /* LV wraps the widget in a block replace; keep spacing identical to RV / Timeline */
+  margin: 0;
+  padding: 0;
+}
+
+/* Nested code blocks inside a Wrot memo should not show Obsidian's
+   auto-generated copy / flair buttons, since the outer memo already has its
+   own copy button in the footer. */
+.wr-codeblock-display .copy-code-button,
+.wr-codeblock-display .code-block-flair,
+.wr-codeblock-display .edit-block-button {
+  display: none !important;
+}
+
 /* Live Preview: obsidian:// URL line height fix */
 .wr-obsidian-url-line {
   height: auto !important;

@@ -1,4 +1,5 @@
 import type { OGPData, OGPCache } from "./ogpCache";
+import { segmentBlocks } from "./blockSegmenter";
 
 // --- Constants ---
 
@@ -90,10 +91,67 @@ export function renderTextWithTagsAndUrls(
     resolveImagePath?: (fileName: string) => string | null;
     resolveLinkTarget?: (linkName: string) => boolean;
     checkStrikethrough?: boolean;
+    renderCodeBlock?: (code: string, lang: string, container: HTMLElement, fenceTildes: number) => void;
+    renderMathBlock?: (tex: string, container: HTMLElement) => void;
   }
 ): ParsedUrl[] {
   const urls: ParsedUrl[] = [];
   const seen = new Set<string>();
+
+  const segments = segmentBlocks(text);
+
+  for (const segment of segments) {
+    if (segment.kind === "codeblock") {
+      const blockEl = container.createDiv({ cls: "wr-codeblock-display" });
+      if (callbacks.renderCodeBlock) {
+        callbacks.renderCodeBlock(segment.code, segment.lang, blockEl, segment.fenceTildes);
+      } else {
+        const pre = blockEl.createEl("pre");
+        const codeEl = pre.createEl("code");
+        if (segment.lang) codeEl.addClass(`language-${segment.lang}`);
+        codeEl.textContent = segment.code;
+      }
+      continue;
+    }
+
+    if (segment.kind === "mathblock") {
+      const blockEl = container.createDiv({ cls: "wr-math-display" });
+      if (callbacks.renderMathBlock) {
+        callbacks.renderMathBlock(segment.tex, blockEl);
+      } else {
+        try {
+          const { renderMath, finishRenderMath } = require("obsidian");
+          const rendered = renderMath(segment.tex, true);
+          blockEl.appendChild(rendered);
+          finishRenderMath();
+        } catch {
+          blockEl.textContent = segment.tex;
+        }
+      }
+      continue;
+    }
+
+    renderTextSegment(container, segment.text, segment.startLine, callbacks, urls, seen);
+  }
+
+  return urls;
+}
+
+function renderTextSegment(
+  container: HTMLElement,
+  text: string,
+  lineOffset: number,
+  callbacks: {
+    onTagClick?: (tag: string) => void;
+    onCheckToggle?: (lineIndex: number, checked: boolean) => void;
+    onInternalLinkClick?: (linkName: string) => void;
+    resolveImagePath?: (fileName: string) => string | null;
+    resolveLinkTarget?: (linkName: string) => boolean;
+    checkStrikethrough?: boolean;
+  },
+  urls: ParsedUrl[],
+  seen: Set<string>
+): void {
   const lines = text.split("\n");
 
   let currentList: HTMLElement | null = null;
@@ -129,7 +187,7 @@ export function renderTextWithTagsAndUrls(
         const checkbox = li.createEl("input", { attr: { type: "checkbox" } });
         if (checkMatch[1] === "x") checkbox.checked = true;
         if (callbacks.onCheckToggle) {
-          const lineIdx = i;
+          const lineIdx = lineOffset + i;
           const cb = callbacks.onCheckToggle;
           checkbox.addEventListener("click", () => {
             cb(lineIdx, checkbox.checked);
@@ -161,8 +219,6 @@ export function renderTextWithTagsAndUrls(
       renderInlineTokens(container, line, callbacks, urls, seen);
     }
   }
-
-  return urls;
 }
 
 const IMAGE_EXT_RE = /\.(png|jpg|jpeg|gif|svg|webp|bmp)$/i;

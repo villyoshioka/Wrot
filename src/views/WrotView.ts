@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, Notice, TFile, EventRef, setIcon, Menu, Scope, Platform, WorkspaceSidedock } from "obsidian";
+import { ItemView, WorkspaceLeaf, Notice, TFile, EventRef, setIcon, Menu, Scope, Platform, WorkspaceSidedock, MarkdownRenderer, renderMath, finishRenderMath } from "obsidian";
 import { VIEW_TYPE_WROT } from "../constants";
 import { parseMemos, Memo } from "../utils/memoParser";
 import { appendMemo, toggleCheckbox } from "../utils/memoWriter";
@@ -390,12 +390,20 @@ export class WrotView extends ItemView {
       const ta = this.textarea;
       const hasSelection = ta.selectionStart !== ta.selectionEnd;
       const menu = new Menu();
-      menu.addItem((item) => item.setTitle("コード").setIcon("code").onClick(() => this.toggleInlineWrap("`", "`")));
+      menu.addItem((item) => item.setTitle("コード").setIcon("code").onClick(() => {
+        const t = this.textarea;
+        if (t.selectionStart !== t.selectionEnd) {
+          this.wrapSelection("`", "`");
+        } else {
+          this.insertCodeBlock();
+        }
+      }));
       menu.addItem((item) => item.setTitle("数式").setIcon("sigma").onClick(() => {
-        if (this.textarea.selectionStart !== this.textarea.selectionEnd) {
+        const t = this.textarea;
+        if (t.selectionStart !== t.selectionEnd) {
           this.wrapSelection("$", "$");
         } else {
-          this.toggleInlineWrap("$", "$");
+          this.insertMathBlock();
         }
       }));
       menu.addItem((item) => item.setTitle("引用").setIcon("quote").onClick(() => this.toggleBlockPrefix("> ")));
@@ -572,6 +580,25 @@ export class WrotView extends ItemView {
       resolveLinkTarget: (linkName) => {
         return this.app.metadataCache.getFirstLinkpathDest(linkName, "") !== null;
       },
+      renderCodeBlock: (code, lang, blockEl, fenceTildes) => {
+        const fence = "~".repeat(Math.max(3, fenceTildes));
+        const source = (lang ? `${fence}${lang}\n` : `${fence}\n`) + code + `\n${fence}`;
+        MarkdownRenderer.render(this.app, source, blockEl, "", this).catch(() => {
+          const pre = blockEl.createEl("pre");
+          const codeEl = pre.createEl("code");
+          if (lang) codeEl.addClass(`language-${lang}`);
+          codeEl.textContent = code;
+        });
+      },
+      renderMathBlock: (tex, blockEl) => {
+        try {
+          const rendered = renderMath(tex, true);
+          blockEl.appendChild(rendered);
+          finishRenderMath();
+        } catch {
+          blockEl.textContent = tex;
+        }
+      },
     });
 
     // Rich previews (images, OGP cards, Twitter cards)
@@ -653,6 +680,60 @@ export class WrotView extends ItemView {
       ta.value = val.slice(0, lineStart) + prefix + val.slice(lineStart);
       ta.selectionStart = ta.selectionEnd = lineStart + prefix.length;
     }
+    ta.focus();
+    ta.dispatchEvent(new Event("input"));
+  }
+
+  private insertCodeBlock(): void {
+    const ta = this.textarea;
+    const pos = ta.selectionStart;
+    const val = ta.value;
+
+    const lineStart = val.lastIndexOf("\n", pos - 1) + 1;
+    const currentLineIsEmpty = val.slice(lineStart, pos).trim() === "" &&
+      (val.indexOf("\n", pos) === -1 || val.slice(pos, val.indexOf("\n", pos)).trim() === "");
+
+    let before = val.slice(0, lineStart);
+    let after = val.slice(lineStart);
+
+    if (!currentLineIsEmpty) {
+      const needsLeadingNewline = before.length > 0 && !before.endsWith("\n\n");
+      if (needsLeadingNewline) before += before.endsWith("\n") ? "\n" : "\n\n";
+      after = "\n" + after;
+    }
+
+    const insert = "~~~\n\n~~~";
+    const cursorOffset = before.length + 3; // after opening "~~~"
+
+    ta.value = before + insert + after;
+    ta.selectionStart = ta.selectionEnd = cursorOffset;
+    ta.focus();
+    ta.dispatchEvent(new Event("input"));
+  }
+
+  private insertMathBlock(): void {
+    const ta = this.textarea;
+    const pos = ta.selectionStart;
+    const val = ta.value;
+
+    const lineStart = val.lastIndexOf("\n", pos - 1) + 1;
+    const currentLineIsEmpty = val.slice(lineStart, pos).trim() === "" &&
+      (val.indexOf("\n", pos) === -1 || val.slice(pos, val.indexOf("\n", pos)).trim() === "");
+
+    let before = val.slice(0, lineStart);
+    let after = val.slice(lineStart);
+
+    if (!currentLineIsEmpty) {
+      const needsLeadingNewline = before.length > 0 && !before.endsWith("\n\n");
+      if (needsLeadingNewline) before += before.endsWith("\n") ? "\n" : "\n\n";
+      after = "\n" + after;
+    }
+
+    const insert = "$$\n\n$$";
+    const cursorOffset = before.length + 3; // after opening "$$\n"
+
+    ta.value = before + insert + after;
+    ta.selectionStart = ta.selectionEnd = cursorOffset;
     ta.focus();
     ta.dispatchEvent(new Event("input"));
   }

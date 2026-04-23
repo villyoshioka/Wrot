@@ -165,6 +165,43 @@ export default class WrotPlugin extends Plugin {
       body .wr-ordered-list li {
         color: ${textColor} !important;
       }
+      /* Restore Prism token colors inside nested code blocks.
+         The base color rule above uses !important so we need !important here too. */
+      body .wr-codeblock-display code[class*="language-"],
+      body .wr-codeblock-display pre[class*="language-"] {
+        color: var(--code-normal) !important;
+      }
+      body .wr-codeblock-display .token.comment,
+      body .wr-codeblock-display .token.prolog,
+      body .wr-codeblock-display .token.doctype,
+      body .wr-codeblock-display .token.cdata { color: var(--code-comment) !important; }
+      body .wr-codeblock-display .token.punctuation { color: var(--code-punctuation) !important; }
+      body .wr-codeblock-display .token.property,
+      body .wr-codeblock-display .token.tag,
+      body .wr-codeblock-display .token.boolean,
+      body .wr-codeblock-display .token.number,
+      body .wr-codeblock-display .token.constant,
+      body .wr-codeblock-display .token.symbol,
+      body .wr-codeblock-display .token.deleted { color: var(--code-tag) !important; }
+      body .wr-codeblock-display .token.selector,
+      body .wr-codeblock-display .token.attr-name,
+      body .wr-codeblock-display .token.string,
+      body .wr-codeblock-display .token.char,
+      body .wr-codeblock-display .token.builtin,
+      body .wr-codeblock-display .token.inserted { color: var(--code-string) !important; }
+      body .wr-codeblock-display .token.operator,
+      body .wr-codeblock-display .token.entity,
+      body .wr-codeblock-display .token.url,
+      body .wr-codeblock-display .language-css .token.string,
+      body .wr-codeblock-display .style .token.string { color: var(--code-operator) !important; }
+      body .wr-codeblock-display .token.atrule,
+      body .wr-codeblock-display .token.attr-value,
+      body .wr-codeblock-display .token.keyword { color: var(--code-keyword) !important; }
+      body .wr-codeblock-display .token.function,
+      body .wr-codeblock-display .token.class-name { color: var(--code-function) !important; }
+      body .wr-codeblock-display .token.regex,
+      body .wr-codeblock-display .token.important,
+      body .wr-codeblock-display .token.variable { color: var(--code-value) !important; }
       body .wr-nav-btn,
       body .wr-toolbar-btn,
       body .wr-copy-btn,
@@ -314,6 +351,8 @@ export default class WrotPlugin extends Plugin {
       body div.block-language-wr.${cls},
       body pre.${cls},
       body .cm-line.wr-codeblock-line.${cls},
+      body .wr-lp-codeblock.${cls},
+      body .wr-lp-mathblock.${cls},
       body .wr-flair-bg.${cls} {
         background: ${bg} !important;
         background-color: ${bg} !important;

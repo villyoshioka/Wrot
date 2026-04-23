@@ -1,6 +1,7 @@
-import { Plugin, TFile } from "obsidian";
+import { Plugin, TFile, MarkdownRenderer, renderMath, finishRenderMath } from "obsidian";
 import { extractUrls, renderUrlPreviews, isSafeUrl } from "./utils/urlRenderer";
 import { toggleCheckbox } from "./utils/memoWriter";
+import { segmentBlocks, type Segment } from "./utils/blockSegmenter";
 import type WrotPlugin from "./main";
 
 /**
@@ -50,7 +51,7 @@ function highlightAllWrBlocks(el: HTMLElement, plugin: WrotPlugin): void {
 
     // Already processed
     const hasProcessedInCode = code.querySelector(".wr-reading-tag, .wr-reading-url, .wr-internal-link, .wr-inline-code");
-    const hasProcessedInBlock = parentBlock?.querySelector(".wr-reading-list, .wr-blockquote, .wr-embed-img, .wr-plain-text");
+    const hasProcessedInBlock = parentBlock?.querySelector(".wr-reading-list, .wr-blockquote, .wr-embed-img, .wr-plain-text, .wr-codeblock-display, .wr-math-display");
     if (hasProcessedInCode || hasProcessedInBlock) return;
 
     processCodeBlock(codeEl, plugin);
@@ -393,9 +394,37 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
 
 }
 
+function renderCodeBlockFragment(segment: Extract<Segment, { kind: "codeblock" }>, plugin: WrotPlugin): HTMLElement {
+  const blockEl = document.createElement("div");
+  blockEl.className = "wr-codeblock-display";
+  const fence = "~".repeat(Math.max(3, segment.fenceTildes));
+  const source = (segment.lang ? `${fence}${segment.lang}\n` : `${fence}\n`) + segment.code + `\n${fence}`;
+  MarkdownRenderer.render(plugin.app, source, blockEl, "", plugin).catch(() => {
+    blockEl.empty();
+    const pre = blockEl.createEl("pre");
+    const codeEl = pre.createEl("code");
+    if (segment.lang) codeEl.addClass(`language-${segment.lang}`);
+    codeEl.textContent = segment.code;
+  });
+  return blockEl;
+}
+
+function renderMathBlockFragment(segment: Extract<Segment, { kind: "mathblock" }>): HTMLElement {
+  const blockEl = document.createElement("div");
+  blockEl.className = "wr-math-display";
+  try {
+    const rendered = renderMath(segment.tex, true);
+    blockEl.appendChild(rendered);
+    finishRenderMath();
+  } catch {
+    blockEl.textContent = segment.tex;
+  }
+  return blockEl;
+}
+
 function convertListLines(code: HTMLElement, plugin: WrotPlugin): void {
   const fullText = code.textContent || "";
-  const lines = fullText.split("\n");
+  const segments = segmentBlocks(fullText);
 
   const block = code.closest(".block-language-wr") || code.closest("pre");
   if (!block) return;
@@ -414,9 +443,34 @@ function convertListLines(code: HTMLElement, plugin: WrotPlugin): void {
     }
   };
 
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    const quoteMatch = line.match(/^> ?(.*)$/);
+  const flushList = () => {
+    if (currentListEl) {
+      fragments.push(currentListEl);
+      currentListEl = null;
+      currentListType = null;
+    }
+  };
+
+  for (const segment of segments) {
+    if (segment.kind === "codeblock") {
+      flushList();
+      flushPlain();
+      fragments.push(renderCodeBlockFragment(segment, plugin));
+      continue;
+    }
+    if (segment.kind === "mathblock") {
+      flushList();
+      flushPlain();
+      fragments.push(renderMathBlockFragment(segment));
+      continue;
+    }
+
+    const lines = segment.text.split("\n");
+    const lineOffset = segment.startLine;
+    for (let li2 = 0; li2 < lines.length; li2++) {
+      const i = lineOffset + li2;
+      const line = lines[li2];
+      const quoteMatch = line.match(/^> ?(.*)$/);
     const checkMatch = !quoteMatch && line.match(/^- \[([ x])\] (.*)$/);
     const listMatch = !quoteMatch && !checkMatch && line.match(/^- (.+)$/);
     const olMatch = !quoteMatch && !checkMatch && !listMatch && line.match(/^\d+\.\s?(.+)$/);
@@ -510,6 +564,7 @@ function convertListLines(code: HTMLElement, plugin: WrotPlugin): void {
       }
       plainLines.push(line);
     }
+  }
   }
   if (currentListEl) fragments.push(currentListEl);
   flushPlain();
