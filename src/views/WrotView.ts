@@ -5,6 +5,7 @@ import { appendMemo, toggleCheckbox } from "../utils/memoWriter";
 import { getOrCreateDailyNote, getDailyNoteFile } from "../utils/dailyNote";
 import { renderTextWithTagsAndUrls, renderUrlPreviews } from "../utils/urlRenderer";
 import type WrotPlugin from "../main";
+import type { PinEntry } from "../settings";
 
 declare const moment: typeof import("moment");
 
@@ -24,6 +25,8 @@ export class WrotView extends ItemView {
   private refreshing = false;
   private isCollapsed = false;
   private toolbarResizeObserver: ResizeObserver | null = null;
+  private currentMenu: Menu | null = null;
+  private currentMenuTrigger: HTMLElement | null = null;
 
   constructor(leaf: WorkspaceLeaf, plugin: WrotPlugin) {
     super(leaf);
@@ -384,55 +387,53 @@ export class WrotView extends ItemView {
     });
     // Format menu button (3-dot)
     const formatBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn wr-format-btn" });
-    setIcon(formatBtn, "more-horizontal");
+    setIcon(formatBtn, "ellipsis");
     formatBtn.addEventListener("mousedown", (e) => e.preventDefault());
     formatBtn.addEventListener("click", (e) => {
       const ta = this.textarea;
       const hasSelection = ta.selectionStart !== ta.selectionEnd;
-      const menu = new Menu();
-      menu.addItem((item) => item.setTitle("コード").setIcon("code").onClick(() => {
-        const t = this.textarea;
-        if (t.selectionStart !== t.selectionEnd) {
-          this.wrapSelection("`", "`");
-        } else {
-          this.insertCodeBlock();
-        }
-      }));
-      menu.addItem((item) => item.setTitle("数式").setIcon("sigma").onClick(() => {
-        const t = this.textarea;
-        if (t.selectionStart !== t.selectionEnd) {
-          this.wrapSelection("$", "$");
-        } else {
-          this.insertMathBlock();
-        }
-      }));
-      menu.addItem((item) => item.setTitle("引用").setIcon("quote").onClick(() => this.toggleBlockPrefix("> ")));
-      menu.addSeparator();
-      menu.addItem((item) => {
-        item.setTitle("リンク").setIcon("link").onClick(() => this.insertMarkdownLink());
-        if (!hasSelection) item.setDisabled(true);
-      });
-      menu.addItem((item) => {
-        item.setTitle("取り消し線").setIcon("strikethrough").onClick(() => this.wrapSelection("~~", "~~"));
-        if (!hasSelection) item.setDisabled(true);
-      });
-      menu.addItem((item) => {
-        item.setTitle("ハイライト").setIcon("highlighter").onClick(() => this.wrapSelection("==", "=="));
-        if (!hasSelection) item.setDisabled(true);
-      });
-      menu.addSeparator();
-      menu.addItem((item) => {
-        item.setTitle("設定").setIcon("settings").onClick(() => {
-          const settingApi = (this.app as any).setting;
-          if (settingApi?.open && settingApi?.openTabById) {
-            settingApi.open();
-            settingApi.openTabById("wrot");
+      this.openMenu(formatBtn, (menu) => {
+        menu.addItem((item) => item.setTitle("コード").setIcon("code").onClick(() => {
+          const t = this.textarea;
+          if (t.selectionStart !== t.selectionEnd) {
+            this.wrapSelection("`", "`");
+          } else {
+            this.insertCodeBlock();
           }
+        }));
+        menu.addItem((item) => item.setTitle("数式").setIcon("sigma").onClick(() => {
+          const t = this.textarea;
+          if (t.selectionStart !== t.selectionEnd) {
+            this.wrapSelection("$", "$");
+          } else {
+            this.insertMathBlock();
+          }
+        }));
+        menu.addItem((item) => item.setTitle("引用").setIcon("quote").onClick(() => this.toggleBlockPrefix("> ")));
+        menu.addSeparator();
+        menu.addItem((item) => {
+          item.setTitle("リンク").setIcon("link").onClick(() => this.insertMarkdownLink());
+          if (!hasSelection) item.setDisabled(true);
         });
-      });
-      const menuDom = (menu as any).dom as HTMLElement | undefined;
-      menuDom?.classList.add("wr-menu");
-      menu.showAtMouseEvent(e as MouseEvent);
+        menu.addItem((item) => {
+          item.setTitle("取り消し線").setIcon("strikethrough").onClick(() => this.wrapSelection("~~", "~~"));
+          if (!hasSelection) item.setDisabled(true);
+        });
+        menu.addItem((item) => {
+          item.setTitle("ハイライト").setIcon("highlighter").onClick(() => this.wrapSelection("==", "=="));
+          if (!hasSelection) item.setDisabled(true);
+        });
+        menu.addSeparator();
+        menu.addItem((item) => {
+          item.setTitle("設定").setIcon("settings").onClick(() => {
+            const settingApi = (this.app as any).setting;
+            if (settingApi?.open && settingApi?.openTabById) {
+              settingApi.open();
+              settingApi.openTabById("wrot");
+            }
+          });
+        });
+      }, e as MouseEvent);
     });
 
     // Update submit button state
@@ -514,6 +515,14 @@ export class WrotView extends ItemView {
       // Clear list
       this.listContainer.empty();
 
+      // Resolve and render pinned memos first (independent of the current date).
+      // This runs before the per-date section so pins sit at the top of the timeline.
+      const pinnedResolved = await this.resolvePinnedMemos();
+      const pinnedTimestamps = new Set(pinnedResolved.map((p) => p.memo.time));
+      for (const { memo, filePath } of pinnedResolved) {
+        this.renderMemoCard(memo, { pinned: true, filePath });
+      }
+
       // Get daily note file (don't create if it doesn't exist)
       const file = getDailyNoteFile(
         this.app,
@@ -521,10 +530,12 @@ export class WrotView extends ItemView {
       );
 
       if (!file) {
-        this.listContainer.createDiv({
-          cls: "wr-empty",
-          text: "\u30e1\u30e2\u306f\u3042\u308a\u307e\u305b\u3093",
-        });
+        if (pinnedResolved.length === 0) {
+          this.listContainer.createDiv({
+            cls: "wr-empty",
+            text: "\u30e1\u30e2\u306f\u3042\u308a\u307e\u305b\u3093",
+          });
+        }
         return;
       }
 
@@ -532,23 +543,130 @@ export class WrotView extends ItemView {
       const memos = parseMemos(content);
 
       if (memos.length === 0) {
-        this.listContainer.createDiv({
-          cls: "wr-empty",
-          text: "\u30e1\u30e2\u306f\u3042\u308a\u307e\u305b\u3093",
-        });
+        if (pinnedResolved.length === 0) {
+          this.listContainer.createDiv({
+            cls: "wr-empty",
+            text: "\u30e1\u30e2\u306f\u3042\u308a\u307e\u305b\u3093",
+          });
+        }
         return;
       }
 
       for (const memo of memos) {
-        this.renderMemoCard(memo);
+        // Skip memos that are already rendered in the pinned area (same day view only).
+        if (pinnedTimestamps.has(memo.time)) continue;
+        this.renderMemoCard(memo, { pinned: false, filePath: file.path });
       }
     } finally {
       this.refreshing = false;
     }
   }
 
-  private renderMemoCard(memo: Memo): void {
+  /**
+   * Look up every pin in plugin settings, read the referenced daily note, and
+   * return the resolved Memo plus its file path. Pins whose memo no longer
+   * exists are silently skipped (display only \u2014 no settings mutation here;
+   * orphan cleanup happens on pin add/remove operations).
+   *
+   * Order of the result follows the order in `settings.pins` (most recently
+   * pinned first).
+   */
+  private async resolvePinnedMemos(): Promise<{ memo: Memo; filePath: string }[]> {
+    const pins = this.plugin.settings.pins;
+    if (!pins || pins.length === 0) return [];
+
+    const resolved: { memo: Memo; filePath: string }[] = [];
+    const seenFiles = new Map<string, Memo[] | null>();
+
+    for (const pin of pins) {
+      let memos = seenFiles.get(pin.file);
+      if (memos === undefined) {
+        const file = this.app.vault.getAbstractFileByPath(pin.file);
+        if (!(file instanceof TFile)) {
+          seenFiles.set(pin.file, null);
+          continue;
+        }
+        const content = await this.app.vault.cachedRead(file);
+        memos = parseMemos(content);
+        seenFiles.set(pin.file, memos);
+      }
+      if (!memos) continue;
+      const memo = memos.find((m) => m.time === pin.timestamp);
+      if (memo) {
+        resolved.push({ memo, filePath: pin.file });
+      }
+    }
+
+    return resolved;
+  }
+
+  private isPinned(memo: Memo): boolean {
+    return this.plugin.settings.pins.some((p) => p.timestamp === memo.time);
+  }
+
+  /**
+   * Remove any pin entries whose underlying memo no longer exists in the
+   * referenced daily note. Called on pin add/remove operations so the stored
+   * list stays accurate without relying on a startup full-vault scan.
+   */
+  private async cleanupOrphanPins(): Promise<boolean> {
+    const pins = this.plugin.settings.pins;
+    if (pins.length === 0) return false;
+
+    const cache = new Map<string, Memo[] | null>();
+    const surviving: PinEntry[] = [];
+    for (const pin of pins) {
+      let memos = cache.get(pin.file);
+      if (memos === undefined) {
+        const file = this.app.vault.getAbstractFileByPath(pin.file);
+        if (!(file instanceof TFile)) {
+          cache.set(pin.file, null);
+          continue;
+        }
+        const content = await this.app.vault.cachedRead(file);
+        memos = parseMemos(content);
+        cache.set(pin.file, memos);
+      }
+      if (!memos) continue;
+      if (memos.some((m) => m.time === pin.timestamp)) {
+        surviving.push(pin);
+      }
+    }
+
+    if (surviving.length === pins.length) return false;
+    this.plugin.settings.pins = surviving;
+    await this.plugin.saveSettings();
+    return true;
+  }
+
+  private async addPin(memo: Memo, filePath: string): Promise<void> {
+    await this.cleanupOrphanPins();
+    const limit = this.plugin.settings.pinLimit;
+    if (this.plugin.settings.pins.length >= limit) return;
+    if (this.isPinned(memo)) return;
+    this.plugin.settings.pins = [
+      { timestamp: memo.time, file: filePath },
+      ...this.plugin.settings.pins,
+    ];
+    await this.plugin.saveSettings();
+    await this.refresh();
+  }
+
+  private async removePin(memo: Memo): Promise<void> {
+    const before = this.plugin.settings.pins.length;
+    this.plugin.settings.pins = this.plugin.settings.pins.filter(
+      (p) => p.timestamp !== memo.time
+    );
+    if (this.plugin.settings.pins.length !== before) {
+      await this.plugin.saveSettings();
+    }
+    await this.cleanupOrphanPins();
+    await this.refresh();
+  }
+
+  private renderMemoCard(memo: Memo, options: { pinned: boolean; filePath: string }): void {
     const card = this.listContainer.createDiv({ cls: "wr-card" });
+    if (options.pinned) card.classList.add("wr-card-pinned");
     const rule = this.plugin.findTagColorRule(memo.tags);
     if (rule) {
       const idx = this.plugin.settings.tagColorRules.indexOf(rule);
@@ -607,42 +725,71 @@ export class WrotView extends ItemView {
       renderUrlPreviews(mediaEl, urls, this.plugin.ogpCache);
     }
 
-    // Footer: timestamp + copy
+    // Footer: timestamp [3-dot menu]
+    // The pin indicator is rendered separately (absolute-positioned to the
+    // card's bottom-right corner) so pin/unpin doesn't affect the 3-dot
+    // button's position or tap area.
     const footer = card.createDiv({ cls: "wr-card-footer" });
+
     const fmt = this.plugin.settings.timestampFormat || "YYYY/MM/DD HH:mm:ss";
     const formatted = moment(memo.time).format(fmt);
     footer.createEl("span", { cls: "wr-timestamp", text: formatted });
-    const copyBtn = footer.createEl("span", { cls: "wr-copy-btn" });
-    setIcon(copyBtn, "copy");
-    copyBtn.addEventListener("click", async () => {
-      await navigator.clipboard.writeText(memo.content);
-      const successColor =
-        rule?.accentColor && /^#[0-9a-fA-F]{6}$/.test(rule.accentColor)
-          ? rule.accentColor
-          : getComputedStyle(document.body).getPropertyValue("--text-accent").trim() || "#adc718";
-      copyBtn.empty();
-      copyBtn.classList.add("wr-copy-done");
-      const checkSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      checkSvg.setAttribute("width", "11");
-      checkSvg.setAttribute("height", "11");
-      checkSvg.setAttribute("viewBox", "0 0 24 24");
-      checkSvg.setAttribute("fill", "none");
-      checkSvg.setAttribute("stroke", successColor);
-      checkSvg.setAttribute("stroke-width", "2");
-      checkSvg.setAttribute("stroke-linecap", "round");
-      checkSvg.setAttribute("stroke-linejoin", "round");
-      const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
-      polyline.setAttribute("points", "20 6 9 17 4 12");
-      polyline.setAttribute("stroke", successColor);
-      checkSvg.appendChild(polyline);
-      copyBtn.appendChild(checkSvg);
-      setTimeout(() => {
-        copyBtn.classList.remove("wr-copy-done");
-        copyBtn.empty();
-        setIcon(copyBtn, "copy");
-      }, 1500);
+
+    const menuBtn = footer.createEl("span", { cls: "wr-menu-btn" });
+    setIcon(menuBtn, "ellipsis");
+    menuBtn.addEventListener("click", async (e) => {
+      // Clean up any pins whose memo body has been deleted from the daily note
+      // before reading the pin count for limit evaluation. Without this, a
+      // user-deleted memo would still occupy a slot toward the limit and the
+      // "ピン留め" entry would stay grayed out until the user pinned or
+      // unpinned something.
+      await this.cleanupOrphanPins();
+      const pinned = this.isPinned(memo);
+      const pinLimit = this.plugin.settings.pinLimit;
+      const limitReached = !pinned && this.plugin.settings.pins.length >= pinLimit;
+      this.openMenu(menuBtn, (menu) => {
+        menu.addItem((item) =>
+          item.setTitle("コピー").setIcon("copy").onClick(async () => {
+            await navigator.clipboard.writeText(memo.content);
+          })
+        );
+        if (pinned) {
+          menu.addItem((item) =>
+            item.setTitle("ピンを外す").setIcon("pin-off").onClick(async () => {
+              await this.removePin(memo);
+            })
+          );
+        } else {
+          menu.addItem((item) => {
+            item.setTitle("ピン留め").setIcon("pin").onClick(async () => {
+              if (limitReached) return;
+              await this.addPin(memo, options.filePath);
+            });
+            if (limitReached) item.setDisabled(true);
+          });
+          if (limitReached) {
+            menu.addItem((item) => {
+              item
+                .setTitle(`ピン留めは${pinLimit}件までです。`)
+                .setDisabled(true);
+              const itemDom = (item as any).dom as HTMLElement | undefined;
+              itemDom?.classList.add("wr-menu-hint", "is-label");
+            });
+          }
+        }
+      }, e as MouseEvent);
     });
+
+    // Pin indicator lives outside the footer so its presence/absence doesn't
+    // affect the footer layout or the 3-dot button's tap area. Rendered only
+    // when the memo is pinned, absolute-positioned to the card's right edge
+    // at the same vertical level as the footer.
+    if (options.pinned) {
+      const pinIndicator = card.createEl("span", { cls: "wr-pin-indicator" });
+      setIcon(pinIndicator, "pin");
+    }
   }
+
 
   private insertAtLineStart(prefix: string): void {
     const ta = this.textarea;
@@ -968,6 +1115,38 @@ export class WrotView extends ItemView {
     ta.selectionStart = ta.selectionEnd = cursorPos;
     ta.focus();
     ta.dispatchEvent(new Event("input"));
+  }
+
+  /**
+   * Open a Wrot menu with unified behavior: at most one menu open at a time,
+   * and the trigger button receives `wr-toolbar-active` while the menu is open.
+   * Both investments (exclusivity and active color) are tied to the Menu's
+   * onHide callback so they clean up regardless of how the menu closes.
+   */
+  openMenu(trigger: HTMLElement, buildMenu: (m: Menu) => void, evt: MouseEvent): void {
+    if (this.currentMenu) {
+      this.currentMenu.hide();
+    }
+
+    const menu = new Menu();
+    buildMenu(menu);
+
+    const menuDom = (menu as any).dom as HTMLElement | undefined;
+    menuDom?.classList.add("wr-menu");
+
+    trigger.toggleClass("wr-toolbar-active", true);
+    this.currentMenu = menu;
+    this.currentMenuTrigger = trigger;
+
+    menu.onHide(() => {
+      trigger.toggleClass("wr-toolbar-active", false);
+      if (this.currentMenu === menu) {
+        this.currentMenu = null;
+        this.currentMenuTrigger = null;
+      }
+    });
+
+    menu.showAtMouseEvent(evt);
   }
 
 }

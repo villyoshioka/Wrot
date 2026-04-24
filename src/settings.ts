@@ -8,6 +8,13 @@ export interface TagColorRule {
   accentColor?: string;
 }
 
+export interface PinEntry {
+  timestamp: string;
+  file: string;
+}
+
+export type PinLimit = 1 | 3 | 5;
+
 export interface WrotSettings {
   viewPlacement: "left" | "right" | "main";
   timestampFormat: string;
@@ -23,6 +30,8 @@ export interface WrotSettings {
   tagColorRulesEnabled: boolean;
   tagColorRules: TagColorRule[];
   followObsidianFontSize: boolean;
+  pins: PinEntry[];
+  pinLimit: PinLimit;
 }
 
 export const DEFAULT_SETTINGS: WrotSettings = {
@@ -40,6 +49,8 @@ export const DEFAULT_SETTINGS: WrotSettings = {
   tagColorRulesEnabled: false,
   tagColorRules: [],
   followObsidianFontSize: false,
+  pins: [],
+  pinLimit: 3,
 };
 
 const SETTINGS_NARROW_THRESHOLD_PX = 600;
@@ -353,6 +364,26 @@ export class WrotSettingTab extends PluginSettingTab {
           placeholderText.setValue(DEFAULT_SETTINGS.inputPlaceholder);
           this.plugin.updateInputPlaceholder();
         })
+      );
+
+    new Setting(containerEl)
+      .setName("ピン留めの上限")
+      .setDesc("タイムライン先頭に固定できるメモの最大件数。")
+      .addDropdown((dropdown) =>
+        dropdown
+          .addOption("1", "1 件")
+          .addOption("3", "3 件")
+          .addOption("5", "5 件")
+          .setValue(String(this.plugin.settings.pinLimit))
+          .onChange(async (value) => {
+            const limit = Number(value) as PinLimit;
+            this.plugin.settings.pinLimit = limit;
+            if (this.plugin.settings.pins.length > limit) {
+              this.plugin.settings.pins = this.plugin.settings.pins.slice(0, limit);
+            }
+            await this.plugin.saveSettings();
+            this.plugin.refreshViews();
+          })
       );
 
     new Setting(containerEl)

@@ -206,6 +206,10 @@ export default class WrotPlugin extends Plugin {
       body .wr-toolbar-btn,
       body .wr-copy-btn,
       body .wr-copy-btn .svg-icon,
+      body .wr-menu-btn,
+      body .wr-menu-btn .svg-icon,
+      body .wr-pin-indicator,
+      body .wr-pin-indicator .svg-icon,
       body .wr-timestamp,
       body .wr-submit-btn,
       body .wr-empty,
@@ -383,6 +387,10 @@ export default class WrotPlugin extends Plugin {
       body .wr-card.${cls} .wr-timestamp,
       body .wr-card.${cls} .wr-copy-btn,
       body .wr-card.${cls} .wr-copy-btn .svg-icon,
+      body .wr-card.${cls} .wr-menu-btn,
+      body .wr-card.${cls} .wr-menu-btn .svg-icon,
+      body .wr-card.${cls} .wr-pin-indicator,
+      body .wr-card.${cls} .wr-pin-indicator .svg-icon,
       body .wr-card.${cls} .wr-blockquote,
       body .wr-card.${cls} .wr-blockquote-wrap,
       body .wr-card.${cls} .wr-bullet-list > li:not(.wr-check-item)::before,
@@ -419,7 +427,9 @@ export default class WrotPlugin extends Plugin {
       body pre.${cls} .wr-blockquote {
         border-left-color: ${muted} !important;
       }
-      body .wr-card.${cls} .wr-copy-btn .svg-icon {
+      body .wr-card.${cls} .wr-copy-btn .svg-icon,
+      body .wr-card.${cls} .wr-menu-btn .svg-icon,
+      body .wr-card.${cls} .wr-pin-indicator .svg-icon {
         stroke: ${muted} !important;
       }
       body .wr-card.${cls} .wr-copy-btn.wr-copy-done .svg-icon {
@@ -445,6 +455,10 @@ export default class WrotPlugin extends Plugin {
       body .cm-line.wr-codeblock-line.${cls} .wr-internal-link,
       body .cm-line.wr-codeblock-line.${cls} .wr-url {
         color: ${accent} !important;
+      }
+      body .wr-card.${cls} .wr-menu-btn.wr-toolbar-active .svg-icon {
+        color: ${accent} !important;
+        stroke: ${accent} !important;
       }
       ` : ""}
 

@@ -715,6 +715,75 @@ pre > .wr-blockquote {
   stroke: var(--text-accent) !important;
 }
 
+/* Per-memo 3-dot menu button (replaces the old copy-only button). */
+.wr-menu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  color: var(--text-muted);
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  position: relative;
+}
+
+/* Invisible hit-area expansion so the icon is easier to tap on mobile
+   without growing the visible button or shifting the card layout. */
+.wr-menu-btn::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
+}
+
+.wr-menu-btn:hover {
+  color: var(--text-normal);
+}
+
+.wr-menu-btn .svg-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--text-muted);
+  stroke: var(--text-muted);
+}
+
+.wr-menu-btn.wr-toolbar-active .svg-icon {
+  color: var(--text-accent) !important;
+  stroke: var(--text-accent) !important;
+}
+
+/* Pin indicator lives outside the footer and is absolute-positioned to
+   the card's bottom-right corner, at the same vertical level as the
+   footer. Rendered only when the memo is pinned — no slot reserved
+   otherwise, since the indicator does not affect the footer layout. */
+.wr-pin-indicator {
+  position: absolute;
+  right: 14px;
+  bottom: 12px;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.wr-pin-indicator .svg-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--text-muted);
+  stroke: var(--text-muted);
+}
+
+/* Menu hint line used when the pin-limit is reached. Renders as an
+   inert sub-label under the disabled "ピン留め" item. */
+.wr-menu .menu-item.wr-menu-hint {
+  font-size: var(--wr-font-ui-smaller);
+  opacity: 0.75;
+  cursor: default;
+  padding-top: 0;
+}
+
 /* ========================================
    Reading View & Live Preview - qm code block card
    ======================================== */
