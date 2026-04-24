@@ -748,6 +748,12 @@ pre > .wr-blockquote {
   stroke: var(--text-muted);
 }
 
+/* Follow Obsidian's UI font size when enabled, keep the 14px baseline otherwise. */
+body.wr-font-follow .wr-menu-btn .svg-icon {
+  width: var(--wr-font-ui-small);
+  height: var(--wr-font-ui-small);
+}
+
 .wr-menu-btn.wr-toolbar-active .svg-icon {
   color: var(--text-accent) !important;
   stroke: var(--text-accent) !important;
@@ -773,6 +779,11 @@ pre > .wr-blockquote {
   height: 14px;
   color: var(--text-muted);
   stroke: var(--text-muted);
+}
+
+body.wr-font-follow .wr-pin-indicator .svg-icon {
+  width: var(--wr-font-ui-small);
+  height: var(--wr-font-ui-small);
 }
 
 /* Menu hint line used when the pin-limit is reached. Renders as an

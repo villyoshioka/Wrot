@@ -368,7 +368,7 @@ export class WrotSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("ピン留めの上限")
-      .setDesc("タイムライン先頭に固定できるメモの最大件数。")
+      .setDesc("タイムラインに固定できるメモの最大件数。")
       .addDropdown((dropdown) =>
         dropdown
           .addOption("1", "1 件")
