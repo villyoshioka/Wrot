@@ -720,9 +720,18 @@ export class WrotView extends ItemView {
     });
 
     // Rich previews (images, OGP cards, Twitter cards)
-    if (urls.length > 0) {
+    // Drop obsidian:// URLs that aren't image embeds — they don't produce
+    // OGP cards or any media output, so leaving them in would render an
+    // empty wr-media-area block.
+    const previewUrls = urls.filter(
+      (pu) => pu.type === "image" || !pu.url.startsWith("obsidian://")
+    );
+    if (previewUrls.length > 0) {
       const mediaEl = card.createDiv({ cls: "wr-media-area" });
-      renderUrlPreviews(mediaEl, urls, this.plugin.ogpCache);
+      renderUrlPreviews(mediaEl, previewUrls, this.plugin.ogpCache, (fileName) => {
+        const file = this.app.metadataCache.getFirstLinkpathDest(fileName, "");
+        return file ? this.app.vault.getResourcePath(file) : null;
+      });
     }
 
     // Footer: timestamp [3-dot menu]

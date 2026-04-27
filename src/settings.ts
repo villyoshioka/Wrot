@@ -141,7 +141,7 @@ export class WrotSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("表示位置")
-      .setDesc("Wrotパネルの表示位置")
+      .setDesc("Wrotパネルの表示位置を選びます。")
       .addDropdown((dropdown) =>
         dropdown
           .addOption("left", "左サイドバー")
@@ -170,7 +170,7 @@ export class WrotSettingTab extends PluginSettingTab {
     let tsText: TextComponent;
     new Setting(containerEl)
       .setName("タイムスタンプ表示形式")
-      .setDesc("メモカードの日時フォーマット（YYYY, MM, DD, HH, mm, ss が使えます）")
+      .setDesc("投稿の日時フォーマットを指定します。（YYYY, MM, DD, HH, mm, ss が使えます）")
       .addText((text) => {
         tsText = text;
         text
@@ -194,7 +194,7 @@ export class WrotSettingTab extends PluginSettingTab {
     let lightPicker: ColorComponent;
     new Setting(containerEl)
       .setName("背景色（ライトモード）")
-      .setDesc("カード・入力エリアの背景色（ライトテーマ）")
+      .setDesc("ライトテーマでの投稿・投稿フォームの背景色を設定します。")
       .setClass("wr-reverse-controls")
       .addColorPicker((picker) => {
         lightPicker = picker;
@@ -218,7 +218,7 @@ export class WrotSettingTab extends PluginSettingTab {
     let textLightPicker: ColorComponent;
     new Setting(containerEl)
       .setName("文字色（ライトモード）")
-      .setDesc("テキスト・アイコンの色（ライトテーマ）")
+      .setDesc("ライトテーマでのテキスト・アイコンの色を設定します。")
       .setClass("wr-reverse-controls")
       .addColorPicker((picker) => {
         textLightPicker = picker;
@@ -242,7 +242,7 @@ export class WrotSettingTab extends PluginSettingTab {
     let darkPicker: ColorComponent;
     new Setting(containerEl)
       .setName("背景色（ダークモード）")
-      .setDesc("カード・入力エリアの背景色（ダークテーマ）")
+      .setDesc("ダークテーマでの投稿・投稿フォームの背景色を設定します。")
       .setClass("wr-reverse-controls")
       .addColorPicker((picker) => {
         darkPicker = picker;
@@ -266,7 +266,7 @@ export class WrotSettingTab extends PluginSettingTab {
     let textDarkPicker: ColorComponent;
     new Setting(containerEl)
       .setName("文字色（ダークモード）")
-      .setDesc("テキスト・アイコンの色（ダークテーマ）")
+      .setDesc("ダークテーマでのテキスト・アイコンの色を設定します。")
       .setClass("wr-reverse-controls")
       .addColorPicker((picker) => {
         textDarkPicker = picker;
@@ -292,7 +292,7 @@ export class WrotSettingTab extends PluginSettingTab {
     let submitText: TextComponent;
     new Setting(containerEl)
       .setName("投稿ボタンのテキスト")
-      .setDesc("投稿ボタンに表示するテキスト")
+      .setDesc("投稿ボタンに表示するテキストを変更できます。")
       .addText((text) => {
         submitText = text;
         text
@@ -344,8 +344,8 @@ export class WrotSettingTab extends PluginSettingTab {
 
     let placeholderText: TextComponent;
     new Setting(containerEl)
-      .setName("入力欄の空欄メッセージ")
-      .setDesc("メモ入力欄が空の時に表示されるテキストを変更できます。空欄にすると非表示になります。")
+      .setName("投稿フォームの空欄メッセージ")
+      .setDesc("投稿フォームが空の時に表示されるテキストを変更できます。空欄にすると非表示になります。")
       .addText((text) => {
         placeholderText = text;
         text
@@ -368,7 +368,7 @@ export class WrotSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("ピン留めの上限")
-      .setDesc("タイムラインに固定できるメモの最大件数。")
+      .setDesc("タイムラインに固定できるメモの最大件数を設定します。")
       .addDropdown((dropdown) =>
         dropdown
           .addOption("1", "1 件")
@@ -388,7 +388,7 @@ export class WrotSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("URLプレビュー")
-      .setDesc("メモ内のURLからOGP情報を自動取得して表示する（オフにすると外部通信しません）")
+      .setDesc("メモ内のURLからOGP情報を自動取得して表示します。オフにすると外部通信を行いません。")
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.enableOgpFetch)
@@ -400,7 +400,7 @@ export class WrotSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("チェック済みの取り消し線")
-      .setDesc("チェックボックスがONの項目に取り消し線を表示する")
+      .setDesc("チェックボックスがONの項目に取り消し線を表示します。")
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.checkStrikethrough)
@@ -415,7 +415,7 @@ export class WrotSettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName("タグ別に色を変える")
       .setDesc(
-        "指定タグを含む投稿の背景色と文字色を変更します。複数ルールに該当する場合は本文で先に出たタグが優先されます。Wrot サイドバー / Reading View / Live Preview すべてで反映されます。"
+        "指定タグを含む投稿の背景色と文字色を変更します。複数ルールに該当する場合は本文で先に出たタグが優先されます。"
       )
       .addToggle((toggle) =>
         toggle.setValue(this.plugin.settings.tagColorRulesEnabled).onChange(async (v) => {
@@ -484,7 +484,7 @@ export class WrotSettingTab extends PluginSettingTab {
 
         new Setting(rulesContainer)
           .setName("タグ")
-          .setDesc("色を変えたいタグ名(# なしでも構いません)")
+          .setDesc("色を変えたいタグ名を入力します。（# は省略できます）")
           .addText((text) => {
             text
               .setPlaceholder("タグ名")
@@ -496,7 +496,7 @@ export class WrotSettingTab extends PluginSettingTab {
 
         new Setting(rulesContainer)
           .setName("背景色")
-          .setDesc("このタグを含む投稿カードの背景色")
+          .setDesc("このタグを含む投稿の背景色を設定します。")
           .setClass("wr-reverse-controls")
           .addColorPicker((picker) => {
             picker
@@ -506,7 +506,7 @@ export class WrotSettingTab extends PluginSettingTab {
 
         new Setting(rulesContainer)
           .setName("文字色")
-          .setDesc("このタグを含む投稿カードの本文文字色(タグ・リンク・URLはアクセントカラー側で設定)")
+          .setDesc("このタグを含む投稿の本文文字色を設定します。（タグ・リンク・URLはアクセントカラー側で設定します）")
           .setClass("wr-reverse-controls")
           .addColorPicker((picker) => {
             picker
@@ -517,7 +517,7 @@ export class WrotSettingTab extends PluginSettingTab {
         let accentPicker: ColorComponent;
         new Setting(rulesContainer)
           .setName("アクセントカラー")
-          .setDesc("タグ・リンク・URL・コピー完了アイコンなどアクセントカラーが使われる要素の色。未設定時はデフォルト(テーマのアクセントカラー)を使います。")
+          .setDesc("タグ・リンク・URL・コピー完了アイコンなどアクセントカラーが使われる要素の色を設定します。未設定時はテーマのアクセントカラーを使います。")
           .setClass("wr-reverse-controls")
           .addColorPicker((picker) => {
             accentPicker = picker;

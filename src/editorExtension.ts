@@ -280,7 +280,8 @@ class UrlPreviewWidget extends WidgetType {
   constructor(
     private parsedUrls: ParsedUrl[],
     private ogpCache: OGPCache,
-    private ruleClass: string | null
+    private ruleClass: string | null,
+    private resolveImagePath: (fileName: string) => string | null
   ) {
     super();
     this.cachedSnapshot = parsedUrls.map(
@@ -309,7 +310,7 @@ class UrlPreviewWidget extends WidgetType {
 
     for (const pu of this.parsedUrls) {
       if (pu.type === "image") {
-        renderImagePreview(container, pu.url);
+        renderImagePreview(container, pu.url, this.resolveImagePath);
       } else {
         const cached = this.ogpCache.get(pu.url);
         if (cached && (cached.title || cached.description)) {
@@ -383,9 +384,7 @@ function findWrBlocks(view: EditorView, plugin: WrotPlugin | null): WrBlock[] {
       const urlRegex = /(?:https?|obsidian):\/\/[^\s<>"'\]]+/g;
       let match;
       while ((match = urlRegex.exec(l.text)) !== null) {
-        if (!match[0].startsWith("obsidian://")) {
-          urlTexts.push(match[0]);
-        }
+        urlTexts.push(match[0]);
       }
       const tagMatches = l.text.match(/#[^\s#]+/g);
       if (tagMatches) tags.push(...tagMatches);
@@ -643,20 +642,27 @@ function buildDecorations(
           const to = from + match[0].length;
           if (insideMdLink(from, to)) continue;
           if (match[0].startsWith("obsidian://") && !showRaw) {
-            let displayName = match[0];
+            let fileName: string | null = null;
             try {
               const params = new URL(match[0]).searchParams;
               const filePath = params.get("file");
               if (filePath) {
                 const decoded = decodeURIComponent(filePath);
-                displayName = decoded.split("/").pop() || decoded;
+                fileName = decoded.split("/").pop() || decoded;
               }
-            } catch { /* use full URL */ }
-            entries.push({
-              from,
-              to,
-              deco: Decoration.replace({ widget: new ObsidianLinkWidget(match[0], displayName) }),
-            });
+            } catch { /* fileName stays null */ }
+            const looksLikeImage = !!fileName && IMAGE_EXT_RE.test(fileName);
+            const resolved = fileName ? app.metadataCache.getFirstLinkpathDest(fileName, "") : null;
+            const isImageEmbed = looksLikeImage && resolved !== null;
+            if (isImageEmbed) {
+              entries.push({ from, to, deco: replaceHidden });
+            } else {
+              entries.push({
+                from,
+                to,
+                deco: Decoration.replace({ widget: new ObsidianLinkWidget(match[0], fileName || match[0]) }),
+              });
+            }
           } else {
             entries.push({ from, to, deco: urlMark });
           }
@@ -827,13 +833,22 @@ function buildDecorations(
       }
 
       if (block.urlTexts.length > 0) {
-        const parsedUrls = extractUrls(block.urlTexts.join(" "));
+        // Drop obsidian:// URLs that aren't image embeds — they don't produce
+        // OGP cards or any media output, so leaving them in would render an
+        // empty wr-media-area block.
+        const parsedUrls = extractUrls(block.urlTexts.join(" ")).filter(
+          (pu) => pu.type === "image" || !pu.url.startsWith("obsidian://")
+        );
         if (parsedUrls.length > 0) {
+          const resolveImagePath = (fileName: string): string | null => {
+            const file = app.metadataCache.getFirstLinkpathDest(fileName, "");
+            return file ? app.vault.getResourcePath(file) : null;
+          };
           builder.add(
             endLine.to,
             endLine.to,
             Decoration.widget({
-              widget: new UrlPreviewWidget(parsedUrls, ogpCache, block.ruleClass),
+              widget: new UrlPreviewWidget(parsedUrls, ogpCache, block.ruleClass, resolveImagePath),
               side: 2,
             })
           );

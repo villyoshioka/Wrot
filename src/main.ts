@@ -62,11 +62,12 @@ export default class WrotPlugin extends Plugin {
     document.head.appendChild(this.fontStyleEl);
 
     if (this.settings.followObsidianFontSize) {
+      // Scale all sub-sizes from --font-text-size to keep the 14:13:12 ratio.
       this.fontStyleEl.textContent = `
         body {
           --wr-font-text: var(--font-text-size);
-          --wr-font-ui-small: var(--font-ui-small);
-          --wr-font-ui-smaller: var(--font-ui-smaller);
+          --wr-font-ui-small: calc(var(--font-text-size) * 0.929);
+          --wr-font-ui-smaller: calc(var(--font-text-size) * 0.857);
           --wr-font-date: min(var(--font-text-size), 24px);
         }
       `;

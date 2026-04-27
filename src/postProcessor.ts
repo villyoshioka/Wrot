@@ -313,25 +313,34 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
       } else if (part.match(/^obsidian:\/\//)) {
         const cleaned = part.replace(/[.,;:!?)]+$/, "");
         const trailing = part.slice(cleaned.length);
-        let displayName = cleaned;
+        let fileName: string | null = null;
         try {
           const params = new URL(cleaned).searchParams;
           const filePath = params.get("file");
           if (filePath) {
             const decoded = decodeURIComponent(filePath);
-            displayName = decoded.split("/").pop() || decoded;
+            fileName = decoded.split("/").pop() || decoded;
           }
-        } catch { /* use full URL */ }
-        const link = document.createElement("a");
-        link.className = "wr-internal-link";
-        link.textContent = displayName;
-        link.addEventListener("click", (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          if (isSafeUrl(cleaned)) window.open(cleaned);
-        });
-        frag.appendChild(link);
-        if (trailing) frag.appendChild(document.createTextNode(trailing));
+        } catch { /* fileName stays null */ }
+        const lowerName = fileName?.toLowerCase() || "";
+        const looksLikeImage = IMAGE_EXT.test(lowerName);
+        const resolved = fileName ? plugin.app.metadataCache.getFirstLinkpathDest(fileName, "") : null;
+        const isImageEmbed = looksLikeImage && resolved !== null;
+        if (!isImageEmbed) {
+          const link = document.createElement("a");
+          link.className = "wr-internal-link";
+          link.textContent = fileName || cleaned;
+          link.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (isSafeUrl(cleaned)) window.open(cleaned);
+          });
+          frag.appendChild(link);
+          if (trailing) frag.appendChild(document.createTextNode(trailing));
+        } else if (trailing) {
+          frag.appendChild(document.createTextNode(trailing));
+        }
+        allUrls.push(cleaned);
         hasMatch = true;
       } else if (part.match(/^https?:\/\//)) {
         const cleaned = part.replace(/[.,;:!?)]+$/, "");
@@ -380,14 +389,22 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
 
   // Render rich previews inside the block container (only once)
   if (allUrls.length > 0) {
-    const parsedUrls = extractUrls(allUrls.join(" "));
+    // Drop obsidian:// URLs that aren't image embeds — they don't produce
+    // OGP cards or any media output, so leaving them in would render an
+    // empty wr-media-area block.
+    const parsedUrls = extractUrls(allUrls.join(" ")).filter(
+      (pu) => pu.type === "image" || !pu.url.startsWith("obsidian://")
+    );
     if (parsedUrls.length > 0) {
       const block3 = code.closest(".block-language-wr") || code.closest("pre");
       if (block3 && !block3.querySelector(".wr-media-area")) {
         const mediaEl = document.createElement("div");
         mediaEl.className = "wr-media-area";
         block3.appendChild(mediaEl);
-        renderUrlPreviews(mediaEl as any, parsedUrls, plugin.ogpCache);
+        renderUrlPreviews(mediaEl as any, parsedUrls, plugin.ogpCache, (fileName) => {
+          const file = plugin.app.metadataCache.getFirstLinkpathDest(fileName, "");
+          return file ? plugin.app.vault.getResourcePath(file) : null;
+        });
       }
     }
   }

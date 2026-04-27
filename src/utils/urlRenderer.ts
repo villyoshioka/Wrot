@@ -50,7 +50,18 @@ function classifyUrl(url: string): ParsedUrl["type"] {
   if (TWITTER_REGEX.test(url)) return "twitter";
 
   try {
-    const pathname = new URL(url).pathname.toLowerCase();
+    const parsed = new URL(url);
+    if (parsed.protocol === "obsidian:") {
+      const filePath = parsed.searchParams.get("file");
+      if (filePath) {
+        const target = decodeURIComponent(filePath).toLowerCase();
+        if (IMAGE_EXTENSIONS.some((ext) => target.endsWith(ext))) {
+          return "image";
+        }
+      }
+      return "generic";
+    }
+    const pathname = parsed.pathname.toLowerCase();
     if (IMAGE_EXTENSIONS.some((ext) => pathname.endsWith(ext))) {
       return "image";
     }
@@ -59,6 +70,19 @@ function classifyUrl(url: string): ParsedUrl["type"] {
   }
 
   return "generic";
+}
+
+export function extractObsidianFileName(url: string): string | null {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== "obsidian:") return null;
+    const filePath = parsed.searchParams.get("file");
+    if (!filePath) return null;
+    const decoded = decodeURIComponent(filePath);
+    return decoded.split("/").pop() || decoded;
+  } catch {
+    return null;
+  }
 }
 
 export function extractUrls(text: string): ParsedUrl[] {
@@ -364,25 +388,30 @@ function renderInlineTokens(
       const url = cleanUrl(part);
       const trailing = part.slice(url.length);
       // Extract file name from obsidian:// URL
-      let displayName = url;
-      try {
-        const params = new URL(url).searchParams;
-        const filePath = params.get("file");
-        if (filePath) {
-          const decoded = decodeURIComponent(filePath);
-          displayName = decoded.split("/").pop() || decoded;
-        }
-      } catch { /* use full URL */ }
-      const link = container.createEl("a", {
-        cls: "wr-internal-link",
-        text: displayName,
-      });
-      link.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (isSafeUrl(url)) window.open(url);
-      });
-      if (trailing) container.appendText(trailing);
+      const fileName = extractObsidianFileName(url);
+      const isImageEmbed =
+        classifyUrl(url) === "image" &&
+        !!callbacks.resolveImagePath &&
+        !!(fileName && callbacks.resolveImagePath(fileName));
+      if (!isImageEmbed) {
+        const displayName = fileName || url;
+        const link = container.createEl("a", {
+          cls: "wr-internal-link",
+          text: displayName,
+        });
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (isSafeUrl(url)) window.open(url);
+        });
+        if (trailing) container.appendText(trailing);
+      } else if (trailing) {
+        container.appendText(trailing);
+      }
+      if (!seen.has(url)) {
+        seen.add(url);
+        urls.push({ url, type: classifyUrl(url) });
+      }
     } else if (part.match(/^https?:\/\//)) {
       const url = cleanUrl(part);
       const trailing = part.slice(url.length);
@@ -436,7 +465,8 @@ function makeClickableLink(element: HTMLElement, url: string): void {
 
 export function renderImagePreview(
   container: HTMLElement,
-  url: string
+  url: string,
+  resolveImagePath?: (fileName: string) => string | null
 ): void {
   const wrapper = el("a", "wr-media-link");
   wrapper.href = url;
@@ -445,7 +475,13 @@ export function renderImagePreview(
   makeClickableLink(wrapper, url);
 
   const img = el("img", "wr-inline-img");
-  if (isSafeImageUrl(url)) img.src = url;
+  if (isSafeImageUrl(url)) {
+    img.src = url;
+  } else if (url.startsWith("obsidian://") && resolveImagePath) {
+    const fileName = extractObsidianFileName(url);
+    const resolved = fileName ? resolveImagePath(fileName) : null;
+    if (resolved) img.src = resolved;
+  }
   img.loading = "lazy";
   wrapper.appendChild(img);
   container.appendChild(wrapper);
@@ -509,11 +545,15 @@ export function renderTwitterCard(
 export function renderUrlPreviews(
   container: HTMLElement,
   urls: ParsedUrl[],
-  ogpCache: OGPCache
+  ogpCache: OGPCache,
+  resolveImagePath?: (fileName: string) => string | null
 ): void {
   for (const pu of urls) {
     if (pu.type === "image") {
-      renderImagePreview(container, pu.url);
+      renderImagePreview(container, pu.url, resolveImagePath);
+    } else if (pu.url.startsWith("obsidian://")) {
+      // No OGP fetch for obsidian:// URLs; nothing to render here.
+      continue;
     } else {
       const placeholder = el("div", "wr-ogp-loading");
       container.appendChild(placeholder);
