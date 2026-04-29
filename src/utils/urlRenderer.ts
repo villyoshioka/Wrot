@@ -389,14 +389,17 @@ function renderInlineTokens(
       const trailing = part.slice(url.length);
       // Extract file name from obsidian:// URL
       const fileName = extractObsidianFileName(url);
-      const isImageEmbed =
-        classifyUrl(url) === "image" &&
-        !!callbacks.resolveImagePath &&
-        !!(fileName && callbacks.resolveImagePath(fileName));
+      const looksLikeImage = classifyUrl(url) === "image";
+      const resolvedImage = !!(fileName && callbacks.resolveImagePath && callbacks.resolveImagePath(fileName));
+      const isImageEmbed = looksLikeImage && resolvedImage;
+      const isUnresolvedImage = looksLikeImage && !resolvedImage;
       if (!isImageEmbed) {
         const displayName = fileName || url;
+        const cls = isUnresolvedImage
+          ? "wr-internal-link wr-internal-link-unresolved"
+          : "wr-internal-link";
         const link = container.createEl("a", {
-          cls: "wr-internal-link",
+          cls,
           text: displayName,
         });
         link.addEventListener("click", (e) => {

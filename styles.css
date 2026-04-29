@@ -179,9 +179,57 @@
   color: var(--text-accent);
 }
 
+.wr-toolbar-btn.wr-toolbar-disabled {
+  color: var(--text-faint);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .wr-toolbar-btn .svg-icon {
   width: 18px;
   height: 18px;
+}
+
+.wr-thumbnail-container {
+  margin: 6px 0 4px;
+}
+
+.wr-thumbnail {
+  position: relative;
+  display: inline-block;
+  max-width: 120px;
+}
+
+.wr-thumbnail-img {
+  display: block;
+  max-width: 120px;
+  max-height: 120px;
+  width: auto;
+  height: auto;
+  border-radius: 6px;
+}
+
+.wr-thumbnail-remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 22px;
+  height: 22px;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  border: none !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wr-thumbnail-remove .svg-icon {
+  width: 14px;
+  height: 14px;
 }
 
 
@@ -417,6 +465,11 @@ ol.wr-reading-list > li::before {
 
 .wr-embed-missing {
   color: var(--text-muted);
+  font-style: italic;
+}
+
+.wr-internal-link-unresolved {
+  color: var(--text-muted) !important;
   font-style: italic;
 }
 

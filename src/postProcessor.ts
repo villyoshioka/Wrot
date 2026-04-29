@@ -326,9 +326,12 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
         const looksLikeImage = IMAGE_EXT.test(lowerName);
         const resolved = fileName ? plugin.app.metadataCache.getFirstLinkpathDest(fileName, "") : null;
         const isImageEmbed = looksLikeImage && resolved !== null;
+        const isUnresolvedImage = looksLikeImage && resolved === null;
         if (!isImageEmbed) {
           const link = document.createElement("a");
-          link.className = "wr-internal-link";
+          link.className = isUnresolvedImage
+            ? "wr-internal-link wr-internal-link-unresolved"
+            : "wr-internal-link";
           link.textContent = fileName || cleaned;
           link.addEventListener("click", (e) => {
             e.preventDefault();

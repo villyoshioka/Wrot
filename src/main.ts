@@ -1,10 +1,12 @@
-import { Plugin, WorkspaceLeaf, loadMathJax, setIcon, MarkdownView } from "obsidian";
+import { Plugin, TFile, WorkspaceLeaf, loadMathJax, setIcon, MarkdownView } from "obsidian";
 import { VIEW_TYPE_WROT } from "./constants";
 import { WrotSettings, DEFAULT_SETTINGS, WrotSettingTab, TagColorRule } from "./settings";
 import { WrotView } from "./views/WrotView";
 import { registerWrotPostProcessor } from "./postProcessor";
-import { createWrEditorExtension, tagRulesChanged } from "./editorExtension";
+import { createWrEditorExtension, tagRulesChanged, vaultFilesChanged } from "./editorExtension";
 import { OGPCache } from "./utils/ogpCache";
+
+const ATTACHMENT_EXT_RE = /^(png|jpe?g|gif|webp|svg|bmp)$/i;
 
 export default class WrotPlugin extends Plugin {
   settings: WrotSettings;
@@ -50,6 +52,50 @@ export default class WrotPlugin extends Plugin {
         this.applyTagColorRules();
       })
     );
+
+    // Refresh LV/RV when attachment images are created/deleted/renamed so embed
+    // previews update without requiring a manual reload.
+    //
+    // We listen to `metadataCache.on("deleted")` rather than `vault.on("delete")`
+    // because the latter fires before metadataCache is updated — at that moment
+    // `getFirstLinkpathDest` still returns the deleted file, so re-decoration
+    // would not pick up the change. `metadataCache.on("deleted")` fires after
+    // the cache has been updated.
+    const onAttachmentChange = (file: unknown) => {
+      if (!(file instanceof TFile)) return;
+      if (!ATTACHMENT_EXT_RE.test(file.extension)) return;
+      this.refreshAttachmentDecorations();
+    };
+    this.registerEvent(this.app.metadataCache.on("deleted", onAttachmentChange));
+    this.registerEvent(this.app.vault.on("create", onAttachmentChange));
+    this.registerEvent(this.app.vault.on("rename", onAttachmentChange));
+  }
+
+  refreshAttachmentDecorations(): void {
+    this.app.workspace.iterateAllLeaves((leaf) => {
+      const view = leaf.view;
+      if (!(view instanceof MarkdownView)) return;
+
+      // Reading View: re-render the preview so the post-processor runs again
+      const previewMode = (view as any).previewMode;
+      if (previewMode?.rerender) {
+        try {
+          previewMode.rerender(true);
+        } catch {
+          // ignore
+        }
+      }
+
+      // Live Preview: dispatch a state effect to trigger re-decoration
+      const cm = (view.editor as any)?.cm;
+      if (cm?.dispatch) {
+        try {
+          cm.dispatch({ effects: vaultFilesChanged.of(null) });
+        } catch {
+          // ignore
+        }
+      }
+    });
   }
 
   applyFontFollow(): void {
@@ -309,6 +355,19 @@ export default class WrotPlugin extends Plugin {
       }
       body .wr-menu .menu-item.is-disabled {
         color: ${faintColor} !important;
+      }
+      body .wr-thumbnail-remove {
+        background: ${this.blendColor(textColor, bgColor, 0.7)} !important;
+        background-color: ${this.blendColor(textColor, bgColor, 0.7)} !important;
+        color: ${bgColor} !important;
+      }
+      body .wr-thumbnail-remove .svg-icon {
+        color: ${bgColor} !important;
+        stroke: ${bgColor} !important;
+      }
+      body .wr-thumbnail-remove:hover {
+        background: ${this.blendColor(textColor, bgColor, 0.5)} !important;
+        background-color: ${this.blendColor(textColor, bgColor, 0.5)} !important;
       }
     `;
   }

@@ -4,6 +4,7 @@ import { parseMemos, Memo } from "../utils/memoParser";
 import { appendMemo, toggleCheckbox } from "../utils/memoWriter";
 import { getOrCreateDailyNote, getDailyNoteFile } from "../utils/dailyNote";
 import { renderTextWithTagsAndUrls, renderUrlPreviews } from "../utils/urlRenderer";
+import { isImageFile, saveImageToVault, buildEmbedLink } from "../utils/imageAttachment";
 import type WrotPlugin from "../main";
 import type { PinEntry } from "../settings";
 
@@ -27,6 +28,11 @@ export class WrotView extends ItemView {
   private toolbarResizeObserver: ResizeObserver | null = null;
   private currentMenu: Menu | null = null;
   private currentMenuTrigger: HTMLElement | null = null;
+  private pendingImage: File | null = null;
+  private pendingImageUrl: string | null = null;
+  private thumbnailContainer: HTMLElement | null = null;
+  private imageAddBtn: HTMLButtonElement | null = null;
+  private submitBtnEl: HTMLButtonElement | null = null;
 
   constructor(leaf: WorkspaceLeaf, plugin: WrotPlugin) {
     super(leaf);
@@ -88,6 +94,7 @@ export class WrotView extends ItemView {
       this.toolbarResizeObserver.disconnect();
       this.toolbarResizeObserver = null;
     }
+    this.clearPendingImage();
     this.contentEl.empty();
   }
 
@@ -107,17 +114,22 @@ export class WrotView extends ItemView {
         this.refresh();
       }
     });
-    // Watch for file deletion — refresh to update unresolved-link styling as well
-    this.fileDeleteRef = this.app.vault.on("delete", (file) => {
+    // Watch for file deletion — refresh to update unresolved-link styling as well.
+    // Also covers attachment images so embed previews update when an image is deleted.
+    // Use `metadataCache.on("deleted")` instead of `vault.on("delete")` because the
+    // latter fires before metadataCache is updated, leaving `getFirstLinkpathDest`
+    // returning the soon-to-be-deleted file.
+    const TRIGGER_EXT = /^(md|png|jpe?g|gif|webp|svg|bmp)$/i;
+    this.fileDeleteRef = this.app.metadataCache.on("deleted", (file) => {
       if (!(file instanceof TFile)) return;
-      if (file.extension !== "md") return;
+      if (!TRIGGER_EXT.test(file.extension)) return;
       this.refresh();
     });
     // Watch for file creation so that previously-unresolved `[[X]]` links pick up their
     // newly-created target and re-render in normal (resolved) style.
     this.fileCreateRef = this.app.vault.on("create", (file) => {
       if (!(file instanceof TFile)) return;
-      if (file.extension !== "md") return;
+      if (!TRIGGER_EXT.test(file.extension)) return;
       this.refresh();
     });
   }
@@ -184,6 +196,7 @@ export class WrotView extends ItemView {
       setIcon(this.submitIconEl, this.plugin.settings.submitIcon);
     }
     submitBtn.addEventListener("click", () => this.submitMemo());
+    this.submitBtnEl = submitBtn;
 
     // Textarea
     this.textarea = inputArea.createEl("textarea", {
@@ -253,8 +266,43 @@ export class WrotView extends ItemView {
       }
     }, true);
 
+    // Thumbnail preview area (between textarea and toolbar)
+    this.thumbnailContainer = inputArea.createDiv({ cls: "wr-thumbnail-container" });
+    this.thumbnailContainer.style.display = "none";
+
+    // Paste / drop handlers for images
+    this.textarea.addEventListener("paste", (e: ClipboardEvent) => {
+      const files = e.clipboardData?.files;
+      if (!files || files.length === 0) return;
+      const file = files[0];
+      if (!isImageFile(file)) return;
+      e.preventDefault();
+      this.setPendingImage(file);
+    });
+
+    this.textarea.addEventListener("dragover", (e: DragEvent) => {
+      if (e.dataTransfer?.types.includes("Files")) {
+        e.preventDefault();
+      }
+    });
+
+    this.textarea.addEventListener("drop", (e: DragEvent) => {
+      const files = e.dataTransfer?.files;
+      if (!files || files.length === 0) return;
+      const file = files[0];
+      if (!isImageFile(file)) return;
+      e.preventDefault();
+      this.setPendingImage(file);
+    });
+
     // Bottom toolbar (Misskey-style icon buttons)
     const toolbar = inputArea.createDiv({ cls: "wr-input-toolbar" });
+
+    const imageAddBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn" });
+    setIcon(imageAddBtn, "image-plus");
+    imageAddBtn.addEventListener("mousedown", (e) => e.preventDefault());
+    imageAddBtn.addEventListener("click", () => this.openImagePicker());
+    this.imageAddBtn = imageAddBtn;
 
     const embedBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn" });
     setIcon(embedBtn, "paperclip");
@@ -436,18 +484,13 @@ export class WrotView extends ItemView {
       }, e as MouseEvent);
     });
 
-    // Update submit button state
-    const updateSubmitBtn = () => {
-      submitBtn.toggleClass("wr-submit-active", this.textarea.value.trim().length > 0);
-    };
-
     // Update active state on cursor move / input
     const updateActive = () => {
       validateActiveFormatMode();
       this.updateToolbarActive(listBtn, checkBtn, olBtn);
       this.updateEmbedBtnActive(embedBtn);
       updateFormatBtns();
-      updateSubmitBtn();
+      this.updateSubmitBtnState();
     };
     this.textarea.addEventListener("input", updateActive);
     this.textarea.addEventListener("keyup", updateActive);
@@ -474,6 +517,74 @@ export class WrotView extends ItemView {
     }
   }
 
+  private openImagePicker(): void {
+    if (this.pendingImage) return;
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/png, image/gif, image/jpeg";
+    input.multiple = false;
+    input.style.display = "none";
+    document.body.appendChild(input);
+    input.addEventListener("change", () => {
+      const file = input.files?.[0];
+      if (file) {
+        this.setPendingImage(file);
+      }
+      document.body.removeChild(input);
+    });
+    input.click();
+  }
+
+  private setPendingImage(file: File): void {
+    this.clearPendingImage();
+    this.pendingImage = file;
+    this.pendingImageUrl = URL.createObjectURL(file);
+    this.renderThumbnail();
+    this.updateImageAddBtnState();
+    this.updateSubmitBtnState();
+  }
+
+  private clearPendingImage(): void {
+    if (this.pendingImageUrl) {
+      URL.revokeObjectURL(this.pendingImageUrl);
+      this.pendingImageUrl = null;
+    }
+    this.pendingImage = null;
+    if (this.thumbnailContainer) {
+      this.thumbnailContainer.empty();
+      this.thumbnailContainer.style.display = "none";
+    }
+    this.updateImageAddBtnState();
+    this.updateSubmitBtnState();
+  }
+
+  private renderThumbnail(): void {
+    if (!this.thumbnailContainer || !this.pendingImageUrl) return;
+    this.thumbnailContainer.empty();
+    this.thumbnailContainer.style.display = "";
+    const wrap = this.thumbnailContainer.createDiv({ cls: "wr-thumbnail" });
+    const img = wrap.createEl("img", { cls: "wr-thumbnail-img" });
+    img.src = this.pendingImageUrl;
+    const removeBtn = wrap.createEl("button", { cls: "wr-thumbnail-remove" });
+    setIcon(removeBtn, "x");
+    removeBtn.setAttr("aria-label", "画像を削除");
+    removeBtn.addEventListener("mousedown", (e) => e.preventDefault());
+    removeBtn.addEventListener("click", () => this.clearPendingImage());
+  }
+
+  private updateImageAddBtnState(): void {
+    if (!this.imageAddBtn) return;
+    const disabled = this.pendingImage !== null;
+    this.imageAddBtn.toggleClass("wr-toolbar-disabled", disabled);
+    this.imageAddBtn.disabled = disabled;
+  }
+
+  private updateSubmitBtnState(): void {
+    if (!this.submitBtnEl) return;
+    const hasContent = this.textarea.value.trim().length > 0 || this.pendingImage !== null;
+    this.submitBtnEl.toggleClass("wr-submit-active", hasContent);
+  }
+
   async submitMemo(): Promise<void> {
     // Auto-close format mode before submit
     if (this.activeFormatMode) {
@@ -481,19 +592,28 @@ export class WrotView extends ItemView {
       this.textarea.value = this.textarea.value + marker;
       this.activeFormatMode = null;
     }
-    const text = this.textarea.value.trim().replace(/＃/g, "#");
-    if (!text) return;
+    const rawText = this.textarea.value.trim().replace(/＃/g, "#");
+    if (!rawText && !this.pendingImage) return;
 
     try {
       const file = await getOrCreateDailyNote(
         this.app,
         this.currentDate
       );
+
+      let bodyText = rawText;
+      if (this.pendingImage) {
+        const savedFile = await saveImageToVault(this.app, this.pendingImage, file);
+        const embed = buildEmbedLink(savedFile);
+        bodyText = bodyText ? `${bodyText}\n${embed}` : embed;
+      }
+
       this.ignoreNextModify = true;
-      await appendMemo(this.app, file, text);
+      await appendMemo(this.app, file, bodyText);
       this.textarea.value = "";
       this.textarea.style.height = "";
       this.activeFormatMode = null;
+      this.clearPendingImage();
       this.textarea.dispatchEvent(new Event("input"));
       await this.refresh();
     } catch (e) {

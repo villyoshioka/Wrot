@@ -17,6 +17,9 @@ const ogpFetched = StateEffect.define<null>();
 
 // StateEffect to trigger re-decoration after tag color rules change
 export const tagRulesChanged = StateEffect.define<null>();
+
+// StateEffect to trigger re-decoration after vault files (e.g. attachments) are created/deleted
+export const vaultFilesChanged = StateEffect.define<null>();
 import {
   extractUrls,
   renderImagePreview,
@@ -110,10 +113,16 @@ class OlMarkerWidget extends WidgetType {
 }
 
 class ObsidianLinkWidget extends WidgetType {
-  constructor(private url: string, private displayName: string) { super(); }
+  constructor(
+    private url: string,
+    private displayName: string,
+    private unresolved: boolean = false
+  ) { super(); }
   toDOM(): HTMLElement {
     const link = document.createElement("a");
-    link.className = "wr-internal-link";
+    link.className = this.unresolved
+      ? "wr-internal-link wr-internal-link-unresolved"
+      : "wr-internal-link";
     link.textContent = this.displayName;
     link.addEventListener("click", (e) => {
       e.preventDefault();
@@ -122,7 +131,9 @@ class ObsidianLinkWidget extends WidgetType {
     });
     return link;
   }
-  eq(other: ObsidianLinkWidget): boolean { return this.url === other.url; }
+  eq(other: ObsidianLinkWidget): boolean {
+    return this.url === other.url && this.unresolved === other.unresolved;
+  }
   ignoreEvent(): boolean { return false; }
 }
 
@@ -162,6 +173,20 @@ class InternalLinkWidget extends WidgetType {
   }
   eq(other: InternalLinkWidget): boolean {
     return this.fileName === other.fileName && this.resolved === other.resolved;
+  }
+  ignoreEvent(): boolean { return false; }
+}
+
+class EmbedMissingWidget extends WidgetType {
+  constructor(private fileName: string) { super(); }
+  toDOM(): HTMLElement {
+    const span = document.createElement("span");
+    span.className = "wr-embed-missing";
+    span.textContent = `![[${this.fileName}]]`;
+    return span;
+  }
+  eq(other: EmbedMissingWidget): boolean {
+    return this.fileName === other.fileName;
   }
   ignoreEvent(): boolean { return false; }
 }
@@ -533,7 +558,14 @@ function buildDecorations(
         const quotePrefix = l.text.startsWith("> ") ? 2 : l.text.startsWith(">") ? 1 : 0;
         const isQuoteLine = quotePrefix > 0;
         const hasObsidianUrl = !showRaw && /obsidian:\/\//.test(l.text);
-        const isEmbedOnlyLine = !showRaw && /^!\[\[[^\]]+\]\]$/.test(l.text.trim()) && IMAGE_EXT_RE.test(l.text.trim().slice(3, -2));
+        const isEmbedOnlyLine = (() => {
+          if (showRaw) return false;
+          const trimmed = l.text.trim();
+          if (!/^!\[\[[^\]]+\]\]$/.test(trimmed)) return false;
+          const innerName = trimmed.slice(3, -2);
+          if (!IMAGE_EXT_RE.test(innerName)) return false;
+          return app.metadataCache.getFirstLinkpathDest(innerName, "") !== null;
+        })();
         if (isEmbedOnlyLine) {
           builder.add(l.from, l.from, hiddenLine);
         } else if (isQuoteLine && !showRaw) {
@@ -654,13 +686,14 @@ function buildDecorations(
             const looksLikeImage = !!fileName && IMAGE_EXT_RE.test(fileName);
             const resolved = fileName ? app.metadataCache.getFirstLinkpathDest(fileName, "") : null;
             const isImageEmbed = looksLikeImage && resolved !== null;
+            const isUnresolvedImage = looksLikeImage && resolved === null;
             if (isImageEmbed) {
               entries.push({ from, to, deco: replaceHidden });
             } else {
               entries.push({
                 from,
                 to,
-                deco: Decoration.replace({ widget: new ObsidianLinkWidget(match[0], fileName || match[0]) }),
+                deco: Decoration.replace({ widget: new ObsidianLinkWidget(match[0], fileName || match[0], isUnresolvedImage) }),
               });
             }
           } else {
@@ -686,6 +719,13 @@ function buildDecorations(
                 embedImages.push({ src, alt: innerName });
                 continue;
               }
+              // Image embed but file not found: show as embed-missing
+              entries.push({
+                from,
+                to,
+                deco: Decoration.replace({ widget: new EmbedMissingWidget(innerName) }),
+              });
+              continue;
             }
             // Non-image embed and plain internal link: replace with a clickable link widget
             entries.push({
@@ -887,8 +927,11 @@ export function createWrEditorExtension(ogpCache: OGPCache, app: App, plugin: Wr
         const hasTagRulesEffect = update.transactions.some((tr) =>
           tr.effects.some((e) => e.is(tagRulesChanged))
         );
+        const hasVaultFilesEffect = update.transactions.some((tr) =>
+          tr.effects.some((e) => e.is(vaultFilesChanged))
+        );
 
-        if (update.docChanged || update.viewportChanged || update.selectionSet || hasOgpEffect || hasTagRulesEffect) {
+        if (update.docChanged || update.viewportChanged || update.selectionSet || hasOgpEffect || hasTagRulesEffect || hasVaultFilesEffect) {
           this.blocks = findWrBlocks(update.view, plugin);
           this.decorations = buildDecorations(update.view, ogpCache, this.blocks, app, plugin, getCheckStrikethrough());
           if (!hasOgpEffect) {
