@@ -2,9 +2,9 @@
 
 **Obsidian で、つぶやくように日々を記録するプラグイン。**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![release](https://img.shields.io/github/release/villyoshioka/Wrot.svg)](https://github.com/villyoshioka/Wrot/releases/latest)
-[![downloads](https://img.shields.io/github/downloads/villyoshioka/Wrot/total.svg)](https://github.com/villyoshioka/Wrot/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow)](https://opensource.org/licenses/MIT)
+[![release](https://img.shields.io/github/v/release/villyoshioka/Wrot)](https://github.com/villyoshioka/Wrot/releases/latest)
+[![downloads](https://img.shields.io/github/downloads/villyoshioka/Wrot/total)](https://github.com/villyoshioka/Wrot/releases)
 
 > **注意**: **このプラグインについて、コードは公開していますが、サポートは行っていません。**
 
