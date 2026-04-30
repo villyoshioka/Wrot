@@ -287,7 +287,7 @@ export class WrotSettingTab extends PluginSettingTab {
         })
       );
 
-    new Setting(containerEl).setName("その他の設定").setHeading();
+    new Setting(containerEl).setName("表示設定").setHeading();
 
     let submitText: TextComponent;
     new Setting(containerEl)

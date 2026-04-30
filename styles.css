@@ -414,7 +414,12 @@ ol.wr-reading-list > li::before {
   width: 14px !important;
   height: 14px !important;
   margin: 0 !important;
-  overflow: hidden !important;
+}
+
+.wr-bullet-list .wr-check-item input[type="checkbox"]:checked::after,
+.wr-reading-list .wr-check-item input[type="checkbox"]:checked::after {
+  top: -2.5px !important;
+  inset-inline-start: -2px !important;
 }
 
 
@@ -727,6 +732,11 @@ pre > .wr-blockquote {
   padding: 0 !important;
   vertical-align: -2px;
   cursor: default;
+}
+
+.wr-lp-check input[type="checkbox"]:checked::after {
+  top: -2.5px !important;
+  inset-inline-start: -2px !important;
 }
 
 /* Content */
