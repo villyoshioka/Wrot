@@ -1328,6 +1328,19 @@ body:not(.wr-font-follow).is-mobile .wr-timestamp {
   margin: 14px 0;
 }
 
+/* Settings: locked tag rule — visual grayout for the editable fields only.
+   The rule label row (which holds the lock toggle itself) stays at full
+   opacity so the unlock affordance remains clearly tappable. */
+.wr-settings .wr-tag-rule-group.wr-tag-rule-locked
+  .setting-item:not(.wr-tag-rule-label-setting) {
+  opacity: 0.55;
+}
+
+.wr-settings .wr-tag-rule-group .wr-tag-rule-disabled {
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
 /* Mobile: keep non-text-input setting rows on a single line (matches Obsidian
    core appearance tab where label stays left and control sits on the right).
    Text inputs keep the existing wrap-below layout so long values stay usable. */

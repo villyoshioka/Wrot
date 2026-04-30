@@ -1,4 +1,4 @@
-import { App, ColorComponent, PluginSettingTab, Setting, TextComponent } from "obsidian";
+import { App, ColorComponent, PluginSettingTab, Setting, TextComponent, setIcon } from "obsidian";
 import type WrotPlugin from "./main";
 
 export interface TagColorRule {
@@ -58,6 +58,13 @@ const SETTINGS_NARROW_THRESHOLD_PX = 600;
 export class WrotSettingTab extends PluginSettingTab {
   plugin: WrotPlugin;
   private narrowObserver: ResizeObserver | null = null;
+  // In-memory only — resets every time the settings tab is reopened so that
+  // each fresh visit starts with all rules locked (guards impulsive edits).
+  private unlockedRules: Set<number> = new Set();
+  // Set to true before an internal display() rebuild that should preserve the
+  // current lock state (e.g. toggling the feature on, adding a rule).
+  // Reopening the settings tab from outside still resets to all-locked.
+  private skipLockReset = false;
 
   constructor(app: App, plugin: WrotPlugin) {
     super(app, plugin);
@@ -120,6 +127,14 @@ export class WrotSettingTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
     containerEl.addClass("wr-settings");
+
+    // Reset lock state so every reopen of the settings tab starts locked.
+    // Internal rebuilds set skipLockReset to preserve the current state.
+    if (this.skipLockReset) {
+      this.skipLockReset = false;
+    } else {
+      this.unlockedRules.clear();
+    }
 
     if (this.narrowObserver) {
       this.narrowObserver.disconnect();
@@ -423,7 +438,18 @@ export class WrotSettingTab extends PluginSettingTab {
           await this.plugin.saveSettings();
           this.plugin.applyTagColorRules();
           this.plugin.refreshAllWrDecorations();
+          // Turning the feature on while no meaningful rule exists: unlock
+          // the first rule so the user can start typing right away. "No
+          // meaningful rule" means either an empty array or a single rule
+          // with no tag set yet (a leftover placeholder).
+          const rules = this.plugin.settings.tagColorRules;
+          const noMeaningfulRule =
+            rules.length === 0 || (rules.length === 1 && rules[0].tag.trim() === "");
+          if (v && noMeaningfulRule) {
+            this.unlockedRules.add(0);
+          }
           // Rebuild the whole settings tab so the rules block shows/hides cleanly.
+          this.skipLockReset = true;
           this.withScrollPreserved(() => this.display());
         })
       );
@@ -459,6 +485,7 @@ export class WrotSettingTab extends PluginSettingTab {
       const buildRuleGroup = (
         isFirst: boolean,
         ruleNumber: number,
+        ruleKey: number,
         initial: TagColorRule,
         onTagChange: (v: string) => Promise<void>,
         onBgChange: (v: string) => Promise<void>,
@@ -470,22 +497,52 @@ export class WrotSettingTab extends PluginSettingTab {
           rulesContainer.createEl("hr", { cls: "wr-tag-rule-separator" });
         }
 
-        const labelSetting = new Setting(rulesContainer)
+        const groupEl = rulesContainer.createDiv({ cls: "wr-tag-rule-group" });
+
+        const isUnlocked = (): boolean => this.unlockedRules.has(ruleKey);
+
+        const labelSetting = new Setting(groupEl)
           .setName(`ルール ${ruleNumber}`)
           .setClass("wr-tag-rule-label-setting");
+
+        // Lock toggle (🔒/🔓) sits immediately right of the rule label.
+        // Tap to unlock; tap again to relock. State is in-memory only.
+        let lockBtnEl: HTMLElement | null = null;
+        labelSetting.addExtraButton((btn) => {
+          lockBtnEl = btn.extraSettingsEl;
+          btn
+            .setIcon(isUnlocked() ? "unlock" : "lock")
+            .setTooltip(isUnlocked() ? "ロックする" : "編集するにはロックを解除")
+            .onClick(() => {
+              if (isUnlocked()) {
+                this.unlockedRules.delete(ruleKey);
+              } else {
+                this.unlockedRules.add(ruleKey);
+              }
+              applyLockState();
+            });
+        });
+
+        let trailingBtnEl: HTMLElement | null = null;
         if (trailing) {
-          labelSetting.addExtraButton((btn) =>
+          labelSetting.addExtraButton((btn) => {
+            trailingBtnEl = btn.extraSettingsEl;
             btn
               .setIcon(trailing.kind === "delete" ? "trash-2" : "reset")
               .setTooltip(trailing.kind === "delete" ? "このルールを削除" : "初期値に戻す")
-              .onClick(async () => { await trailing.handler(); })
-          );
+              .onClick(async () => {
+                if (!isUnlocked()) return;
+                await trailing.handler();
+              });
+          });
         }
 
-        new Setting(rulesContainer)
+        let tagInputEl: HTMLInputElement | null = null;
+        new Setting(groupEl)
           .setName("タグ")
           .setDesc("色を変えたいタグ名を入力します。（# は省略できます）")
           .addText((text) => {
+            tagInputEl = text.inputEl;
             text
               .setPlaceholder("タグ名")
               .setValue(initial.tag)
@@ -494,33 +551,40 @@ export class WrotSettingTab extends PluginSettingTab {
               });
           });
 
-        new Setting(rulesContainer)
+        let bgPickerEl: HTMLInputElement | null = null;
+        new Setting(groupEl)
           .setName("背景色")
           .setDesc("このタグを含む投稿の背景色を設定します。")
           .setClass("wr-reverse-controls")
           .addColorPicker((picker) => {
+            bgPickerEl = (picker as unknown as { colorPickerEl: HTMLInputElement }).colorPickerEl;
             picker
               .setValue(resolveRuleBg(initial.bgColor))
               .onChange(async (v) => { await onBgChange(v); });
           });
 
-        new Setting(rulesContainer)
+        let fgPickerEl: HTMLInputElement | null = null;
+        new Setting(groupEl)
           .setName("文字色")
           .setDesc("このタグを含む投稿の本文文字色を設定します。（タグ・リンク・URLはアクセントカラー側で設定します）")
           .setClass("wr-reverse-controls")
           .addColorPicker((picker) => {
+            fgPickerEl = (picker as unknown as { colorPickerEl: HTMLInputElement }).colorPickerEl;
             picker
               .setValue(resolveRuleText(initial.textColor))
               .onChange(async (v) => { await onFgChange(v); });
           });
 
         let accentPicker: ColorComponent;
-        new Setting(rulesContainer)
+        let accentPickerEl: HTMLInputElement | null = null;
+        let accentResetBtnEl: HTMLElement | null = null;
+        new Setting(groupEl)
           .setName("アクセントカラー")
           .setDesc("タグ・リンク・URL・コピー完了アイコンなどアクセントカラーが使われる要素の色を設定します。未設定時はテーマのアクセントカラーを使います。")
           .setClass("wr-reverse-controls")
           .addColorPicker((picker) => {
             accentPicker = picker;
+            accentPickerEl = (picker as unknown as { colorPickerEl: HTMLInputElement }).colorPickerEl;
             const initialAccent =
               initial.accentColor && /^#[0-9a-fA-F]{6}$/.test(initial.accentColor)
                 ? initial.accentColor
@@ -529,12 +593,47 @@ export class WrotSettingTab extends PluginSettingTab {
               .setValue(initialAccent)
               .onChange(async (v) => { await onAccentChange(v); });
           })
-          .addExtraButton((btn) =>
+          .addExtraButton((btn) => {
+            accentResetBtnEl = btn.extraSettingsEl;
             btn.setIcon("reset").setTooltip("初期値に戻す").onClick(async () => {
+              if (!isUnlocked()) return;
               await onAccentChange(undefined);
               accentPicker.setValue(getDefaultAccent());
-            })
-          );
+            });
+          });
+
+        const setDisabled = (el: HTMLElement | null, disabled: boolean) => {
+          if (!el) return;
+          if (disabled) {
+            el.setAttr("disabled", "true");
+            el.setAttr("aria-disabled", "true");
+            el.addClass("wr-tag-rule-disabled");
+          } else {
+            el.removeAttribute("disabled");
+            el.removeAttribute("aria-disabled");
+            el.removeClass("wr-tag-rule-disabled");
+          }
+        };
+
+        const applyLockState = () => {
+          const unlocked = isUnlocked();
+          groupEl.toggleClass("wr-tag-rule-locked", !unlocked);
+          setDisabled(tagInputEl, !unlocked);
+          setDisabled(bgPickerEl, !unlocked);
+          setDisabled(fgPickerEl, !unlocked);
+          setDisabled(accentPickerEl, !unlocked);
+          setDisabled(accentResetBtnEl, !unlocked);
+          setDisabled(trailingBtnEl, !unlocked);
+          if (lockBtnEl) {
+            setIcon(lockBtnEl, unlocked ? "unlock" : "lock");
+            lockBtnEl.setAttr(
+              "aria-label",
+              unlocked ? "ロックする" : "編集するにはロックを解除"
+            );
+          }
+        };
+
+        applyLockState();
       };
 
       const isEmpty = this.plugin.settings.tagColorRules.length === 0;
@@ -564,6 +663,7 @@ export class WrotSettingTab extends PluginSettingTab {
         buildRuleGroup(
           true,
           1,
+          0,
           placeholder,
           async (v) => { placeholder.tag = v; await promoteIfNeeded(); },
           async (v) => { placeholder.bgColor = v; await promoteIfNeeded(); },
@@ -606,6 +706,7 @@ export class WrotSettingTab extends PluginSettingTab {
         buildRuleGroup(
           idx === 0,
           idx + 1,
+          idx,
           rule,
           async (v) => {
             rule.tag = v;
@@ -642,11 +743,17 @@ export class WrotSettingTab extends PluginSettingTab {
           .setButtonText("ルールを追加")
           .setCta()
           .onClick(async () => {
+            const newIndex = this.plugin.settings.tagColorRules.length;
             this.plugin.settings.tagColorRules.push({
               tag: "",
               bgColor: DEFAULT_SETTINGS.bgColorLight,
               textColor: DEFAULT_SETTINGS.textColorLight,
             });
+            // Re-lock any previously unlocked existing rules so adding a new
+            // rule doesn't leave older rules editable. The newly added rule
+            // starts unlocked so it can be edited immediately.
+            this.unlockedRules.clear();
+            this.unlockedRules.add(newIndex);
             await this.plugin.saveSettings();
             this.plugin.applyTagColorRules();
             renderRules();
