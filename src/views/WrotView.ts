@@ -13,6 +13,10 @@ declare const moment: typeof import("moment");
 export class WrotView extends ItemView {
   plugin: WrotPlugin;
   private currentDate: ReturnType<typeof moment>;
+  // True while the view follows "today" — set on open and on the today
+  // button, cleared the moment the user navigates by prev/next or jumps to
+  // a specific date. Only the "anchored" mode auto-rolls across midnight.
+  private anchoredToToday: boolean = true;
   private listContainer: HTMLElement;
   private dateLabel: HTMLElement;
   textarea: HTMLTextAreaElement;
@@ -86,6 +90,19 @@ export class WrotView extends ItemView {
 
     // Watch for file changes (after initial refresh to avoid race condition)
     this.registerFileWatcher();
+
+    // When the user returns focus to Wrot after the calendar day has rolled
+    // over, re-anchor `currentDate` to today so a posted memo lands in the
+    // right note (matters most when the core date format groups multiple days
+    // into one file, e.g. weekly `GGGG年WW週` or monthly `YYYY年MM月`).
+    // Only auto-rolls when the view was already showing today; an explicitly
+    // navigated past/future date is left alone.
+    this.registerEvent(
+      this.app.workspace.on("active-leaf-change", (leaf) => {
+        if (leaf !== this.leaf) return;
+        this.maybeRollToToday();
+      })
+    );
   }
 
   async onClose(): Promise<void> {
@@ -149,6 +166,41 @@ export class WrotView extends ItemView {
     }
   }
 
+  /**
+   * If the view is still anchored to today but the calendar day has rolled
+   * over, snap `currentDate` to the new today and refresh. No-op if the user
+   * has navigated away from today — that intent must not be silently
+   * overridden, even if the new target happens to be yesterday.
+   */
+  private async maybeRollToToday(): Promise<void> {
+    if (!this.anchoredToToday) return;
+    const now = moment();
+    if (this.currentDate.isSame(now, "day")) return;
+    this.currentDate = now;
+    await this.refresh();
+  }
+
+  /**
+   * Reveal the given file in an existing tab if it is already open anywhere
+   * in the workspace; otherwise open it in a new tab. Prevents duplicate
+   * tabs when the user repeatedly taps the date label.
+   */
+  private openOrFocusFile(file: TFile): void {
+    let existingLeaf: WorkspaceLeaf | null = null;
+    this.app.workspace.iterateAllLeaves((leaf) => {
+      if (existingLeaf) return;
+      const view = leaf.view as { file?: TFile } | undefined;
+      if (view?.file?.path === file.path) {
+        existingLeaf = leaf;
+      }
+    });
+    if (existingLeaf) {
+      this.app.workspace.revealLeaf(existingLeaf);
+      return;
+    }
+    this.app.workspace.getLeaf("tab").openFile(file);
+  }
+
   private buildDateNav(container: HTMLElement): void {
     const nav = container.createDiv({ cls: "wr-date-nav" });
 
@@ -156,6 +208,7 @@ export class WrotView extends ItemView {
     setIcon(prevBtn, "chevron-left");
     prevBtn.addEventListener("click", () => {
       this.currentDate = this.currentDate.clone().subtract(1, "day");
+      this.anchoredToToday = false;
       this.refresh();
     });
 
@@ -165,19 +218,21 @@ export class WrotView extends ItemView {
       setTimeout(() => this.dateLabel.classList.remove("wr-date-label-active"), 300);
       const file = getDailyNoteFile(this.app, this.currentDate)
         ?? await getOrCreateDailyNote(this.app, this.currentDate);
-      this.app.workspace.getLeaf("tab").openFile(file);
+      this.openOrFocusFile(file);
     });
 
     const nextBtn = nav.createEl("button", { cls: "wr-nav-btn" });
     setIcon(nextBtn, "chevron-right");
     nextBtn.addEventListener("click", () => {
       this.currentDate = this.currentDate.clone().add(1, "day");
+      this.anchoredToToday = false;
       this.refresh();
     });
 
     const todayBtn = nav.createEl("button", { cls: "wr-today-btn", text: "\u4eca\u65e5" });
     todayBtn.addEventListener("click", () => {
       this.currentDate = moment();
+      this.anchoredToToday = true;
       this.refresh();
     });
   }
@@ -594,6 +649,14 @@ export class WrotView extends ItemView {
     }
     const rawText = this.textarea.value.trim().replace(/＃/g, "#");
     if (!rawText && !this.pendingImage) return;
+
+    // If the view is still anchored to today but the calendar day has rolled
+    // over, re-anchor before resolving the target file. This prevents "wrote
+    // to last week's note" when the core date format groups multiple days
+    // into one file (e.g. weekly `GGGG年WW週`).
+    if (this.anchoredToToday && !this.currentDate.isSame(moment(), "day")) {
+      this.currentDate = moment();
+    }
 
     try {
       const file = await getOrCreateDailyNote(
