@@ -1,13 +1,5 @@
-/**
- * Segments memo body text into fenced code blocks, display math blocks, and plain text.
- *
- * Conventions:
- * - Fenced code: `~~~` (3+ tildes). Backticks (```) are reserved for the outer Wrot fence
- *   and therefore NOT recognized here. Fences must match in tilde count (>= opening count).
- * - Display math: `$$ ... $$` (paired, single-line or multi-line).
- * - Inside a code block, `$$` and other markers are treated as plain code.
- * - Unclosed blocks extend to end of input.
- */
+// メモ本文をフェンスコードブロック / 数式ブロック / プレーンテキストに分割する。
+// バッククォート```はWrotの外側フェンスに予約されているため、内部コードはチルダ~~~を使う。
 
 export type Segment =
   | { kind: "text"; text: string; startLine: number }
@@ -79,11 +71,10 @@ function parseBlocks(lines: string[]): ParsedBlock[] {
       continue;
     }
 
-    // Display math: $$ ... $$
-    // Prefer single-line form when both $$ appear on the same line with content between
+    // 数式ブロック $$ ... $$ （単一行優先）
     const trimmed = line.trim();
     if (trimmed.startsWith("$$")) {
-      // Single-line: $$...$$
+      // 単一行: $$...$$
       const afterOpen = trimmed.slice(2);
       const closeIdx = afterOpen.lastIndexOf("$$");
       if (closeIdx > 0 && afterOpen.slice(closeIdx + 2).trim() === "") {
@@ -103,7 +94,7 @@ function parseBlocks(lines: string[]): ParsedBlock[] {
         }
       }
 
-      // Multi-line: $$ on its own line (possibly with content after), close with $$ on later line
+      // 複数行: 単独行の $$ で開き、後の $$ で閉じる
       if (trimmed === "$$" || (trimmed.startsWith("$$") && !trimmed.slice(2).includes("$$"))) {
         const openLine = i;
         let closeLine = lines.length - 1;
@@ -170,7 +161,7 @@ export function segmentBlocks(text: string): Segment[] {
       if (block.singleLineMath) {
         tex = block.singleLineMathTex || "";
       } else {
-        // Handle edge case: opening line may have content after $$, closing line may have content before $$
+        // 開始行の$$以降や終了行の$$以前に内容がある場合に対応
         const openLine = lines[block.fenceOpenLine].trim();
         const texParts: string[] = [];
         if (openLine !== "$$" && openLine.startsWith("$$")) {
@@ -211,13 +202,7 @@ export function segmentBlocks(text: string): Segment[] {
   return segments;
 }
 
-/**
- * Line-range view over the same parser, for Live Preview which works in
- * CodeMirror line coordinates.
- *
- * @param lines Array of line strings (0-indexed). Caller is responsible for
- *              slicing the doc into a wr-block's interior before calling.
- */
+// CodeMirror座標で動くライブプレビュー用の行レンジ取得（呼び出し側でwrブロック内部に切り出して渡す）
 export function findBlockRanges(lines: string[]): BlockRange[] {
   const blocks = parseBlocks(lines);
   return blocks.map((b) => {
@@ -231,10 +216,7 @@ export function findBlockRanges(lines: string[]): BlockRange[] {
   });
 }
 
-/**
- * Extract non-block text from a memo body, joined with newlines.
- * Used by tag extraction so that `#tag` tokens inside code/math are ignored.
- */
+// メモ本文から非ブロック部分のテキストのみ抽出する（コード/数式内の#tagを除外するため）
 export function extractNonBlockText(text: string): string {
   const segments = segmentBlocks(text);
   return segments

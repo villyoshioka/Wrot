@@ -4,9 +4,7 @@ import { toggleCheckbox } from "./utils/memoWriter";
 import { segmentBlocks, type Segment } from "./utils/blockSegmenter";
 import type WrotPlugin from "./main";
 
-/**
- * Highlights #tags and renders URL previews inside ```wr code blocks in Reading View.
- */
+// リーディングビュー用のpost processor。タグ強調表示とURLプレビュー描画を行う
 export function registerWrotPostProcessor(plugin: WrotPlugin): void {
   plugin.registerMarkdownPostProcessor((el) => {
     highlightAllWrBlocks(el, plugin);
@@ -43,13 +41,12 @@ function highlightAllWrBlocks(el: HTMLElement, plugin: WrotPlugin): void {
     const text = code.textContent || "";
     if (!text.trim()) return;
 
-    // Always (re-)apply tag color rule class so post-edit/re-layout DOMs stay in sync
+    // 編集や再レイアウト後もタグルールclassをDOMと同期させる
     const parentBlock = code.closest(".block-language-wr") || code.closest("pre");
     if (parentBlock instanceof HTMLElement) {
       applyTagRuleClass(parentBlock, codeEl, plugin);
     }
 
-    // Already processed
     const hasProcessedInCode = code.querySelector(".wr-reading-tag, .wr-reading-url, .wr-internal-link, .wr-inline-code");
     const hasProcessedInBlock = parentBlock?.querySelector(".wr-reading-list, .wr-blockquote, .wr-embed-img, .wr-plain-text, .wr-codeblock-display, .wr-math-display");
     if (hasProcessedInCode || hasProcessedInBlock) return;
@@ -59,8 +56,7 @@ function highlightAllWrBlocks(el: HTMLElement, plugin: WrotPlugin): void {
 }
 
 function applyTagRuleClass(block: HTMLElement, code: HTMLElement, plugin: WrotPlugin): void {
-  // Copy buttons / flair elements may live as siblings of the block in the parent container,
-  // so collect candidates from both sides and keep their tag-rule class in sync with the block.
+  // コピー/フレア要素はブロック内外どちらにも存在し得るため両側から収集する
   const container = block.parentElement;
   const targets: HTMLElement[] = [block];
   if (container) {
@@ -94,7 +90,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
   const block = code.closest(".block-language-wr") || code.closest("pre");
   if (!block) return;
 
-  // Apply background color to code-block-flair (may be sibling of block or inside pre)
+  // フレア要素は兄弟もしくは内側に存在するため両方カバーする
   const container = block.parentElement || block;
   container.querySelectorAll(".code-block-flair, .copy-code-button").forEach((el) => {
     (el as HTMLElement).classList.add("wr-flair-bg");
@@ -103,13 +99,12 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
     (el as HTMLElement).classList.add("wr-flair-bg");
   });
 
-  // Override copy-code-button success color
   const copyButtons = [
     ...Array.from(container.querySelectorAll(".copy-code-button")),
     ...Array.from(block.querySelectorAll(".copy-code-button")),
   ];
   const resolveAccentForBlock = (): string => {
-    // If this block is currently matched by a tag-color rule, prefer that rule's accent.
+    // タグルールが当たっていればそのアクセントを優先
     const ruleClass = Array.from(block.classList).find((c) => /^wr-tag-rule-\d+$/.test(c));
     if (ruleClass) {
       const idx = parseInt(ruleClass.slice("wr-tag-rule-".length), 10);
@@ -129,24 +124,20 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
           svg.setAttribute("color", successColor);
         });
       };
-      // Apply immediately and after Obsidian swaps the icon
+      // 即時実行＋Obsidianがアイコン差し替えた後にも再適用
       applySvgColor();
       setTimeout(applySvgColor, 50);
       setTimeout(applySvgColor, 150);
     });
   }
 
-  // Remove any existing media area
   block.querySelector(".wr-media-area")?.remove();
 
-  // Phase 1: Convert list lines to <ul><li>
   convertListLines(code, plugin);
 
-  // Phase 2: Process tags, URLs, and internal links via TreeWalker
   const allUrls: string[] = [];
   const embedImages: HTMLElement[] = [];
 
-  // Walk code element and any list elements added to block
   const walkTargets: HTMLElement[] = [code];
   block.querySelectorAll(".wr-reading-list, .wr-blockquote, .wr-plain-text").forEach((el) => {
     walkTargets.push(el as HTMLElement);
@@ -188,7 +179,6 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
         continue;
       }
 
-      // Format markers: bold, italic, strikethrough, highlight
       const formatPatterns: [RegExp, string, string][] = [
         [/^\*\*(.+)\*\*$/, "strong", "**"],
         [/^\*(.+)\*$/, "em", "*"],
@@ -248,14 +238,13 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
         if (IMAGE_EXT.test(fileName)) {
           const file = plugin.app.metadataCache.getFirstLinkpathDest(fileName, "");
           if (file) {
-            // Don't put img in frag (inside <code>). Queue for block-level append.
+            // <code>外に出すためフラグメントには入れず別配列に貯める
             const img = document.createElement("img");
             img.className = "wr-embed-img";
             img.src = plugin.app.vault.getResourcePath(file);
             img.alt = fileName;
             img.loading = "lazy";
             embedImages.push(img);
-            // Remove the text from code
             hasMatch = true;
             continue;
           } else {
@@ -321,7 +310,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
             const decoded = decodeURIComponent(filePath);
             fileName = decoded.split("/").pop() || decoded;
           }
-        } catch { /* fileName stays null */ }
+        } catch {}
         const lowerName = fileName?.toLowerCase() || "";
         const looksLikeImage = IMAGE_EXT.test(lowerName);
         const resolved = fileName ? plugin.app.metadataCache.getFirstLinkpathDest(fileName, "") : null;
@@ -378,9 +367,9 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
   for (const { node, fragments } of nodesToReplace) {
     node.parentNode?.replaceChild(fragments, node);
   }
-  } // end for walkTargets
+  }
 
-  // Append embedded images to block (outside <code>)
+  // 埋め込み画像は<code>外に追加する
   if (embedImages.length > 0) {
     const imgBlock = code.closest(".block-language-wr") || code.closest("pre");
     if (imgBlock) {
@@ -390,11 +379,8 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
     }
   }
 
-  // Render rich previews inside the block container (only once)
   if (allUrls.length > 0) {
-    // Drop obsidian:// URLs that aren't image embeds — they don't produce
-    // OGP cards or any media output, so leaving them in would render an
-    // empty wr-media-area block.
+    // 画像以外のobsidian:// URLは空のメディアブロックを生まないよう除外
     const parsedUrls = extractUrls(allUrls.join(" ")).filter(
       (pu) => pu.type === "image" || !pu.url.startsWith("obsidian://")
     );
@@ -449,7 +435,7 @@ function convertListLines(code: HTMLElement, plugin: WrotPlugin): void {
   const block = code.closest(".block-language-wr") || code.closest("pre");
   if (!block) return;
 
-  // Rebuild: non-list text stays in code, list elements go after code in parent
+  // 再構築: 非リストはcode内、リストは親側に配置する
   code.textContent = "";
   const fragments: (string | HTMLElement)[] = [];
   let currentListEl: HTMLElement | null = null;
@@ -501,9 +487,8 @@ function convertListLines(code: HTMLElement, plugin: WrotPlugin): void {
         currentListEl = null;
         currentListType = null;
       }
-      // Flush any pending plain text before checking for blockquote continuation
       flushPlain();
-      // Check if previous fragment is a blockquote (consecutive > lines)
+      // 直前がblockquoteなら同一blockquoteに連結する
       const lastFrag = fragments[fragments.length - 1];
       if (lastFrag instanceof HTMLElement && lastFrag.tagName === "BLOCKQUOTE") {
         lastFrag.appendChild(document.createElement("br"));
@@ -534,11 +519,10 @@ function convertListLines(code: HTMLElement, plugin: WrotPlugin): void {
           if (!file) return;
           const data = await plugin.app.vault.read(file);
           const fileLines = data.split("\n");
-          // Match by full block content to avoid duplicates
+          // 重複避けにブロック全文で一致判定する
           const blockContent = fullText.trim();
           for (let f = 0; f < fileLines.length; f++) {
             if (fileLines[f].match(/^```wr\s+/)) {
-              // Collect body lines until closing ```
               const bodyLines: string[] = [];
               let k = f + 1;
               while (k < fileLines.length && fileLines[k].trim() !== "```") {
@@ -589,15 +573,14 @@ function convertListLines(code: HTMLElement, plugin: WrotPlugin): void {
   if (currentListEl) fragments.push(currentListEl);
   flushPlain();
 
-  // Save original text for copy button
+  // コピーボタン用に元テキストを保持
   code.setAttribute("data-wr-original", fullText);
 
-  // Remove trailing empty strings
   while (fragments.length > 0 && fragments[fragments.length - 1] === "") {
     fragments.pop();
   }
 
-  // Hide code element (keep for copy button), render all fragments in order
+  // コピーボタンの動作を残すためcodeは非表示にして保持
   code.classList.add("wr-code-hidden");
 
   let hasContent = false;

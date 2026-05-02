@@ -9,13 +9,10 @@ export interface Memo {
   lineEnd: number;
 }
 
-// Matches opening line: ```wr 2026-04-02T15:48:51.758+09:00
+// 開始行 ```wr 2026-04-02T15:48:51.758+09:00 にマッチ
 const OPENING_REGEX = /^```wr\s+(.+)$/;
 
-/**
- * Parse all qm code blocks from file content.
- * Timestamp is in the opening fence line (```wr TIMESTAMP), not inside the block.
- */
+// ファイル内容からwrコードブロックを全て抽出する。タイムスタンプは開始フェンス行に格納
 export function parseMemos(fileContent: string): Memo[] {
   const memos: Memo[] = [];
   const lines = fileContent.split("\n");
@@ -38,7 +35,7 @@ export function parseMemos(fileContent: string): Memo[] {
         i++;
       }
       if (i < lines.length) {
-        rawLines.push(lines[i]); // closing ```
+        rawLines.push(lines[i]);
         i++;
       }
 

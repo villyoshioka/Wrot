@@ -1,6 +1,6 @@
 {
   "name": "wrot",
-  "version": "1.9.0",
+  "version": "1.9.1",
   "description": "Daily memo tool with timeline UI for Obsidian",
   "type": "module",
   "scripts": {

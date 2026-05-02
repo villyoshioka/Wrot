@@ -12,13 +12,9 @@ import { MarkdownRenderer, loadPrism } from "obsidian";
 import type WrotPlugin from "./main";
 import { findBlockRanges, type BlockRange } from "./utils/blockSegmenter";
 
-// StateEffect to trigger re-decoration after OGP fetch completes
+// 各種イベントで再装飾をトリガするStateEffect
 const ogpFetched = StateEffect.define<null>();
-
-// StateEffect to trigger re-decoration after tag color rules change
 export const tagRulesChanged = StateEffect.define<null>();
-
-// StateEffect to trigger re-decoration after vault files (e.g. attachments) are created/deleted
 export const vaultFilesChanged = StateEffect.define<null>();
 import {
   extractUrls,
@@ -31,14 +27,7 @@ import {
 import type { OGPCache } from "./utils/ogpCache";
 import type { OGPData } from "./utils/ogpCache";
 
-/**
- * Editor extension that:
- * 1. Highlights #tags and URLs in ```wr code blocks (Decoration.mark)
- * 2. Renders rich URL previews below qm code blocks (Decoration.widget)
- *
- * OGP cards are async — after fetch completes, we trigger a re-decoration
- * so the widget rebuilds with cached data.
- */
+// ライブビュー用の装飾。タグ/URL等のマーク装飾とOGPプレビューウィジェットを管理する
 
 const tagMark = Decoration.mark({ class: "wr-tag-highlight" });
 const urlMark = Decoration.mark({ class: "wr-url-highlight" });
@@ -56,7 +45,7 @@ const highlightMark = Decoration.mark({ class: "wr-highlight-highlight" });
 const replaceHidden = Decoration.replace({});
 const hiddenLine = Decoration.line({ class: "wr-hidden-line" });
 
-// Cached line decorations keyed by class string so CodeMirror sees stable Decoration instances
+// CodeMirrorに安定したインスタンスを渡すため、line装飾はクラス文字列でキャッシュする
 const lineDecoCache = new Map<string, Decoration>();
 function makeLineDeco(classes: (string | null | undefined)[]): Decoration {
   const key = classes.filter(Boolean).join(" ");
@@ -67,8 +56,6 @@ function makeLineDeco(classes: (string | null | undefined)[]): Decoration {
   }
   return deco;
 }
-
-// --- Widgets for list markers ---
 
 class BulletWidget extends WidgetType {
   toDOM(): HTMLElement {
@@ -91,7 +78,7 @@ class CheckboxWidget extends WidgetType {
     cb.addEventListener("click", (e) => {
       e.preventDefault();
       const newChar = this.checked ? " " : "x";
-      // Replace the character inside [ ] — pos points to "- [", so the char is at pos+3
+      // pos は "- [" の先頭。[ ] 内の文字は pos+3
       view.dispatch({ changes: { from: this.pos + 3, to: this.pos + 4, insert: newChar } });
     });
     wrap.appendChild(cb);
@@ -228,13 +215,11 @@ class CodeBlockWidget extends WidgetType {
     if (this.lang) codeEl.className = `language-${this.lang}`;
     codeEl.textContent = this.code;
 
-    // Apply Prism syntax highlighting via Obsidian's public loadPrism() API.
-    // Obsidian's built-in Prism token colors (.token.keyword, etc.) are defined
-    // globally in app.css, so they apply to the widget DOM without extra work.
+    // Obsidian の loadPrism() で構文ハイライトを適用（Prismのトークン色は app.css で定義済み）
     if (this.lang) {
       loadPrism().then((Prism: any) => {
         Prism.highlightElement(codeEl);
-      }).catch(() => { /* fall back to plain text */ });
+      }).catch(() => {});
     }
 
     return container;
@@ -296,10 +281,9 @@ class EmbedImageWidget extends WidgetType {
   ignoreEvent(): boolean { return true; }
 }
 
-// --- Preview Widget (fully synchronous — uses cached OGP data) ---
-
+// プレビューウィジェットはキャッシュ済みOGPデータのみで同期描画する
 class UrlPreviewWidget extends WidgetType {
-  // Snapshot which URLs had cached OGP data at creation time
+  // 生成時点で各URLにキャッシュデータがあったかのスナップショット
   private cachedSnapshot: boolean[];
 
   constructor(
@@ -322,7 +306,6 @@ class UrlPreviewWidget extends WidgetType {
     if (this.parsedUrls.length !== other.parsedUrls.length) return false;
     for (let i = 0; i < this.parsedUrls.length; i++) {
       if (this.parsedUrls[i].url !== other.parsedUrls[i].url) return false;
-      // Compare snapshot: did cache state change between old and new widget?
       if (this.cachedSnapshot[i] !== other.cachedSnapshot[i]) return false;
     }
     return true;
@@ -345,7 +328,7 @@ class UrlPreviewWidget extends WidgetType {
             renderOGPCard(container, cached);
           }
         }
-        // If not cached yet, show nothing — will re-render after fetch
+        // 未キャッシュ時は何も描画しない（フェッチ後に再描画）
       }
     }
 
@@ -356,8 +339,6 @@ class UrlPreviewWidget extends WidgetType {
     return false;
   }
 }
-
-// --- Build Decorations ---
 
 interface WrBlock {
   startLn: number;
@@ -386,14 +367,13 @@ function findWrBlocks(view: EditorView, plugin: WrotPlugin | null): WrBlock[] {
     }
     if (endLn === 0) continue;
 
-    // Extract inner body lines (between opening and closing fence) for block detection
     const bodyLines: string[] = [];
     for (let j = startLn + 1; j < endLn; j++) {
       bodyLines.push(doc.line(j).text);
     }
     const innerBlocks = findBlockRanges(bodyLines);
 
-    // Mark doc-line indices that are inside a nested code/math block
+    // 内側のコード/数式ブロックに含まれる doc 行インデックスを記録
     const blockedDocLines = new Set<number>();
     for (const br of innerBlocks) {
       for (let k = br.startLine; k <= br.endLine; k++) {
@@ -442,10 +422,9 @@ function buildDecorations(
   const builder = new RangeSetBuilder<Decoration>();
   const doc = view.state.doc;
 
-  // Source mode: show raw markdown on all lines (no replace decorations)
+  // ソースモードでは置換装飾を行わず、生のmarkdownをすべて表示する
   const isSourceMode = !view.contentDOM.closest(".is-live-preview");
 
-  // Determine which lines have the cursor
   const cursorLineNums = new Set<number>();
   for (const range of view.state.selection.ranges) {
     const startLine = doc.lineAt(range.from).number;
@@ -453,7 +432,6 @@ function buildDecorations(
     for (let n = startLine; n <= endLine; n++) cursorLineNums.add(n);
   }
 
-  // Check if cursor is inside a qm block (startLn..endLn inclusive)
   const cursorInBlock = (b: WrBlock) => {
     for (let n = b.startLn; n <= b.endLn; n++) {
       if (cursorLineNums.has(n)) return true;
@@ -463,18 +441,15 @@ function buildDecorations(
 
   try {
     for (const block of blocks) {
-      // Apply background color to opening fence line
       const openLine = doc.line(block.startLn);
       builder.add(openLine.from, openLine.from, makeLineDeco(["wr-codeblock-line", block.ruleClass]));
 
-      // In live preview: if cursor is anywhere in this block, show raw markdown
+      // ライブプレビュー: カーソルがブロック内のどこかにあれば生表示する
       const blockHasCursor = cursorInBlock(block);
 
-      // Collect embed images for preview after closing fence
       const embedImages: { src: string; alt: string }[] = [];
 
-      // Map of doc line number -> inner block info (start line only gets the widget).
-      // Lines inside a block but not the start get a background class only (no widget).
+      // 内側ブロック: 開始行のみにウィジェットを描画、それ以外の行は背景クラスのみ
       const innerBlockStartByDocLine = new Map<number, { range: BlockRange; docStart: number; docEnd: number }>();
       const innerBlockInsideDocLines = new Set<number>();
       for (const br of block.innerBlocks) {
@@ -486,16 +461,13 @@ function buildDecorations(
         }
       }
 
-      // Tags, URLs, and format marks with marker hiding
       for (let j = block.startLn + 1; j < block.endLn; j++) {
         const l = doc.line(j);
         const showRaw = isSourceMode || blockHasCursor;
 
-        // Handle nested fenced-code / display-math blocks
         const innerStart = innerBlockStartByDocLine.get(j);
 
-        // While editing the outer memo, keep raw text visible for nested blocks too.
-        // Skip inline format/tag processing inside nested block range.
+        // 編集中（生表示）はネストブロックも含めて生のテキストを保つ
         if (showRaw && innerBlockInsideDocLines.has(j)) {
           builder.add(l.from, l.from, makeLineDeco(["wr-codeblock-line", block.ruleClass]));
           continue;
@@ -504,14 +476,13 @@ function buildDecorations(
         if (innerStart && !showRaw) {
           const { range, docStart, docEnd } = innerStart;
 
-          // Extract inner text lines (the fence-delimited body)
           const innerBodyLines: string[] = [];
           const bodyStart = docStart + 1;
           const bodyEnd = docEnd - 1;
           for (let k = bodyStart; k <= bodyEnd; k++) {
             innerBodyLines.push(doc.line(k).text);
           }
-          // Handle single-line math ($$x$$) or unclosed blocks (docStart === docEnd)
+          // 1行$$x$$や未閉じブロック（docStart === docEnd）に対応
           let widgetContent: string;
           if (range.kind === "mathblock" && docStart === docEnd) {
             const lineText = doc.line(docStart).text.trim();
@@ -523,19 +494,16 @@ function buildDecorations(
             widgetContent = innerBodyLines.join("\n");
           }
 
-          // Apply line bg to the start line only
           builder.add(l.from, l.from, makeLineDeco(["wr-codeblock-line", block.ruleClass]));
 
-          // Replace the start-line text with the widget (inline replace is allowed
-          // from a ViewPlugin; block replace is not).
+          // ViewPluginからは inline replace のみ可能（block replace は不可）
           const startLine = doc.line(docStart);
           const widget = range.kind === "codeblock"
             ? Decoration.replace({ widget: new CodeBlockWidget(widgetContent, range.lang || "", app, plugin, block.ruleClass) })
             : Decoration.replace({ widget: new MathBlockWidget(widgetContent, block.ruleClass) });
           builder.add(startLine.from, startLine.to, widget);
 
-          // Hide each subsequent line by replacing its content with nothing and
-          // collapsing the line itself (hiddenLine deco hides the row).
+          // 残りの行は内容を空に置換し、hiddenLine で行自体を非表示にする
           for (let k = docStart + 1; k <= docEnd; k++) {
             const kl = doc.line(k);
             builder.add(kl.from, kl.from, hiddenLine);
@@ -544,17 +512,14 @@ function buildDecorations(
             }
           }
 
-          // Advance outer loop past this block
           j = docEnd;
           continue;
         }
 
-        // Inside an inner block but not the start — handled already at innerStart branch
         if (innerBlockInsideDocLines.has(j)) {
           continue;
         }
 
-        // Apply background color class (or combined blockquote+bg class) to this line
         const quotePrefix = l.text.startsWith("> ") ? 2 : l.text.startsWith(">") ? 1 : 0;
         const isQuoteLine = quotePrefix > 0;
         const hasObsidianUrl = !showRaw && /obsidian:\/\//.test(l.text);
@@ -576,12 +541,10 @@ function buildDecorations(
           builder.add(l.from, l.from, makeLineDeco(["wr-codeblock-line", block.ruleClass]));
         }
 
-        // Collect all decorations for this line, then sort and add
         const entries: { from: number; to: number; deco: Decoration }[] = [];
-        // Track code ranges to avoid format matching inside code
+        // インラインコード内をformat判定から除外するためのレンジ
         const codeRanges: { from: number; to: number }[] = [];
 
-        // --- Block-level elements (line start) ---
         const checkMatch = l.text.match(/^- \[([ x])\] /);
         const listMatch = !checkMatch && l.text.match(/^- /);
 
@@ -634,16 +597,14 @@ function buildDecorations(
           }
         }
 
-        // --- Inline elements ---
         let match;
 
-        // Tags
         const tagRegex = /#[^\s#]+/g;
         while ((match = tagRegex.exec(l.text)) !== null) {
           entries.push({ from: l.from + match.index, to: l.from + match.index + match[0].length, deco: tagMark });
         }
 
-        // Markdown links [label](url) — processed before plain URLs to prevent overlap
+        // 通常URLとの重複を避けるためmarkdownリンクを先に処理
         const mdLinkRanges: { from: number; to: number }[] = [];
         const mdLinkRegex = /\[([^\[\]\n]+)\]\(((?:https?|obsidian):\/\/[^\s)]+)\)/g;
         while ((match = mdLinkRegex.exec(l.text)) !== null) {
@@ -667,7 +628,6 @@ function buildDecorations(
         const insideMdLink = (f: number, t: number) =>
           mdLinkRanges.some((r) => f >= r.from && t <= r.to);
 
-        // URLs
         const urlRegex = /(?:https?|obsidian):\/\/[^\s<>"'\]]+/g;
         while ((match = urlRegex.exec(l.text)) !== null) {
           const from = l.from + match.index;
@@ -682,7 +642,7 @@ function buildDecorations(
                 const decoded = decodeURIComponent(filePath);
                 fileName = decoded.split("/").pop() || decoded;
               }
-            } catch { /* fileName stays null */ }
+            } catch {}
             const looksLikeImage = !!fileName && IMAGE_EXT_RE.test(fileName);
             const resolved = fileName ? app.metadataCache.getFirstLinkpathDest(fileName, "") : null;
             const isImageEmbed = looksLikeImage && resolved !== null;
@@ -701,13 +661,11 @@ function buildDecorations(
           }
         }
 
-        // Internal links and embeds
         const linkRegex = /!?\[\[[^\]]+\]\]/g;
         while ((match = linkRegex.exec(l.text)) !== null) {
           const from = l.from + match.index;
           const to = from + match[0].length;
           const isEmbed = match[0].startsWith("!");
-          // Extract the inner link name: strip leading `![[` or `[[` and trailing `]]`
           const innerName = isEmbed ? match[0].slice(3, -2) : match[0].slice(2, -2);
           const resolved = app.metadataCache.getFirstLinkpathDest(innerName, "") !== null;
           if (!showRaw) {
@@ -719,7 +677,6 @@ function buildDecorations(
                 embedImages.push({ src, alt: innerName });
                 continue;
               }
-              // Image embed but file not found: show as embed-missing
               entries.push({
                 from,
                 to,
@@ -727,7 +684,6 @@ function buildDecorations(
               });
               continue;
             }
-            // Non-image embed and plain internal link: replace with a clickable link widget
             entries.push({
               from,
               to,
@@ -735,18 +691,16 @@ function buildDecorations(
             });
             continue;
           }
-          // showRaw (cursor on this line): keep raw `![[...]]` / `[[...]]` but still color it
+          // showRaw時は記号を残しつつ色付けのみ行う
           entries.push({ from, to, deco: resolved ? internalLinkMark : internalLinkUnresolvedMark });
         }
 
-        // Inline code
         const codeRegex = /`[^`]+`/g;
         while ((match = codeRegex.exec(l.text)) !== null) {
           const from = l.from + match.index;
           const to = from + match[0].length;
           codeRanges.push({ from, to });
           if (showRaw) {
-            // Cursor line: show backticks, style whole span
             entries.push({ from, to, deco: inlineCodeMark });
           } else {
             entries.push({ from, to: from + 1, deco: replaceHidden });
@@ -755,7 +709,6 @@ function buildDecorations(
           }
         }
 
-        // Inline math $...$
         const mathRegex = /\$([^$]+)\$/g;
         while ((match = mathRegex.exec(l.text)) !== null) {
           const from = l.from + match.index;
@@ -773,11 +726,9 @@ function buildDecorations(
           }
         }
 
-        // Helper: check if range is inside a code span
         const insideCode = (f: number, t: number) =>
           codeRanges.some((r) => f >= r.from && t <= r.to);
 
-        // Format patterns: hide markers on non-cursor lines, show raw on cursor lines
         const boldRanges: { from: number; to: number }[] = [];
 
         const boldRegex = /\*\*[^*]+\*\*/g;
@@ -795,7 +746,7 @@ function buildDecorations(
           }
         }
 
-        // Italic: mask out bold ranges then find *...* pairs
+        // Italic: bold箇所をマスクしてから *...* を検出
         {
           const chars = [...l.text];
           for (const br of boldRanges) {
@@ -847,18 +798,17 @@ function buildDecorations(
           }
         }
 
-        // Sort all entries by position and add to builder
         entries.sort((a, b) => a.from - b.from || a.to - b.to);
         for (const e of entries) {
           builder.add(e.from, e.to, e.deco);
         }
       }
 
-      // Apply background color to closing fence line
+      // 閉じフェンス行に背景色を適用
       const closeLine = doc.line(block.endLn);
       builder.add(closeLine.from, closeLine.from, makeLineDeco(["wr-codeblock-line", block.ruleClass]));
 
-      // Preview widgets after closing ```
+      // 閉じフェンスの後にプレビューウィジェットを配置
       const endLine = doc.line(block.endLn);
 
       if (embedImages.length > 0 && !blockHasCursor) {
@@ -873,9 +823,7 @@ function buildDecorations(
       }
 
       if (block.urlTexts.length > 0) {
-        // Drop obsidian:// URLs that aren't image embeds — they don't produce
-        // OGP cards or any media output, so leaving them in would render an
-        // empty wr-media-area block.
+        // 画像以外のobsidian:// URLは空のメディアブロックを生まないよう除外
         const parsedUrls = extractUrls(block.urlTexts.join(" ")).filter(
           (pu) => pu.type === "image" || !pu.url.startsWith("obsidian://")
         );
@@ -902,7 +850,6 @@ function buildDecorations(
   return builder.finish();
 }
 
-// --- Export ---
 
 export function createWrEditorExtension(ogpCache: OGPCache, app: App, plugin: WrotPlugin, getCheckStrikethrough: () => boolean) {
   return ViewPlugin.fromClass(
@@ -915,7 +862,7 @@ export function createWrEditorExtension(ogpCache: OGPCache, app: App, plugin: Wr
         this.currentView = view;
         this.blocks = findWrBlocks(view, plugin);
         this.decorations = buildDecorations(view, ogpCache, this.blocks, app, plugin, getCheckStrikethrough());
-        // Trigger fetch after CM initialization is complete
+        // CodeMirror初期化後にフェッチを開始
         requestAnimationFrame(() => this.fetchMissing());
       }
 
@@ -941,17 +888,17 @@ export function createWrEditorExtension(ogpCache: OGPCache, app: App, plugin: Wr
       }
 
       private fetchMissing() {
-        // Kick off OGP fetches for all URLs; when any completes, dispatch effect
+        // 全URLのOGPフェッチを開始し、完了時にeffectをディスパッチして再装飾
         for (const block of this.blocks) {
           const parsedUrls = extractUrls(block.urlTexts.join(" "));
           for (const pu of parsedUrls) {
             if (pu.type === "image") continue;
             if (ogpCache.get(pu.url)) continue; // Already cached
             ogpCache.fetchOGP(pu.url).then(() => {
-              // OGP data now cached — use latest view reference
+              // フェッチ完了時点で最新のview参照を使う
               try {
                 this.currentView.dispatch({ effects: ogpFetched.of(null) });
-              } catch { /* ignore if view is destroyed */ }
+              } catch {}
             });
           }
         }

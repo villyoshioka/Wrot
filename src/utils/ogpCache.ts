@@ -32,11 +32,10 @@ export class OGPCache {
     if (!this.enabled) return null;
     if (url.startsWith("obsidian://")) return null;
 
-    // Return cached data if fresh
     const cached = this.get(url);
     if (cached) return cached;
 
-    // Deduplicate in-flight requests
+    // 同一URLへの並行リクエストをまとめる
     const inflight = this.pending.get(url);
     if (inflight) return inflight;
 
@@ -86,7 +85,7 @@ export class OGPCache {
 
   private parseOGP(html: string, url: string): OGPData {
     const get = (prop: string): string | undefined => {
-      // Match both property= and name= variants, handle single/double quotes
+      // property=/name= 両対応、シングル/ダブルクォート両対応
       const re = new RegExp(
         `<meta[^>]*(?:property|name)=["']og:${prop}["'][^>]*content=["']([^"']*)["']`,
         "i"
@@ -94,7 +93,7 @@ export class OGPCache {
       const match = html.match(re);
       if (match) return match[1];
 
-      // Try reversed attribute order: content before property
+      // 属性順が content → property の場合に対応
       const re2 = new RegExp(
         `<meta[^>]*content=["']([^"']*)["'][^>]*(?:property|name)=["']og:${prop}["']`,
         "i"

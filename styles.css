@@ -93,7 +93,7 @@
 /* Input Area */
 .wr-input-area {
   margin-bottom: 8px;
-  background: var(--wr-bg-color, #f0efeb);
+  background: var(--wr-bg-color, #f8f8f8);
   border-radius: 12px;
   padding: 6px 14px 8px;
 }
@@ -282,7 +282,7 @@
 
 /* Memo Card */
 .wr-card {
-  background: var(--wr-bg-color, #f0efeb);
+  background: var(--wr-bg-color, #f8f8f8);
   border-radius: 10px;
   padding: 12px 14px;
   position: relative;
@@ -863,8 +863,8 @@ body.wr-font-follow .wr-pin-indicator .svg-icon {
    ======================================== */
 
 div.wr-reading-card {
-  background: var(--wr-bg-color, #f0efeb) !important;
-  background-color: var(--wr-bg-color, #f0efeb) !important;
+  background: var(--wr-bg-color, #f8f8f8) !important;
+  background-color: var(--wr-bg-color, #f8f8f8) !important;
   border-radius: 8px;
   padding: 12px 16px;
   margin: 4px 0;
@@ -875,13 +875,13 @@ div.wr-reading-card {
 /* コードブロックプロセッサ出力の親要素 + Reading View */
 div.block-language-wr,
 .language-wr {
-  background: var(--wr-bg-color, #f0efeb) !important;
-  background-color: var(--wr-bg-color, #f0efeb) !important;
+  background: var(--wr-bg-color, #f8f8f8) !important;
+  background-color: var(--wr-bg-color, #f8f8f8) !important;
 }
 
 /* Live Preview: qm code block lines */
 .wr-codeblock-line {
-  background-color: var(--wr-bg-color, #f0efeb) !important;
+  background-color: var(--wr-bg-color, #f8f8f8) !important;
 }
 
 .wr-hidden-line {
@@ -904,8 +904,8 @@ div.block-language-wr {
 
 div.block-language-wr *:not(.wr-inline-code-highlight),
 .wr-flair-bg {
-  background: var(--wr-bg-color, #f0efeb) !important;
-  background-color: var(--wr-bg-color, #f0efeb) !important;
+  background: var(--wr-bg-color, #f8f8f8) !important;
+  background-color: var(--wr-bg-color, #f8f8f8) !important;
 }
 
 /* LV: .code-block-flair doubles as the copy button in Live Preview. Its hit area
@@ -1051,7 +1051,7 @@ div.block-language-wr pre {
   border-radius: 8px !important;
   overflow: hidden !important;
   cursor: pointer !important;
-  background: var(--wr-bg-color, #f0efeb) !important;
+  background: var(--wr-bg-color, #f8f8f8) !important;
   text-decoration: none !important;
   color: inherit !important;
   height: 120px !important;
@@ -1341,10 +1341,8 @@ body:not(.wr-font-follow).is-mobile .wr-timestamp {
   cursor: not-allowed;
 }
 
-/* Mobile: keep non-text-input setting rows on a single line (matches Obsidian
-   core appearance tab where label stays left and control sits on the right).
-   Text inputs keep the existing wrap-below layout so long values stay usable. */
-.is-mobile .wr-settings .setting-item:not(:has(.setting-item-control input[type="text"])) {
+/* モバイル: テキスト入力とセレクトは縦並び維持、それ以外は横1段に揃える */
+.is-mobile .wr-settings .setting-item:not(:has(.setting-item-control input[type="text"])):not(:has(.setting-item-control select)) {
   display: flex !important;
   flex-wrap: nowrap !important;
   flex-direction: row !important;
@@ -1352,14 +1350,14 @@ body:not(.wr-font-follow).is-mobile .wr-timestamp {
   gap: 12px;
 }
 
-.is-mobile .wr-settings .setting-item:not(:has(.setting-item-control input[type="text"])) > .setting-item-info {
+.is-mobile .wr-settings .setting-item:not(:has(.setting-item-control input[type="text"])):not(:has(.setting-item-control select)) > .setting-item-info {
   flex: 1 1 auto !important;
   min-width: 0 !important;
   width: auto !important;
   margin: 0 !important;
 }
 
-.is-mobile .wr-settings .setting-item:not(:has(.setting-item-control input[type="text"])) > .setting-item-control {
+.is-mobile .wr-settings .setting-item:not(:has(.setting-item-control input[type="text"])):not(:has(.setting-item-control select)) > .setting-item-control {
   flex: 0 0 auto !important;
   justify-content: flex-end !important;
   width: auto !important;

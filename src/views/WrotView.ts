@@ -13,9 +13,7 @@ declare const moment: typeof import("moment");
 export class WrotView extends ItemView {
   plugin: WrotPlugin;
   private currentDate: ReturnType<typeof moment>;
-  // True while the view follows "today" — set on open and on the today
-  // button, cleared the moment the user navigates by prev/next or jumps to
-  // a specific date. Only the "anchored" mode auto-rolls across midnight.
+  // 「今日」追従中フラグ。trueのときだけ日付変更を跨いで自動更新する
   private anchoredToToday: boolean = true;
   private listContainer: HTMLElement;
   private dateLabel: HTMLElement;
@@ -62,16 +60,10 @@ export class WrotView extends ItemView {
     container.empty();
     container.addClass("wr-container");
 
-    // Date navigation
     this.buildDateNav(container);
-
-    // Input area
     this.buildInputArea(container);
-
-    // Memo list
     this.listContainer = container.createDiv({ cls: "wr-list" });
 
-    // Mod+Enter to submit memo (register on view scope to override Obsidian's built-in hotkey)
     this.scope!.register(["Mod"], "Enter", (evt) => {
       if (document.activeElement === this.textarea) {
         evt.preventDefault();
@@ -81,22 +73,17 @@ export class WrotView extends ItemView {
       }
     });
 
-    // Shorten date label on iPad pinned sidebar (WorkspaceSidedock = pinned)
+    // iPadの固定サイドバーでは日付ラベルを短縮表示
     if (Platform.isTablet && this.leaf.getRoot() instanceof WorkspaceSidedock) {
       this.isCollapsed = true;
     }
 
     await this.refresh();
 
-    // Watch for file changes (after initial refresh to avoid race condition)
+    // 初回描画後に登録（競合回避のため）
     this.registerFileWatcher();
 
-    // When the user returns focus to Wrot after the calendar day has rolled
-    // over, re-anchor `currentDate` to today so a posted memo lands in the
-    // right note (matters most when the core date format groups multiple days
-    // into one file, e.g. weekly `GGGG年WW週` or monthly `YYYY年MM月`).
-    // Only auto-rolls when the view was already showing today; an explicitly
-    // navigated past/future date is left alone.
+    // 日付追従中にWrotへ戻ったら今日へスナップ（週次/月次フォーマット対応）
     this.registerEvent(
       this.app.workspace.on("active-leaf-change", (leaf) => {
         if (leaf !== this.leaf) return;
@@ -131,19 +118,13 @@ export class WrotView extends ItemView {
         this.refresh();
       }
     });
-    // Watch for file deletion — refresh to update unresolved-link styling as well.
-    // Also covers attachment images so embed previews update when an image is deleted.
-    // Use `metadataCache.on("deleted")` instead of `vault.on("delete")` because the
-    // latter fires before metadataCache is updated, leaving `getFirstLinkpathDest`
-    // returning the soon-to-be-deleted file.
+    // 削除はvault.on("delete")だとmetadataCache更新前に発火するためmetadataCache側で監視
     const TRIGGER_EXT = /^(md|png|jpe?g|gif|webp|svg|bmp)$/i;
     this.fileDeleteRef = this.app.metadataCache.on("deleted", (file) => {
       if (!(file instanceof TFile)) return;
       if (!TRIGGER_EXT.test(file.extension)) return;
       this.refresh();
     });
-    // Watch for file creation so that previously-unresolved `[[X]]` links pick up their
-    // newly-created target and re-render in normal (resolved) style.
     this.fileCreateRef = this.app.vault.on("create", (file) => {
       if (!(file instanceof TFile)) return;
       if (!TRIGGER_EXT.test(file.extension)) return;
@@ -166,12 +147,7 @@ export class WrotView extends ItemView {
     }
   }
 
-  /**
-   * If the view is still anchored to today but the calendar day has rolled
-   * over, snap `currentDate` to the new today and refresh. No-op if the user
-   * has navigated away from today — that intent must not be silently
-   * overridden, even if the new target happens to be yesterday.
-   */
+  // 「今日」追従中のみ、現在日付を最新の今日へ更新する
   private async maybeRollToToday(): Promise<void> {
     if (!this.anchoredToToday) return;
     const now = moment();
@@ -180,11 +156,7 @@ export class WrotView extends ItemView {
     await this.refresh();
   }
 
-  /**
-   * Reveal the given file in an existing tab if it is already open anywhere
-   * in the workspace; otherwise open it in a new tab. Prevents duplicate
-   * tabs when the user repeatedly taps the date label.
-   */
+  // 既に開かれているタブがあればそこへフォーカスし、なければ新規タブで開く
   private openOrFocusFile(file: TFile): void {
     let existingLeaf: WorkspaceLeaf | null = null;
     this.app.workspace.iterateAllLeaves((leaf) => {
@@ -240,7 +212,6 @@ export class WrotView extends ItemView {
   private buildInputArea(container: HTMLElement): void {
     const inputArea = container.createDiv({ cls: "wr-input-area" });
 
-    // Header: right-aligned submit button
     const header = inputArea.createDiv({ cls: "wr-input-header" });
     const submitBtn = header.createEl("button", {
       cls: "wr-submit-btn",
@@ -253,13 +224,11 @@ export class WrotView extends ItemView {
     submitBtn.addEventListener("click", () => this.submitMemo());
     this.submitBtnEl = submitBtn;
 
-    // Textarea
     this.textarea = inputArea.createEl("textarea", {
       cls: "wr-textarea",
       attr: { placeholder: this.plugin.settings.inputPlaceholder },
     });
 
-    // Auto-grow: expand textarea as content grows
     const autoGrow = () => {
       this.textarea.style.height = "auto";
       this.textarea.style.height = this.textarea.scrollHeight + "px";
@@ -267,9 +236,9 @@ export class WrotView extends ItemView {
     this.textarea.addEventListener("input", autoGrow);
 
     this.textarea.addEventListener("keydown", (e: KeyboardEvent) => {
-      if (e.isComposing) return; // IME変換中は無視
+      if (e.isComposing) return;
       if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-        return; // Handled by Obsidian command
+        return;
       }
       if (e.key === "Enter" && !e.shiftKey) {
         const ta = this.textarea;
@@ -278,11 +247,9 @@ export class WrotView extends ItemView {
         const lineStart = val.lastIndexOf("\n", pos - 1) + 1;
         const line = val.slice(lineStart, pos);
 
-        // Check for list patterns
-        const checkMatch = line.match(/^- \[[ x]\] (.*)$/);
+            const checkMatch = line.match(/^- \[[ x]\] (.*)$/);
         const listMatch = !checkMatch && line.match(/^- (.*)$/);
         const olMatch = !checkMatch && !listMatch && line.match(/^(\d+)\.\s?(.*)$/);
-
         if (checkMatch) {
           e.preventDefault();
           if (checkMatch[1] === "") {
@@ -321,11 +288,9 @@ export class WrotView extends ItemView {
       }
     }, true);
 
-    // Thumbnail preview area (between textarea and toolbar)
     this.thumbnailContainer = inputArea.createDiv({ cls: "wr-thumbnail-container" });
     this.thumbnailContainer.style.display = "none";
 
-    // Paste / drop handlers for images
     this.textarea.addEventListener("paste", (e: ClipboardEvent) => {
       const files = e.clipboardData?.files;
       if (!files || files.length === 0) return;
@@ -350,7 +315,6 @@ export class WrotView extends ItemView {
       this.setPendingImage(file);
     });
 
-    // Bottom toolbar (Misskey-style icon buttons)
     const toolbar = inputArea.createDiv({ cls: "wr-input-toolbar" });
 
     const imageAddBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn" });
@@ -383,7 +347,6 @@ export class WrotView extends ItemView {
     setIcon(olBtn, "list-ordered");
     olBtn.addEventListener("mousedown", (e) => e.preventDefault());
 
-    // Click handlers
     embedBtn.addEventListener("click", () => {
       const ta = this.textarea;
       if (ta.selectionStart !== ta.selectionEnd) {
@@ -426,7 +389,6 @@ export class WrotView extends ItemView {
         return;
       }
       if (this.activeFormatMode === "bold") {
-        // Close bold mode — if empty, remove opening marker too
         const pos = ta.selectionStart;
         if (pos >= 2 && ta.value.slice(pos - 2, pos) === "**") {
           ta.value = ta.value.slice(0, pos - 2) + ta.value.slice(pos);
@@ -437,7 +399,6 @@ export class WrotView extends ItemView {
         }
         this.activeFormatMode = null;
       } else {
-        // Open bold mode
         const pos = ta.selectionStart;
         ta.value = ta.value.slice(0, pos) + "**" + ta.value.slice(pos);
         ta.selectionStart = ta.selectionEnd = pos + 2;
@@ -455,7 +416,6 @@ export class WrotView extends ItemView {
         return;
       }
       if (this.activeFormatMode === "italic") {
-        // Close italic mode — if empty, remove opening marker too
         const pos = ta.selectionStart;
         if (pos >= 1 && ta.value.slice(pos - 1, pos) === "*") {
           ta.value = ta.value.slice(0, pos - 1) + ta.value.slice(pos);
@@ -466,7 +426,6 @@ export class WrotView extends ItemView {
         }
         this.activeFormatMode = null;
       } else {
-        // Open italic mode
         const pos = ta.selectionStart;
         ta.value = ta.value.slice(0, pos) + "*" + ta.value.slice(pos);
         ta.selectionStart = ta.selectionEnd = pos + 1;
@@ -488,7 +447,6 @@ export class WrotView extends ItemView {
       this.insertAtLineStart("1. ");
       this.updateToolbarActive(listBtn, checkBtn, olBtn);
     });
-    // Format menu button (3-dot)
     const formatBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn wr-format-btn" });
     setIcon(formatBtn, "ellipsis");
     formatBtn.addEventListener("mousedown", (e) => e.preventDefault());
@@ -539,7 +497,6 @@ export class WrotView extends ItemView {
       }, e as MouseEvent);
     });
 
-    // Update active state on cursor move / input
     const updateActive = () => {
       validateActiveFormatMode();
       this.updateToolbarActive(listBtn, checkBtn, olBtn);
@@ -552,9 +509,7 @@ export class WrotView extends ItemView {
     this.textarea.addEventListener("click", updateActive);
     this.textarea.addEventListener("select", updateActive);
 
-    // Detect toolbar wrapping: compare first and last button offsetTop.
-    // offsetTop is unaffected by padding changes, so toggling the wrapped class
-    // will not feedback-loop through ResizeObserver.
+    // ツールバーの折り返し検出。offsetTopはpadding変更の影響を受けないためResizeObserverでループしない
     const updateToolbarWrapped = () => {
       const buttons = toolbar.querySelectorAll<HTMLElement>(".wr-toolbar-btn");
       if (buttons.length < 2) return;
@@ -641,7 +596,6 @@ export class WrotView extends ItemView {
   }
 
   async submitMemo(): Promise<void> {
-    // Auto-close format mode before submit
     if (this.activeFormatMode) {
       const marker = this.activeFormatMode === "bold" ? "**" : "*";
       this.textarea.value = this.textarea.value + marker;
@@ -650,10 +604,7 @@ export class WrotView extends ItemView {
     const rawText = this.textarea.value.trim().replace(/＃/g, "#");
     if (!rawText && !this.pendingImage) return;
 
-    // If the view is still anchored to today but the calendar day has rolled
-    // over, re-anchor before resolving the target file. This prevents "wrote
-    // to last week's note" when the core date format groups multiple days
-    // into one file (e.g. weekly `GGGG年WW週`).
+    // 投稿先を確定する直前に「今日」へ再追従する（週次/月次の集約フォーマット対策）
     if (this.anchoredToToday && !this.currentDate.isSame(moment(), "day")) {
       this.currentDate = moment();
     }
@@ -688,25 +639,21 @@ export class WrotView extends ItemView {
     if (this.refreshing) return;
     this.refreshing = true;
     try {
-      // Update date label
       const isToday = this.currentDate.isSame(moment(), "day");
       const dateText = this.isCollapsed
         ? this.currentDate.format("MM/DD")
         : this.currentDate.format("YYYY\u5e74MM\u6708DD\u65e5");
       this.dateLabel.setText(isToday ? `${dateText}\uff08\u4eca\u65e5\uff09` : dateText);
 
-      // Clear list
       this.listContainer.empty();
 
-      // Resolve and render pinned memos first (independent of the current date).
-      // This runs before the per-date section so pins sit at the top of the timeline.
+      // \u30d4\u30f3\u7559\u3081\u306f\u73fe\u5728\u65e5\u4ed8\u3068\u72ec\u7acb\u3057\u3066\u30bf\u30a4\u30e0\u30e9\u30a4\u30f3\u5148\u982d\u306b\u8868\u793a\u3059\u308b\u305f\u3081\u5148\u306b\u89e3\u6c7a
       const pinnedResolved = await this.resolvePinnedMemos();
       const pinnedTimestamps = new Set(pinnedResolved.map((p) => p.memo.time));
       for (const { memo, filePath } of pinnedResolved) {
         this.renderMemoCard(memo, { pinned: true, filePath });
       }
 
-      // Get daily note file (don't create if it doesn't exist)
       const file = getDailyNoteFile(
         this.app,
         this.currentDate
@@ -736,7 +683,6 @@ export class WrotView extends ItemView {
       }
 
       for (const memo of memos) {
-        // Skip memos that are already rendered in the pinned area (same day view only).
         if (pinnedTimestamps.has(memo.time)) continue;
         this.renderMemoCard(memo, { pinned: false, filePath: file.path });
       }
@@ -745,15 +691,7 @@ export class WrotView extends ItemView {
     }
   }
 
-  /**
-   * Look up every pin in plugin settings, read the referenced daily note, and
-   * return the resolved Memo plus its file path. Pins whose memo no longer
-   * exists are silently skipped (display only \u2014 no settings mutation here;
-   * orphan cleanup happens on pin add/remove operations).
-   *
-   * Order of the result follows the order in `settings.pins` (most recently
-   * pinned first).
-   */
+  // \u30d4\u30f3\u8a2d\u5b9a\u304b\u3089\u5b9f\u4f53\u30e1\u30e2\u3092\u89e3\u6c7a\u3059\u308b\uff08\u8a2d\u5b9a\u306e\u6574\u7406\u306f\u30d4\u30f3\u8ffd\u52a0/\u524a\u9664\u5074\u3067\u884c\u3046\uff09
   private async resolvePinnedMemos(): Promise<{ memo: Memo; filePath: string }[]> {
     const pins = this.plugin.settings.pins;
     if (!pins || pins.length === 0) return [];
@@ -787,11 +725,7 @@ export class WrotView extends ItemView {
     return this.plugin.settings.pins.some((p) => p.timestamp === memo.time);
   }
 
-  /**
-   * Remove any pin entries whose underlying memo no longer exists in the
-   * referenced daily note. Called on pin add/remove operations so the stored
-   * list stays accurate without relying on a startup full-vault scan.
-   */
+  // 実体が消えたピンを除去
   private async cleanupOrphanPins(): Promise<boolean> {
     const pins = this.plugin.settings.pins;
     if (pins.length === 0) return false;
@@ -856,7 +790,6 @@ export class WrotView extends ItemView {
       if (idx >= 0) card.classList.add(`wr-tag-rule-${idx}`);
     }
 
-    // Content with inline tag + URL highlighting
     const contentEl = card.createDiv({ cls: "wr-content" });
     const urls = renderTextWithTagsAndUrls(contentEl, memo.content, {
       onTagClick: (tag) => this.openSearch(tag),
@@ -902,10 +835,7 @@ export class WrotView extends ItemView {
       },
     });
 
-    // Rich previews (images, OGP cards, Twitter cards)
-    // Drop obsidian:// URLs that aren't image embeds — they don't produce
-    // OGP cards or any media output, so leaving them in would render an
-    // empty wr-media-area block.
+    // 画像以外のobsidian:// URLは空のメディアブロックを生まないよう除外
     const previewUrls = urls.filter(
       (pu) => pu.type === "image" || !pu.url.startsWith("obsidian://")
     );
@@ -917,10 +847,7 @@ export class WrotView extends ItemView {
       });
     }
 
-    // Footer: timestamp [3-dot menu]
-    // The pin indicator is rendered separately (absolute-positioned to the
-    // card's bottom-right corner) so pin/unpin doesn't affect the 3-dot
-    // button's position or tap area.
+    // ピン表示は3点メニューの位置/当たり判定に影響しないようフッター外に配置
     const footer = card.createDiv({ cls: "wr-card-footer" });
 
     const fmt = this.plugin.settings.timestampFormat || "YYYY/MM/DD HH:mm:ss";
@@ -930,11 +857,7 @@ export class WrotView extends ItemView {
     const menuBtn = footer.createEl("span", { cls: "wr-menu-btn" });
     setIcon(menuBtn, "ellipsis");
     menuBtn.addEventListener("click", async (e) => {
-      // Clean up any pins whose memo body has been deleted from the daily note
-      // before reading the pin count for limit evaluation. Without this, a
-      // user-deleted memo would still occupy a slot toward the limit and the
-      // "ピン留め" entry would stay grayed out until the user pinned or
-      // unpinned something.
+      // ピン上限の判定前に、実体が消えたピンを除去する
       await this.cleanupOrphanPins();
       const pinned = this.isPinned(memo);
       const pinLimit = this.plugin.settings.pinLimit;
@@ -972,10 +895,6 @@ export class WrotView extends ItemView {
       }, e as MouseEvent);
     });
 
-    // Pin indicator lives outside the footer so its presence/absence doesn't
-    // affect the footer layout or the 3-dot button's tap area. Rendered only
-    // when the memo is pinned, absolute-positioned to the card's right edge
-    // at the same vertical level as the footer.
     if (options.pinned) {
       const pinIndicator = card.createEl("span", { cls: "wr-pin-indicator" });
       setIcon(pinIndicator, "pin");
@@ -990,7 +909,6 @@ export class WrotView extends ItemView {
     const lineStart = val.lastIndexOf("\n", pos - 1) + 1;
     const lineText = val.slice(lineStart, val.indexOf("\n", lineStart) === -1 ? undefined : val.indexOf("\n", lineStart));
 
-    // Check if line already has a list prefix
     const prefixes = ["- [ ] ", "- [x] ", "- "];
     let existingPrefix = "";
     for (const p of prefixes) {
@@ -1007,15 +925,12 @@ export class WrotView extends ItemView {
     const isSameType = existingPrefix === prefix ||
       (prefix === "1. " && existingPrefix.match(/^\d+\. $/));
     if (isSameType) {
-      // Toggle off: remove prefix
       ta.value = val.slice(0, lineStart) + val.slice(lineStart + existingPrefix.length);
       ta.selectionStart = ta.selectionEnd = lineStart;
     } else if (existingPrefix) {
-      // Replace existing prefix
       ta.value = val.slice(0, lineStart) + prefix + val.slice(lineStart + existingPrefix.length);
       ta.selectionStart = ta.selectionEnd = lineStart + prefix.length;
     } else {
-      // Insert new prefix
       ta.value = val.slice(0, lineStart) + prefix + val.slice(lineStart);
       ta.selectionStart = ta.selectionEnd = lineStart + prefix.length;
     }
@@ -1042,7 +957,7 @@ export class WrotView extends ItemView {
     }
 
     const insert = "~~~\n\n~~~";
-    const cursorOffset = before.length + 3; // after opening "~~~"
+    const cursorOffset = before.length + 3;
 
     ta.value = before + insert + after;
     ta.selectionStart = ta.selectionEnd = cursorOffset;
@@ -1069,7 +984,7 @@ export class WrotView extends ItemView {
     }
 
     const insert = "$$\n\n$$";
-    const cursorOffset = before.length + 3; // after opening "$$\n"
+    const cursorOffset = before.length + 3;
 
     ta.value = before + insert + after;
     ta.selectionStart = ta.selectionEnd = cursorOffset;
@@ -1102,10 +1017,8 @@ export class WrotView extends ItemView {
 
     let isEmbed = false;
     if (start !== end) {
-      // Selection mode: the whole selection is a complete `![[...]]` or `[[...]]` link
       isEmbed = /^!?\[\[[^\]]*\]\]$/.test(val.slice(start, end));
     } else {
-      // Caret mode: the caret sits inside an existing `![[...]]`
       const before = val.slice(Math.max(0, start - 100), start);
       const after = val.slice(start, start + 100);
       isEmbed = !!before.match(/!\[\[([^\]]*?)$/) && !!after.match(/^([^\]]*?)\]\]/);
@@ -1121,14 +1034,12 @@ export class WrotView extends ItemView {
     const before = val.slice(Math.max(0, pos - 100), pos);
     const after = val.slice(pos, pos + 100);
 
-    // Define all wrap types: [open, close, beforeRegex, afterRegex]
     const wrapTypes: [string, string, RegExp, RegExp][] = [
       ["![[", "]]", /!\[\[([^\]]*?)$/, /^([^\]]*?)\]\]/],
       ["`", "`", /`([^`]*?)$/, /^([^`]*?)`/],
       ["$", "$", /\$([^$]*?)$/, /^([^$]*?)\$/],
     ];
 
-    // Find which wrap type the cursor is currently inside
     let currentType: [string, string] | null = null;
     let currentBefore: RegExpMatchArray | null = null;
     let currentAfter: RegExpMatchArray | null = null;
@@ -1145,7 +1056,6 @@ export class WrotView extends ItemView {
     }
 
     if (!currentType || !currentBefore || !currentAfter) {
-      // Not inside any wrap → insert new
       const insert = open + close;
       ta.value = val.slice(0, pos) + insert + val.slice(pos);
       ta.selectionStart = ta.selectionEnd = pos + open.length;
@@ -1159,11 +1069,9 @@ export class WrotView extends ItemView {
     const content = currentBefore[1] + currentAfter[1];
 
     if (currentType[0] === open) {
-      // Same type → remove
       ta.value = val.slice(0, start) + content + val.slice(end);
       ta.selectionStart = ta.selectionEnd = start + currentBefore[1].length;
     } else {
-      // Different type → switch
       ta.value = val.slice(0, start) + open + content + close + val.slice(end);
       ta.selectionStart = ta.selectionEnd = start + open.length + currentBefore[1].length;
     }
@@ -1178,21 +1086,18 @@ export class WrotView extends ItemView {
     if (start === end) return;
     const val = ta.value;
 
-    // Check if selection is already wrapped with any format marker
     const markers = ["**", "*", "~~", "==", "$"];
     let unwrapped = false;
     for (const m of markers) {
       const before = val.slice(start - m.length, start);
       const after = val.slice(end, end + m.length);
       if (before === m && after === m) {
-        // Remove existing marker
         const newVal = val.slice(0, start - m.length) + val.slice(start, end) + val.slice(end + m.length);
         start -= m.length;
         end -= m.length;
         ta.value = newVal;
         unwrapped = true;
         if (m === open) {
-          // Same format → just toggle off
           ta.selectionStart = start;
           ta.selectionEnd = end;
           ta.focus();
@@ -1203,7 +1108,6 @@ export class WrotView extends ItemView {
       }
     }
 
-    // Apply new format
     const currentVal = ta.value;
     ta.value = currentVal.slice(0, start) + open + currentVal.slice(start, end) + close + currentVal.slice(end);
     ta.selectionStart = start + open.length;
@@ -1212,13 +1116,7 @@ export class WrotView extends ItemView {
     ta.dispatchEvent(new Event("input"));
   }
 
-  /**
-   * Wrap the current selection with `![[...]]` embed brackets, or unwrap if the selection is
-   * already a complete `![[...]]` or `[[...]]` link (including the brackets and the optional `!`).
-   * If the selection contains a `[[...]]` or `![[...]]` inside but is not a clean wrap,
-   * does nothing to avoid producing nested or malformed link syntax.
-   * After either action, the selection is cleared and the caret is placed at the end of the result.
-   */
+  // 選択範囲を `![[...]]` で挟む。既に挟まれていれば外す。入れ子になる場合は何もしない
   private wrapSelectionWithEmbedBrackets(): void {
     const ta = this.textarea;
     const start = ta.selectionStart;
@@ -1227,7 +1125,6 @@ export class WrotView extends ItemView {
     const val = ta.value;
     const selected = val.slice(start, end);
 
-    // Unwrap case: the selection itself is a complete `![[...]]` or `[[...]]` link
     const unwrapMatch = selected.match(/^(!?)\[\[([^\]]*)\]\]$/);
     if (unwrapMatch) {
       const inner = unwrapMatch[2];
@@ -1240,11 +1137,8 @@ export class WrotView extends ItemView {
       return;
     }
 
-    // If the selection contains any partial `[[...]]` / `![[...]]` inside but is not
-    // the clean unwrap case above, bail out to avoid nesting.
     if (/!?\[\[[^\]]*\]\]/.test(selected)) return;
 
-    // Wrap with `![[...]]` and drop the selection, placing the caret after the closing `]]`.
     const wrapped = "![[" + selected + "]]";
     const newVal = val.slice(0, start) + wrapped + val.slice(end);
     ta.value = newVal;
@@ -1260,14 +1154,12 @@ export class WrotView extends ItemView {
     const end = ta.selectionEnd;
     const val = ta.value;
 
-    // Find line boundaries for selection
     const lineStart = val.lastIndexOf("\n", start - 1) + 1;
     const lineEnd = val.indexOf("\n", end - 1);
     const blockEnd = lineEnd === -1 ? val.length : lineEnd;
     const block = val.slice(lineStart, blockEnd);
     const lines = block.split("\n");
 
-    // Check if all lines already have the prefix
     const allHavePrefix = lines.every((l) => l.startsWith(prefix));
 
     const newLines = allHavePrefix
@@ -1284,7 +1176,6 @@ export class WrotView extends ItemView {
   }
 
   private openSearch(tag: string): void {
-    // Use Obsidian's global search
     const searchPlugin = (this.app as any).internalPlugins?.getPluginById?.(
       "global-search"
     );
@@ -1309,12 +1200,7 @@ export class WrotView extends ItemView {
     ta.dispatchEvent(new Event("input"));
   }
 
-  /**
-   * Open a Wrot menu with unified behavior: at most one menu open at a time,
-   * and the trigger button receives `wr-toolbar-active` while the menu is open.
-   * Both investments (exclusivity and active color) are tied to the Menu's
-   * onHide callback so they clean up regardless of how the menu closes.
-   */
+  // メニューは同時に1つだけ開く。トリガーボタンには開いている間 active クラスを付与
   openMenu(trigger: HTMLElement, buildMenu: (m: Menu) => void, evt: MouseEvent): void {
     if (this.currentMenu) {
       this.currentMenu.hide();

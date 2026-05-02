@@ -1,8 +1,6 @@
 import type { OGPData, OGPCache } from "./ogpCache";
 import { segmentBlocks } from "./blockSegmenter";
 
-// --- Constants ---
-
 const IMAGE_EXTENSIONS = [
   ".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".bmp",
 ];
@@ -12,14 +10,10 @@ const URL_REGEX = /(?:https?|obsidian):\/\/[^\s<>"'\]]+/g;
 const TWITTER_REGEX =
   /^https?:\/\/(twitter\.com|x\.com)\/\w+\/status\/\d+/;
 
-// --- Types ---
-
 export interface ParsedUrl {
   url: string;
   type: "image" | "twitter" | "generic";
 }
-
-// --- Security ---
 
 export function isSafeUrl(url: string): boolean {
   try {
@@ -39,10 +33,8 @@ function isSafeImageUrl(url: string): boolean {
   }
 }
 
-// --- URL Detection ---
-
 function cleanUrl(raw: string): string {
-  // Strip trailing punctuation that's likely not part of the URL
+  // 末尾の句読点はURLの一部ではないとして除去
   return raw.replace(/[.,;:!?)]+$/, "");
 }
 
@@ -65,9 +57,7 @@ function classifyUrl(url: string): ParsedUrl["type"] {
     if (IMAGE_EXTENSIONS.some((ext) => pathname.endsWith(ext))) {
       return "image";
     }
-  } catch {
-    // invalid URL, treat as generic
-  }
+  } catch {}
 
   return "generic";
 }
@@ -99,12 +89,7 @@ export function extractUrls(text: string): ParsedUrl[] {
   return urls;
 }
 
-// --- Text Rendering ---
-
-/**
- * Render memo text with both #tag spans and URL links.
- * Returns the list of parsed URLs for rich preview rendering.
- */
+// メモテキストを #tag/URL 等を装飾しつつ描画する。プレビュー描画のため抽出URL一覧を返す
 export function renderTextWithTagsAndUrls(
   container: HTMLElement,
   text: string,
@@ -321,7 +306,6 @@ function renderInlineTokens(
     const linkMatch = !embedMatch && part.match(/^\[\[(.+)\]\]$/);
 
     if (embedMatch) {
-      // Embed: ![[file]]
       const fileName = embedMatch[1];
       if (IMAGE_EXT_RE.test(fileName) && callbacks.resolveImagePath) {
         const src = callbacks.resolveImagePath(fileName);
@@ -334,7 +318,6 @@ function renderInlineTokens(
           container.createEl("span", { cls: "wr-embed-missing", text: `![[${fileName}]]` });
         }
       } else {
-        // Non-image embed: show as link
         const resolved = callbacks.resolveLinkTarget ? callbacks.resolveLinkTarget(fileName) : true;
         const cls = resolved ? "wr-internal-link" : "wr-internal-link wr-internal-link-unresolved";
         const linkEl = container.createEl("a", { cls, text: fileName });
@@ -348,7 +331,6 @@ function renderInlineTokens(
         }
       }
     } else if (linkMatch) {
-      // Internal link: [[note]]
       const linkName = linkMatch[1];
       const resolved = callbacks.resolveLinkTarget ? callbacks.resolveLinkTarget(linkName) : true;
       const cls = resolved ? "wr-internal-link" : "wr-internal-link wr-internal-link-unresolved";
@@ -387,7 +369,6 @@ function renderInlineTokens(
     } else if (part.match(/^obsidian:\/\//)) {
       const url = cleanUrl(part);
       const trailing = part.slice(url.length);
-      // Extract file name from obsidian:// URL
       const fileName = extractObsidianFileName(url);
       const looksLikeImage = classifyUrl(url) === "image";
       const resolvedImage = !!(fileName && callbacks.resolveImagePath && callbacks.resolveImagePath(fileName));
@@ -443,10 +424,7 @@ function renderInlineTokens(
   }
 }
 
-// --- Rich Preview Rendering ---
-// Uses vanilla DOM API only (no Obsidian HTMLElement extensions)
-// so these work in both Obsidian views and CodeMirror widgets.
-
+// Obsidianのビューでも CodeMirror ウィジェット内でも動くよう vanilla DOM API のみを使う
 function el<K extends keyof HTMLElementTagNameMap>(
   tag: K,
   cls?: string,
@@ -541,10 +519,7 @@ export function renderTwitterCard(
   container.appendChild(card);
 }
 
-/**
- * Render all rich previews for a list of URLs into a container.
- * Images render immediately; OGP/Twitter cards load asynchronously.
- */
+// URL一覧のリッチプレビューを描画する。画像は同期、OGP/Twitterカードは非同期で読み込む
 export function renderUrlPreviews(
   container: HTMLElement,
   urls: ParsedUrl[],
@@ -555,7 +530,6 @@ export function renderUrlPreviews(
     if (pu.type === "image") {
       renderImagePreview(container, pu.url, resolveImagePath);
     } else if (pu.url.startsWith("obsidian://")) {
-      // No OGP fetch for obsidian:// URLs; nothing to render here.
       continue;
     } else {
       const placeholder = el("div", "wr-ogp-loading");
@@ -575,8 +549,6 @@ export function renderUrlPreviews(
     }
   }
 }
-
-// --- Helpers ---
 
 function extractDomain(url: string): string {
   try {

@@ -6,20 +6,8 @@ import {
 
 declare const moment: typeof import("moment");
 
-/**
- * Resolve the file path for the given moment using the user's "Daily Notes"
- * core settings (folder + date format + template).
- *
- * We avoid `obsidian-daily-notes-interface`'s `getDailyNote` / `getAllDailyNotes`
- * because those parse filenames assuming `granularity="day"`. That fails for
- * non-daily formats (e.g. `GGGG年WW週`, `YYYY年MM月`, `GGGG-[W]WW`, `YYYY-MM00`),
- * silently misses existing files, and tries to recreate them — causing
- * "Unable to create new file." when the file already exists.
- *
- * Wrot itself stays a daily-view tool. Users get weekly/monthly behavior by
- * setting the core date format so that any day inside the same week/month
- * resolves to the same filename.
- */
+// obsidian-daily-notes-interfaceのgetDailyNoteは日次以外のフォーマット（週次/月次等）で
+// 既存ファイルを検出できないため、自前でフォルダ・日付フォーマットからパスを組み立てる
 function buildNotePath(date: ReturnType<typeof moment>): string {
   const settings = getDailyNoteSettings();
   const format = settings?.format || "YYYY-MM-DD";

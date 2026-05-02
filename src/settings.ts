@@ -37,7 +37,7 @@ export interface WrotSettings {
 export const DEFAULT_SETTINGS: WrotSettings = {
   viewPlacement: "right",
   timestampFormat: "YYYY/MM/DD HH:mm:ss",
-  bgColorLight: "#f0efeb",
+  bgColorLight: "#f8f8f8",
   bgColorDark: "#303030",
   textColorLight: "#454545",
   textColorDark: "#dcddde",
@@ -58,12 +58,9 @@ const SETTINGS_NARROW_THRESHOLD_PX = 600;
 export class WrotSettingTab extends PluginSettingTab {
   plugin: WrotPlugin;
   private narrowObserver: ResizeObserver | null = null;
-  // In-memory only — resets every time the settings tab is reopened so that
-  // each fresh visit starts with all rules locked (guards impulsive edits).
+  // メモリ上のみ。設定タブを開き直すたびに全ルールがロック状態に戻る
   private unlockedRules: Set<number> = new Set();
-  // Set to true before an internal display() rebuild that should preserve the
-  // current lock state (e.g. toggling the feature on, adding a rule).
-  // Reopening the settings tab from outside still resets to all-locked.
+  // display()内部からの再構築でロック状態を保持したい場合にtrueにする
   private skipLockReset = false;
 
   constructor(app: App, plugin: WrotPlugin) {
@@ -79,13 +76,9 @@ export class WrotSettingTab extends PluginSettingTab {
     super.hide();
   }
 
-  /** Collect all scrollable ancestors of containerEl. Different Obsidian
-   * versions/platforms put scroll on different elements (`.modal-content`,
-   * `.vertical-tab-content`, the tab's own containerEl, etc.), so we track
-   * every candidate and restore whichever one actually moved. */
+  // Obsidianのバージョン/プラットフォーム差を吸収するためスクロール対象候補を網羅的に収集する
   private collectScrollCandidates(): HTMLElement[] {
     const list: HTMLElement[] = [];
-    // Include containerEl itself — some Obsidian builds scroll it directly.
     if (this.containerEl.scrollHeight > this.containerEl.clientHeight) {
       list.push(this.containerEl);
     }
@@ -96,8 +89,7 @@ export class WrotSettingTab extends PluginSettingTab {
       const scrolls =
         (overflowY === "auto" || overflowY === "scroll" || overflowY === "overlay") &&
         el.scrollHeight > el.clientHeight;
-      // Also include elements whose scrollTop is already non-zero even if
-      // computed overflow is visible (some WebViews report it that way).
+      // overflowがvisibleでもscrollTopが0でない要素を拾う（WebView対策）
       if (scrolls || el.scrollTop > 0) {
         list.push(el);
       }
@@ -107,7 +99,7 @@ export class WrotSettingTab extends PluginSettingTab {
     return list;
   }
 
-  /** Run `work` while preserving the settings scroll position. */
+  // 設定タブのスクロール位置を保ったまま `work` を実行する
   private withScrollPreserved(work: () => void): void {
     const before = this.collectScrollCandidates().map((el) => ({ el, top: el.scrollTop }));
     work();
@@ -116,7 +108,7 @@ export class WrotSettingTab extends PluginSettingTab {
         if (el.scrollTop !== top) el.scrollTop = top;
       }
     };
-    // Multiple restore attempts — synchronous, next frame, and a fallback tick.
+    // 同期/次フレーム/フォールバックの3段階で復元を試行
     restore();
     requestAnimationFrame(restore);
     setTimeout(restore, 0);
@@ -128,8 +120,7 @@ export class WrotSettingTab extends PluginSettingTab {
     containerEl.empty();
     containerEl.addClass("wr-settings");
 
-    // Reset lock state so every reopen of the settings tab starts locked.
-    // Internal rebuilds set skipLockReset to preserve the current state.
+    // 設定タブの開き直し時はロック状態をリセット（内部再構築時はskipLockResetで保持）
     if (this.skipLockReset) {
       this.skipLockReset = false;
     } else {
@@ -426,7 +417,6 @@ export class WrotSettingTab extends PluginSettingTab {
           })
       );
 
-    // --- Tag color rules ---
     new Setting(containerEl)
       .setName("タグ別に色を変える")
       .setDesc(
@@ -438,17 +428,14 @@ export class WrotSettingTab extends PluginSettingTab {
           await this.plugin.saveSettings();
           this.plugin.applyTagColorRules();
           this.plugin.refreshAllWrDecorations();
-          // Turning the feature on while no meaningful rule exists: unlock
-          // the first rule so the user can start typing right away. "No
-          // meaningful rule" means either an empty array or a single rule
-          // with no tag set yet (a leftover placeholder).
+          // ルールが実質空の状態で機能をオンにしたら、最初のルールをアンロックして即編集可能にする
           const rules = this.plugin.settings.tagColorRules;
           const noMeaningfulRule =
             rules.length === 0 || (rules.length === 1 && rules[0].tag.trim() === "");
           if (v && noMeaningfulRule) {
             this.unlockedRules.add(0);
           }
-          // Rebuild the whole settings tab so the rules block shows/hides cleanly.
+          // ルールブロックの表示/非表示を切り替えるため設定タブ全体を再構築
           this.skipLockReset = true;
           this.withScrollPreserved(() => this.display());
         })
@@ -505,8 +492,7 @@ export class WrotSettingTab extends PluginSettingTab {
           .setName(`ルール ${ruleNumber}`)
           .setClass("wr-tag-rule-label-setting");
 
-        // Lock toggle (🔒/🔓) sits immediately right of the rule label.
-        // Tap to unlock; tap again to relock. State is in-memory only.
+        // ルールラベル右の鍵アイコン。タップでロック/アンロックを切り替え（メモリ上のみ）
         let lockBtnEl: HTMLElement | null = null;
         labelSetting.addExtraButton((btn) => {
           lockBtnEl = btn.extraSettingsEl;
@@ -749,9 +735,7 @@ export class WrotSettingTab extends PluginSettingTab {
               bgColor: DEFAULT_SETTINGS.bgColorLight,
               textColor: DEFAULT_SETTINGS.textColorLight,
             });
-            // Re-lock any previously unlocked existing rules so adding a new
-            // rule doesn't leave older rules editable. The newly added rule
-            // starts unlocked so it can be edited immediately.
+            // 新規ルールを追加したら既存ルールはロックし直し、新ルールだけアンロック状態にする
             this.unlockedRules.clear();
             this.unlockedRules.add(newIndex);
             await this.plugin.saveSettings();

@@ -38,7 +38,6 @@ export default class WrotPlugin extends Plugin {
 
     registerWrotPostProcessor(this);
 
-    // Live Preview: highlight #tags and URLs + rich previews in qm code blocks
     this.registerEditorExtension([createWrEditorExtension(this.ogpCache, this.app, this, () => this.settings.checkStrikethrough)]);
 
     this.addSettingTab(new WrotSettingTab(this.app, this));
@@ -53,14 +52,8 @@ export default class WrotPlugin extends Plugin {
       })
     );
 
-    // Refresh LV/RV when attachment images are created/deleted/renamed so embed
-    // previews update without requiring a manual reload.
-    //
-    // We listen to `metadataCache.on("deleted")` rather than `vault.on("delete")`
-    // because the latter fires before metadataCache is updated — at that moment
-    // `getFirstLinkpathDest` still returns the deleted file, so re-decoration
-    // would not pick up the change. `metadataCache.on("deleted")` fires after
-    // the cache has been updated.
+    // 添付画像の作成/削除/リネーム時にLV/RVを再描画。
+    // 削除はvault.on("delete")だとmetadataCache更新前に発火するためmetadataCache側で監視
     const onAttachmentChange = (file: unknown) => {
       if (!(file instanceof TFile)) return;
       if (!ATTACHMENT_EXT_RE.test(file.extension)) return;
@@ -76,24 +69,20 @@ export default class WrotPlugin extends Plugin {
       const view = leaf.view;
       if (!(view instanceof MarkdownView)) return;
 
-      // Reading View: re-render the preview so the post-processor runs again
+      // リーディングビュー: post-processor を再実行
       const previewMode = (view as any).previewMode;
       if (previewMode?.rerender) {
         try {
           previewMode.rerender(true);
-        } catch {
-          // ignore
-        }
+        } catch {}
       }
 
-      // Live Preview: dispatch a state effect to trigger re-decoration
+      // ライブプレビュー: state effectで再装飾をトリガ
       const cm = (view.editor as any)?.cm;
       if (cm?.dispatch) {
         try {
           cm.dispatch({ effects: vaultFilesChanged.of(null) });
-        } catch {
-          // ignore
-        }
+        } catch {}
       }
     });
   }
@@ -108,7 +97,7 @@ export default class WrotPlugin extends Plugin {
     document.head.appendChild(this.fontStyleEl);
 
     if (this.settings.followObsidianFontSize) {
-      // Scale all sub-sizes from --font-text-size to keep the 14:13:12 ratio.
+      // 14:13:12 の比率を保つため --font-text-size を基準にスケールする
       this.fontStyleEl.textContent = `
         body {
           --wr-font-text: var(--font-text-size);
@@ -148,7 +137,7 @@ export default class WrotPlugin extends Plugin {
     const faintColor = this.blendColor(textColor, bgColor, 0.6);
     const unresolvedLinkColor = this.blendColor(textColor, bgColor, 0.3);
 
-    // Remove and re-append to ensure it's always last in <head>
+    // <head>末尾を維持するため一度remove → append し直す
     if (this.bgStyleEl) {
       this.bgStyleEl.remove();
     }
@@ -181,11 +170,7 @@ export default class WrotPlugin extends Plugin {
       body div.block-language-wr .wr-highlight {
         background: var(--text-highlight-bg) !important;
       }
-      /* LV: the .code-block-flair span doubles as the copy button in Live Preview and
-         its absolute-positioned hit area extends leftward across the memo text. Keeping
-         a filled background here would hide the end of long memos. Force transparent so
-         the underlying card background shows through. RV is unaffected because the
-         .wr-codeblock-line class is Live Preview only. */
+      /* LV: code-block-flair はコピーボタンを兼ねる。当たり判定がメモ末尾を覆うため透過させる */
       body .wr-codeblock-line .code-block-flair {
         background: transparent !important;
         background-color: transparent !important;
@@ -212,8 +197,7 @@ export default class WrotPlugin extends Plugin {
       body .wr-ordered-list li {
         color: ${textColor} !important;
       }
-      /* Restore Prism token colors inside nested code blocks.
-         The base color rule above uses !important so we need !important here too. */
+      /* ネストコードブロック内でPrismトークン色を復元する */
       body .wr-codeblock-display code[class*="language-"],
       body .wr-codeblock-display pre[class*="language-"] {
         color: var(--code-normal) !important;
@@ -376,8 +360,7 @@ export default class WrotPlugin extends Plugin {
     if (!this.settings.tagColorRulesEnabled) return null;
     const rules = this.settings.tagColorRules;
     if (!rules || rules.length === 0 || !memoTags || memoTags.length === 0) return null;
-    // Walk memo tags in the order they appear in the post body; first tag that has
-    // a matching rule wins. The order of rules in settings does not matter.
+    // 本文内の出現順で最初にマッチしたルールを採用（設定の並び順は影響しない）
     for (const raw of memoTags) {
       const tag = raw.replace(/^#/, "").toLowerCase().trim();
       if (!tag) continue;
@@ -410,7 +393,7 @@ export default class WrotPlugin extends Plugin {
       const cls = `wr-tag-rule-${i}`;
 
       parts.push(`
-      /* --- Rule ${i}: background --- */
+      /* Rule ${i}: 背景 */
       body .wr-card.${cls},
       body div.block-language-wr.${cls},
       body pre.${cls},
@@ -427,7 +410,7 @@ export default class WrotPlugin extends Plugin {
         background-color: ${bg} !important;
       }
 
-      /* --- Rule ${i}: text color (excluding tags/links/urls) --- */
+      /* Rule ${i}: 文字色（タグ/リンク/URL除く） */
       body .wr-card.${cls} .wr-content,
       body .wr-card.${cls} .wr-content *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *) {
         color: ${fg} !important;
@@ -443,7 +426,7 @@ export default class WrotPlugin extends Plugin {
         color: ${fg} !important;
       }
 
-      /* --- Rule ${i}: muted elements --- */
+      /* Rule ${i}: サブ要素 */
       body .wr-card.${cls} .wr-timestamp,
       body .wr-card.${cls} .wr-copy-btn,
       body .wr-card.${cls} .wr-copy-btn .svg-icon,
@@ -497,7 +480,7 @@ export default class WrotPlugin extends Plugin {
         stroke: ${accent ?? "var(--text-accent)"} !important;
       }
       ${accent ? `
-      /* --- Rule ${i}: accent color override --- */
+      /* Rule ${i}: アクセント色 */
       body .wr-card.${cls} .wr-tag,
       body .wr-card.${cls} .wr-internal-link,
       body .wr-card.${cls} .wr-url,
@@ -522,7 +505,7 @@ export default class WrotPlugin extends Plugin {
       }
       ` : ""}
 
-      /* --- Rule ${i}: OGP / Twitter cards --- */
+      /* Rule ${i}: OGP/Twitterカード */
       body .wr-card.${cls} .wr-ogp-card,
       body div.block-language-wr.${cls} .wr-ogp-card,
       body pre.${cls} .wr-ogp-card,
@@ -562,11 +545,7 @@ export default class WrotPlugin extends Plugin {
   }
 
   refreshReadingViews(): void {
-    // Sweep lingering per-rule classes (wr-tag-rule-0, wr-tag-rule-1, ...) on blocks
-    // we no longer touch. Constrain to element types we actually apply the class to
-    // and match only trailing-digit class names so settings UI classes like
-    // .wr-tag-rule-label-setting / .wr-tag-rule-separator / .wr-tag-rules-container
-    // are left alone.
+    // 既存blockに残ったwr-tag-rule-数字クラスを掃除する。設定UIのクラスは末尾数字でないため対象外
     const sweepSelector =
       '.wr-card[class*="wr-tag-rule-"], ' +
       'div.block-language-wr[class*="wr-tag-rule-"], ' +
@@ -621,9 +600,7 @@ export default class WrotPlugin extends Plugin {
       if (cm?.dispatch) {
         try {
           cm.dispatch({ effects: tagRulesChanged.of(null) });
-        } catch {
-          // ignore
-        }
+        } catch {}
       }
     });
   }
