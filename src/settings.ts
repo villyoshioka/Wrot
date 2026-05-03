@@ -17,6 +17,7 @@ export type PinLimit = 1 | 3 | 5;
 
 export interface WrotSettings {
   viewPlacement: "left" | "right" | "main";
+  headerDateFormat: string;
   timestampFormat: string;
   bgColorLight: string;
   bgColorDark: string;
@@ -36,6 +37,7 @@ export interface WrotSettings {
 
 export const DEFAULT_SETTINGS: WrotSettings = {
   viewPlacement: "right",
+  headerDateFormat: "YYYY年MM月DD日",
   timestampFormat: "YYYY/MM/DD HH:mm:ss",
   bgColorLight: "#f8f8f8",
   bgColorDark: "#303030",
@@ -171,6 +173,30 @@ export class WrotSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
             this.plugin.applyFontFollow();
           })
+      );
+
+    let headerDateText: TextComponent;
+    new Setting(containerEl)
+      .setName("ヘッダー日付表示形式")
+      .setDesc("日付ナビに表示する日付のフォーマットを指定します。（YYYY, MM, DD などが使えます）空欄で初期値に戻ります。")
+      .addText((text) => {
+        headerDateText = text;
+        text
+          .setPlaceholder(DEFAULT_SETTINGS.headerDateFormat)
+          .setValue(this.plugin.settings.headerDateFormat)
+          .onChange(async (value) => {
+            this.plugin.settings.headerDateFormat = value || DEFAULT_SETTINGS.headerDateFormat;
+            await this.plugin.saveSettings();
+            this.plugin.refreshViews();
+          });
+      })
+      .addExtraButton((btn) =>
+        btn.setIcon("reset").setTooltip("初期値に戻す").onClick(async () => {
+          this.plugin.settings.headerDateFormat = DEFAULT_SETTINGS.headerDateFormat;
+          await this.plugin.saveSettings();
+          this.plugin.refreshViews();
+          headerDateText.setValue(DEFAULT_SETTINGS.headerDateFormat);
+        })
       );
 
     let tsText: TextComponent;

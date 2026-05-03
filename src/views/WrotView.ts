@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, Notice, TFile, EventRef, setIcon, Menu, Scope, Platform, WorkspaceSidedock, MarkdownRenderer, renderMath, finishRenderMath } from "obsidian";
+import { ItemView, WorkspaceLeaf, Notice, TFile, EventRef, setIcon, Menu, Scope, MarkdownRenderer, renderMath, finishRenderMath } from "obsidian";
 import { VIEW_TYPE_WROT } from "../constants";
 import { parseMemos, Memo } from "../utils/memoParser";
 import { appendMemo, toggleCheckbox } from "../utils/memoWriter";
@@ -26,7 +26,6 @@ export class WrotView extends ItemView {
   private ignoreNextModify = false;
   private activeFormatMode: "bold" | "italic" | null = null;
   private refreshing = false;
-  private isCollapsed = false;
   private toolbarResizeObserver: ResizeObserver | null = null;
   private currentMenu: Menu | null = null;
   private currentMenuTrigger: HTMLElement | null = null;
@@ -72,11 +71,6 @@ export class WrotView extends ItemView {
         return false;
       }
     });
-
-    // iPadの固定サイドバーでは日付ラベルを短縮表示
-    if (Platform.isTablet && this.leaf.getRoot() instanceof WorkspaceSidedock) {
-      this.isCollapsed = true;
-    }
 
     await this.refresh();
 
@@ -357,10 +351,13 @@ export class WrotView extends ItemView {
       this.updateEmbedBtnActive(embedBtn);
     });
     const updateFormatBtns = () => {
-      boldBtn.toggleClass("wr-toolbar-active", this.activeFormatMode === "bold");
-      italicBtn.toggleClass("wr-toolbar-active", this.activeFormatMode === "italic");
-      boldBtn.toggleClass("wr-toolbar-disabled", this.activeFormatMode === "italic");
-      italicBtn.toggleClass("wr-toolbar-disabled", this.activeFormatMode === "bold");
+      const insideBold = this.isInsideMarker("**");
+      const insideItalic = this.isInsideMarker("*");
+      boldBtn.toggleClass("wr-toolbar-active", this.activeFormatMode === "bold" || insideBold);
+      italicBtn.toggleClass("wr-toolbar-active", this.activeFormatMode === "italic" || insideItalic);
+      // 排他: 予告モード中 or 選択が既に他方装飾済みなら他方ボタンを無効化
+      boldBtn.toggleClass("wr-toolbar-disabled", this.activeFormatMode === "italic" || insideItalic);
+      italicBtn.toggleClass("wr-toolbar-disabled", this.activeFormatMode === "bold" || insideBold);
     };
     const validateActiveFormatMode = () => {
       if (this.activeFormatMode === null) return;
@@ -382,10 +379,11 @@ export class WrotView extends ItemView {
     };
 
     boldBtn.addEventListener("click", () => {
-      if (this.activeFormatMode === "italic") return;
+      if (this.activeFormatMode === "italic" || this.isInsideMarker("*")) return;
       const ta = this.textarea;
       if (ta.selectionStart !== ta.selectionEnd) {
         this.wrapSelection("**", "**");
+        updateFormatBtns();
         return;
       }
       if (this.activeFormatMode === "bold") {
@@ -409,10 +407,11 @@ export class WrotView extends ItemView {
       updateFormatBtns();
     });
     italicBtn.addEventListener("click", () => {
-      if (this.activeFormatMode === "bold") return;
+      if (this.activeFormatMode === "bold" || this.isInsideMarker("**")) return;
       const ta = this.textarea;
       if (ta.selectionStart !== ta.selectionEnd) {
         this.wrapSelection("*", "*");
+        updateFormatBtns();
         return;
       }
       if (this.activeFormatMode === "italic") {
@@ -504,10 +503,16 @@ export class WrotView extends ItemView {
       updateFormatBtns();
       this.updateSubmitBtnState();
     };
+    // 選択範囲・カーソル位置変更はdocumentのselectionchangeで網羅的に拾う。
+    // input/keyup/click/selectは取りこぼし(シフト+矢印など)が出るため不採用。
+    // textareaフォーカス中のみ実行して無駄を抑える。
+    this.registerDomEvent(document, "selectionchange", () => {
+      if (document.activeElement === this.textarea) updateActive();
+    });
+    // フォーカス取得直後はselectionchangeが発火しないため明示同期
+    this.textarea.addEventListener("focus", updateActive);
+    // IME確定・ペースト等の値変更を拾う(updateActiveは冪等なので二重発火OK)
     this.textarea.addEventListener("input", updateActive);
-    this.textarea.addEventListener("keyup", updateActive);
-    this.textarea.addEventListener("click", updateActive);
-    this.textarea.addEventListener("select", updateActive);
 
     // ツールバーの折り返し検出。offsetTopはpadding変更の影響を受けないためResizeObserverでループしない
     const updateToolbarWrapped = () => {
@@ -640,9 +645,7 @@ export class WrotView extends ItemView {
     this.refreshing = true;
     try {
       const isToday = this.currentDate.isSame(moment(), "day");
-      const dateText = this.isCollapsed
-        ? this.currentDate.format("MM/DD")
-        : this.currentDate.format("YYYY\u5e74MM\u6708DD\u65e5");
+      const dateText = this.currentDate.format(this.plugin.settings.headerDateFormat);
       this.dateLabel.setText(isToday ? `${dateText}\uff08\u4eca\u65e5\uff09` : dateText);
 
       this.listContainer.empty();
@@ -1009,6 +1012,23 @@ export class WrotView extends ItemView {
     olBtn.toggleClass("wr-toolbar-active", isOl);
   }
 
+  // 選択範囲が指定マーカー(**または*)で完全に囲まれているか判定する。
+  // 選択なし時は常にfalse(カーソル移動でボタン状態が揺れるUXを避けるため)
+  private isInsideMarker(marker: "**" | "*"): boolean {
+    const ta = this.textarea;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    if (start === end) return false;
+    const selected = ta.value.slice(start, end);
+    if (marker === "**") {
+      return /^\*\*[\s\S]+\*\*$/.test(selected);
+    }
+    if (!/^\*[\s\S]+\*$/.test(selected)) return false;
+    // **xxx** を斜体として誤判定しないよう除外
+    if (selected.startsWith("**") || selected.endsWith("**")) return false;
+    return true;
+  }
+
   private updateEmbedBtnActive(embedBtn: HTMLElement): void {
     const ta = this.textarea;
     const start = ta.selectionStart;
@@ -1087,6 +1107,30 @@ export class WrotView extends ItemView {
     const val = ta.value;
 
     const markers = ["**", "*", "~~", "==", "$"];
+
+    // 1) マーカー込み選択 [**ああ**] を剥がす。
+    //    太字/斜体の混同を避けるため open に近い種別を優先
+    const orderedForInner = open === "*"
+      ? ["*", "**", "~~", "==", "$"]
+      : open === "**"
+        ? ["**", "*", "~~", "==", "$"]
+        : markers;
+    for (const m of orderedForInner) {
+      const selected = val.slice(start, end);
+      // *単体マッチで両端が**なら太字扱いでスキップ
+      if (m === "*" && (selected.startsWith("**") || selected.endsWith("**"))) continue;
+      if (selected.length >= m.length * 2 && selected.startsWith(m) && selected.endsWith(m)) {
+        const inner = selected.slice(m.length, selected.length - m.length);
+        ta.value = val.slice(0, start) + inner + val.slice(end);
+        ta.selectionStart = start;
+        ta.selectionEnd = start + inner.length;
+        ta.focus();
+        ta.dispatchEvent(new Event("input"));
+        return;
+      }
+    }
+
+    // 2) 外側マーカー **[ああ]** を剥がす
     let unwrapped = false;
     for (const m of markers) {
       const before = val.slice(start - m.length, start);
@@ -1108,10 +1152,11 @@ export class WrotView extends ItemView {
       }
     }
 
+    // 3) 新規に囲む。マーカー込みで選択を維持するため selectionEnd に close.length も加算
     const currentVal = ta.value;
     ta.value = currentVal.slice(0, start) + open + currentVal.slice(start, end) + close + currentVal.slice(end);
-    ta.selectionStart = start + open.length;
-    ta.selectionEnd = end + open.length;
+    ta.selectionStart = start;
+    ta.selectionEnd = end + open.length + close.length;
     ta.focus();
     ta.dispatchEvent(new Event("input"));
   }

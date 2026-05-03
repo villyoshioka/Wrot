@@ -290,7 +290,7 @@ function renderInlineTokens(
         link.setAttr("rel", "noopener");
         link.addEventListener("click", (e) => {
           e.preventDefault();
-          if (isSafeUrl(url)) window.open(url, "_blank");
+          window.open(url, "_blank");
         });
         if (!seen.has(url)) {
           seen.add(url);
@@ -370,7 +370,8 @@ function renderInlineTokens(
       const url = cleanUrl(part);
       const trailing = part.slice(url.length);
       const fileName = extractObsidianFileName(url);
-      const looksLikeImage = classifyUrl(url) === "image";
+      const urlType = classifyUrl(url);
+      const looksLikeImage = urlType === "image";
       const resolvedImage = !!(fileName && callbacks.resolveImagePath && callbacks.resolveImagePath(fileName));
       const isImageEmbed = looksLikeImage && resolvedImage;
       const isUnresolvedImage = looksLikeImage && !resolvedImage;
@@ -394,29 +395,33 @@ function renderInlineTokens(
       }
       if (!seen.has(url)) {
         seen.add(url);
-        urls.push({ url, type: classifyUrl(url) });
+        urls.push({ url, type: urlType });
       }
     } else if (part.match(/^https?:\/\//)) {
       const url = cleanUrl(part);
       const trailing = part.slice(url.length);
 
-      const link = container.createEl("a", {
-        cls: "wr-url",
-        text: url,
-        href: url,
-      });
-      link.setAttr("target", "_blank");
-      link.setAttr("rel", "noopener");
-      link.addEventListener("click", (e) => {
-        e.preventDefault();
-        if (isSafeUrl(url)) window.open(url, "_blank");
-      });
+      if (isSafeUrl(url)) {
+        const link = container.createEl("a", {
+          cls: "wr-url",
+          text: url,
+          href: url,
+        });
+        link.setAttr("target", "_blank");
+        link.setAttr("rel", "noopener");
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          window.open(url, "_blank");
+        });
 
-      if (trailing) container.appendText(trailing);
+        if (trailing) container.appendText(trailing);
 
-      if (!seen.has(url)) {
-        seen.add(url);
-        urls.push({ url, type: classifyUrl(url) });
+        if (!seen.has(url)) {
+          seen.add(url);
+          urls.push({ url, type: classifyUrl(url) });
+        }
+      } else {
+        container.appendText(part);
       }
     } else {
       container.appendText(part);

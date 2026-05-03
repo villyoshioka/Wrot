@@ -6,16 +6,23 @@ import {
 
 declare const moment: typeof import("moment");
 
+interface NotePathInfo {
+  path: string;
+  filename: string;
+  format: string;
+}
+
 // obsidian-daily-notes-interfaceのgetDailyNoteは日次以外のフォーマット（週次/月次等）で
-// 既存ファイルを検出できないため、自前でフォルダ・日付フォーマットからパスを組み立てる
-function buildNotePath(date: ReturnType<typeof moment>): string {
+// 既存ファイルを検出できないため、自前でフォルダ・日付フォーマットからパスを組み立てる。
+// テンプレート展開で再利用するためformat/filenameも一緒に返す
+function buildNotePath(date: ReturnType<typeof moment>): NotePathInfo {
   const settings = getDailyNoteSettings();
   const format = settings?.format || "YYYY-MM-DD";
   const folder = settings?.folder?.trim() || "";
   const filename = date.format(format);
   const withExt = filename.endsWith(".md") ? filename : `${filename}.md`;
   const joined = folder ? `${folder}/${withExt}` : withExt;
-  return normalizePath(joined);
+  return { path: normalizePath(joined), filename, format };
 }
 
 async function ensureFolderForPath(app: App, path: string): Promise<void> {
@@ -31,7 +38,7 @@ export function getDailyNoteFile(
   app: App,
   date: ReturnType<typeof moment>
 ): TFile | null {
-  const path = buildNotePath(date);
+  const { path } = buildNotePath(date);
   const file = app.vault.getAbstractFileByPath(path);
   return file instanceof TFile ? file : null;
 }
@@ -40,16 +47,13 @@ export async function getOrCreateDailyNote(
   app: App,
   date: ReturnType<typeof moment>
 ): Promise<TFile> {
-  const path = buildNotePath(date);
+  const { path, filename, format } = buildNotePath(date);
   const existing = app.vault.getAbstractFileByPath(path);
   if (existing instanceof TFile) return existing;
 
   await ensureFolderForPath(app, path);
 
-  const settings = getDailyNoteSettings();
-  const template = settings?.template?.trim() || "";
-  const format = settings?.format || "YYYY-MM-DD";
-  const filename = date.format(format);
+  const template = getDailyNoteSettings()?.template?.trim() || "";
 
   let body = "";
   if (template) {
