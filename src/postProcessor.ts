@@ -12,21 +12,13 @@ export function registerWrotPostProcessor(plugin: WrotPlugin): void {
 
   plugin.registerEvent(
     plugin.app.workspace.on("active-leaf-change", () => {
-      setTimeout(() => {
-        document.querySelectorAll(".markdown-reading-view").forEach((view) => {
-          highlightAllWrBlocks(view as HTMLElement, plugin);
-        });
-      }, 100);
+      rehighlightAllReadingViews(plugin);
     })
   );
 
   plugin.registerEvent(
     plugin.app.workspace.on("layout-change", () => {
-      setTimeout(() => {
-        document.querySelectorAll(".markdown-reading-view").forEach((view) => {
-          highlightAllWrBlocks(view as HTMLElement, plugin);
-        });
-      }, 100);
+      rehighlightAllReadingViews(plugin);
     })
   );
 }
@@ -53,6 +45,14 @@ function highlightAllWrBlocks(el: HTMLElement, plugin: WrotPlugin): void {
 
     processCodeBlock(codeEl, plugin);
   });
+}
+
+function rehighlightAllReadingViews(plugin: WrotPlugin): void {
+  setTimeout(() => {
+    document.querySelectorAll(".markdown-reading-view").forEach((view) => {
+      highlightAllWrBlocks(view as HTMLElement, plugin);
+    });
+  }, 100);
 }
 
 function applyTagRuleClass(block: HTMLElement, code: HTMLElement, plugin: WrotPlugin): void {

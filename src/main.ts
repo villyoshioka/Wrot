@@ -9,8 +9,8 @@ import { OGPCache } from "./utils/ogpCache";
 const ATTACHMENT_EXT_RE = /^(png|jpe?g|gif|webp|svg|bmp)$/i;
 
 export default class WrotPlugin extends Plugin {
-  settings: WrotSettings;
-  ogpCache: OGPCache;
+  settings!: WrotSettings;
+  ogpCache!: OGPCache;
   private bgStyleEl: HTMLStyleElement | null = null;
   private tagRuleStyleEl: HTMLStyleElement | null = null;
   private fontStyleEl: HTMLStyleElement | null = null;

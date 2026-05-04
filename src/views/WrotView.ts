@@ -15,11 +15,11 @@ export class WrotView extends ItemView {
   private currentDate: ReturnType<typeof moment>;
   // 「今日」追従中フラグ。trueのときだけ日付変更を跨いで自動更新する
   private anchoredToToday: boolean = true;
-  private listContainer: HTMLElement;
-  private dateLabel: HTMLElement;
-  textarea: HTMLTextAreaElement;
-  submitLabelEl: HTMLElement;
-  submitIconEl: HTMLElement;
+  private listContainer!: HTMLElement;
+  private dateLabel!: HTMLElement;
+  textarea!: HTMLTextAreaElement;
+  submitLabelEl!: HTMLElement;
+  submitIconEl!: HTMLElement;
   private fileChangeRef: EventRef | null = null;
   private fileDeleteRef: EventRef | null = null;
   private fileCreateRef: EventRef | null = null;
@@ -540,12 +540,21 @@ export class WrotView extends ItemView {
     input.multiple = false;
     input.style.display = "none";
     document.body.appendChild(input);
+
+    this.imageAddBtn?.toggleClass("wr-toolbar-active", true);
+    const deactivate = () => {
+      this.imageAddBtn?.toggleClass("wr-toolbar-active", false);
+      window.removeEventListener("focus", deactivate);
+    };
+    window.addEventListener("focus", deactivate);
+
     input.addEventListener("change", () => {
       const file = input.files?.[0];
       if (file) {
         this.setPendingImage(file);
       }
       document.body.removeChild(input);
+      deactivate();
     });
     input.click();
   }
