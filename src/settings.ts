@@ -523,7 +523,7 @@ export class WrotSettingTab extends PluginSettingTab {
         labelSetting.addExtraButton((btn) => {
           lockBtnEl = btn.extraSettingsEl;
           btn
-            .setIcon(isUnlocked() ? "unlock" : "lock")
+            .setIcon(isUnlocked() ? "lock-keyhole-open" : "lock-keyhole")
             .setTooltip(isUnlocked() ? "ロックする" : "編集するにはロックを解除")
             .onClick(() => {
               if (isUnlocked()) {
@@ -637,7 +637,7 @@ export class WrotSettingTab extends PluginSettingTab {
           setDisabled(accentResetBtnEl, !unlocked);
           setDisabled(trailingBtnEl, !unlocked);
           if (lockBtnEl) {
-            setIcon(lockBtnEl, unlocked ? "unlock" : "lock");
+            setIcon(lockBtnEl, unlocked ? "lock-keyhole-open" : "lock-keyhole");
             lockBtnEl.setAttr(
               "aria-label",
               unlocked ? "ロックする" : "編集するにはロックを解除"

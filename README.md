@@ -56,15 +56,28 @@ Obsidian の「デイリーノート」設定で日付書式を週次（例: `GG
 
 ## 使いかたの 3 ステップ
 
-1. **プラグインを入れる** — まず [BRAT](https://github.com/TfTHacker/obsidian42-brat) をコミュニティプラグインからインストール。次に BRAT の設定で「Add Beta Plugin」を選び、`villyoshioka/Wrot` を追加するだけ。もちろん[手動インストール](#手動インストール)もできます。
+1. **プラグインを入れる** — [BRAT 経由のインストール](#brat-経由のインストール)、または[手動インストール](#手動インストール)から選んでください。
 2. **サイドバーを開く** — 羽アイコンをクリック、またはコマンドパレットから「Open Wrot」。タイムラインが現れます。
 3. **つぶやく** — テキストを入力して投稿ボタン（または Ctrl/Cmd+Enter）。それだけで、今日のメモが残ります。
+
+### BRAT 経由のインストール
+
+[BRAT](https://github.com/TfTHacker/obsidian42-brat) は、コミュニティプラグインに登録されていないプラグインをインストール・自動更新するためのツールです。
+
+1. Obsidian の「設定 → コミュニティプラグイン → コミュニティプラグインを閲覧」から `BRAT`（Obsidian42 - BRAT）を検索してインストールし、有効化します。
+2. 「設定 → BRAT → Add Beta plugin」を開きます。
+3. リポジトリ欄に `villyoshioka/Wrot` を入力して `Add Plugin` を押します。
+4. 「設定 → コミュニティプラグイン」で Wrot を有効化します。
+
+> **注意**: BRAT の画面は英語のままです。うまくいかない場合は下の[手動インストール](#手動インストール)を試してください。
 
 ### 手動インストール
 
 1. [Releases](https://github.com/villyoshioka/Wrot/releases) から最新リリースの `main.js`、`manifest.json`、`styles.css` をダウンロード
-2. Vault の `.obsidian/plugins/wrot/` フォルダに配置
-3. Obsidian の設定でプラグインを有効化
+2. Vault のフォルダを開き、`.obsidian/plugins/wrot/` に 3 つのファイルを配置（`.obsidian/plugins/` や `wrot/` フォルダがない場合は、自分で作成してください）
+3. Obsidian の設定 → コミュニティプラグインで Wrot を有効化（一覧に出てこない場合は、コミュニティプラグイン画面右上の更新アイコンを押してから再確認）
+
+> **補足**: `.obsidian` フォルダはOSによって隠しフォルダ扱いになっています。macOS の Finder では `Cmd + Shift + .`、Windows のエクスプローラーでは「表示 → 隠しファイル」で表示できます。
 
 ---
 

@@ -545,8 +545,14 @@ export class WrotView extends ItemView {
     const deactivate = () => {
       this.imageAddBtn?.toggleClass("wr-toolbar-active", false);
       window.removeEventListener("focus", deactivate);
+      window.removeEventListener("pointerdown", onUserTap, true);
+    };
+    const onUserTap = (e: PointerEvent) => {
+      if (this.imageAddBtn?.contains(e.target as Node)) return;
+      deactivate();
     };
     window.addEventListener("focus", deactivate);
+    window.addEventListener("pointerdown", onUserTap, true);
 
     input.addEventListener("change", () => {
       const file = input.files?.[0];
