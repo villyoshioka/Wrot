@@ -52,7 +52,6 @@ export default class WrotPlugin extends Plugin {
       })
     );
 
-    // 添付画像の作成/削除/リネーム時にLV/RVを再描画。
     // 削除はvault.on("delete")だとmetadataCache更新前に発火するためmetadataCache側で監視
     const onAttachmentChange = (file: unknown) => {
       if (!(file instanceof TFile)) return;
@@ -69,7 +68,6 @@ export default class WrotPlugin extends Plugin {
       const view = leaf.view;
       if (!(view instanceof MarkdownView)) return;
 
-      // リーディングビュー: post-processor を再実行
       const previewMode = (view as any).previewMode;
       if (previewMode?.rerender) {
         try {
@@ -77,7 +75,6 @@ export default class WrotPlugin extends Plugin {
         } catch {}
       }
 
-      // ライブプレビュー: state effectで再装飾をトリガ
       const cm = (view.editor as any)?.cm;
       if (cm?.dispatch) {
         try {
@@ -146,9 +143,11 @@ export default class WrotPlugin extends Plugin {
     document.head.appendChild(this.bgStyleEl);
 
     this.bgStyleEl.textContent = `
+      body {
+        --wr-bg-color: ${bgColor};
+      }
       body .wr-input-area,
       body .wr-card,
-      body div.wr-reading-card,
       body div.block-language-wr,
       body .language-wr,
       body .wr-ogp-card,
@@ -183,15 +182,14 @@ export default class WrotPlugin extends Plugin {
       body .wr-textarea,
       body .wr-date-label,
       body .wr-today-btn,
-      body .wr-reading-content,
       body .wr-ogp-title,
       body .wr-inline-code,
       body .wr-plain-text,
-      body div.block-language-wr *,
+      body div.block-language-wr *:not(.wr-embed-missing):not(.wr-internal-link-unresolved):not(.wr-internal-link):not(.wr-tag):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-quote-card):not(.wr-quote-card *):not(.wr-codeblock-display):not(.wr-codeblock-display *),
       body .wr-codeblock-line,
-      body .wr-codeblock-line *,
+      body .wr-codeblock-line *:not(.wr-embed-missing):not(.wr-internal-link-unresolved):not(.wr-internal-link):not(.wr-tag):not(.wr-url):not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-url-highlight):not(.wr-quote-card):not(.wr-quote-card *):not(.wr-codeblock-display):not(.wr-codeblock-display *),
       body .cm-line.wr-codeblock-line,
-      body .cm-line.wr-codeblock-line *,
+      body .cm-line.wr-codeblock-line *:not(.wr-embed-missing):not(.wr-internal-link-unresolved):not(.wr-internal-link):not(.wr-tag):not(.wr-url):not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-url-highlight):not(.wr-quote-card):not(.wr-quote-card *):not(.wr-codeblock-display):not(.wr-codeblock-display *),
       body .wr-reading-list li,
       body .wr-bullet-list li,
       body .wr-ordered-list li {
@@ -246,19 +244,31 @@ export default class WrotPlugin extends Plugin {
       body .wr-empty,
       body .wr-ogp-desc,
       body .wr-ogp-site,
-      body .wr-reading-time,
-      body .wr-reading-copy-btn,
       body .wr-flair-bg,
       body .wr-codeblock-line .code-block-flair,
-      body .wr-lp-marker,
-      body .wr-list-highlight,
-      body .wr-check-unchecked,
-      body .wr-check-checked,
-      body .wr-ol-highlight,
-      body .wr-quote-highlight,
+      body .cm-line.wr-codeblock-line .wr-lp-marker,
+      body .cm-line.wr-codeblock-line .wr-list-highlight,
+      body .cm-line.wr-codeblock-line .wr-check-unchecked,
+      body .cm-line.wr-codeblock-line .wr-check-checked,
+      body .cm-line.wr-codeblock-line .wr-ol-highlight,
+      body .cm-line.wr-codeblock-line .wr-quote-highlight,
       body .wr-blockquote,
-      body .wr-blockquote-line {
+      body .wr-blockquote *,
+      body .cm-line.wr-blockquote-line,
+      body .cm-line.wr-blockquote-line *,
+      body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body,
+      body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body *:not(.wr-tag):not(.wr-url):not(.wr-internal-link):not(.wr-nested-quote-marker):not(.wr-quote-image-marker):not(.wr-quote-math-marker):not(.wr-quote-code-marker):not(.wr-quote-image-marker *):not(.wr-quote-math-marker *):not(.wr-quote-code-marker *):not(.wr-tag *):not(.wr-url *):not(.wr-internal-link *),
+      body .wr-quote-card-slot .wr-quote-card .wr-quote-card-meta,
+      body .wr-quote-card-slot .wr-quote-card .wr-quote-image-marker,
+      body .wr-quote-card-slot .wr-quote-card .wr-quote-math-marker,
+      body .wr-quote-card-slot .wr-quote-card .wr-quote-code-marker {
         color: ${mutedColor} !important;
+      }
+      body .wr-quote-card-slot .wr-quote-card {
+        border-color: ${mutedColor} !important;
+      }
+      body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-blockquote {
+        border-left-color: ${mutedColor} !important;
       }
       body .wr-textarea::placeholder {
         color: ${faintColor} !important;
@@ -360,7 +370,6 @@ export default class WrotPlugin extends Plugin {
     if (!this.settings.tagColorRulesEnabled) return null;
     const rules = this.settings.tagColorRules;
     if (!rules || rules.length === 0 || !memoTags || memoTags.length === 0) return null;
-    // 本文内の出現順で最初にマッチしたルールを採用（設定の並び順は影響しない）
     for (const raw of memoTags) {
       const tag = raw.replace(/^#/, "").toLowerCase().trim();
       if (!tag) continue;
@@ -370,6 +379,28 @@ export default class WrotPlugin extends Plugin {
         if (ruleTag === tag) return rule;
       }
     }
+    return null;
+  }
+
+  getTagRuleClassForContent(content: string): string | null {
+    if (!this.settings.tagColorRulesEnabled) return null;
+    const tags = content.match(/#[^\s#]+/g);
+    if (!tags) return null;
+    const rule = this.findTagColorRule(tags);
+    if (!rule) return null;
+    const idx = this.settings.tagColorRules.indexOf(rule);
+    if (idx < 0) return null;
+    return `wr-tag-rule-${idx}`;
+  }
+
+  getRuleAccentColor(ruleClass: string): string | null {
+    const m = ruleClass.match(/^wr-tag-rule-(\d+)$/);
+    if (!m) return null;
+    const idx = parseInt(m[1], 10);
+    const rule = this.settings.tagColorRules?.[idx];
+    if (!rule) return null;
+    const hexRe = /^#[0-9a-fA-F]{6}$/;
+    if (rule.accentColor && hexRe.test(rule.accentColor)) return rule.accentColor;
     return null;
   }
 
@@ -389,7 +420,9 @@ export default class WrotPlugin extends Plugin {
       const bg = rule.bgColor;
       const fg = rule.textColor;
       const accent = rule.accentColor && hexRe.test(rule.accentColor) ? rule.accentColor : null;
-      const muted = this.blendColor(fg, bg, 0.45);
+      const muted = rule.subColor && hexRe.test(rule.subColor)
+        ? rule.subColor
+        : this.blendColor(fg, bg, 0.45);
       const cls = `wr-tag-rule-${i}`;
 
       parts.push(`
@@ -404,25 +437,33 @@ export default class WrotPlugin extends Plugin {
         background: ${bg} !important;
         background-color: ${bg} !important;
       }
-      body div.block-language-wr.${cls} *:not(.wr-inline-code):not(.wr-highlight):not(input[type="checkbox"]),
-      body pre.${cls} *:not(.wr-inline-code):not(.wr-highlight):not(input[type="checkbox"]) {
+      /* 引用カードは引用先 bg を遮断 (引用元のルールに任せる) */
+      body .wr-card.${cls} a.wr-quote-card:not([class*="wr-tag-rule-"]),
+      body div.block-language-wr.${cls} a.wr-quote-card:not([class*="wr-tag-rule-"]),
+      body pre.${cls} a.wr-quote-card:not([class*="wr-tag-rule-"]),
+      body .cm-line.wr-codeblock-line.${cls} a.wr-quote-card:not([class*="wr-tag-rule-"]) {
+        background: var(--wr-bg-color, #f8f8f8) !important;
+        background-color: var(--wr-bg-color, #f8f8f8) !important;
+      }
+      body div.block-language-wr.${cls} *:not(.wr-inline-code):not(.wr-highlight):not(.wr-quote-card):not(.wr-quote-card *):not(input[type="checkbox"]),
+      body pre.${cls} *:not(.wr-inline-code):not(.wr-highlight):not(.wr-quote-card):not(.wr-quote-card *):not(input[type="checkbox"]) {
         background: ${bg} !important;
         background-color: ${bg} !important;
       }
 
-      /* Rule ${i}: 文字色（タグ/リンク/URL除く） */
+      /* Rule ${i}: 文字色（タグ/リンク/URL/引用ブロック/引用カード除く） */
       body .wr-card.${cls} .wr-content,
-      body .wr-card.${cls} .wr-content *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *) {
+      body .wr-card.${cls} .wr-content *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-blockquote):not(.wr-quote-card):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-blockquote *):not(.wr-quote-card *) {
         color: ${fg} !important;
       }
       body div.block-language-wr.${cls},
-      body div.block-language-wr.${cls} *:not(.wr-reading-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-url):not(input[type="checkbox"]):not(.wr-reading-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-url *),
+      body div.block-language-wr.${cls} *:not(.wr-reading-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-url):not(.wr-blockquote):not(.wr-quote-card):not(input[type="checkbox"]):not(.wr-reading-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-url *):not(.wr-blockquote *):not(.wr-quote-card *),
       body pre.${cls},
-      body pre.${cls} *:not(.wr-reading-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-url):not(input[type="checkbox"]):not(.wr-reading-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-url *) {
+      body pre.${cls} *:not(.wr-reading-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-url):not(.wr-blockquote):not(.wr-quote-card):not(input[type="checkbox"]):not(.wr-reading-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-url *):not(.wr-blockquote *):not(.wr-quote-card *) {
         color: ${fg} !important;
       }
       body .cm-line.wr-codeblock-line.${cls},
-      body .cm-line.wr-codeblock-line.${cls} *:not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-url-highlight):not(input[type="checkbox"]):not(.wr-tag-highlight *):not(.wr-internal-link-highlight *):not(.wr-url-highlight *) {
+      body .cm-line.wr-codeblock-line.${cls} *:not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-url-highlight):not(.wr-lp-marker):not(.wr-list-highlight):not(.wr-ol-highlight):not(.wr-quote-highlight):not(.wr-blockquote-wrap):not(.wr-check-unchecked):not(.wr-check-checked):not(.wr-check-done):not(.wr-quote-card):not(input[type="checkbox"]):not(.wr-tag-highlight *):not(.wr-internal-link-highlight *):not(.wr-url-highlight *):not(.wr-blockquote-wrap *):not(.wr-quote-card *) {
         color: ${fg} !important;
       }
 
@@ -444,13 +485,9 @@ export default class WrotPlugin extends Plugin {
       body .wr-card.${cls} .wr-list-highlight,
       body .wr-card.${cls} .wr-ol-highlight,
       body .wr-card.${cls} .wr-quote-highlight,
-      body div.block-language-wr.${cls} .wr-reading-time,
-      body div.block-language-wr.${cls} .wr-reading-copy-btn,
       body div.block-language-wr.${cls} .wr-blockquote,
       body div.block-language-wr.${cls} ul.wr-reading-list > li:not(.wr-check-item)::before,
       body div.block-language-wr.${cls} ol.wr-reading-list > li::before,
-      body pre.${cls} .wr-reading-time,
-      body pre.${cls} .wr-reading-copy-btn,
       body pre.${cls} .wr-blockquote,
       body pre.${cls} ul.wr-reading-list > li:not(.wr-check-item)::before,
       body pre.${cls} ol.wr-reading-list > li::before,
@@ -464,11 +501,83 @@ export default class WrotPlugin extends Plugin {
       body .cm-line.wr-codeblock-line.${cls} .wr-lp-marker {
         color: ${muted} !important;
       }
+      body .wr-card.${cls} .wr-blockquote *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-tag *):not(.wr-reading-url *),
+      body div.block-language-wr.${cls} .wr-blockquote *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-tag *):not(.wr-reading-url *),
+      body pre.${cls} .wr-blockquote *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-tag *):not(.wr-reading-url *) {
+        color: ${muted} !important;
+      }
+      body .cm-line.wr-codeblock-line.${cls} .wr-tag-highlight .wr-blockquote-wrap,
+      body .cm-line.wr-codeblock-line.${cls} .wr-internal-link-highlight .wr-blockquote-wrap,
+      body .cm-line.wr-codeblock-line.${cls} .wr-url-highlight .wr-blockquote-wrap,
+      body .cm-line.wr-codeblock-line.${cls} .wr-math-highlight .wr-blockquote-wrap,
+      body .cm-line.wr-codeblock-line.${cls} .wr-internal-link .wr-blockquote-wrap,
+      body .cm-line.wr-codeblock-line.${cls} .wr-url .wr-blockquote-wrap {
+        color: ${accent ?? "var(--text-accent)"} !important;
+      }
       body .wr-card.${cls} .wr-blockquote,
       body .wr-card.${cls} .wr-blockquote-wrap,
       body div.block-language-wr.${cls} .wr-blockquote,
       body pre.${cls} .wr-blockquote {
         border-left-color: ${muted} !important;
+      }
+      /* Rule ${i}: 引用カード自身にルールクラスが付いた = 引用元のルール */
+      body .wr-quote-card-slot a.wr-quote-card.${cls} {
+        background: ${bg} !important;
+        background-color: ${bg} !important;
+      }
+      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body,
+      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-nested-quote-marker):not(.wr-blockquote):not(.wr-quote-image-marker):not(.wr-quote-math-marker):not(.wr-quote-code-marker):not(input[type="checkbox"]):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-quote-image-marker *):not(.wr-quote-math-marker *):not(.wr-quote-code-marker *) {
+        color: ${fg} !important;
+      }
+      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-meta,
+      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-blockquote,
+      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-blockquote * {
+        color: ${muted} !important;
+      }
+      /* マーカーは標準 muted ルールの :not() 列に specificity 負けするため同列で揃える */
+      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-quote-image-marker:not(.wr-tag):not(.wr-url):not(.wr-internal-link):not(.wr-nested-quote-marker):not(.wr-tag *):not(.wr-url *):not(.wr-internal-link *),
+      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-quote-math-marker:not(.wr-tag):not(.wr-url):not(.wr-internal-link):not(.wr-nested-quote-marker):not(.wr-tag *):not(.wr-url *):not(.wr-internal-link *),
+      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-quote-code-marker:not(.wr-tag):not(.wr-url):not(.wr-internal-link):not(.wr-nested-quote-marker):not(.wr-tag *):not(.wr-url *):not(.wr-internal-link *) {
+        color: ${muted} !important;
+      }
+      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-blockquote {
+        border-left-color: ${muted} !important;
+      }
+      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-tag,
+      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-internal-link,
+      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-url,
+      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-nested-quote-marker {
+        color: ${accent ?? "var(--text-accent)"} !important;
+      }
+      body .wr-card.${cls} .wr-quote-card-body .wr-nested-quote-marker,
+      body div.block-language-wr.${cls} .wr-quote-card-body .wr-nested-quote-marker,
+      body pre.${cls} .wr-quote-card-body .wr-nested-quote-marker,
+      body .cm-line.wr-codeblock-line.${cls} .wr-quote-card-body .wr-nested-quote-marker {
+        color: ${accent ?? "var(--text-accent)"} !important;
+      }
+      body .cm-line.wr-codeblock-line.wr-blockquote-line.${cls}::before {
+        background-color: ${muted} !important;
+      }
+      body .cm-line.wr-codeblock-line.wr-blockquote-depth-2.${cls}::before {
+        box-shadow: 18px 0 0 0 ${muted} !important;
+      }
+      body .cm-line.wr-codeblock-line.wr-blockquote-depth-3.${cls}::before {
+        box-shadow:
+          18px 0 0 0 ${muted},
+          36px 0 0 0 ${muted} !important;
+      }
+      body .cm-line.wr-codeblock-line.wr-blockquote-depth-4.${cls}::before {
+        box-shadow:
+          18px 0 0 0 ${muted},
+          36px 0 0 0 ${muted},
+          54px 0 0 0 ${muted} !important;
+      }
+      body .cm-line.wr-codeblock-line.wr-blockquote-depth-5.${cls}::before {
+        box-shadow:
+          18px 0 0 0 ${muted},
+          36px 0 0 0 ${muted},
+          54px 0 0 0 ${muted},
+          72px 0 0 0 ${muted} !important;
       }
       body .wr-card.${cls} .wr-copy-btn .svg-icon,
       body .wr-card.${cls} .wr-menu-btn .svg-icon,
@@ -605,7 +714,7 @@ export default class WrotPlugin extends Plugin {
     });
   }
 
-  private blendColor(fg: string, bg: string, ratio: number): string {
+  blendColor(fg: string, bg: string, ratio: number): string {
     const fR = parseInt(fg.slice(1, 3), 16);
     const fG = parseInt(fg.slice(3, 5), 16);
     const fB = parseInt(fg.slice(5, 7), 16);

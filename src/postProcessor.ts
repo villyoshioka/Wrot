@@ -1,13 +1,14 @@
-import { Plugin, TFile, MarkdownRenderer, renderMath, finishRenderMath } from "obsidian";
-import { extractUrls, renderUrlPreviews, isSafeUrl } from "./utils/urlRenderer";
+import { TFile, MarkdownRenderer, renderMath, finishRenderMath } from "obsidian";
+import { extractUrls, renderUrlPreviews, isSafeUrl, QUOTE_LINK_RE } from "./utils/urlRenderer";
+import { renderQuoteCard, invalidateMemoCache, refreshQuoteCardsForFile } from "./utils/quoteCard";
 import { toggleCheckbox } from "./utils/memoWriter";
 import { segmentBlocks, type Segment } from "./utils/blockSegmenter";
 import type WrotPlugin from "./main";
 
-// リーディングビュー用のpost processor。タグ強調表示とURLプレビュー描画を行う
 export function registerWrotPostProcessor(plugin: WrotPlugin): void {
-  plugin.registerMarkdownPostProcessor((el) => {
+  plugin.registerMarkdownPostProcessor((el, ctx) => {
     highlightAllWrBlocks(el, plugin);
+    void applyBlockIdClasses(el, plugin, ctx?.sourcePath);
   });
 
   plugin.registerEvent(
@@ -19,6 +20,22 @@ export function registerWrotPostProcessor(plugin: WrotPlugin): void {
   plugin.registerEvent(
     plugin.app.workspace.on("layout-change", () => {
       rehighlightAllReadingViews(plugin);
+    })
+  );
+
+  // 元投稿が変更されたら memo キャッシュを無効化し、参照カードを document 全体で再描画
+  plugin.registerEvent(
+    plugin.app.vault.on("modify", (file) => {
+      if (!(file instanceof TFile)) return;
+      invalidateMemoCache(file.path);
+      refreshQuoteCardsForFile(plugin.app, file, (content) => plugin.getTagRuleClassForContent(content));
+    })
+  );
+  plugin.registerEvent(
+    plugin.app.vault.on("delete", (file) => {
+      if (!(file instanceof TFile)) return;
+      invalidateMemoCache(file.path);
+      refreshQuoteCardsForFile(plugin.app, file, (content) => plugin.getTagRuleClassForContent(content));
     })
   );
 }
@@ -33,7 +50,6 @@ function highlightAllWrBlocks(el: HTMLElement, plugin: WrotPlugin): void {
     const text = code.textContent || "";
     if (!text.trim()) return;
 
-    // 編集や再レイアウト後もタグルールclassをDOMと同期させる
     const parentBlock = code.closest(".block-language-wr") || code.closest("pre");
     if (parentBlock instanceof HTMLElement) {
       applyTagRuleClass(parentBlock, codeEl, plugin);
@@ -55,8 +71,37 @@ function rehighlightAllReadingViews(plugin: WrotPlugin): void {
   }, 100);
 }
 
+async function applyBlockIdClasses(el: HTMLElement, plugin: WrotPlugin, sourcePath?: string): Promise<void> {
+  const codeEls = el.querySelectorAll(
+    'code.language-wr, .block-language-wr code, pre > code[class*="language-wr"]'
+  );
+  if (codeEls.length === 0) return;
+  if (!sourcePath) return;
+  const file = plugin.app.vault.getAbstractFileByPath(sourcePath);
+  if (!(file instanceof TFile)) return;
+  let memos: import("./utils/memoParser").Memo[];
+  try {
+    const content = await plugin.app.vault.cachedRead(file);
+    const { parseMemos } = await import("./utils/memoParser");
+    memos = parseMemos(content);
+  } catch {
+    return;
+  }
+  codeEls.forEach((code) => {
+    const codeEl = code as HTMLElement;
+    const block = codeEl.closest(".block-language-wr") || codeEl.closest("pre");
+    if (!(block instanceof HTMLElement)) return;
+    if (Array.from(block.classList).some((c) => c.startsWith("wr-block-id-wr-"))) return;
+    const codeText = (codeEl.getAttribute("data-wr-original") || codeEl.textContent || "").trim();
+    if (!codeText) return;
+    const memo = memos.find((m) => m.content.trim() === codeText);
+    if (!memo) return;
+    const T = memo.time.replace(/[-:.TZ+]/g, "").slice(0, 17);
+    block.classList.add(`wr-block-id-wr-${T}`);
+  });
+}
+
 function applyTagRuleClass(block: HTMLElement, code: HTMLElement, plugin: WrotPlugin): void {
-  // コピー/フレア要素はブロック内外どちらにも存在し得るため両側から収集する
   const container = block.parentElement;
   const targets: HTMLElement[] = [block];
   if (container) {
@@ -90,7 +135,6 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
   const block = code.closest(".block-language-wr") || code.closest("pre");
   if (!block) return;
 
-  // フレア要素は兄弟もしくは内側に存在するため両方カバーする
   const container = block.parentElement || block;
   container.querySelectorAll(".code-block-flair, .copy-code-button").forEach((el) => {
     (el as HTMLElement).classList.add("wr-flair-bg");
@@ -104,7 +148,6 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
     ...Array.from(block.querySelectorAll(".copy-code-button")),
   ];
   const resolveAccentForBlock = (): string => {
-    // タグルールが当たっていればそのアクセントを優先
     const ruleClass = Array.from(block.classList).find((c) => /^wr-tag-rule-\d+$/.test(c));
     if (ruleClass) {
       const idx = parseInt(ruleClass.slice("wr-tag-rule-".length), 10);
@@ -124,19 +167,29 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
           svg.setAttribute("color", successColor);
         });
       };
-      // 即時実行＋Obsidianがアイコン差し替えた後にも再適用
+      // Obsidianがアイコン差し替えた後にも再適用するため複数回呼ぶ
       applySvgColor();
       setTimeout(applySvgColor, 50);
       setTimeout(applySvgColor, 150);
     });
   }
 
-  block.querySelector(".wr-media-area")?.remove();
+  block.querySelectorAll(".wr-media-area").forEach((el) => el.remove());
+
+  const resolveImagePath = (fileName: string): string | null => {
+    const file = plugin.app.metadataCache.getFirstLinkpathDest(fileName, "");
+    return file ? plugin.app.vault.getResourcePath(file) : null;
+  };
+
+  // 引用カードマーカー [[X#^wr-T]] が含まれてる投稿は画像をインライン描画（末尾集約しない）。
+  // これにより画像は元投稿の書かれた位置（=引用カードの上）に表示される
+  const blockFullText = code.textContent || "";
+  const hasQuoteMarker = /\[\[[^\[\]]+#\^wr-\d{17}\]\]/.test(blockFullText);
 
   convertListLines(code, plugin);
 
-  const allUrls: string[] = [];
-  const embedImages: HTMLElement[] = [];
+  const tailUrls: string[] = [];
+  const tailEmbedImages: HTMLElement[] = [];
 
   const walkTargets: HTMLElement[] = [code];
   block.querySelectorAll(".wr-reading-list, .wr-blockquote, .wr-plain-text").forEach((el) => {
@@ -222,7 +275,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
             if (isSafeUrl(url)) window.open(url, "_blank");
           });
           frag.appendChild(span);
-          if (url.startsWith("http")) allUrls.push(url);
+          if (url.startsWith("http")) tailUrls.push(url);
           hasMatch = true;
         } else {
           frag.appendChild(document.createTextNode(part));
@@ -238,13 +291,16 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
         if (IMAGE_EXT.test(fileName)) {
           const file = plugin.app.metadataCache.getFirstLinkpathDest(fileName, "");
           if (file) {
-            // <code>外に出すためフラグメントには入れず別配列に貯める
             const img = document.createElement("img");
-            img.className = "wr-embed-img";
+            img.className = hasQuoteMarker ? "wr-embed-img wr-rv-inline-img" : "wr-embed-img";
             img.src = plugin.app.vault.getResourcePath(file);
             img.alt = fileName;
             img.loading = "lazy";
-            embedImages.push(img);
+            if (hasQuoteMarker) {
+              frag.appendChild(img);
+            } else {
+              tailEmbedImages.push(img);
+            }
             hasMatch = true;
             continue;
           } else {
@@ -253,6 +309,8 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
             span.textContent = `![[${fileName}]]`;
             frag.appendChild(span);
           }
+          hasMatch = true;
+          continue;
         } else {
           const a = document.createElement("a");
           const resolved = plugin.app.metadataCache.getFirstLinkpathDest(fileName, "") !== null;
@@ -268,16 +326,28 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
         hasMatch = true;
       } else if (linkMatch) {
         const linkName = linkMatch[1];
-        const a = document.createElement("a");
-        const resolved = plugin.app.metadataCache.getFirstLinkpathDest(linkName, "") !== null;
-        a.className = resolved ? "wr-internal-link" : "wr-internal-link wr-internal-link-unresolved";
-        a.textContent = linkName;
-        a.addEventListener("click", (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          plugin.app.workspace.openLinkText(linkName, "", false);
-        });
-        frag.appendChild(a);
+        const quoteMatch = linkName.match(QUOTE_LINK_RE);
+        if (quoteMatch) {
+          const slot = document.createElement("span");
+          slot.className = "wr-quote-card-slot";
+          renderQuoteCard(slot, quoteMatch[1], quoteMatch[2], plugin.app, "", {
+            timestampFormat: plugin.settings.timestampFormat,
+            resolveRuleClass: (content) => plugin.getTagRuleClassForContent(content),
+            resolveRuleAccent: (ruleClass) => plugin.getRuleAccentColor(ruleClass),
+          });
+          frag.appendChild(slot);
+        } else {
+          const a = document.createElement("a");
+          const resolved = plugin.app.metadataCache.getFirstLinkpathDest(linkName, "") !== null;
+          a.className = resolved ? "wr-internal-link" : "wr-internal-link wr-internal-link-unresolved";
+          a.textContent = linkName;
+          a.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            plugin.app.workspace.openLinkText(linkName, "", false);
+          });
+          frag.appendChild(a);
+        }
         hasMatch = true;
       } else if (part.match(/^#[^\s#]+$/)) {
         const span = document.createElement("span");
@@ -332,7 +402,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
         } else if (trailing) {
           frag.appendChild(document.createTextNode(trailing));
         }
-        allUrls.push(cleaned);
+        tailUrls.push(cleaned);
         hasMatch = true;
       } else if (part.match(/^https?:\/\//)) {
         const cleaned = part.replace(/[.,;:!?)]+$/, "");
@@ -352,7 +422,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
           frag.appendChild(document.createTextNode(trailing));
         }
 
-        allUrls.push(cleaned);
+        tailUrls.push(cleaned);
         hasMatch = true;
       } else {
         frag.appendChild(document.createTextNode(part));
@@ -369,35 +439,37 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
   }
   }
 
-  // 埋め込み画像は<code>外に追加する
-  if (embedImages.length > 0) {
-    const imgBlock = code.closest(".block-language-wr") || code.closest("pre");
-    if (imgBlock) {
-      for (const img of embedImages) {
-        imgBlock.appendChild(img);
+  // 引用マーカーがある投稿では「引用は底」原則を維持するため、
+  // 末尾メディアを引用カード slot の直前に挿入する
+  const blockEl = code.closest(".block-language-wr") || code.closest("pre");
+  if (blockEl) {
+    const quoteSlot = hasQuoteMarker
+      ? blockEl.querySelector(".wr-quote-card-slot")
+      : null;
+    const insertMediaNode = (node: Node): void => {
+      if (quoteSlot && quoteSlot.parentNode) {
+        quoteSlot.parentNode.insertBefore(node, quoteSlot);
+      } else {
+        blockEl.appendChild(node);
+      }
+    };
+    if (tailEmbedImages.length > 0) {
+      for (const img of tailEmbedImages) {
+        insertMediaNode(img);
       }
     }
-  }
-
-  if (allUrls.length > 0) {
-    // 画像以外のobsidian:// URLは空のメディアブロックを生まないよう除外
-    const parsedUrls = extractUrls(allUrls.join(" ")).filter(
-      (pu) => pu.type === "image" || !pu.url.startsWith("obsidian://")
-    );
-    if (parsedUrls.length > 0) {
-      const block3 = code.closest(".block-language-wr") || code.closest("pre");
-      if (block3 && !block3.querySelector(".wr-media-area")) {
+    if (tailUrls.length > 0) {
+      const parsedUrls = extractUrls(tailUrls.join(" ")).filter(
+        (pu) => pu.type === "image" || !pu.url.startsWith("obsidian://")
+      );
+      if (parsedUrls.length > 0 && !blockEl.querySelector(".wr-media-area")) {
         const mediaEl = document.createElement("div");
         mediaEl.className = "wr-media-area";
-        block3.appendChild(mediaEl);
-        renderUrlPreviews(mediaEl as any, parsedUrls, plugin.ogpCache, (fileName) => {
-          const file = plugin.app.metadataCache.getFirstLinkpathDest(fileName, "");
-          return file ? plugin.app.vault.getResourcePath(file) : null;
-        });
+        insertMediaNode(mediaEl);
+        renderUrlPreviews(mediaEl as any, parsedUrls, plugin.ogpCache, resolveImagePath);
       }
     }
   }
-
 }
 
 function renderCodeBlockFragment(segment: Extract<Segment, { kind: "codeblock" }>, plugin: WrotPlugin): HTMLElement {
@@ -428,7 +500,10 @@ function renderMathBlockFragment(segment: Extract<Segment, { kind: "mathblock" }
   return blockEl;
 }
 
-function convertListLines(code: HTMLElement, plugin: WrotPlugin): void {
+function convertListLines(
+  code: HTMLElement,
+  plugin: WrotPlugin
+): void {
   const fullText = code.textContent || "";
   const segments = segmentBlocks(fullText);
 
@@ -441,6 +516,10 @@ function convertListLines(code: HTMLElement, plugin: WrotPlugin): void {
   let currentListEl: HTMLElement | null = null;
   let currentListType: "ul" | "ol" | null = null;
   let plainLines: string[] = [];
+  let quoteStack: HTMLElement[] = [];
+  let quoteListEl: HTMLElement | null = null;
+  let quoteListType: "ul" | "ol" | null = null;
+  let quoteListDepth: number = 0;
 
   const flushPlain = () => {
     if (plainLines.length > 0) {
@@ -476,7 +555,7 @@ function convertListLines(code: HTMLElement, plugin: WrotPlugin): void {
     for (let li2 = 0; li2 < lines.length; li2++) {
       const i = lineOffset + li2;
       const line = lines[li2];
-      const quoteMatch = line.match(/^> ?(.*)$/);
+      const quoteMatch = line.match(/^((?:>\s?)+)(.*)$/);
     const checkMatch = !quoteMatch && line.match(/^- \[([ x])\] (.*)$/);
     const listMatch = !quoteMatch && !checkMatch && line.match(/^- (.+)$/);
     const olMatch = !quoteMatch && !checkMatch && !listMatch && line.match(/^\d+\.\s?(.+)$/);
@@ -488,18 +567,102 @@ function convertListLines(code: HTMLElement, plugin: WrotPlugin): void {
         currentListType = null;
       }
       flushPlain();
-      // 直前がblockquoteなら同一blockquoteに連結する
+      const depth = (quoteMatch[1].match(/>/g) || []).length;
+      const body = quoteMatch[2];
       const lastFrag = fragments[fragments.length - 1];
-      if (lastFrag instanceof HTMLElement && lastFrag.tagName === "BLOCKQUOTE") {
-        lastFrag.appendChild(document.createElement("br"));
-        lastFrag.appendChild(document.createTextNode(quoteMatch[1]));
-      } else {
+      const continuingQuote = quoteStack.length > 0 && lastFrag instanceof HTMLElement && lastFrag === quoteStack[0];
+      if (!continuingQuote) {
+        const root = document.createElement("blockquote");
+        root.className = "wr-blockquote";
+        fragments.push(root);
+        quoteStack = [root];
+      }
+      while (quoteStack.length > depth) {
+        quoteStack.pop();
+      }
+      while (quoteStack.length < depth) {
+        const parent = quoteStack[quoteStack.length - 1];
         const bq = document.createElement("blockquote");
         bq.className = "wr-blockquote";
-        bq.appendChild(document.createTextNode(quoteMatch[1]));
-        fragments.push(bq);
+        parent.appendChild(bq);
+        quoteStack.push(bq);
+      }
+      const target = quoteStack[quoteStack.length - 1];
+      const innerCheck = body.match(/^- \[([ x])\] (.*)$/);
+      const innerList = !innerCheck && body.match(/^- (.+)$/);
+      const innerOl = !innerCheck && !innerList && body.match(/^\d+\.\s?(.+)$/);
+      if (innerCheck || innerList) {
+        if (quoteListEl === null || quoteListType !== "ul" || quoteListDepth !== depth || quoteListEl.parentElement !== target) {
+          quoteListEl = document.createElement("ul");
+          quoteListEl.className = "wr-reading-list";
+          target.appendChild(quoteListEl);
+          quoteListType = "ul";
+          quoteListDepth = depth;
+        }
+        const li = document.createElement("li");
+        if (innerCheck) {
+          li.className = "wr-check-item";
+          const cb = document.createElement("input");
+          cb.type = "checkbox";
+          if (innerCheck[1] === "x") cb.checked = true;
+          const innerLineIdx = i;
+          cb.addEventListener("click", async () => {
+            const file = plugin.app.workspace.getActiveFile();
+            if (!file) return;
+            const data = await plugin.app.vault.read(file);
+            const fileLines = data.split("\n");
+            const blockContent = fullText.trim();
+            for (let f = 0; f < fileLines.length; f++) {
+              if (fileLines[f].match(/^```wr\s+/)) {
+                const bodyLines: string[] = [];
+                let k = f + 1;
+                while (k < fileLines.length && fileLines[k].trim() !== "```") {
+                  bodyLines.push(fileLines[k]);
+                  k++;
+                }
+                if (bodyLines.join("\n").trim() === blockContent) {
+                  await toggleCheckbox(plugin.app, file, f + 1 + innerLineIdx);
+                  return;
+                }
+              }
+            }
+          });
+          li.appendChild(cb);
+          if (innerCheck[1] === "x" && plugin.settings.checkStrikethrough) {
+            const span = document.createElement("span");
+            span.className = "wr-check-done";
+            span.appendChild(document.createTextNode(innerCheck[2]));
+            li.appendChild(span);
+          } else {
+            li.appendChild(document.createTextNode(innerCheck[2]));
+          }
+        } else if (innerList) {
+          li.appendChild(document.createTextNode(innerList[1]));
+        }
+        quoteListEl.appendChild(li);
+      } else if (innerOl) {
+        if (quoteListEl === null || quoteListType !== "ol" || quoteListDepth !== depth || quoteListEl.parentElement !== target) {
+          quoteListEl = document.createElement("ol");
+          quoteListEl.className = "wr-reading-list";
+          target.appendChild(quoteListEl);
+          quoteListType = "ol";
+          quoteListDepth = depth;
+        }
+        const li = document.createElement("li");
+        li.appendChild(document.createTextNode(innerOl[1]));
+        quoteListEl.appendChild(li);
+      } else {
+        quoteListEl = null;
+        quoteListType = null;
+        if (target.childNodes.length > 0 && target.lastChild?.nodeName !== "OL" && target.lastChild?.nodeName !== "UL" && target.lastChild?.nodeName !== "BLOCKQUOTE") {
+          target.appendChild(document.createElement("br"));
+        }
+        target.appendChild(document.createTextNode(body));
       }
     } else if (checkMatch || listMatch) {
+      quoteStack = [];
+      quoteListEl = null;
+      quoteListType = null;
       if (currentListType !== "ul") {
         if (currentListEl) fragments.push(currentListEl);
         flushPlain();
@@ -550,6 +713,9 @@ function convertListLines(code: HTMLElement, plugin: WrotPlugin): void {
       }
       currentListEl!.appendChild(li);
     } else if (olMatch) {
+      quoteStack = [];
+      quoteListEl = null;
+      quoteListType = null;
       if (currentListType !== "ol") {
         if (currentListEl) fragments.push(currentListEl);
         flushPlain();
@@ -561,6 +727,9 @@ function convertListLines(code: HTMLElement, plugin: WrotPlugin): void {
       li.appendChild(document.createTextNode(olMatch[1]));
       currentListEl!.appendChild(li);
     } else {
+      quoteStack = [];
+      quoteListEl = null;
+      quoteListType = null;
       if (currentListEl) {
         fragments.push(currentListEl);
         currentListEl = null;

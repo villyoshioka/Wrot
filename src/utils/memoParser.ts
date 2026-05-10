@@ -9,10 +9,8 @@ export interface Memo {
   lineEnd: number;
 }
 
-// 開始行 ```wr 2026-04-02T15:48:51.758+09:00 にマッチ
 const OPENING_REGEX = /^```wr\s+(.+)$/;
 
-// ファイル内容からwrコードブロックを全て抽出する。タイムスタンプは開始フェンス行に格納
 export function parseMemos(fileContent: string): Memo[] {
   const memos: Memo[] = [];
   const lines = fileContent.split("\n");
@@ -24,7 +22,9 @@ export function parseMemos(fileContent: string): Memo[] {
       const lineStart = i;
       const rawLines = [lines[i]];
 
-      const time = openMatch[1];
+      // openMatch[1] にはタイムスタンプの後にブロックID `^wr-T` が含まれる場合があるため、
+      // 最初の空白までを timestamp として取る
+      const time = openMatch[1].split(/\s/)[0];
 
       i++;
 

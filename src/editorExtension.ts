@@ -8,11 +8,10 @@ import {
 } from "@codemirror/view";
 import { RangeSetBuilder, StateEffect } from "@codemirror/state";
 import type { App } from "obsidian";
-import { MarkdownRenderer, loadPrism } from "obsidian";
+import { loadPrism } from "obsidian";
 import type WrotPlugin from "./main";
 import { findBlockRanges, type BlockRange } from "./utils/blockSegmenter";
 
-// 各種イベントで再装飾をトリガするStateEffect
 const ogpFetched = StateEffect.define<null>();
 export const tagRulesChanged = StateEffect.define<null>();
 export const vaultFilesChanged = StateEffect.define<null>();
@@ -22,12 +21,12 @@ import {
   renderOGPCard,
   renderTwitterCard,
   isSafeUrl,
+  QUOTE_LINK_RE,
   type ParsedUrl,
 } from "./utils/urlRenderer";
+import { renderQuoteCard, invalidateMemoCache } from "./utils/quoteCard";
 import type { OGPCache } from "./utils/ogpCache";
 import type { OGPData } from "./utils/ogpCache";
-
-// ライブビュー用の装飾。タグ/URL等のマーク装飾とOGPプレビューウィジェットを管理する
 
 const tagMark = Decoration.mark({ class: "wr-tag-highlight" });
 const urlMark = Decoration.mark({ class: "wr-url-highlight" });
@@ -45,7 +44,6 @@ const highlightMark = Decoration.mark({ class: "wr-highlight-highlight" });
 const replaceHidden = Decoration.replace({});
 const hiddenLine = Decoration.line({ class: "wr-hidden-line" });
 
-// CodeMirrorに安定したインスタンスを渡すため、line装飾はクラス文字列でキャッシュする
 const lineDecoCache = new Map<string, Decoration>();
 function makeLineDeco(classes: (string | null | undefined)[]): Decoration {
   const key = classes.filter(Boolean).join(" ");
@@ -281,9 +279,29 @@ class EmbedImageWidget extends WidgetType {
   ignoreEvent(): boolean { return true; }
 }
 
-// プレビューウィジェットはキャッシュ済みOGPデータのみで同期描画する
+// 引用マーカーありの投稿で画像をインライン位置にその場で表示する単発 widget
+class InlineEmbedImageWidget extends WidgetType {
+  constructor(private src: string, private alt: string) { super(); }
+  toDOM(): HTMLElement {
+    const wrapper = document.createElement("div");
+    wrapper.className = "wr-lp-inline-img-wrapper";
+    const img = document.createElement("img");
+    img.className = "wr-embed-img wr-lp-inline-img";
+    img.src = this.src;
+    img.alt = this.alt;
+    img.loading = "lazy";
+    wrapper.appendChild(img);
+    return wrapper;
+  }
+  eq(other: InlineEmbedImageWidget): boolean {
+    return this.src === other.src && this.alt === other.alt;
+  }
+  ignoreEvent(): boolean { return true; }
+}
+
+
+
 class UrlPreviewWidget extends WidgetType {
-  // 生成時点で各URLにキャッシュデータがあったかのスナップショット
   private cachedSnapshot: boolean[];
 
   constructor(
@@ -328,7 +346,6 @@ class UrlPreviewWidget extends WidgetType {
             renderOGPCard(container, cached);
           }
         }
-        // 未キャッシュ時は何も描画しない（フェッチ後に再描画）
       }
     }
 
@@ -340,12 +357,103 @@ class UrlPreviewWidget extends WidgetType {
   }
 }
 
+// 引用マーカーありの投稿で endLine.to に block widget としてまとめて出す。
+// 「引用は底」原則を維持するため、 内側で URL プレビュー → 引用カードの順で構築する。
+// 本文中の引用マーカーは別途 replaceHidden 化することで二重描画を防ぐ
+class QuoteBlockWidget extends WidgetType {
+  private cachedSnapshot: boolean[];
+
+  constructor(
+    private fileName: string,
+    private blockId: string,
+    private parsedUrls: ParsedUrl[],
+    private app: App,
+    private currentFilePath: string,
+    private ruleClass: string | null,
+    private timestampFormat: string,
+    private ogpCache: OGPCache,
+    private resolveImagePath: (fileName: string) => string | null,
+    private resolveQuoteRuleClass: (content: string) => string | null,
+    private resolveQuoteRuleAccent: (ruleClass: string) => string | null
+  ) {
+    super();
+    this.cachedSnapshot = parsedUrls.map((pu) => {
+      const d = ogpCache.get(pu.url);
+      return !!(d && (d.title || d.description));
+    });
+  }
+
+  eq(other: QuoteBlockWidget): boolean {
+    if (this.fileName !== other.fileName) return false;
+    if (this.blockId !== other.blockId) return false;
+    if (this.ruleClass !== other.ruleClass) return false;
+    if (this.timestampFormat !== other.timestampFormat) return false;
+    if (this.parsedUrls.length !== other.parsedUrls.length) return false;
+    for (let i = 0; i < this.parsedUrls.length; i++) {
+      if (this.parsedUrls[i].url !== other.parsedUrls[i].url) return false;
+      if (this.cachedSnapshot[i] !== other.cachedSnapshot[i]) return false;
+    }
+    return true;
+  }
+
+  toDOM(): HTMLElement {
+    const container = document.createElement("div");
+    container.className = "wr-quote-block";
+    if (this.ruleClass) container.classList.add(this.ruleClass);
+
+    if (this.parsedUrls.length > 0) {
+      const mediaArea = document.createElement("div");
+      mediaArea.className = "wr-media-area wr-lp-media";
+      if (this.ruleClass) mediaArea.classList.add(this.ruleClass);
+      let hasContent = false;
+      for (const pu of this.parsedUrls) {
+        if (pu.type === "image") {
+          renderImagePreview(mediaArea, pu.url, this.resolveImagePath);
+          hasContent = true;
+        } else {
+          const cached = this.ogpCache.get(pu.url);
+          if (cached && (cached.title || cached.description)) {
+            if (pu.type === "twitter") {
+              renderTwitterCard(mediaArea, cached);
+            } else {
+              renderOGPCard(mediaArea, cached);
+            }
+            hasContent = true;
+          }
+        }
+      }
+      if (hasContent) container.appendChild(mediaArea);
+    }
+
+    // 引用は底
+    const slot = document.createElement("span");
+    slot.className = "wr-quote-card-slot wr-lp-quote-card";
+    if (this.ruleClass) slot.classList.add(this.ruleClass);
+    renderQuoteCard(slot, this.fileName, this.blockId, this.app, this.currentFilePath, {
+      timestampFormat: this.timestampFormat,
+      resolveRuleClass: this.resolveQuoteRuleClass,
+      resolveRuleAccent: this.resolveQuoteRuleAccent,
+    });
+    container.appendChild(slot);
+
+    return container;
+  }
+
+  // widget 内部の <a>/quote-card のクリックを CodeMirror に奪われないよう true。
+  // これがないと URL カード/画像URL クリックが空振る (引用カードは元から addEventListener なので両方助かる)
+  ignoreEvent(): boolean { return true; }
+}
+
 interface WrBlock {
   startLn: number;
   endLn: number;
   urlTexts: string[];
   ruleClass: string | null;
   innerBlocks: BlockRange[];
+  blockId: string | null;
+  hasQuoteMarker: boolean;
+  // 引用マーカー [[X#^wr-T]] が初めて現れる行のドキュメント全体での行番号 (1-based)。-1 ならなし
+  quoteLineIdx: number;
 }
 
 function findWrBlocks(view: EditorView, plugin: WrotPlugin | null): WrBlock[] {
@@ -373,7 +481,6 @@ function findWrBlocks(view: EditorView, plugin: WrotPlugin | null): WrBlock[] {
     }
     const innerBlocks = findBlockRanges(bodyLines);
 
-    // 内側のコード/数式ブロックに含まれる doc 行インデックスを記録
     const blockedDocLines = new Set<number>();
     for (const br of innerBlocks) {
       for (let k = br.startLine; k <= br.endLine; k++) {
@@ -404,7 +511,23 @@ function findWrBlocks(view: EditorView, plugin: WrotPlugin | null): WrBlock[] {
       }
     }
 
-    blocks.push({ startLn, endLn, urlTexts, ruleClass, innerBlocks });
+    // 開始フェンス行から ^wr-T ブロックID を抽出（点滅対象特定用）
+    const fenceLine = doc.line(startLn).text;
+    const blockIdMatch = fenceLine.match(/\^(wr-\d{17})/);
+    const blockId = blockIdMatch ? blockIdMatch[1] : null;
+
+    // 本文に引用カードマーカー [[X#^wr-T]] が含まれているか、 含むなら最初の出現行を記録
+    let hasQuoteMarker = false;
+    let quoteLineIdx = -1;
+    for (let j = startLn + 1; j < endLn; j++) {
+      if (/\[\[[^\[\]]+#\^wr-\d{17}\]\]/.test(doc.line(j).text)) {
+        hasQuoteMarker = true;
+        quoteLineIdx = j;
+        break;
+      }
+    }
+
+    blocks.push({ startLn, endLn, urlTexts, ruleClass, innerBlocks, blockId, hasQuoteMarker, quoteLineIdx });
     ln = endLn;
   }
 
@@ -442,7 +565,7 @@ function buildDecorations(
   try {
     for (const block of blocks) {
       const openLine = doc.line(block.startLn);
-      builder.add(openLine.from, openLine.from, makeLineDeco(["wr-codeblock-line", block.ruleClass]));
+      builder.add(openLine.from, openLine.from, makeLineDeco(["wr-codeblock-line", block.ruleClass, block.blockId ? `wr-block-id-${block.blockId}` : null]));
 
       // ライブプレビュー: カーソルがブロック内のどこかにあれば生表示する
       const blockHasCursor = cursorInBlock(block);
@@ -469,7 +592,7 @@ function buildDecorations(
 
         // 編集中（生表示）はネストブロックも含めて生のテキストを保つ
         if (showRaw && innerBlockInsideDocLines.has(j)) {
-          builder.add(l.from, l.from, makeLineDeco(["wr-codeblock-line", block.ruleClass]));
+          builder.add(l.from, l.from, makeLineDeco(["wr-codeblock-line", block.ruleClass, block.blockId ? `wr-block-id-${block.blockId}` : null]));
           continue;
         }
 
@@ -494,7 +617,7 @@ function buildDecorations(
             widgetContent = innerBodyLines.join("\n");
           }
 
-          builder.add(l.from, l.from, makeLineDeco(["wr-codeblock-line", block.ruleClass]));
+          builder.add(l.from, l.from, makeLineDeco(["wr-codeblock-line", block.ruleClass, block.blockId ? `wr-block-id-${block.blockId}` : null]));
 
           // ViewPluginからは inline replace のみ可能（block replace は不可）
           const startLine = doc.line(docStart);
@@ -520,25 +643,38 @@ function buildDecorations(
           continue;
         }
 
-        const quotePrefix = l.text.startsWith("> ") ? 2 : l.text.startsWith(">") ? 1 : 0;
-        const isQuoteLine = quotePrefix > 0;
+        const quotePrefixMatch = l.text.match(/^(?:>\s?)+/);
+        const quotePrefix = quotePrefixMatch ? quotePrefixMatch[0].length : 0;
+        const quoteDepth = quotePrefixMatch ? (quotePrefixMatch[0].match(/>/g) || []).length : 0;
+        const innerTextAfterQuote = quoteDepth > 0 ? l.text.slice(quotePrefix) : "";
+        const quoteInnerIsList = quoteDepth > 0 && /^(?:- \[[ x]\] |- |\d+\.\s?)/.test(innerTextAfterQuote);
+        const isQuoteLine = quoteDepth > 0;
         const hasObsidianUrl = !showRaw && /obsidian:\/\//.test(l.text);
         const isEmbedOnlyLine = (() => {
           if (showRaw) return false;
+          // 引用マーカーがある投稿では画像はインライン描画するため、行を隠さない
+          if (block.hasQuoteMarker) return false;
           const trimmed = l.text.trim();
           if (!/^!\[\[[^\]]+\]\]$/.test(trimmed)) return false;
           const innerName = trimmed.slice(3, -2);
           if (!IMAGE_EXT_RE.test(innerName)) return false;
           return app.metadataCache.getFirstLinkpathDest(innerName, "") !== null;
         })();
-        if (isEmbedOnlyLine) {
+        // 引用マーカー単独の行は QuoteBlockWidget で末尾に再描画するため、行ごと隠す
+        const isQuoteMarkerOnlyLine = (() => {
+          if (showRaw) return false;
+          if (!block.hasQuoteMarker) return false;
+          return /^\s*\[\[[^\[\]]+#\^wr-\d{17}\]\]\s*$/.test(l.text);
+        })();
+        if (isEmbedOnlyLine || isQuoteMarkerOnlyLine) {
           builder.add(l.from, l.from, hiddenLine);
-        } else if (isQuoteLine && !showRaw) {
-          builder.add(l.from, l.from, makeLineDeco(["wr-codeblock-line", "wr-blockquote-line", block.ruleClass]));
+        } else if ((isQuoteLine || quoteInnerIsList) && !showRaw) {
+          const depthClass = `wr-blockquote-depth-${Math.min(quoteDepth, 5)}`;
+          builder.add(l.from, l.from, makeLineDeco(["wr-codeblock-line", "wr-blockquote-line", depthClass, block.ruleClass, block.blockId ? `wr-block-id-${block.blockId}` : null]));
         } else if (hasObsidianUrl) {
-          builder.add(l.from, l.from, makeLineDeco(["wr-codeblock-line", "wr-obsidian-url-line", block.ruleClass]));
+          builder.add(l.from, l.from, makeLineDeco(["wr-codeblock-line", "wr-obsidian-url-line", block.ruleClass, block.blockId ? `wr-block-id-${block.blockId}` : null]));
         } else {
-          builder.add(l.from, l.from, makeLineDeco(["wr-codeblock-line", block.ruleClass]));
+          builder.add(l.from, l.from, makeLineDeco(["wr-codeblock-line", block.ruleClass, block.blockId ? `wr-block-id-${block.blockId}` : null]));
         }
 
         const entries: { from: number; to: number; deco: Decoration }[] = [];
@@ -555,6 +691,47 @@ function buildDecorations(
             entries.push({ from: l.from, to: l.from + quotePrefix, deco: replaceHidden });
             if (l.to > l.from + quotePrefix) {
               entries.push({ from: l.from + quotePrefix, to: l.to, deco: Decoration.mark({ class: "wr-blockquote-wrap" }) });
+            }
+          }
+          if (quoteInnerIsList) {
+            const innerCheck = innerTextAfterQuote.match(/^- \[([ x])\] /);
+            const innerList = !innerCheck && innerTextAfterQuote.match(/^- /);
+            const innerOl = !innerCheck && !innerList && innerTextAfterQuote.match(/^(\d+\.)\s?/);
+            if (innerCheck) {
+              const isChecked = innerCheck[1] === "x";
+              if (showRaw) {
+                const mark = isChecked ? Decoration.mark({ class: "wr-check-checked" }) : Decoration.mark({ class: "wr-check-unchecked" });
+                entries.push({ from: l.from + quotePrefix, to: l.from + quotePrefix + innerCheck[0].length, deco: mark });
+              } else {
+                entries.push({
+                  from: l.from + quotePrefix,
+                  to: l.from + quotePrefix + innerCheck[0].length,
+                  deco: Decoration.replace({ widget: new CheckboxWidget(isChecked, l.from + quotePrefix) }),
+                });
+              }
+              if (isChecked && checkStrikethrough && l.to > l.from + quotePrefix + innerCheck[0].length) {
+                entries.push({ from: l.from + quotePrefix + innerCheck[0].length, to: l.to, deco: Decoration.mark({ class: "wr-check-done" }) });
+              }
+            } else if (innerList) {
+              if (showRaw) {
+                entries.push({ from: l.from + quotePrefix, to: l.from + quotePrefix + 2, deco: Decoration.mark({ class: "wr-list-highlight" }) });
+              } else {
+                entries.push({
+                  from: l.from + quotePrefix,
+                  to: l.from + quotePrefix + 2,
+                  deco: Decoration.replace({ widget: new BulletWidget() }),
+                });
+              }
+            } else if (innerOl) {
+              if (showRaw) {
+                entries.push({ from: l.from + quotePrefix, to: l.from + quotePrefix + innerOl[0].length, deco: olMark });
+              } else {
+                entries.push({
+                  from: l.from + quotePrefix,
+                  to: l.from + quotePrefix + innerOl[0].length,
+                  deco: Decoration.replace({ widget: new OlMarkerWidget(innerOl[1]) }),
+                });
+              }
             }
           }
         } else if (checkMatch) {
@@ -673,8 +850,18 @@ function buildDecorations(
               const file = app.metadataCache.getFirstLinkpathDest(innerName, "");
               if (file) {
                 const src = app.vault.getResourcePath(file);
-                entries.push({ from, to, deco: replaceHidden });
-                embedImages.push({ src, alt: innerName });
+                if (block.hasQuoteMarker) {
+                  // 引用マーカーがある投稿: インライン img widget で画像をその場（書かれた位置）に表示
+                  entries.push({
+                    from,
+                    to,
+                    deco: Decoration.replace({ widget: new InlineEmbedImageWidget(src, innerName) }),
+                  });
+                } else {
+                  // 引用マーカーがない投稿: 末尾メディアエリアに集約
+                  entries.push({ from, to, deco: replaceHidden });
+                  embedImages.push({ src, alt: innerName });
+                }
                 continue;
               }
               entries.push({
@@ -683,6 +870,15 @@ function buildDecorations(
                 deco: Decoration.replace({ widget: new EmbedMissingWidget(innerName) }),
               });
               continue;
+            }
+            // 通常 [[...]] リンク。引用カードマーカー [[fileName#^wr-T]] なら本文位置では非表示にし、
+            // 引用カードは endLine.to の QuoteBlockWidget に「引用は底」で再構築する
+            if (!isEmbed) {
+              const quoteMatch = innerName.match(QUOTE_LINK_RE);
+              if (quoteMatch) {
+                entries.push({ from, to, deco: replaceHidden });
+                continue;
+              }
             }
             entries.push({
               from,
@@ -798,17 +994,26 @@ function buildDecorations(
           }
         }
 
-        entries.sort((a, b) => a.from - b.from || a.to - b.to);
+        // 同じ位置に Decoration.replace と Decoration.mark が並ぶと
+        // RangeSetBuilder が startSide 順序エラーで全装飾を弾くため、
+        // replace を先にソートしておく
+        const isReplace = (d: Decoration): boolean => (d as any).point === true;
+        entries.sort((a, b) => {
+          if (a.from !== b.from) return a.from - b.from;
+          const ar = isReplace(a.deco) ? 0 : 1;
+          const br = isReplace(b.deco) ? 0 : 1;
+          if (ar !== br) return ar - br;
+          return a.to - b.to;
+        });
         for (const e of entries) {
           builder.add(e.from, e.to, e.deco);
         }
+
       }
 
-      // 閉じフェンス行に背景色を適用
       const closeLine = doc.line(block.endLn);
-      builder.add(closeLine.from, closeLine.from, makeLineDeco(["wr-codeblock-line", block.ruleClass]));
+      builder.add(closeLine.from, closeLine.from, makeLineDeco(["wr-codeblock-line", block.ruleClass, block.blockId ? `wr-block-id-${block.blockId}` : null]));
 
-      // 閉じフェンスの後にプレビューウィジェットを配置
       const endLine = doc.line(block.endLn);
 
       if (embedImages.length > 0 && !blockHasCursor) {
@@ -822,16 +1027,60 @@ function buildDecorations(
         );
       }
 
-      if (block.urlTexts.length > 0) {
-        // 画像以外のobsidian:// URLは空のメディアブロックを生まないよう除外
+      const resolveImagePath = (fileName: string): string | null => {
+        const file = app.metadataCache.getFirstLinkpathDest(fileName, "");
+        return file ? app.vault.getResourcePath(file) : null;
+      };
+
+      // 引用マーカーありの投稿: 非編集時に endLine.to に block widget でまとめて出す。
+      // 内部で URL プレビュー → 引用カードの順で構築し、「引用は底」原則を維持する。
+      // 編集時 (blockHasCursor) は本文中の引用マーカーを生で表示するためここはスキップ
+      if (block.hasQuoteMarker && !blockHasCursor) {
+        // 投稿本文中の最初の引用マーカーから fileName と blockId を取り出す
+        let quoteFileName: string | null = null;
+        let quoteBlockId: string | null = null;
+        for (let j = block.startLn + 1; j < block.endLn; j++) {
+          const m = doc.line(j).text.match(/\[\[([^\[\]]+)#\^(wr-\d{17})\]\]/);
+          if (m) {
+            quoteFileName = m[1];
+            quoteBlockId = m[2];
+            break;
+          }
+        }
+        if (quoteFileName && quoteBlockId) {
+          const parsedUrls = block.urlTexts.length > 0
+            ? extractUrls(block.urlTexts.join(" ")).filter(
+                (pu) => pu.type === "image" || !pu.url.startsWith("obsidian://")
+              )
+            : [];
+          const currentPath = app.workspace.getActiveFile()?.path || "";
+          builder.add(
+            endLine.to,
+            endLine.to,
+            Decoration.widget({
+              widget: new QuoteBlockWidget(
+                quoteFileName,
+                quoteBlockId,
+                parsedUrls,
+                app,
+                currentPath,
+                block.ruleClass,
+                plugin.settings.timestampFormat || "YYYY/MM/DD HH:mm",
+                ogpCache,
+                resolveImagePath,
+                (content) => plugin.getTagRuleClassForContent(content),
+                (ruleClass) => plugin.getRuleAccentColor(ruleClass)
+              ),
+              side: 2,
+            })
+          );
+        }
+      } else if (!block.hasQuoteMarker && block.urlTexts.length > 0) {
+        // 引用マーカーなし投稿の URL プレビュー (従来通り末尾)
         const parsedUrls = extractUrls(block.urlTexts.join(" ")).filter(
           (pu) => pu.type === "image" || !pu.url.startsWith("obsidian://")
         );
         if (parsedUrls.length > 0) {
-          const resolveImagePath = (fileName: string): string | null => {
-            const file = app.metadataCache.getFirstLinkpathDest(fileName, "");
-            return file ? app.vault.getResourcePath(file) : null;
-          };
           builder.add(
             endLine.to,
             endLine.to,
@@ -842,6 +1091,8 @@ function buildDecorations(
           );
         }
       }
+      // 引用マーカーあり + カーソル中 (blockHasCursor) は URL プレビューも出さない:
+      // 編集中は本文の引用マーカー生表示のみで、 プレビュー類は非表示にして編集に集中させる
     }
   } catch (e) {
     console.debug("Wrot: decoration skipped", e);
@@ -888,12 +1139,11 @@ export function createWrEditorExtension(ogpCache: OGPCache, app: App, plugin: Wr
       }
 
       private fetchMissing() {
-        // 全URLのOGPフェッチを開始し、完了時にeffectをディスパッチして再装飾
         for (const block of this.blocks) {
           const parsedUrls = extractUrls(block.urlTexts.join(" "));
           for (const pu of parsedUrls) {
             if (pu.type === "image") continue;
-            if (ogpCache.get(pu.url)) continue; // Already cached
+            if (ogpCache.get(pu.url)) continue;
             ogpCache.fetchOGP(pu.url).then(() => {
               // フェッチ完了時点で最新のview参照を使う
               try {
@@ -906,6 +1156,25 @@ export function createWrEditorExtension(ogpCache: OGPCache, app: App, plugin: Wr
     },
     {
       decorations: (v) => v.decorations,
+      eventHandlers: {
+        // wr ブロック内の URL ハイライト要素をクリックしたらブラウザで開く
+        // (LV では Cmd+クリックの Obsidian 標準動作も効かないため、 シングルクリックで対応)
+        click(this: { decorations: DecorationSet }, e: MouseEvent) {
+          const target = e.target;
+          if (!(target instanceof HTMLElement)) return false;
+          const urlEl = target.closest(".wr-url-highlight");
+          if (!urlEl) return false;
+          // wr フェンスブロック内に居る URL のみ対象 (誤発火防止)
+          if (!urlEl.closest(".wr-codeblock-line, .HyperMD-codeblock")) return false;
+          const url = urlEl.textContent?.trim();
+          if (!url) return false;
+          if (!isSafeUrl(url)) return false;
+          e.preventDefault();
+          e.stopPropagation();
+          window.open(url, "_blank");
+          return true;
+        },
+      },
     }
   );
 }

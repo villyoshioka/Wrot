@@ -15,6 +15,8 @@ export interface ParsedUrl {
   type: "image" | "twitter" | "generic";
 }
 
+export const QUOTE_LINK_RE = /^([^\[\]\n#]+)#\^(wr-\d{17})$/;
+
 export function isSafeUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
@@ -89,20 +91,25 @@ export function extractUrls(text: string): ParsedUrl[] {
   return urls;
 }
 
-// メモテキストを #tag/URL 等を装飾しつつ描画する。プレビュー描画のため抽出URL一覧を返す
+
+export interface RenderTextCallbacks {
+  onTagClick?: (tag: string) => void;
+  onCheckToggle?: (lineIndex: number, checked: boolean) => void;
+  onInternalLinkClick?: (linkName: string) => void;
+  resolveImagePath?: (fileName: string) => string | null;
+  resolveLinkTarget?: (linkName: string) => boolean;
+  checkStrikethrough?: boolean;
+  renderCodeBlock?: (code: string, lang: string, container: HTMLElement, fenceTildes: number) => void;
+  renderMathBlock?: (tex: string, container: HTMLElement) => void;
+  // 引用カードマーカー [[fileName#^wr-T]] を検出した時に呼ばれる。呼び出し側で
+  // 引用カード DOM を slot に描画する
+  renderQuoteCard?: (slot: HTMLElement, fileName: string, blockId: string) => void;
+}
+
 export function renderTextWithTagsAndUrls(
   container: HTMLElement,
   text: string,
-  callbacks: {
-    onTagClick?: (tag: string) => void;
-    onCheckToggle?: (lineIndex: number, checked: boolean) => void;
-    onInternalLinkClick?: (linkName: string) => void;
-    resolveImagePath?: (fileName: string) => string | null;
-    resolveLinkTarget?: (linkName: string) => boolean;
-    checkStrikethrough?: boolean;
-    renderCodeBlock?: (code: string, lang: string, container: HTMLElement, fenceTildes: number) => void;
-    renderMathBlock?: (tex: string, container: HTMLElement) => void;
-  }
+  callbacks: RenderTextCallbacks
 ): ParsedUrl[] {
   const urls: ParsedUrl[] = [];
   const seen = new Set<string>();
@@ -150,14 +157,7 @@ function renderTextSegment(
   container: HTMLElement,
   text: string,
   lineOffset: number,
-  callbacks: {
-    onTagClick?: (tag: string) => void;
-    onCheckToggle?: (lineIndex: number, checked: boolean) => void;
-    onInternalLinkClick?: (linkName: string) => void;
-    resolveImagePath?: (fileName: string) => string | null;
-    resolveLinkTarget?: (linkName: string) => boolean;
-    checkStrikethrough?: boolean;
-  },
+  callbacks: RenderTextCallbacks,
   urls: ParsedUrl[],
   seen: Set<string>
 ): void {
@@ -165,11 +165,14 @@ function renderTextSegment(
 
   let currentList: HTMLElement | null = null;
   let currentListType: "ul" | "ol" | null = null;
-  let currentBlockquote: HTMLElement | null = null;
+  let quoteStack: HTMLElement[] = [];
+  let quoteList: HTMLElement | null = null;
+  let quoteListType: "ul" | "ol" | null = null;
+  let quoteListDepth: number = 0;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const quoteMatch = line.match(/^> ?(.*)$/);
+    const quoteMatch = line.match(/^((?:>\s?)+)(.*)$/);
     const checkMatch = !quoteMatch && line.match(/^- \[([ x])\] (.*)$/);
     const listMatch = !quoteMatch && !checkMatch && line.match(/^- (.+)$/);
     const olMatch = !quoteMatch && !checkMatch && !listMatch && line.match(/^\d+\.\s?(.+)$/);
@@ -177,14 +180,67 @@ function renderTextSegment(
     if (quoteMatch) {
       currentList = null;
       currentListType = null;
-      if (!currentBlockquote) {
-        currentBlockquote = container.createEl("blockquote", { cls: "wr-blockquote" });
-      } else {
-        currentBlockquote.createEl("br");
+      const depth = (quoteMatch[1].match(/>/g) || []).length;
+      const body = quoteMatch[2];
+      while (quoteStack.length > depth) {
+        quoteStack.pop();
       }
-      renderInlineTokens(currentBlockquote, quoteMatch[1], callbacks, urls, seen);
+      while (quoteStack.length < depth) {
+        const parent = quoteStack.length > 0 ? quoteStack[quoteStack.length - 1] : container;
+        const bq = parent.createEl("blockquote", { cls: "wr-blockquote" });
+        quoteStack.push(bq);
+      }
+      const target = quoteStack[quoteStack.length - 1];
+      const innerCheck = body.match(/^- \[([ x])\] (.*)$/);
+      const innerList = !innerCheck && body.match(/^- (.+)$/);
+      const innerOl = !innerCheck && !innerList && body.match(/^\d+\.\s?(.+)$/);
+      if (innerCheck || innerList) {
+        if (quoteList === null || quoteListType !== "ul" || quoteListDepth !== depth || quoteList.parentElement !== target) {
+          quoteList = target.createEl("ul", { cls: "wr-bullet-list" });
+          quoteListType = "ul";
+          quoteListDepth = depth;
+        }
+        const li = quoteList.createEl("li");
+        if (innerCheck) {
+          li.addClass("wr-check-item");
+          const checkbox = li.createEl("input", { attr: { type: "checkbox" } });
+          if (innerCheck[1] === "x") checkbox.checked = true;
+          if (callbacks.onCheckToggle) {
+            const lineIdx = lineOffset + i;
+            const cb = callbacks.onCheckToggle;
+            checkbox.addEventListener("click", () => {
+              cb(lineIdx, checkbox.checked);
+            });
+          } else {
+            checkbox.disabled = true;
+          }
+          const textContainer = innerCheck[1] === "x" && callbacks.checkStrikethrough
+            ? li.createEl("span", { cls: "wr-check-done" })
+            : li;
+          renderInlineTokens(textContainer, innerCheck[2], callbacks, urls, seen);
+        } else if (innerList) {
+          renderInlineTokens(li, innerList[1], callbacks, urls, seen);
+        }
+      } else if (innerOl) {
+        if (quoteList === null || quoteListType !== "ol" || quoteListDepth !== depth || quoteList.parentElement !== target) {
+          quoteList = target.createEl("ol", { cls: "wr-ordered-list" });
+          quoteListType = "ol";
+          quoteListDepth = depth;
+        }
+        const li = quoteList.createEl("li");
+        renderInlineTokens(li, innerOl[1], callbacks, urls, seen);
+      } else {
+        quoteList = null;
+        quoteListType = null;
+        if (target.childNodes.length > 0) {
+          target.createEl("br");
+        }
+        renderInlineTokens(target, body, callbacks, urls, seen);
+      }
     } else if (checkMatch || listMatch) {
-      currentBlockquote = null;
+      quoteStack = [];
+      quoteList = null;
+      quoteListType = null;
       if (currentListType !== "ul") {
         currentList = container.createEl("ul", { cls: "wr-bullet-list" });
         currentListType = "ul";
@@ -212,7 +268,9 @@ function renderTextSegment(
         renderInlineTokens(li, listMatch[1], callbacks, urls, seen);
       }
     } else if (olMatch) {
-      currentBlockquote = null;
+      quoteStack = [];
+      quoteList = null;
+      quoteListType = null;
       if (currentListType !== "ol") {
         currentList = container.createEl("ol", { cls: "wr-ordered-list" });
         currentListType = "ol";
@@ -220,10 +278,12 @@ function renderTextSegment(
       const li = currentList!.createEl("li");
       renderInlineTokens(li, olMatch[1], callbacks, urls, seen);
     } else {
-      const prevWasBlock = currentList !== null || currentBlockquote !== null;
+      const prevWasBlock = currentList !== null || quoteStack.length > 0;
       currentList = null;
       currentListType = null;
-      currentBlockquote = null;
+      quoteStack = [];
+      quoteList = null;
+      quoteListType = null;
       if (i > 0 && !prevWasBlock) container.appendText("\n");
       renderInlineTokens(container, line, callbacks, urls, seen);
     }
@@ -240,6 +300,7 @@ function renderInlineTokens(
     onInternalLinkClick?: (linkName: string) => void;
     resolveImagePath?: (fileName: string) => string | null;
     resolveLinkTarget?: (linkName: string) => boolean;
+    renderQuoteCard?: (slot: HTMLElement, fileName: string, blockId: string) => void;
   },
   urls: ParsedUrl[],
   seen: Set<string>
@@ -310,7 +371,7 @@ function renderInlineTokens(
       if (IMAGE_EXT_RE.test(fileName) && callbacks.resolveImagePath) {
         const src = callbacks.resolveImagePath(fileName);
         if (src) {
-          const img = container.createEl("img", {
+          container.createEl("img", {
             cls: "wr-embed-img",
             attr: { src, alt: fileName, loading: "lazy" },
           });
@@ -332,16 +393,23 @@ function renderInlineTokens(
       }
     } else if (linkMatch) {
       const linkName = linkMatch[1];
-      const resolved = callbacks.resolveLinkTarget ? callbacks.resolveLinkTarget(linkName) : true;
-      const cls = resolved ? "wr-internal-link" : "wr-internal-link wr-internal-link-unresolved";
-      const linkEl = container.createEl("a", { cls, text: linkName });
-      if (callbacks.onInternalLinkClick) {
-        const cb = callbacks.onInternalLinkClick;
-        linkEl.addEventListener("click", (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          cb(linkName);
-        });
+      // 引用カードマーカー [[fileName#^wr-T]] の検出を優先
+      const quoteMatch = linkName.match(QUOTE_LINK_RE);
+      if (quoteMatch && callbacks.renderQuoteCard) {
+        const slot = container.createEl("span", { cls: "wr-quote-card-slot" });
+        callbacks.renderQuoteCard(slot, quoteMatch[1], quoteMatch[2]);
+      } else {
+        const resolved = callbacks.resolveLinkTarget ? callbacks.resolveLinkTarget(linkName) : true;
+        const cls = resolved ? "wr-internal-link" : "wr-internal-link wr-internal-link-unresolved";
+        const linkEl = container.createEl("a", { cls, text: linkName });
+        if (callbacks.onInternalLinkClick) {
+          const cb = callbacks.onInternalLinkClick;
+          linkEl.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            cb(linkName);
+          });
+        }
       }
     } else if (part.match(/^#[^\s#]+$/)) {
       const tagEl = container.createEl("span", {
@@ -524,7 +592,6 @@ export function renderTwitterCard(
   container.appendChild(card);
 }
 
-// URL一覧のリッチプレビューを描画する。画像は同期、OGP/Twitterカードは非同期で読み込む
 export function renderUrlPreviews(
   container: HTMLElement,
   urls: ParsedUrl[],

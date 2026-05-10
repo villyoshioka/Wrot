@@ -9,11 +9,37 @@ export async function toggleCheckbox(
     const lines = data.split("\n");
     if (lineNumber < 0 || lineNumber >= lines.length) return data;
     const line = lines[lineNumber];
-    const match = line.match(/^(- \[)([ x])(\] .*)$/);
+    const match = line.match(/^((?:>\s?)*- \[)([ x])(\] .*)$/);
     if (!match) return data;
     lines[lineNumber] = match[1] + (match[2] === " " ? "x" : " ") + match[3];
     return lines.join("\n");
   });
+}
+
+export async function ensureBlockIdOnFence(
+  app: App,
+  file: TFile,
+  memoTimestamp: string,
+  blockId: string
+): Promise<boolean> {
+  let added = false;
+  await app.vault.process(file, (data) => {
+    const lines = data.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      const m = lines[i].match(/^(```wr\s+)(\S+)(.*)$/);
+      if (!m) continue;
+      if (m[2].trim() !== memoTimestamp) continue;
+      if (m[3].includes(`^${blockId}`)) {
+        added = false;
+        return data;
+      }
+      lines[i] = `${m[1]}${m[2]}${m[3]} ^${blockId}`;
+      added = true;
+      return lines.join("\n");
+    }
+    return data;
+  });
+  return added;
 }
 
 declare const moment: typeof import("moment");

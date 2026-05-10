@@ -468,6 +468,39 @@ ol.wr-reading-list > li::before {
   display: block;
 }
 
+/* RV 通常投稿の末尾集約画像。 上はコピーボタンの位置で自然な余白ができるが、
+   下はブロック padding + 画像 margin だけでは上下バランスが偏って違和感。
+   実装上、 RV では画像が pre.language-wr の直下に appendChild される構造のため、
+   block-language-wr 直下ではなく pre.language-wr 直下を狙う */
+pre.language-wr > .wr-embed-img,
+.block-language-wr > .wr-embed-img {
+  margin-bottom: 24px;
+}
+
+/* 引用マーカーありの投稿で、画像がインライン位置に書かれている場合の余白調整。
+   wrapper の padding-right で「画像の利用可能幅」を縮めることで、wr ブロックの右 padding と揃った右余白を作る。
+   左 padding は cm-line / コードブロックの自然な padding をそのまま尊重 */
+.wr-lp-inline-img-wrapper {
+  display: block;
+  box-sizing: border-box;
+  padding-right: 16px;
+}
+
+.wr-embed-img.wr-lp-inline-img {
+  display: block;
+  margin: 4px 0;
+  max-width: 100%;
+}
+
+/* 引用マーカーありの投稿で、画像が <code> 直下に配置されるとコピーボタンが画像に重なる。
+   margin-top で画像の頭を下げ、コピーボタンを画像の外側に逃がす。
+   通常投稿は wr-rv-inline-img クラスがつかないため影響なし */
+.wr-embed-img.wr-rv-inline-img {
+  display: block;
+  margin: 32px 0 4px 0;
+  max-width: 100%;
+}
+
 .wr-embed-missing {
   color: var(--text-muted);
   font-style: italic;
@@ -579,7 +612,7 @@ code.wr-code-hidden {
 
 .wr-codeblock-display pre {
   margin: 0 !important;
-  padding: 0.6em 0.8em !important;
+  padding: 0.6em 0 0.6em 0 !important;
   border-radius: 6px;
   overflow-x: auto;
   border: none !important;
@@ -634,6 +667,10 @@ code.wr-code-hidden {
   background: none !important;
 }
 
+.wr-blockquote *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-tag *):not(.wr-reading-url *) {
+  color: var(--text-muted) !important;
+}
+
 /* Blockquote: timeline inherits .wr-content font */
 .wr-content .wr-blockquote {
   padding-left: 10px !important;
@@ -647,6 +684,13 @@ pre > .wr-blockquote {
   padding-left: 10px !important;
   font-size: var(--code-size) !important;
   font-family: var(--font-monospace) !important;
+}
+
+/* Blockquote: 引用カード本文プレビュー内 (LV/RV/タイムライン共通)。
+   .wr-content や .block-language-wr 配下のルールが効かない場面で padding-left が 0 になり、
+   LV と RV で縦棒〜文字の間隔が違って見えるため、 ここで明示的に揃える */
+.wr-quote-card-body .wr-blockquote {
+  padding-left: 10px !important;
 }
 
 .wr-quote-highlight {
@@ -699,11 +743,65 @@ pre > .wr-blockquote {
 }
 
 .wr-blockquote-wrap {
-  display: inline-block;
-  border-left: 3px solid var(--text-muted);
-  padding-left: 10px;
-  margin-left: 5px;
   color: var(--text-muted);
+}
+
+/* LV blockquote vertical bar: matches RV blockquote spacing.
+   Bar-to-bar gap = 18px (margin 5 + border 3 + padding 10), bar-to-text gap = 10px. */
+.cm-line.wr-blockquote-line {
+  position: relative;
+  padding-inline-start: calc(var(--size-4-4) + 18px) !important;
+}
+
+.cm-line.wr-blockquote-line::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--size-4-4) + 5px);
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background-color: var(--text-muted);
+}
+
+.cm-line.wr-blockquote-depth-2 {
+  padding-inline-start: calc(var(--size-4-4) + 36px) !important;
+}
+
+.cm-line.wr-blockquote-depth-2::before {
+  box-shadow: 18px 0 0 0 var(--text-muted);
+}
+
+.cm-line.wr-blockquote-depth-3 {
+  padding-inline-start: calc(var(--size-4-4) + 54px) !important;
+}
+
+.cm-line.wr-blockquote-depth-3::before {
+  box-shadow:
+    18px 0 0 0 var(--text-muted),
+    36px 0 0 0 var(--text-muted);
+}
+
+.cm-line.wr-blockquote-depth-4 {
+  padding-inline-start: calc(var(--size-4-4) + 72px) !important;
+}
+
+.cm-line.wr-blockquote-depth-4::before {
+  box-shadow:
+    18px 0 0 0 var(--text-muted),
+    36px 0 0 0 var(--text-muted),
+    54px 0 0 0 var(--text-muted);
+}
+
+.cm-line.wr-blockquote-depth-5 {
+  padding-inline-start: calc(var(--size-4-4) + 90px) !important;
+}
+
+.cm-line.wr-blockquote-depth-5::before {
+  box-shadow:
+    18px 0 0 0 var(--text-muted),
+    36px 0 0 0 var(--text-muted),
+    54px 0 0 0 var(--text-muted),
+    72px 0 0 0 var(--text-muted);
 }
 
 /* Live Preview: shared marker style */
@@ -858,19 +956,27 @@ body.wr-font-follow .wr-pin-indicator .svg-icon {
   padding-top: 0;
 }
 
+/* モバイルで無効化されたメニュー項目をタップしたときのタップハイライトとフォーカス背景を無効化。
+   Obsidian の Menu は is-disabled クラスを付けるが、 -webkit-tap-highlight-color や
+   :active の背景は別経路で出てしまうため、 ここで明示的に潰す。
+   Obsidian 標準の menu-item ルールに勝つため body プレフィックス + 状態セレクタを全部明示 */
+body .wr-menu .menu-item.is-disabled,
+body .wr-menu .menu-item.is-disabled:hover,
+body .wr-menu .menu-item.is-disabled:active,
+body .wr-menu .menu-item.is-disabled:focus,
+body .wr-menu .menu-item.is-disabled.selected,
+body .wr-menu .menu-item.is-disabled.is-active,
+body .wr-menu .menu-item.is-disabled.is-focused {
+  background: transparent !important;
+  background-color: transparent !important;
+  -webkit-tap-highlight-color: transparent !important;
+  cursor: default !important;
+  pointer-events: none !important;
+}
+
 /* ========================================
    Reading View & Live Preview - qm code block card
    ======================================== */
-
-div.wr-reading-card {
-  background: var(--wr-bg-color, #f8f8f8) !important;
-  background-color: var(--wr-bg-color, #f8f8f8) !important;
-  border-radius: 8px;
-  padding: 12px 16px;
-  margin: 4px 0;
-  position: relative;
-  font-size: var(--wr-font-text);
-}
 
 /* コードブロックプロセッサ出力の親要素 + Reading View */
 div.block-language-wr,
@@ -929,62 +1035,6 @@ div.block-language-wr pre {
   margin: 0 !important;
 }
 
-.wr-reading-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
-  flex-wrap: wrap;
-}
-
-.wr-reading-time {
-  font-size: 0.85em;
-  color: var(--text-muted);
-  font-weight: 500;
-}
-
-.wr-reading-tags {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-}
-
-.wr-reading-tag {
-  color: var(--text-accent);
-}
-
-.wr-reading-content {
-  font-size: var(--wr-font-text);
-  line-height: 1.5;
-  color: var(--text-normal);
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.wr-reading-copy-btn {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  font-size: var(--wr-font-ui-smaller);
-  padding: 2px 8px;
-  border-radius: 4px;
-  border: 1px solid var(--background-modifier-border);
-  background: var(--background-primary);
-  color: var(--text-muted);
-  cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.15s;
-}
-
-.wr-reading-card:hover .wr-reading-copy-btn {
-  opacity: 1;
-}
-
-.wr-reading-copy-btn:hover {
-  background: var(--background-modifier-hover);
-  color: var(--text-normal);
-}
-
 /* ========================================
    URL & Rich Preview Styles
    ======================================== */
@@ -1021,9 +1071,35 @@ div.block-language-wr pre {
   width: 100% !important;
 }
 
+/* OGPカードが未描画 (キャッシュ未取得 or 取得失敗) の場合は wr-media-area が
+   空のまま残ることがあるので、 :empty で余白を全部潰す */
+.wr-media-area:empty {
+  margin: 0 !important;
+  padding: 0 !important;
+  gap: 0 !important;
+  height: 0 !important;
+}
+
+/* LV: wr フェンスの終了行 (HyperMD-codeblock-end) に空の wr-media-area widget が入ると、
+   widget が縦方向に余分な高さ (改行 + widgetBuffer 分) を生む。
+   行自体は ``` フェンス文字を見せるため潰さず、 中の空 widget だけ position: absolute で
+   レイアウトから外して、 行高さに影響させない */
+.cm-line.wr-codeblock-line.HyperMD-codeblock-end > .wr-media-area:empty {
+  position: absolute !important;
+  width: 0 !important;
+}
+
 /* Reading View: media area inside block-language-wr */
 .block-language-wr > .wr-media-area {
   padding: 0 16px 12px !important;
+}
+
+/* RV 画像URL投稿 (wr-media-link 含む) は、 通常画像 (pre 直下の wr-embed-img) と同じく
+   下余白を厚めに取って「画像投稿」体験を揃える。
+   RV では実装上 wr-media-area が pre.language-wr の直下にも置かれるため両方狙う */
+pre.language-wr > .wr-media-area:has(> .wr-media-link),
+.block-language-wr > .wr-media-area:has(> .wr-media-link) {
+  padding-bottom: 28px !important;
 }
 
 /* Inline image preview */
@@ -1130,12 +1206,24 @@ div.block-language-wr pre {
   padding: 4px 0;
 }
 
-/* Live Preview: widget preview area */
+/* Live Preview: widget preview area。
+   wr-media-area の margin-top: 8px は LV では打ち消し、 上下余白は子要素側で制御 */
 .wr-lp-media {
-  padding: 8px 16px 12px 2px !important;
+  margin-top: 0 !important;
+  padding: 0 16px 0 2px !important;
   font-family: var(--font-interface) !important;
   font-size: var(--wr-font-text) !important;
   white-space: normal !important;
+}
+
+/* 画像を含む wr-lp-media は、 wr フェンス終了行内の cm-widgetBuffer/noun 等が
+   画像の上に作る ~25px の余白と見た目バランスを取るため、 padding-bottom を厚めに。
+   通常画像 (wr-embed-img) でも画像URL (wr-media-link) でもユーザーには同じ「画像」体験なので
+   両方同じ下余白を当てて見た目を揃える。
+   URL カードのみの wr-lp-media (OGPカード等) はこの追加余白を持たない */
+.wr-lp-media:has(> .wr-embed-img),
+.wr-lp-media:has(> .wr-media-link) {
+  padding-bottom: 24px !important;
 }
 
 /* ========================================
@@ -1408,3 +1496,264 @@ body:not(.wr-font-follow).is-mobile .wr-timestamp {
   min-width: 0;
 }
 
+
+
+/* ===== Wrot 引用カード (Twitter 引用RT 風) ===== */
+.wr-quote-card-slot {
+  display: block;
+  margin: 6px 0 0 0;
+}
+
+/* LV: 引用カード slot が wr-quote-block の子として置かれる場合は negative margin 不要。
+   wr-quote-block 配下では margin: 0 でフラットに並べる */
+.cm-line .wr-quote-card-slot.wr-lp-quote-card {
+  display: block;
+  margin: 0 var(--size-4-4, 16px) 0 0;
+}
+
+/* wr-quote-block 内の slot は wr フェンスの右端にぶつからないよう右余白だけ維持 */
+.wr-quote-block > .wr-quote-card-slot.wr-lp-quote-card {
+  margin: 0 var(--size-4-4, 16px) 0 0;
+}
+
+.wr-quote-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  border: 1px dashed var(--text-muted);
+  border-radius: 8px;
+  background-color: transparent;
+  padding: 10px 12px;
+  margin: 0;
+  transition: border-color 0.15s ease, background-color 0.15s ease, opacity 0.15s ease;
+  cursor: pointer;
+}
+
+.wr-quote-card:hover {
+  border-color: var(--text-normal);
+  background-color: rgba(0, 0, 0, 0.06);
+  text-decoration: none;
+}
+
+.theme-dark .wr-quote-card:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.wr-quote-card-body {
+  font-size: 0.9em;
+  color: var(--text-muted);
+  overflow: hidden;
+  max-height: calc(0.9em * 1.5 * 3);
+  line-height: 1.5;
+  margin-bottom: 4px;
+  letter-spacing: normal;
+  word-spacing: normal;
+  font-family: var(--font-text, var(--default-font));
+}
+
+/* main.ts が wr ブロック内全要素に textColor !important を当てるため、
+   引用カード本文・メタ・枠は specificity を勝てるレベルまで上げて muted 色を当てる。
+   main.ts 側のセレクタ「body .cm-line.wr-codeblock-line *」(specificity 0,0,2,1) に勝つには
+   class 数を多くする必要がある。 wr-quote-card-slot を含めて 0,0,3,1 にして勝つ */
+body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body,
+body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body *:not(.wr-tag):not(.wr-url):not(.wr-internal-link):not(.wr-nested-quote-marker):not(.wr-tag *):not(.wr-url *):not(.wr-internal-link *):not(.wr-quote-image-marker):not(.wr-quote-math-marker):not(.wr-quote-code-marker):not(.wr-quote-image-marker *):not(.wr-quote-math-marker *):not(.wr-quote-code-marker *),
+body .wr-quote-card-slot .wr-quote-card .wr-quote-card-meta {
+  color: var(--text-muted) !important;
+}
+
+/* 枠線 (dashed border) も main.ts 系の影響を受けないよう specificity 上げて明示 */
+body .wr-quote-card-slot .wr-quote-card {
+  border-color: var(--text-muted) !important;
+}
+
+/* 引用カード本文内のアクセント対象 (タグ/URL/内部リンク/QT マーカー) は
+   さらに強い specificity でアクセント色を上書きする */
+body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-tag,
+body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-url,
+body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-internal-link,
+body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-nested-quote-marker {
+  color: var(--text-accent) !important;
+}
+
+/* プレビューカードは「1行=1ブロック」のフラット構造で描画する。
+   ul/ol/li を使わずに ・ / 1. / チェックボックス を行頭にインライン配置することで、
+   max-height の3行クリップが安定する */
+.wr-quote-card-line {
+  display: flex;
+  align-items: baseline;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.wr-quote-card-line-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* 行頭マーカースロット。 ・ / 1. / 丸チェック いずれも同じ幅で固定して
+   後続テキストの開始位置を揃える。テキスト記号 (・ / 1.) と CSS自前描画 (丸チェック) を
+   併用することで、テーマ依存の <input type="checkbox"> スタイル干渉を完全に回避 */
+.wr-quote-card-marker-slot {
+  flex: 0 0 1.4em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Apple リマインダー風の丸チェックマーカー。 1em 角の円で、
+   チェック済み時は中にチェックマーク (CSS border で √ を作る) を描画する */
+.wr-quote-card-check {
+  display: inline-block;
+  width: 0.95em;
+  height: 0.95em;
+  border: 1.2px solid var(--text-muted);
+  border-radius: 50%;
+  box-sizing: border-box;
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.wr-quote-card-check-done {
+  background-color: var(--text-muted);
+  border-color: var(--text-muted);
+}
+
+.wr-quote-card-check-done::after {
+  content: "";
+  position: absolute;
+  left: 28%;
+  top: 12%;
+  width: 28%;
+  height: 56%;
+  border: solid var(--background-primary);
+  border-width: 0 0.12em 0.12em 0;
+  transform: rotate(45deg);
+}
+
+/* タグ/URL/内部リンク等のアクセント対象はカード内でもアクセント色維持 */
+.wr-quote-card-body .wr-tag,
+.wr-quote-card-body .wr-url,
+.wr-quote-card-body .wr-internal-link {
+  color: var(--text-accent);
+}
+
+/* LV: 引用ありの投稿で endLine.to に inline widget として置かれる
+   wr-quote-block (URL プレビュー + 引用カード) のラッパー */
+.wr-quote-block {
+  display: block;
+  /* HyperMD-codeblock-end 行の cm-widgetBuffer / noun span が作る ~16px の上余白を打ち消し、
+     本文と引用カードを自然な距離にする */
+  margin: -16px 0 0 0;
+}
+
+/* URL プレビュー (画像URL含む) と引用カードの間隔。 通常画像 ![[]] からの引用との見た目を揃える */
+.wr-quote-block > .wr-media-area {
+  margin-bottom: 28px;
+}
+
+/* RV / タイムラインで画像URL .wr-media-link が引用カードの直前にいる場合、
+   通常画像 (![[]]) からの間隔と揃えるために底上げする */
+.wr-media-area:has(> .wr-media-link) + .wr-quote-card-slot {
+  margin-top: 25px;
+}
+
+/* wr-quote-block 配下の wr-lp-media は引用カードがすぐ下にぶら下がるので、
+   末尾配置時用の padding-bottom: 24px は不要。 wr-quote-block 側の margin-bottom で間隔制御 */
+.wr-quote-block > .wr-lp-media:has(> .wr-embed-img),
+.wr-quote-block > .wr-lp-media:has(> .wr-media-link) {
+  padding-bottom: 0 !important;
+}
+
+.wr-quote-block > .wr-quote-card-slot {
+  margin-top: 0;
+}
+
+/* 引用カード本文プレビュー内の画像 embed / 数式 / コード ブロックマーカー
+   (Obsidian image / sigma / code アイコン + ラベルテキスト)。
+   inline-flex はテキスト baseline と合わなくなるため、普通の inline で組み、
+   svg 自身に高さと vertical-align を持たせて文字と並ぶようにする */
+.wr-quote-image-marker,
+.wr-quote-math-marker,
+.wr-quote-code-marker {
+  color: var(--text-muted);
+}
+
+.wr-quote-image-marker-icon,
+.wr-quote-math-marker-icon,
+.wr-quote-code-marker-icon {
+  display: inline;
+  margin-right: 0.2em;
+  color: inherit;
+}
+
+.wr-quote-image-marker-icon .svg-icon,
+.wr-quote-math-marker-icon .svg-icon,
+.wr-quote-code-marker-icon .svg-icon {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+}
+
+
+/* 入れ子引用マーカー (X 風 QT: ...) はアクセント色で目立たせる */
+.wr-nested-quote-marker {
+  color: var(--text-accent);
+}
+
+.wr-quote-card-meta {
+  font-size: 0.8em;
+  color: var(--text-muted);
+  font-family: var(--font-text, var(--default-font));
+}
+
+.wr-quote-card-dead {
+  cursor: default;
+  opacity: 0.65;
+}
+
+.wr-quote-card-dead:hover {
+  border-color: var(--text-muted);
+}
+
+/* 引用カードクリックで元投稿に飛んだとき、対象ブロック全体を緩く点滅させる。
+   元投稿がタグルール対象 (accent あり) の場合、 JS 側で要素に --wr-flash-color を
+   セットして、 そのアクセントで光らせる。 未指定なら Obsidian テーマのアクセント色。 */
+@keyframes wr-quote-jump-flash {
+  0%, 100% { background-color: transparent; }
+  50% { background-color: var(--wr-flash-color, hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.22)); }
+}
+
+.cm-line.wr-quote-jump-flash,
+.wr-quote-jump-flash {
+  animation: wr-quote-jump-flash 1.6s ease-in-out 2 !important;
+}
+
+/* cm-line / RV ブロック いずれも background-color が背景設定で上書きされやすいので
+   ::after オーバーレイで上から塗る方式 */
+.cm-line.wr-codeblock-line.wr-quote-jump-flash,
+.block-language-wr.wr-quote-jump-flash,
+pre.wr-quote-jump-flash,
+.wr-card.wr-quote-jump-flash {
+  position: relative;
+}
+
+.cm-line.wr-codeblock-line.wr-quote-jump-flash::after,
+.block-language-wr.wr-quote-jump-flash::after,
+pre.wr-quote-jump-flash::after,
+.wr-card.wr-quote-jump-flash::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-color: var(--wr-flash-color, hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.22));
+  animation: wr-quote-jump-flash-overlay 1.4s ease-out 1 forwards;
+  border-radius: inherit;
+}
+
+@keyframes wr-quote-jump-flash-overlay {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  100% { opacity: 0; }
+}

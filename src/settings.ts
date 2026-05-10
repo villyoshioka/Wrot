@@ -6,6 +6,7 @@ export interface TagColorRule {
   bgColor: string;
   textColor: string;
   accentColor?: string;
+  subColor?: string;
 }
 
 export interface PinEntry {
@@ -492,7 +493,24 @@ export class WrotSettingTab extends PluginSettingTab {
       const getDefaultAccent = (): string => {
         const raw = getComputedStyle(document.body).getPropertyValue("--text-accent").trim();
         if (/^#[0-9a-fA-F]{6}$/.test(raw)) return raw;
+        const probe = document.createElement("div");
+        probe.style.color = raw || "var(--text-accent)";
+        probe.style.display = "none";
+        document.body.appendChild(probe);
+        const resolved = getComputedStyle(probe).color;
+        document.body.removeChild(probe);
+        const m = resolved.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+        if (m) {
+          const toHex = (n: string) => parseInt(n, 10).toString(16).padStart(2, "0");
+          return `#${toHex(m[1])}${toHex(m[2])}${toHex(m[3])}`;
+        }
         return getDefaultText();
+      };
+
+      const getDefaultSub = (rule: TagColorRule): string => {
+        const fg = resolveRuleText(rule.textColor);
+        const bg = resolveRuleBg(rule.bgColor);
+        return this.plugin.blendColor(fg, bg, 0.45);
       };
 
       const buildRuleGroup = (
@@ -504,6 +522,7 @@ export class WrotSettingTab extends PluginSettingTab {
         onBgChange: (v: string) => Promise<void>,
         onFgChange: (v: string) => Promise<void>,
         onAccentChange: (v: string | undefined) => Promise<void>,
+        onSubChange: (v: string | undefined) => Promise<void>,
         trailing: { kind: "delete"; handler: () => Promise<void> } | { kind: "reset"; handler: () => Promise<void> } | null
       ) => {
         if (!isFirst) {
@@ -614,6 +633,33 @@ export class WrotSettingTab extends PluginSettingTab {
             });
           });
 
+        let subPicker: ColorComponent;
+        let subPickerEl: HTMLInputElement | null = null;
+        let subResetBtnEl: HTMLElement | null = null;
+        new Setting(groupEl)
+          .setName("サブカラー")
+          .setDesc("タイムスタンプ・アイコン・リストマーカー・引用線・チェックボックスなどサブ要素の色をまとめて設定します。未設定時は背景色と文字色から自動算出します。")
+          .setClass("wr-reverse-controls")
+          .addColorPicker((picker) => {
+            subPicker = picker;
+            subPickerEl = (picker as unknown as { colorPickerEl: HTMLInputElement }).colorPickerEl;
+            const initialSub =
+              initial.subColor && /^#[0-9a-fA-F]{6}$/.test(initial.subColor)
+                ? initial.subColor
+                : getDefaultSub(initial);
+            picker
+              .setValue(initialSub)
+              .onChange(async (v) => { await onSubChange(v); });
+          })
+          .addExtraButton((btn) => {
+            subResetBtnEl = btn.extraSettingsEl;
+            btn.setIcon("reset").setTooltip("初期値に戻す").onClick(async () => {
+              if (!isUnlocked()) return;
+              await onSubChange(undefined);
+              subPicker.setValue(getDefaultSub(initial));
+            });
+          });
+
         const setDisabled = (el: HTMLElement | null, disabled: boolean) => {
           if (!el) return;
           if (disabled) {
@@ -635,6 +681,8 @@ export class WrotSettingTab extends PluginSettingTab {
           setDisabled(fgPickerEl, !unlocked);
           setDisabled(accentPickerEl, !unlocked);
           setDisabled(accentResetBtnEl, !unlocked);
+          setDisabled(subPickerEl, !unlocked);
+          setDisabled(subResetBtnEl, !unlocked);
           setDisabled(trailingBtnEl, !unlocked);
           if (lockBtnEl) {
             setIcon(lockBtnEl, unlocked ? "lock-keyhole-open" : "lock-keyhole");
@@ -663,7 +711,8 @@ export class WrotSettingTab extends PluginSettingTab {
           const bgChanged = placeholder.bgColor !== placeholderBg;
           const fgChanged = placeholder.textColor !== placeholderText;
           const accentChanged = placeholder.accentColor !== undefined;
-          if (hasTag || bgChanged || fgChanged || accentChanged) {
+          const subChanged = placeholder.subColor !== undefined;
+          if (hasTag || bgChanged || fgChanged || accentChanged || subChanged) {
             this.plugin.settings.tagColorRules.push({ ...placeholder });
             await this.plugin.saveSettings();
             this.plugin.applyTagColorRules();
@@ -680,7 +729,16 @@ export class WrotSettingTab extends PluginSettingTab {
           async (v) => { placeholder.tag = v; await promoteIfNeeded(); },
           async (v) => { placeholder.bgColor = v; await promoteIfNeeded(); },
           async (v) => { placeholder.textColor = v; await promoteIfNeeded(); },
-          async (v) => { placeholder.accentColor = v; await promoteIfNeeded(); },
+          async (v) => {
+            if (v === undefined) delete placeholder.accentColor;
+            else placeholder.accentColor = v;
+            await promoteIfNeeded();
+          },
+          async (v) => {
+            if (v === undefined) delete placeholder.subColor;
+            else placeholder.subColor = v;
+            await promoteIfNeeded();
+          },
           null,
         );
 
@@ -699,6 +757,7 @@ export class WrotSettingTab extends PluginSettingTab {
                   rule.bgColor = getDefaultBg();
                   rule.textColor = getDefaultText();
                   delete rule.accentColor;
+                  delete rule.subColor;
                   await this.plugin.saveSettings();
                   this.plugin.applyTagColorRules();
                   this.plugin.refreshAllWrDecorations();
@@ -741,6 +800,15 @@ export class WrotSettingTab extends PluginSettingTab {
               delete rule.accentColor;
             } else {
               rule.accentColor = v;
+            }
+            await this.plugin.saveSettings();
+            this.plugin.applyTagColorRules();
+          },
+          async (v) => {
+            if (v === undefined) {
+              delete rule.subColor;
+            } else {
+              rule.subColor = v;
             }
             await this.plugin.saveSettings();
             this.plugin.applyTagColorRules();

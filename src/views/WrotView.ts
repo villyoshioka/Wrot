@@ -4,11 +4,51 @@ import { parseMemos, Memo } from "../utils/memoParser";
 import { appendMemo, toggleCheckbox } from "../utils/memoWriter";
 import { getOrCreateDailyNote, getDailyNoteFile } from "../utils/dailyNote";
 import { renderTextWithTagsAndUrls, renderUrlPreviews } from "../utils/urlRenderer";
+import { renderQuoteCard } from "../utils/quoteCard";
+import { ensureBlockIdOnFence } from "../utils/memoWriter";
 import { isImageFile, saveImageToVault, buildEmbedLink } from "../utils/imageAttachment";
 import type WrotPlugin from "../main";
 import type { PinEntry } from "../settings";
 
 declare const moment: typeof import("moment");
+
+// 投稿保存時に画像 embed を bodyText に挿入するヘルパー。
+// 末尾が「引用カードマーカー [[X#^wr-T]]」または「Markdown引用ブロック (> 行) の連続」なら
+// その直前に embed を挟む（引用は常に投稿の最下部）。
+// それ以外（手動介入: 引用の後にテキストや別行がある等）は末尾追加。
+function insertEmbedAboveBottomBlock(bodyText: string, embed: string): string {
+  if (!bodyText) return embed;
+
+  const markerMatch = bodyText.match(/^([\s\S]*?)\n?(\[\[[^\[\]]+#\^wr-\d{17}\]\])\s*$/);
+  if (markerMatch) {
+    const before = markerMatch[1].replace(/\n+$/, "");
+    const marker = markerMatch[2];
+    return before ? `${before}\n${embed}\n${marker}` : `${embed}\n${marker}`;
+  }
+
+  const lines = bodyText.split("\n");
+  let firstQuoteIdx = lines.length;
+  for (let i = lines.length - 1; i >= 0; i--) {
+    if (/^>(\s|$)/.test(lines[i])) {
+      firstQuoteIdx = i;
+    } else if (lines[i].trim() === "" && firstQuoteIdx === i + 1) {
+      firstQuoteIdx = i;
+    } else {
+      break;
+    }
+  }
+  if (firstQuoteIdx < lines.length) {
+    const above = lines.slice(0, firstQuoteIdx);
+    const below = lines.slice(firstQuoteIdx);
+    const aboveText = above.join("\n").replace(/\n+$/, "");
+    const belowText = below.join("\n").replace(/^\n+/, "");
+    return aboveText
+      ? `${aboveText}\n${embed}\n\n${belowText}`
+      : `${embed}\n\n${belowText}`;
+  }
+
+  return `${bodyText}\n${embed}`;
+}
 
 export class WrotView extends ItemView {
   plugin: WrotPlugin;
@@ -28,7 +68,6 @@ export class WrotView extends ItemView {
   private refreshing = false;
   private toolbarResizeObserver: ResizeObserver | null = null;
   private currentMenu: Menu | null = null;
-  private currentMenuTrigger: HTMLElement | null = null;
   private pendingImage: File | null = null;
   private pendingImageUrl: string | null = null;
   private thumbnailContainer: HTMLElement | null = null;
@@ -77,7 +116,6 @@ export class WrotView extends ItemView {
     // 初回描画後に登録（競合回避のため）
     this.registerFileWatcher();
 
-    // 日付追従中にWrotへ戻ったら今日へスナップ（週次/月次フォーマット対応）
     this.registerEvent(
       this.app.workspace.on("active-leaf-change", (leaf) => {
         if (leaf !== this.leaf) return;
@@ -639,7 +677,7 @@ export class WrotView extends ItemView {
       if (this.pendingImage) {
         const savedFile = await saveImageToVault(this.app, this.pendingImage, file);
         const embed = buildEmbedLink(savedFile);
-        bodyText = bodyText ? `${bodyText}\n${embed}` : embed;
+        bodyText = insertEmbedAboveBottomBlock(bodyText, embed);
       }
 
       this.ignoreNextModify = true;
@@ -743,7 +781,6 @@ export class WrotView extends ItemView {
     return this.plugin.settings.pins.some((p) => p.timestamp === memo.time);
   }
 
-  // 実体が消えたピンを除去
   private async cleanupOrphanPins(): Promise<boolean> {
     const pins = this.plugin.settings.pins;
     if (pins.length === 0) return false;
@@ -802,6 +839,8 @@ export class WrotView extends ItemView {
   private renderMemoCard(memo: Memo, options: { pinned: boolean; filePath: string }): void {
     const card = this.listContainer.createDiv({ cls: "wr-card" });
     if (options.pinned) card.classList.add("wr-card-pinned");
+    const T = memo.time.replace(/[-:.TZ+]/g, "").slice(0, 17);
+    card.classList.add(`wr-block-id-wr-${T}`);
     const rule = this.plugin.findTagColorRule(memo.tags);
     if (rule) {
       const idx = this.plugin.settings.tagColorRules.indexOf(rule);
@@ -809,6 +848,12 @@ export class WrotView extends ItemView {
     }
 
     const contentEl = card.createDiv({ cls: "wr-content" });
+    const resolveImagePath = (fileName: string): string | null => {
+      const file = this.app.metadataCache.getFirstLinkpathDest(fileName, "");
+      return file ? this.app.vault.getResourcePath(file) : null;
+    };
+    const currentFile = getDailyNoteFile(this.app, this.currentDate);
+    const currentFilePath = currentFile?.path || "";
     const urls = renderTextWithTagsAndUrls(contentEl, memo.content, {
       onTagClick: (tag) => this.openSearch(tag),
       onCheckToggle: async (lineIndex) => {
@@ -822,15 +867,16 @@ export class WrotView extends ItemView {
         this.app.workspace.openLinkText(linkName, "", false);
       },
       checkStrikethrough: this.plugin.settings.checkStrikethrough,
-      resolveImagePath: (fileName) => {
-        const file = this.app.metadataCache.getFirstLinkpathDest(fileName, "");
-        if (file) {
-          return this.app.vault.getResourcePath(file);
-        }
-        return null;
-      },
+      resolveImagePath,
       resolveLinkTarget: (linkName) => {
         return this.app.metadataCache.getFirstLinkpathDest(linkName, "") !== null;
+      },
+      renderQuoteCard: (slot, fileName, blockId) => {
+        renderQuoteCard(slot, fileName, blockId, this.app, currentFilePath, {
+          timestampFormat: this.plugin.settings.timestampFormat,
+          resolveRuleClass: (content) => this.plugin.getTagRuleClassForContent(content),
+          resolveRuleAccent: (ruleClass) => this.plugin.getRuleAccentColor(ruleClass),
+        });
       },
       renderCodeBlock: (code, lang, blockEl, fenceTildes) => {
         const fence = "~".repeat(Math.max(3, fenceTildes));
@@ -853,16 +899,22 @@ export class WrotView extends ItemView {
       },
     });
 
-    // 画像以外のobsidian:// URLは空のメディアブロックを生まないよう除外
+    // 末尾メディアエリア: 画像以外の OGPカード/Twitter埋め込み URL を集約。
+    // 引用マーカーがある投稿では「引用は底」原則を維持するため、
+    // 引用カード slot の直前に挿入する
     const previewUrls = urls.filter(
       (pu) => pu.type === "image" || !pu.url.startsWith("obsidian://")
     );
     if (previewUrls.length > 0) {
-      const mediaEl = card.createDiv({ cls: "wr-media-area" });
-      renderUrlPreviews(mediaEl, previewUrls, this.plugin.ogpCache, (fileName) => {
-        const file = this.app.metadataCache.getFirstLinkpathDest(fileName, "");
-        return file ? this.app.vault.getResourcePath(file) : null;
-      });
+      const mediaEl = document.createElement("div");
+      mediaEl.className = "wr-media-area";
+      const quoteSlot = contentEl.querySelector(".wr-quote-card-slot");
+      if (quoteSlot && quoteSlot.parentNode) {
+        quoteSlot.parentNode.insertBefore(mediaEl, quoteSlot);
+      } else {
+        card.appendChild(mediaEl);
+      }
+      renderUrlPreviews(mediaEl, previewUrls, this.plugin.ogpCache, resolveImagePath);
     }
 
     // ピン表示は3点メニューの位置/当たり判定に影響しないようフッター外に配置
@@ -884,6 +936,11 @@ export class WrotView extends ItemView {
         menu.addItem((item) =>
           item.setTitle("コピー").setIcon("copy").onClick(async () => {
             await navigator.clipboard.writeText(memo.content);
+          })
+        );
+        menu.addItem((item) =>
+          item.setTitle("引用").setIcon("quote").onClick(() => {
+            this.insertQuoteToForm(memo, options.filePath);
           })
         );
         if (pinned) {
@@ -924,7 +981,7 @@ export class WrotView extends ItemView {
     const ta = this.textarea;
     const pos = ta.selectionStart;
     const val = ta.value;
-    const lineStart = val.lastIndexOf("\n", pos - 1) + 1;
+    const lineStart = pos > 0 ? val.lastIndexOf("\n", pos - 1) + 1 : 0;
     const lineText = val.slice(lineStart, val.indexOf("\n", lineStart) === -1 ? undefined : val.indexOf("\n", lineStart));
 
     const prefixes = ["- [ ] ", "- [x] ", "- "];
@@ -956,39 +1013,50 @@ export class WrotView extends ItemView {
     ta.dispatchEvent(new Event("input"));
   }
 
-  private insertCodeBlock(): void {
+  private async insertQuoteToForm(memo: Memo, srcFilePath: string): Promise<void> {
+    const T = memo.time.replace(/[-:.TZ+]/g, "").slice(0, 17);
+    const blockId = `wr-${T}`;
+    const srcFile = this.app.vault.getAbstractFileByPath(srcFilePath);
+    if (!(srcFile instanceof TFile)) return;
+    this.ignoreNextModify = true;
+    await ensureBlockIdOnFence(this.app, srcFile, memo.time, blockId);
+    const fileBaseName = srcFile.basename;
+    const marker = `[[${fileBaseName}#^${blockId}]]`;
     const ta = this.textarea;
-    const pos = ta.selectionStart;
-    const val = ta.value;
-
-    const lineStart = val.lastIndexOf("\n", pos - 1) + 1;
-    const currentLineIsEmpty = val.slice(lineStart, pos).trim() === "" &&
-      (val.indexOf("\n", pos) === -1 || val.slice(pos, val.indexOf("\n", pos)).trim() === "");
-
-    let before = val.slice(0, lineStart);
-    let after = val.slice(lineStart);
-
-    if (!currentLineIsEmpty) {
-      const needsLeadingNewline = before.length > 0 && !before.endsWith("\n\n");
-      if (needsLeadingNewline) before += before.endsWith("\n") ? "\n" : "\n\n";
-      after = "\n" + after;
+    const QUOTE_RE = /\[\[[^\[\]]+#\^wr-\d{17}\]\]/g;
+    const existing = ta.value;
+    let next: string;
+    let cursorPos: number;
+    if (QUOTE_RE.test(existing)) {
+      next = existing.replace(QUOTE_RE, marker);
+      cursorPos = 0;
+    } else if (existing.length === 0) {
+      next = `\n${marker}`;
+      cursorPos = 0;
+    } else {
+      next = `${existing}\n\n${marker}`;
+      cursorPos = existing.length + 1; // existing\n の直後 = 空行の先頭
     }
-
-    const insert = "~~~\n\n~~~";
-    const cursorOffset = before.length + 3;
-
-    ta.value = before + insert + after;
-    ta.selectionStart = ta.selectionEnd = cursorOffset;
+    ta.value = next;
+    ta.selectionStart = ta.selectionEnd = cursorPos;
     ta.focus();
     ta.dispatchEvent(new Event("input"));
   }
 
+  private insertCodeBlock(): void {
+    this.insertFenceBlock("~~~\n\n~~~");
+  }
+
   private insertMathBlock(): void {
+    this.insertFenceBlock("$$\n\n$$");
+  }
+
+  private insertFenceBlock(insert: string): void {
     const ta = this.textarea;
     const pos = ta.selectionStart;
     const val = ta.value;
 
-    const lineStart = val.lastIndexOf("\n", pos - 1) + 1;
+    const lineStart = pos > 0 ? val.lastIndexOf("\n", pos - 1) + 1 : 0;
     const currentLineIsEmpty = val.slice(lineStart, pos).trim() === "" &&
       (val.indexOf("\n", pos) === -1 || val.slice(pos, val.indexOf("\n", pos)).trim() === "");
 
@@ -1001,10 +1069,18 @@ export class WrotView extends ItemView {
       after = "\n" + after;
     }
 
-    const insert = "$$\n\n$$";
-    const cursorOffset = before.length + 3;
+    // ブロックと after の間: after が空 or 空白のみなら区切り不要、
+    // 何かテキスト/引用マーカーがあるなら改行1個で区切る
+    const afterStripped = after.replace(/^\n+/, "");
+    let separator = "";
+    if (afterStripped.length > 0) {
+      separator = "\n";
+      after = afterStripped;
+    }
 
-    ta.value = before + insert + after;
+    const cursorOffset = before.length + 3; // "~~~" or "$$\n" の中、空行頭
+
+    ta.value = before + insert + separator + after;
     ta.selectionStart = ta.selectionEnd = cursorOffset;
     ta.focus();
     ta.dispatchEvent(new Event("input"));
@@ -1123,8 +1199,7 @@ export class WrotView extends ItemView {
 
     const markers = ["**", "*", "~~", "==", "$"];
 
-    // 1) マーカー込み選択 [**ああ**] を剥がす。
-    //    太字/斜体の混同を避けるため open に近い種別を優先
+    // 太字/斜体の混同を避けるため open に近い種別を優先
     const orderedForInner = open === "*"
       ? ["*", "**", "~~", "==", "$"]
       : open === "**"
@@ -1145,7 +1220,6 @@ export class WrotView extends ItemView {
       }
     }
 
-    // 2) 外側マーカー **[ああ]** を剥がす
     let unwrapped = false;
     for (const m of markers) {
       const before = val.slice(start - m.length, start);
@@ -1167,7 +1241,6 @@ export class WrotView extends ItemView {
       }
     }
 
-    // 3) 新規に囲む。マーカー込みで選択を維持するため selectionEnd に close.length も加算
     const currentVal = ta.value;
     ta.value = currentVal.slice(0, start) + open + currentVal.slice(start, end) + close + currentVal.slice(end);
     ta.selectionStart = start;
@@ -1274,13 +1347,11 @@ export class WrotView extends ItemView {
 
     trigger.toggleClass("wr-toolbar-active", true);
     this.currentMenu = menu;
-    this.currentMenuTrigger = trigger;
 
     menu.onHide(() => {
       trigger.toggleClass("wr-toolbar-active", false);
       if (this.currentMenu === menu) {
         this.currentMenu = null;
-        this.currentMenuTrigger = null;
       }
     });
 

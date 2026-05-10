@@ -1,4 +1,3 @@
-// メモ本文をフェンスコードブロック / 数式ブロック / プレーンテキストに分割する。
 // バッククォート```はWrotの外側フェンスに予約されているため、内部コードはチルダ~~~を使う。
 
 export type Segment =
@@ -71,10 +70,8 @@ function parseBlocks(lines: string[]): ParsedBlock[] {
       continue;
     }
 
-    // 数式ブロック $$ ... $$ （単一行優先）
     const trimmed = line.trim();
     if (trimmed.startsWith("$$")) {
-      // 単一行: $$...$$
       const afterOpen = trimmed.slice(2);
       const closeIdx = afterOpen.lastIndexOf("$$");
       if (closeIdx > 0 && afterOpen.slice(closeIdx + 2).trim() === "") {
@@ -94,7 +91,6 @@ function parseBlocks(lines: string[]): ParsedBlock[] {
         }
       }
 
-      // 複数行: 単独行の $$ で開き、後の $$ で閉じる
       if (trimmed === "$$" || (trimmed.startsWith("$$") && !trimmed.slice(2).includes("$$"))) {
         const openLine = i;
         let closeLine = lines.length - 1;
@@ -161,7 +157,6 @@ export function segmentBlocks(text: string): Segment[] {
       if (block.singleLineMath) {
         tex = block.singleLineMathTex || "";
       } else {
-        // 開始行の$$以降や終了行の$$以前に内容がある場合に対応
         const openLine = lines[block.fenceOpenLine].trim();
         const texParts: string[] = [];
         if (openLine !== "$$" && openLine.startsWith("$$")) {
