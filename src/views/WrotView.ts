@@ -193,7 +193,7 @@ export class WrotView extends ItemView {
   }
 
   // 既に開かれているタブがあればそこへフォーカスし、なければ新規タブで開く
-  private openOrFocusFile(file: TFile): void {
+  private async openOrFocusFile(file: TFile): Promise<void> {
     let existingLeaf: WorkspaceLeaf | null = null;
     this.app.workspace.iterateAllLeaves((leaf) => {
       if (existingLeaf) return;
@@ -204,9 +204,12 @@ export class WrotView extends ItemView {
     });
     if (existingLeaf) {
       this.app.workspace.revealLeaf(existingLeaf);
+      this.app.workspace.setActiveLeaf(existingLeaf, { focus: true });
       return;
     }
-    this.app.workspace.getLeaf("tab").openFile(file);
+    const leaf = this.app.workspace.getLeaf("tab");
+    await leaf.openFile(file);
+    this.app.workspace.setActiveLeaf(leaf, { focus: true });
   }
 
   private buildDateNav(container: HTMLElement): void {
@@ -226,7 +229,7 @@ export class WrotView extends ItemView {
       setTimeout(() => this.dateLabel.classList.remove("wr-date-label-active"), 300);
       const file = getDailyNoteFile(this.app, this.currentDate)
         ?? await getOrCreateDailyNote(this.app, this.currentDate);
-      this.openOrFocusFile(file);
+      await this.openOrFocusFile(file);
     });
 
     const nextBtn = nav.createEl("button", { cls: "wr-nav-btn" });
