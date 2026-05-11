@@ -810,7 +810,7 @@ pre > .wr-blockquote {
   width: 22px;
   padding-left: 3px;
   box-sizing: border-box;
-  color: var(--text-muted);
+  color: var(--text-muted) !important;
   vertical-align: middle;
   text-align: left;
 }

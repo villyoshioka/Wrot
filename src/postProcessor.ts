@@ -28,14 +28,26 @@ export function registerWrotPostProcessor(plugin: WrotPlugin): void {
     plugin.app.vault.on("modify", (file) => {
       if (!(file instanceof TFile)) return;
       invalidateMemoCache(file.path);
-      refreshQuoteCardsForFile(plugin.app, file, (content) => plugin.getTagRuleClassForContent(content));
+      // WrotView 側のチェックボックストグルなどの自前書き込み直後は再描画を抑止してチラつきを防ぐ
+      if (Date.now() < plugin.quoteRefreshSuppressedUntil) return;
+      refreshQuoteCardsForFile(
+        plugin.app,
+        file,
+        (content) => plugin.getTagRuleClassForContent(content),
+        (ruleClass) => plugin.getRuleAccentColor(ruleClass)
+      );
     })
   );
   plugin.registerEvent(
     plugin.app.vault.on("delete", (file) => {
       if (!(file instanceof TFile)) return;
       invalidateMemoCache(file.path);
-      refreshQuoteCardsForFile(plugin.app, file, (content) => plugin.getTagRuleClassForContent(content));
+      refreshQuoteCardsForFile(
+        plugin.app,
+        file,
+        (content) => plugin.getTagRuleClassForContent(content),
+        (ruleClass) => plugin.getRuleAccentColor(ruleClass)
+      );
     })
   );
 }

@@ -75,12 +75,22 @@ class CheckboxWidget extends WidgetType {
     cb.checked = this.checked;
     cb.addEventListener("click", (e) => {
       e.preventDefault();
-      const newChar = this.checked ? " " : "x";
+      // クリック時にDOM側のcheckedを先に切り替えて、テキスト書き換え→Widget再構築のラグでチラつくのを抑える
+      const next = !this.checked;
+      cb.checked = next;
+      const newChar = next ? "x" : " ";
       // pos は "- [" の先頭。[ ] 内の文字は pos+3
       view.dispatch({ changes: { from: this.pos + 3, to: this.pos + 4, insert: newChar } });
     });
     wrap.appendChild(cb);
     return wrap;
+  }
+  // 同じ位置のcheckboxはWidget差し替えではなくDOM再利用で更新する。checked状態だけ差分反映する
+  updateDOM(dom: HTMLElement): boolean {
+    const cb = dom.querySelector("input[type=\"checkbox\"]") as HTMLInputElement | null;
+    if (!cb) return false;
+    if (cb.checked !== this.checked) cb.checked = this.checked;
+    return true;
   }
   eq(other: CheckboxWidget): boolean { return this.checked === other.checked; }
   ignoreEvent(): boolean { return false; }

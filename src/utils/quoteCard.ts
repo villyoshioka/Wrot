@@ -32,7 +32,8 @@ export function invalidateMemoCache(filePath: string): void {
 export function refreshQuoteCardsForFile(
   app: App,
   file: TFile,
-  resolveRuleClass?: (content: string) => string | null
+  resolveRuleClass?: (content: string) => string | null,
+  resolveRuleAccent?: (ruleClass: string) => string | null
 ): void {
   const baseName = file.basename;
   const cards = document.querySelectorAll<HTMLElement>(
@@ -50,6 +51,7 @@ export function refreshQuoteCardsForFile(
     renderQuoteCard(slot, fileName, blockId, app, currentFilePath, {
       timestampFormat,
       resolveRuleClass,
+      resolveRuleAccent,
     });
   });
 }

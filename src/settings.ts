@@ -1,12 +1,20 @@
 import { App, ColorComponent, PluginSettingTab, Setting, TextComponent, setIcon } from "obsidian";
 import type WrotPlugin from "./main";
 
+export interface SubColorScope {
+  buttons?: boolean;
+  quote?: boolean;
+  list?: boolean;
+  ogp?: boolean;
+}
+
 export interface TagColorRule {
   tag: string;
   bgColor: string;
   textColor: string;
   accentColor?: string;
   subColor?: string;
+  subColorScope?: SubColorScope;
 }
 
 export interface PinEntry {
@@ -523,6 +531,7 @@ export class WrotSettingTab extends PluginSettingTab {
         onFgChange: (v: string) => Promise<void>,
         onAccentChange: (v: string | undefined) => Promise<void>,
         onSubChange: (v: string | undefined) => Promise<void>,
+        onScopeChange: (key: keyof SubColorScope, value: boolean) => Promise<void>,
         trailing: { kind: "delete"; handler: () => Promise<void> } | { kind: "reset"; handler: () => Promise<void> } | null
       ) => {
         if (!isFirst) {
@@ -636,6 +645,7 @@ export class WrotSettingTab extends PluginSettingTab {
         let subPicker: ColorComponent;
         let subPickerEl: HTMLInputElement | null = null;
         let subResetBtnEl: HTMLElement | null = null;
+        let suppressSubChange = false;
         new Setting(groupEl)
           .setName("サブカラー")
           .setDesc("タイムスタンプ・アイコン・リストマーカー・引用線・チェックボックスなどサブ要素の色をまとめて設定します。未設定時は背景色と文字色から自動算出します。")
@@ -649,16 +659,62 @@ export class WrotSettingTab extends PluginSettingTab {
                 : getDefaultSub(initial);
             picker
               .setValue(initialSub)
-              .onChange(async (v) => { await onSubChange(v); });
+              .onChange(async (v) => {
+                if (suppressSubChange) return;
+                await onSubChange(v);
+                renderScope();
+                applyLockState();
+              });
           })
           .addExtraButton((btn) => {
             subResetBtnEl = btn.extraSettingsEl;
             btn.setIcon("reset").setTooltip("初期値に戻す").onClick(async () => {
               if (!isUnlocked()) return;
               await onSubChange(undefined);
+              suppressSubChange = true;
               subPicker.setValue(getDefaultSub(initial));
+              suppressSubChange = false;
+              renderScope();
+              applyLockState();
             });
           });
+
+        const scopeContainer = groupEl.createDiv({ cls: "wr-sub-color-scope" });
+        const scopeToggleEls: HTMLElement[] = [];
+
+        const isSubCustomized = (): boolean =>
+          !!initial.subColor && /^#[0-9a-fA-F]{6}$/.test(initial.subColor);
+
+        const renderScope = () => {
+          scopeContainer.empty();
+          scopeToggleEls.length = 0;
+          if (!isSubCustomized()) return;
+
+          const isOn = (key: keyof SubColorScope): boolean => {
+            const s = initial.subColorScope;
+            if (!s) return true;
+            return s[key] !== false;
+          };
+
+          const groups: Array<[keyof SubColorScope, string, string]> = [
+            ["buttons", "タイムスタンプ・メニュー・ピンにサブカラーを適用", "オフのときは自動設定された色になります。"],
+            ["quote", "引用にサブカラーを適用", "オフのときは自動設定された色になります。"],
+            ["list", "リスト・チェックボックスにサブカラーを適用", "オフのときは自動設定された色になります。"],
+            ["ogp", "OGPカードにサブカラーを適用", "オフのときは自動設定された色になります。"],
+          ];
+
+          for (const [key, name, desc] of groups) {
+            new Setting(scopeContainer)
+              .setName(name)
+              .setDesc(desc)
+              .addToggle((tg) => {
+                scopeToggleEls.push(tg.toggleEl);
+                tg.setValue(isOn(key)).onChange(async (v) => {
+                  await onScopeChange(key, v);
+                });
+              });
+          }
+        };
 
         const setDisabled = (el: HTMLElement | null, disabled: boolean) => {
           if (!el) return;
@@ -684,6 +740,7 @@ export class WrotSettingTab extends PluginSettingTab {
           setDisabled(subPickerEl, !unlocked);
           setDisabled(subResetBtnEl, !unlocked);
           setDisabled(trailingBtnEl, !unlocked);
+          for (const el of scopeToggleEls) setDisabled(el, !unlocked);
           if (lockBtnEl) {
             setIcon(lockBtnEl, unlocked ? "lock-keyhole-open" : "lock-keyhole");
             lockBtnEl.setAttr(
@@ -693,6 +750,7 @@ export class WrotSettingTab extends PluginSettingTab {
           }
         };
 
+        renderScope();
         applyLockState();
       };
 
@@ -735,8 +793,20 @@ export class WrotSettingTab extends PluginSettingTab {
             await promoteIfNeeded();
           },
           async (v) => {
-            if (v === undefined) delete placeholder.subColor;
-            else placeholder.subColor = v;
+            if (v === undefined) {
+              delete placeholder.subColor;
+              delete placeholder.subColorScope;
+            } else {
+              placeholder.subColor = v;
+            }
+            await promoteIfNeeded();
+          },
+          async (key, value) => {
+            const current = placeholder.subColorScope ?? {
+              buttons: true, quote: true, list: true, ogp: true,
+            };
+            current[key] = value;
+            placeholder.subColorScope = current;
             await promoteIfNeeded();
           },
           null,
@@ -758,6 +828,7 @@ export class WrotSettingTab extends PluginSettingTab {
                   rule.textColor = getDefaultText();
                   delete rule.accentColor;
                   delete rule.subColor;
+                  delete rule.subColorScope;
                   await this.plugin.saveSettings();
                   this.plugin.applyTagColorRules();
                   this.plugin.refreshAllWrDecorations();
@@ -807,9 +878,19 @@ export class WrotSettingTab extends PluginSettingTab {
           async (v) => {
             if (v === undefined) {
               delete rule.subColor;
+              delete rule.subColorScope;
             } else {
               rule.subColor = v;
             }
+            await this.plugin.saveSettings();
+            this.plugin.applyTagColorRules();
+          },
+          async (key, value) => {
+            const current = rule.subColorScope ?? {
+              buttons: true, quote: true, list: true, ogp: true,
+            };
+            current[key] = value;
+            rule.subColorScope = current;
             await this.plugin.saveSettings();
             this.plugin.applyTagColorRules();
           },

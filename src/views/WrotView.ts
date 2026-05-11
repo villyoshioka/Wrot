@@ -64,6 +64,7 @@ export class WrotView extends ItemView {
   private fileDeleteRef: EventRef | null = null;
   private fileCreateRef: EventRef | null = null;
   private ignoreNextModify = false;
+  private ignoreModifyUntil = 0;
   private activeFormatMode: "bold" | "italic" | null = null;
   private refreshing = false;
   private toolbarResizeObserver: ResizeObserver | null = null;
@@ -139,6 +140,9 @@ export class WrotView extends ItemView {
     this.fileChangeRef = this.app.vault.on("modify", (file) => {
       if (this.ignoreNextModify) {
         this.ignoreNextModify = false;
+        return;
+      }
+      if (Date.now() < this.ignoreModifyUntil) {
         return;
       }
       if (!(file instanceof TFile)) return;
@@ -695,6 +699,8 @@ export class WrotView extends ItemView {
 
   async refresh(): Promise<void> {
     if (this.refreshing) return;
+    // チェックボックストグル直後など短期間に起きる連発 modify は描画ごとスキップする
+    if (Date.now() < this.ignoreModifyUntil) return;
     this.refreshing = true;
     try {
       const isToday = this.currentDate.isSame(moment(), "day");
@@ -860,7 +866,10 @@ export class WrotView extends ItemView {
         const file = getDailyNoteFile(this.app, this.currentDate);
         if (!file) return;
         const fileLine = memo.lineStart + 1 + lineIndex;
-        this.ignoreNextModify = true;
+        // 連発・遅延発火する modify イベントを 500ms 抑止して、カード全体の再描画によるチラつきを防ぐ
+        this.ignoreModifyUntil = Date.now() + 500;
+        // 同タイミングで postProcessor 側の引用カード一斉再描画も抑止する
+        this.plugin.quoteRefreshSuppressedUntil = Date.now() + 500;
         await toggleCheckbox(this.app, file, fileLine);
       },
       onInternalLinkClick: (linkName) => {
@@ -1019,6 +1028,8 @@ export class WrotView extends ItemView {
     const srcFile = this.app.vault.getAbstractFileByPath(srcFilePath);
     if (!(srcFile instanceof TFile)) return;
     this.ignoreNextModify = true;
+    // 引用元ファイルへの blockId 追加が他カードの一斉再描画を引き起こすのを抑止
+    this.plugin.quoteRefreshSuppressedUntil = Date.now() + 500;
     await ensureBlockIdOnFence(this.app, srcFile, memo.time, blockId);
     const fileBaseName = srcFile.basename;
     const marker = `[[${fileBaseName}#^${blockId}]]`;

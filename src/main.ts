@@ -1,6 +1,6 @@
 import { Plugin, TFile, WorkspaceLeaf, loadMathJax, setIcon, MarkdownView } from "obsidian";
 import { VIEW_TYPE_WROT } from "./constants";
-import { WrotSettings, DEFAULT_SETTINGS, WrotSettingTab, TagColorRule } from "./settings";
+import { WrotSettings, DEFAULT_SETTINGS, WrotSettingTab, TagColorRule, SubColorScope } from "./settings";
 import { WrotView } from "./views/WrotView";
 import { registerWrotPostProcessor } from "./postProcessor";
 import { createWrEditorExtension, tagRulesChanged, vaultFilesChanged } from "./editorExtension";
@@ -11,6 +11,9 @@ const ATTACHMENT_EXT_RE = /^(png|jpe?g|gif|webp|svg|bmp)$/i;
 export default class WrotPlugin extends Plugin {
   settings!: WrotSettings;
   ogpCache!: OGPCache;
+  // WrotView 内のチェックボックストグル等の自前書き込み直後は、postProcessor 側の
+  // refreshQuoteCardsForFile (引用カード一斉再描画) を一時的に抑止してチラつきを防ぐ
+  quoteRefreshSuppressedUntil = 0;
   private bgStyleEl: HTMLStyleElement | null = null;
   private tagRuleStyleEl: HTMLStyleElement | null = null;
   private fontStyleEl: HTMLStyleElement | null = null;
@@ -182,14 +185,13 @@ export default class WrotPlugin extends Plugin {
       body .wr-textarea,
       body .wr-date-label,
       body .wr-today-btn,
-      body .wr-ogp-title,
       body .wr-inline-code,
       body .wr-plain-text,
       body div.block-language-wr *:not(.wr-embed-missing):not(.wr-internal-link-unresolved):not(.wr-internal-link):not(.wr-tag):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-quote-card):not(.wr-quote-card *):not(.wr-codeblock-display):not(.wr-codeblock-display *),
       body .wr-codeblock-line,
       body .wr-codeblock-line *:not(.wr-embed-missing):not(.wr-internal-link-unresolved):not(.wr-internal-link):not(.wr-tag):not(.wr-url):not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-url-highlight):not(.wr-quote-card):not(.wr-quote-card *):not(.wr-codeblock-display):not(.wr-codeblock-display *),
       body .cm-line.wr-codeblock-line,
-      body .cm-line.wr-codeblock-line *:not(.wr-embed-missing):not(.wr-internal-link-unresolved):not(.wr-internal-link):not(.wr-tag):not(.wr-url):not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-url-highlight):not(.wr-quote-card):not(.wr-quote-card *):not(.wr-codeblock-display):not(.wr-codeblock-display *),
+      body .cm-line.wr-codeblock-line *:not(.wr-embed-missing):not(.wr-internal-link-unresolved):not(.wr-internal-link):not(.wr-tag):not(.wr-url):not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-url-highlight):not(.wr-quote-card):not(.wr-quote-card *):not(.wr-codeblock-display):not(.wr-codeblock-display *):not(.wr-lp-marker),
       body .wr-reading-list li,
       body .wr-bullet-list li,
       body .wr-ordered-list li {
@@ -242,6 +244,7 @@ export default class WrotPlugin extends Plugin {
       body .wr-timestamp,
       body .wr-submit-btn,
       body .wr-empty,
+      body .wr-ogp-title,
       body .wr-ogp-desc,
       body .wr-ogp-site,
       body .wr-flair-bg,
@@ -269,6 +272,36 @@ export default class WrotPlugin extends Plugin {
       }
       body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-blockquote {
         border-left-color: ${mutedColor} !important;
+      }
+      body .wr-ogp-card {
+        border-color: ${mutedColor} !important;
+      }
+      /* LV内のWidget DOMでも確実にマーカー色を当てるため、上記より高い特異度で再宣言 */
+      body .cm-line .wr-lp-marker:not(#x):not(#y):not(#z),
+      body .cm-line .wr-list-highlight:not(#x):not(#y):not(#z),
+      body .cm-line .wr-check-unchecked:not(#x):not(#y):not(#z),
+      body .cm-line .wr-check-checked:not(#x):not(#y):not(#z),
+      body .cm-line .wr-ol-highlight:not(#x):not(#y):not(#z),
+      body .cm-line .wr-quote-highlight:not(#x):not(#y):not(#z),
+      body .cm-line.wr-blockquote-line:not(#x):not(#y):not(#z),
+      body .cm-line .wr-blockquote-wrap:not(#x):not(#y):not(#z),
+      body .cm-line .wr-blockquote-wrap:not(#x):not(#y):not(#z) *,
+      body .cm-line .wr-ogp-title:not(#x):not(#y):not(#z),
+      body .cm-line .wr-ogp-desc:not(#x):not(#y):not(#z),
+      body .cm-line .wr-ogp-site:not(#x):not(#y):not(#z),
+      body .cm-line .wr-ogp-loading:not(#x):not(#y):not(#z) {
+        color: ${mutedColor} !important;
+      }
+      /* チェックボックス(input)の枠線はサブカラー、チェック済み塗りつぶしはテーマのアクセントカラー */
+      body .wr-check-item input[type="checkbox"],
+      body .wr-bullet-list .wr-check-item input[type="checkbox"],
+      body .wr-reading-list .wr-check-item input[type="checkbox"],
+      body .wr-lp-check input[type="checkbox"] {
+        --checkbox-border-color: ${mutedColor};
+        --checkbox-border-color-hover: ${mutedColor};
+        --checkbox-color: var(--text-accent);
+        --checkbox-color-hover: var(--text-accent);
+        accent-color: var(--text-accent);
       }
       body .wr-textarea::placeholder {
         color: ${faintColor} !important;
@@ -420,9 +453,20 @@ export default class WrotPlugin extends Plugin {
       const bg = rule.bgColor;
       const fg = rule.textColor;
       const accent = rule.accentColor && hexRe.test(rule.accentColor) ? rule.accentColor : null;
-      const muted = rule.subColor && hexRe.test(rule.subColor)
-        ? rule.subColor
-        : this.blendColor(fg, bg, 0.45);
+      const hoverBg = this.darkenColor(bg, 10);
+      const autoMuted = this.blendColor(fg, bg, 0.45);
+      const subSet = !!(rule.subColor && hexRe.test(rule.subColor));
+      const userMuted = subSet ? (rule.subColor as string) : autoMuted;
+      const scope = rule.subColorScope;
+      const pickMuted = (key: keyof SubColorScope): string => {
+        if (!subSet) return autoMuted;
+        if (!scope) return userMuted;
+        return scope[key] === false ? autoMuted : userMuted;
+      };
+      const mButtons = pickMuted("buttons");
+      const mQuote = pickMuted("quote");
+      const mList = pickMuted("list");
+      const mOgp = pickMuted("ogp");
       const cls = `wr-tag-rule-${i}`;
 
       parts.push(`
@@ -467,16 +511,27 @@ export default class WrotPlugin extends Plugin {
         color: ${fg} !important;
       }
 
-      /* Rule ${i}: サブ要素 */
+      /* Rule ${i}: サブ要素 - タイムスタンプ・メニュー・ピン */
       body .wr-card.${cls} .wr-timestamp,
       body .wr-card.${cls} .wr-copy-btn,
       body .wr-card.${cls} .wr-copy-btn .svg-icon,
       body .wr-card.${cls} .wr-menu-btn,
       body .wr-card.${cls} .wr-menu-btn .svg-icon,
       body .wr-card.${cls} .wr-pin-indicator,
-      body .wr-card.${cls} .wr-pin-indicator .svg-icon,
+      body .wr-card.${cls} .wr-pin-indicator .svg-icon {
+        color: ${mButtons} !important;
+      }
+      /* Rule ${i}: サブ要素 - 引用 */
       body .wr-card.${cls} .wr-blockquote,
       body .wr-card.${cls} .wr-blockquote-wrap,
+      body .wr-card.${cls} .wr-quote-highlight,
+      body div.block-language-wr.${cls} .wr-blockquote,
+      body pre.${cls} .wr-blockquote,
+      body .cm-line.wr-codeblock-line.${cls}.wr-blockquote-line,
+      body .cm-line.wr-codeblock-line.${cls} .wr-blockquote-wrap {
+        color: ${mQuote} !important;
+      }
+      /* Rule ${i}: サブ要素 - リスト・チェックボックス */
       body .wr-card.${cls} .wr-bullet-list > li:not(.wr-check-item)::before,
       body .wr-card.${cls} .wr-ordered-list > li::before,
       body .wr-card.${cls} .wr-check-done,
@@ -484,27 +539,58 @@ export default class WrotPlugin extends Plugin {
       body .wr-card.${cls} .wr-check-checked,
       body .wr-card.${cls} .wr-list-highlight,
       body .wr-card.${cls} .wr-ol-highlight,
-      body .wr-card.${cls} .wr-quote-highlight,
-      body div.block-language-wr.${cls} .wr-blockquote,
       body div.block-language-wr.${cls} ul.wr-reading-list > li:not(.wr-check-item)::before,
       body div.block-language-wr.${cls} ol.wr-reading-list > li::before,
-      body pre.${cls} .wr-blockquote,
       body pre.${cls} ul.wr-reading-list > li:not(.wr-check-item)::before,
       body pre.${cls} ol.wr-reading-list > li::before,
-      body .cm-line.wr-codeblock-line.${cls}.wr-blockquote-line,
-      body .cm-line.wr-codeblock-line.${cls} .wr-blockquote-wrap,
       body .cm-line.wr-codeblock-line.${cls} .wr-list-highlight,
       body .cm-line.wr-codeblock-line.${cls} .wr-check-unchecked,
       body .cm-line.wr-codeblock-line.${cls} .wr-check-checked,
       body .cm-line.wr-codeblock-line.${cls} .wr-check-done,
       body .cm-line.wr-codeblock-line.${cls} .wr-ol-highlight,
       body .cm-line.wr-codeblock-line.${cls} .wr-lp-marker {
-        color: ${muted} !important;
+        color: ${mList} !important;
+      }
+      /* LV内のWidget DOMでもタグルールのサブカラーが勝つように、IDセレクタ相当の特異度で再宣言 */
+      body .cm-line.${cls} .wr-lp-marker:not(#x):not(#y):not(#z),
+      body .cm-line.${cls} .wr-list-highlight:not(#x):not(#y):not(#z),
+      body .cm-line.${cls} .wr-check-unchecked:not(#x):not(#y):not(#z),
+      body .cm-line.${cls} .wr-check-checked:not(#x):not(#y):not(#z),
+      body .cm-line.${cls} .wr-check-done:not(#x):not(#y):not(#z),
+      body .cm-line.${cls} .wr-ol-highlight:not(#x):not(#y):not(#z) {
+        color: ${mList} !important;
+      }
+      /* LV内のWidget DOMでも引用の本文・縦線がタグルールのquote色になるよう、IDセレクタ相当の特異度で再宣言 */
+      body .cm-line.${cls}.wr-blockquote-line:not(#x):not(#y):not(#z),
+      body .cm-line.${cls} .wr-blockquote-wrap:not(#x):not(#y):not(#z),
+      body .cm-line.${cls} .wr-blockquote-wrap:not(#x):not(#y):not(#z) *,
+      body .cm-line.${cls} .wr-quote-highlight:not(#x):not(#y):not(#z) {
+        color: ${mQuote} !important;
+      }
+      /* チェックボックス(input)の枠線はサブカラー、チェック済み塗りつぶしはアクセントカラー */
+      body .wr-card.${cls} .wr-check-item input[type="checkbox"],
+      body div.block-language-wr.${cls} .wr-check-item input[type="checkbox"],
+      body pre.${cls} .wr-check-item input[type="checkbox"],
+      body .cm-line.wr-codeblock-line.${cls} .wr-lp-check input[type="checkbox"] {
+        --checkbox-border-color: ${mList};
+        --checkbox-border-color-hover: ${mList};
+        --checkbox-color: ${accent ?? "var(--text-accent)"};
+        --checkbox-color-hover: ${accent ?? "var(--text-accent)"};
+        accent-color: ${accent ?? "var(--text-accent)"};
       }
       body .wr-card.${cls} .wr-blockquote *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-tag *):not(.wr-reading-url *),
       body div.block-language-wr.${cls} .wr-blockquote *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-tag *):not(.wr-reading-url *),
       body pre.${cls} .wr-blockquote *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-tag *):not(.wr-reading-url *) {
-        color: ${muted} !important;
+        color: ${mQuote} !important;
+      }
+      /* 492行などの文字色当てに特異度で負ける環境向けに、 ID相当の特異度で再宣言 */
+      body .wr-card.${cls} .wr-blockquote:not(#x):not(#y):not(#z),
+      body .wr-card.${cls} .wr-blockquote:not(#x):not(#y):not(#z) *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url),
+      body div.block-language-wr.${cls} .wr-blockquote:not(#x):not(#y):not(#z),
+      body div.block-language-wr.${cls} .wr-blockquote:not(#x):not(#y):not(#z) *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url),
+      body pre.${cls} .wr-blockquote:not(#x):not(#y):not(#z),
+      body pre.${cls} .wr-blockquote:not(#x):not(#y):not(#z) *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url) {
+        color: ${mQuote} !important;
       }
       body .cm-line.wr-codeblock-line.${cls} .wr-tag-highlight .wr-blockquote-wrap,
       body .cm-line.wr-codeblock-line.${cls} .wr-internal-link-highlight .wr-blockquote-wrap,
@@ -518,30 +604,45 @@ export default class WrotPlugin extends Plugin {
       body .wr-card.${cls} .wr-blockquote-wrap,
       body div.block-language-wr.${cls} .wr-blockquote,
       body pre.${cls} .wr-blockquote {
-        border-left-color: ${muted} !important;
+        border-left-color: ${mQuote} !important;
       }
       /* Rule ${i}: 引用カード自身にルールクラスが付いた = 引用元のルール */
+      /* 枠線色は引用先(=表示する側)の見た目に合わせるため、ここでは上書きしない */
       body .wr-quote-card-slot a.wr-quote-card.${cls} {
         background: ${bg} !important;
         background-color: ${bg} !important;
       }
-      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body,
-      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-nested-quote-marker):not(.wr-blockquote):not(.wr-quote-image-marker):not(.wr-quote-math-marker):not(.wr-quote-code-marker):not(input[type="checkbox"]):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-quote-image-marker *):not(.wr-quote-math-marker *):not(.wr-quote-code-marker *) {
-        color: ${fg} !important;
+      body .wr-quote-card-slot a.wr-quote-card.${cls}:hover {
+        background: ${hoverBg} !important;
+        background-color: ${hoverBg} !important;
       }
+      /* このルールクラスが祖先カードに付いている場合、配下の引用カードの枠線も自分のサブカラーに揃える */
+      body .wr-card.${cls} .wr-quote-card-slot a.wr-quote-card,
+      body div.block-language-wr.${cls} .wr-quote-card-slot a.wr-quote-card,
+      body pre.${cls} .wr-quote-card-slot a.wr-quote-card,
+      body .cm-line.wr-codeblock-line.${cls} .wr-quote-card-slot a.wr-quote-card {
+        border-color: ${mQuote} !important;
+      }
+      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body,
+      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-nested-quote-marker):not(.wr-blockquote):not(.wr-quote-image-marker):not(.wr-quote-math-marker):not(.wr-quote-code-marker):not(input[type="checkbox"]):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-quote-image-marker *):not(.wr-quote-math-marker *):not(.wr-quote-code-marker *),
       body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-meta,
       body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-blockquote,
       body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-blockquote * {
-        color: ${muted} !important;
+        color: ${mQuote} !important;
+      }
+      /* ベースの引用カード本文 mutedColor ルールに特異度負けする環境向けに、ID相当の特異度で再宣言 */
+      body .wr-quote-card-slot a.wr-quote-card.${cls}:not(#x):not(#y):not(#z) .wr-quote-card-body .wr-blockquote,
+      body .wr-quote-card-slot a.wr-quote-card.${cls}:not(#x):not(#y):not(#z) .wr-quote-card-body .wr-blockquote * {
+        color: ${mQuote} !important;
       }
       /* マーカーは標準 muted ルールの :not() 列に specificity 負けするため同列で揃える */
       body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-quote-image-marker:not(.wr-tag):not(.wr-url):not(.wr-internal-link):not(.wr-nested-quote-marker):not(.wr-tag *):not(.wr-url *):not(.wr-internal-link *),
       body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-quote-math-marker:not(.wr-tag):not(.wr-url):not(.wr-internal-link):not(.wr-nested-quote-marker):not(.wr-tag *):not(.wr-url *):not(.wr-internal-link *),
       body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-quote-code-marker:not(.wr-tag):not(.wr-url):not(.wr-internal-link):not(.wr-nested-quote-marker):not(.wr-tag *):not(.wr-url *):not(.wr-internal-link *) {
-        color: ${muted} !important;
+        color: ${mQuote} !important;
       }
       body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-blockquote {
-        border-left-color: ${muted} !important;
+        border-left-color: ${mQuote} !important;
       }
       body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-tag,
       body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-internal-link,
@@ -556,33 +657,33 @@ export default class WrotPlugin extends Plugin {
         color: ${accent ?? "var(--text-accent)"} !important;
       }
       body .cm-line.wr-codeblock-line.wr-blockquote-line.${cls}::before {
-        background-color: ${muted} !important;
+        background-color: ${mQuote} !important;
       }
       body .cm-line.wr-codeblock-line.wr-blockquote-depth-2.${cls}::before {
-        box-shadow: 18px 0 0 0 ${muted} !important;
+        box-shadow: 18px 0 0 0 ${mQuote} !important;
       }
       body .cm-line.wr-codeblock-line.wr-blockquote-depth-3.${cls}::before {
         box-shadow:
-          18px 0 0 0 ${muted},
-          36px 0 0 0 ${muted} !important;
+          18px 0 0 0 ${mQuote},
+          36px 0 0 0 ${mQuote} !important;
       }
       body .cm-line.wr-codeblock-line.wr-blockquote-depth-4.${cls}::before {
         box-shadow:
-          18px 0 0 0 ${muted},
-          36px 0 0 0 ${muted},
-          54px 0 0 0 ${muted} !important;
+          18px 0 0 0 ${mQuote},
+          36px 0 0 0 ${mQuote},
+          54px 0 0 0 ${mQuote} !important;
       }
       body .cm-line.wr-codeblock-line.wr-blockquote-depth-5.${cls}::before {
         box-shadow:
-          18px 0 0 0 ${muted},
-          36px 0 0 0 ${muted},
-          54px 0 0 0 ${muted},
-          72px 0 0 0 ${muted} !important;
+          18px 0 0 0 ${mQuote},
+          36px 0 0 0 ${mQuote},
+          54px 0 0 0 ${mQuote},
+          72px 0 0 0 ${mQuote} !important;
       }
       body .wr-card.${cls} .wr-copy-btn .svg-icon,
       body .wr-card.${cls} .wr-menu-btn .svg-icon,
       body .wr-card.${cls} .wr-pin-indicator .svg-icon {
-        stroke: ${muted} !important;
+        stroke: ${mButtons} !important;
       }
       body .wr-card.${cls} .wr-copy-btn.wr-copy-done .svg-icon {
         color: ${accent ?? "var(--text-accent)"} !important;
@@ -621,26 +722,51 @@ export default class WrotPlugin extends Plugin {
       body .wr-lp-media.${cls} .wr-ogp-card {
         background: ${bg} !important;
         background-color: ${bg} !important;
+        border-color: ${mOgp} !important;
+      }
+      body .wr-card.${cls} .wr-ogp-card:hover,
+      body div.block-language-wr.${cls} .wr-ogp-card:hover,
+      body pre.${cls} .wr-ogp-card:hover,
+      body .wr-lp-media.${cls} .wr-ogp-card:hover {
+        background: ${hoverBg} !important;
+        background-color: ${hoverBg} !important;
       }
       body .wr-card.${cls} .wr-ogp-title,
-      body div.block-language-wr.${cls} .wr-ogp-title,
-      body pre.${cls} .wr-ogp-title,
-      body .wr-lp-media.${cls} .wr-ogp-title {
-        color: ${fg} !important;
-      }
       body .wr-card.${cls} .wr-ogp-desc,
       body .wr-card.${cls} .wr-ogp-site,
       body .wr-card.${cls} .wr-ogp-loading,
+      body div.block-language-wr.${cls} .wr-ogp-title,
       body div.block-language-wr.${cls} .wr-ogp-desc,
       body div.block-language-wr.${cls} .wr-ogp-site,
       body div.block-language-wr.${cls} .wr-ogp-loading,
+      body pre.${cls} .wr-ogp-title,
       body pre.${cls} .wr-ogp-desc,
       body pre.${cls} .wr-ogp-site,
       body pre.${cls} .wr-ogp-loading,
+      body .wr-lp-media.${cls} .wr-ogp-title,
       body .wr-lp-media.${cls} .wr-ogp-desc,
       body .wr-lp-media.${cls} .wr-ogp-site,
       body .wr-lp-media.${cls} .wr-ogp-loading {
-        color: ${muted} !important;
+        color: ${mOgp} !important;
+      }
+      /* 親要素の文字色当てに特異度負けする環境向けに、 ID相当の特異度で再宣言 */
+      body .wr-card.${cls} .wr-ogp-title:not(#x):not(#y):not(#z),
+      body .wr-card.${cls} .wr-ogp-desc:not(#x):not(#y):not(#z),
+      body .wr-card.${cls} .wr-ogp-site:not(#x):not(#y):not(#z),
+      body .wr-card.${cls} .wr-ogp-loading:not(#x):not(#y):not(#z),
+      body div.block-language-wr.${cls} .wr-ogp-title:not(#x):not(#y):not(#z),
+      body div.block-language-wr.${cls} .wr-ogp-desc:not(#x):not(#y):not(#z),
+      body div.block-language-wr.${cls} .wr-ogp-site:not(#x):not(#y):not(#z),
+      body div.block-language-wr.${cls} .wr-ogp-loading:not(#x):not(#y):not(#z),
+      body pre.${cls} .wr-ogp-title:not(#x):not(#y):not(#z),
+      body pre.${cls} .wr-ogp-desc:not(#x):not(#y):not(#z),
+      body pre.${cls} .wr-ogp-site:not(#x):not(#y):not(#z),
+      body pre.${cls} .wr-ogp-loading:not(#x):not(#y):not(#z),
+      body .wr-lp-media.${cls} .wr-ogp-title:not(#x):not(#y):not(#z),
+      body .wr-lp-media.${cls} .wr-ogp-desc:not(#x):not(#y):not(#z),
+      body .wr-lp-media.${cls} .wr-ogp-site:not(#x):not(#y):not(#z),
+      body .wr-lp-media.${cls} .wr-ogp-loading:not(#x):not(#y):not(#z) {
+        color: ${mOgp} !important;
       }
       `);
     });
