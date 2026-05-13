@@ -312,7 +312,7 @@ function markDead(card: HTMLElement, bodyEl: HTMLElement, metaEl: HTMLElement): 
 }
 
 // 元投稿に飛んだ後、対象の投稿ブロック全体を緩く点滅させる
-function flashJumpTarget(
+export function flashJumpTarget(
   blockId: string,
   app: App,
   resolveRuleAccent?: (ruleClass: string) => string | null
@@ -326,6 +326,11 @@ function flashJumpTarget(
       const targets = collectFlashTargets(blockId, app);
       if (targets.length === 0) return;
       applied = true;
+      // Wrot タイムライン外の要素 (Markdown ビュー側) を中央へスクロール
+      const docTarget = targets.find((el) => !el.classList.contains("wr-card"));
+      if (docTarget) {
+        docTarget.scrollIntoView({ block: "center", behavior: "smooth" });
+      }
       for (const el of targets) {
         el.classList.remove("wr-quote-jump-flash");
         void el.offsetWidth;

@@ -1,99 +1,5821 @@
-var zn=Object.create;var Je=Object.defineProperty;var Yn=Object.getOwnPropertyDescriptor;var jn=Object.getOwnPropertyNames;var Qn=Object.getPrototypeOf,Gn=Object.prototype.hasOwnProperty;var jt=(a,i)=>()=>(a&&(i=a(a=0)),i);var Xn=(a,i)=>()=>(i||a((i={exports:{}}).exports,i),i.exports),Qt=(a,i)=>{for(var e in i)Je(a,e,{get:i[e],enumerable:!0})},Gt=(a,i,e,t)=>{if(i&&typeof i=="object"||typeof i=="function")for(let n of jn(i))!Gn.call(a,n)&&n!==e&&Je(a,n,{get:()=>i[n],enumerable:!(t=Yn(i,n))||t.enumerable});return a};var Kn=(a,i,e)=>(e=a!=null?zn(Qn(a)):{},Gt(i||!a||!a.__esModule?Je(e,"default",{value:a,enumerable:!0}):e,a)),Zn=a=>Gt(Je({},"__esModule",{value:!0}),a);function to(a){let i=a.trim();return eo.test(i)?i:""}function Kt(a){let i=[],e=0;for(;e<a.length;){let t=a[e],n=t.match(Xt);if(n){let s=n[2].length,l=to(n[3]),d=e,c=a.length-1,u=!1;for(let f=e+1;f<a.length;f++){let g=a[f].match(Xt);if(g&&g[2].length>=s&&g[3].trim()===""){c=f,u=!0;break}}i.push({kind:"codeblock",fenceOpenLine:d,fenceCloseLine:c,contentStartLine:d+1,contentEndLine:u?c-1:c,lang:l,fenceTildes:s}),e=c+1;continue}let o=t.trim();if(o.startsWith("$$")){let s=o.slice(2),l=s.lastIndexOf("$$");if(l>0&&s.slice(l+2).trim()===""){let d=s.slice(0,l);if(d.length>0){i.push({kind:"mathblock",fenceOpenLine:e,fenceCloseLine:e,contentStartLine:e,contentEndLine:e,singleLineMath:!0,singleLineMathTex:d}),e++;continue}}if(o==="$$"||o.startsWith("$$")&&!o.slice(2).includes("$$")){let d=e,c=a.length-1,u=!1;for(let f=e+1;f<a.length;f++)if(a[f].trim().endsWith("$$")){c=f,u=!0;break}i.push({kind:"mathblock",fenceOpenLine:d,fenceCloseLine:c,contentStartLine:d+1,contentEndLine:u?c-1:c}),e=c+1;continue}}e++}return i}function Re(a){let i=a.split(`
-`),e=Kt(i),t=[],n=0;for(let o of e){if(o.fenceOpenLine>n){let s=i.slice(n,o.fenceOpenLine);t.push({kind:"text",text:s.join(`
-`),startLine:n})}if(o.kind==="codeblock"){let s=o.contentEndLine>=o.contentStartLine?i.slice(o.contentStartLine,o.contentEndLine+1):[];t.push({kind:"codeblock",lang:o.lang||"",code:s.join(`
-`),startLine:o.fenceOpenLine,endLine:o.fenceCloseLine,fenceTildes:o.fenceTildes||3})}else{let s;if(o.singleLineMath)s=o.singleLineMathTex||"";else{let l=i[o.fenceOpenLine].trim(),d=[];if(l!=="$$"&&l.startsWith("$$")&&d.push(l.slice(2)),o.contentEndLine>=o.contentStartLine&&d.push(...i.slice(o.contentStartLine,o.contentEndLine+1)),o.fenceCloseLine!==o.fenceOpenLine){let u=i[o.fenceCloseLine].trim();u!=="$$"&&u.endsWith("$$")&&d.push(u.slice(0,-2))}s=d.join(`
-`)}t.push({kind:"mathblock",tex:s,startLine:o.fenceOpenLine,endLine:o.fenceCloseLine})}n=o.fenceCloseLine+1}if(n<i.length){let o=i.slice(n);t.push({kind:"text",text:o.join(`
-`),startLine:n})}return t}function Zt(a){return Kt(a).map(e=>{let t={kind:e.kind,startLine:e.fenceOpenLine,endLine:e.fenceCloseLine};return e.kind==="codeblock"&&(t.lang=e.lang),t})}function Jt(a){return Re(a).filter(e=>e.kind==="text").map(e=>e.text).join(`
-`)}var Xt,eo,Ie=jt(()=>{Xt=/^(\s*)(~{3,})(.*)$/,eo=/^[a-zA-Z0-9_+-]{0,32}$/});var en={};Qt(en,{parseMemos:()=>Ee});function Ee(a){let i=[],e=a.split(`
-`),t=0;for(;t<e.length;){let n=e[t].trim().match(no);if(n){let o=t,s=[e[t]],l=n[1].split(/\s/)[0];t++;let d=[];for(;t<e.length&&e[t].trim()!=="```";)d.push(e[t]),s.push(e[t]),t++;t<e.length&&(s.push(e[t]),t++);let c=d.join(`
-`).trim(),f=Jt(c).match(/#[^\s#]+/g)||[];i.push({time:l,tags:f,content:c,rawBlock:s.join(`
-`),lineStart:o,lineEnd:o+s.length-1})}else t++}return i.reverse()}var no,tt=jt(()=>{Ie();no=/^```wr\s+(.+)$/});var wn=Xn(B=>{"use strict";Object.defineProperty(B,"__esModule",{value:!0});var G=require("obsidian"),gt="YYYY-MM-DD",ht="gggg-[W]ww",on="YYYY-MM",rn="YYYY-[Q]Q",sn="YYYY";function Ae(a){var e,t;let i=window.app.plugins.getPlugin("periodic-notes");return i&&((t=(e=i.settings)==null?void 0:e[a])==null?void 0:t.enabled)}function Oe(){var a,i,e,t;try{let{internalPlugins:n,plugins:o}=window.app;if(Ae("daily")){let{format:c,folder:u,template:f}=((i=(a=o.getPlugin("periodic-notes"))==null?void 0:a.settings)==null?void 0:i.daily)||{};return{format:c||gt,folder:(u==null?void 0:u.trim())||"",template:(f==null?void 0:f.trim())||""}}let{folder:s,format:l,template:d}=((t=(e=n.getPluginById("daily-notes"))==null?void 0:e.instance)==null?void 0:t.options)||{};return{format:l||gt,folder:(s==null?void 0:s.trim())||"",template:(d==null?void 0:d.trim())||""}}catch(n){console.info("No custom daily note settings found!",n)}}function He(){var a,i,e,t,n,o,s;try{let l=window.app.plugins,d=(a=l.getPlugin("calendar"))==null?void 0:a.options,c=(e=(i=l.getPlugin("periodic-notes"))==null?void 0:i.settings)==null?void 0:e.weekly;if(Ae("weekly"))return{format:c.format||ht,folder:((t=c.folder)==null?void 0:t.trim())||"",template:((n=c.template)==null?void 0:n.trim())||""};let u=d||{};return{format:u.weeklyNoteFormat||ht,folder:((o=u.weeklyNoteFolder)==null?void 0:o.trim())||"",template:((s=u.weeklyNoteTemplate)==null?void 0:s.trim())||""}}catch(l){console.info("No custom weekly note settings found!",l)}}function Be(){var i,e,t,n;let a=window.app.plugins;try{let o=Ae("monthly")&&((e=(i=a.getPlugin("periodic-notes"))==null?void 0:i.settings)==null?void 0:e.monthly)||{};return{format:o.format||on,folder:((t=o.folder)==null?void 0:t.trim())||"",template:((n=o.template)==null?void 0:n.trim())||""}}catch(o){console.info("No custom monthly note settings found!",o)}}function We(){var i,e,t,n;let a=window.app.plugins;try{let o=Ae("quarterly")&&((e=(i=a.getPlugin("periodic-notes"))==null?void 0:i.settings)==null?void 0:e.quarterly)||{};return{format:o.format||rn,folder:((t=o.folder)==null?void 0:t.trim())||"",template:((n=o.template)==null?void 0:n.trim())||""}}catch(o){console.info("No custom quarterly note settings found!",o)}}function _e(){var i,e,t,n;let a=window.app.plugins;try{let o=Ae("yearly")&&((e=(i=a.getPlugin("periodic-notes"))==null?void 0:i.settings)==null?void 0:e.yearly)||{};return{format:o.format||sn,folder:((t=o.folder)==null?void 0:t.trim())||"",template:((n=o.template)==null?void 0:n.trim())||""}}catch(o){console.info("No custom yearly note settings found!",o)}}function an(...a){let i=[];for(let t=0,n=a.length;t<n;t++)i=i.concat(a[t].split("/"));let e=[];for(let t=0,n=i.length;t<n;t++){let o=i[t];!o||o==="."||e.push(o)}return i[0]===""&&e.unshift(""),e.join("/")}function oo(a){let i=a.substring(a.lastIndexOf("/")+1);return i.lastIndexOf(".")!=-1&&(i=i.substring(0,i.lastIndexOf("."))),i}async function ro(a){let i=a.replace(/\\/g,"/").split("/");if(i.pop(),i.length){let e=an(...i);window.app.vault.getAbstractFileByPath(e)||await window.app.vault.createFolder(e)}}async function Ue(a,i){i.endsWith(".md")||(i+=".md");let e=G.normalizePath(an(a,i));return await ro(e),e}async function $e(a){let{metadataCache:i,vault:e}=window.app,t=G.normalizePath(a);if(t==="/")return Promise.resolve(["",null]);try{let n=i.getFirstLinkpathDest(t,""),o=await e.cachedRead(n),s=window.app.foldManager.load(n);return[o,s]}catch(n){return console.error(`Failed to read the daily note template '${t}'`,n),new G.Notice("Failed to read the daily note template"),["",null]}}function ue(a,i="day"){let e=a.clone().startOf(i).format();return`${i}-${e}`}function ln(a){return a.replace(/\[[^\]]*\]/g,"")}function io(a,i){if(i==="week"){let e=ln(a);return/w{1,2}/i.test(e)&&(/M{1,4}/.test(e)||/D{1,4}/.test(e))}return!1}function Me(a,i){return cn(a.basename,i)}function so(a,i){return cn(oo(a),i)}function cn(a,i){let t={day:Oe,week:He,month:Be,quarter:We,year:_e}[i]().format.split("/").pop(),n=window.moment(a,t,!0);if(!n.isValid())return null;if(io(t,i)&&i==="week"){let o=ln(t);if(/w{1,2}/i.test(o))return window.moment(a,t.replace(/M{1,4}/g,"").replace(/D{1,4}/g,""),!1)}return n}var mt=class extends Error{};async function dn(a){let i=window.app,{vault:e}=i,t=window.moment,{template:n,format:o,folder:s}=Oe(),[l,d]=await $e(n),c=a.format(o),u=await Ue(s,c);try{let f=await e.create(u,l.replace(/{{\s*date\s*}}/gi,c).replace(/{{\s*time\s*}}/gi,t().format("HH:mm")).replace(/{{\s*title\s*}}/gi,c).replace(/{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi,(g,v,L,T,w,m)=>{let C=t(),b=a.clone().set({hour:C.get("hour"),minute:C.get("minute"),second:C.get("second")});return L&&b.add(parseInt(T,10),w),m?b.format(m.substring(1).trim()):b.format(o)}).replace(/{{\s*yesterday\s*}}/gi,a.clone().subtract(1,"day").format(o)).replace(/{{\s*tomorrow\s*}}/gi,a.clone().add(1,"d").format(o)));return i.foldManager.save(f,d),f}catch(f){console.error(`Failed to create file: '${u}'`,f),new G.Notice("Unable to create new file.")}}function ao(a,i){var e;return(e=i[ue(a,"day")])!=null?e:null}function lo(){let{vault:a}=window.app,{folder:i}=Oe(),e=a.getAbstractFileByPath(G.normalizePath(i));if(!e)throw new mt("Failed to find daily notes folder");let t={};return G.Vault.recurseChildren(e,n=>{if(n instanceof G.TFile){let o=Me(n,"day");if(o){let s=ue(o,"day");t[s]=n}}}),t}var ft=class extends Error{};function co(){let{moment:a}=window,i=a.localeData()._week.dow,e=["sunday","monday","tuesday","wednesday","thursday","friday","saturday"];for(;i;)e.push(e.shift()),i--;return e}function uo(a){return co().indexOf(a.toLowerCase())}async function un(a){let{vault:i}=window.app,{template:e,format:t,folder:n}=He(),[o,s]=await $e(e),l=a.format(t),d=await Ue(n,l);try{let c=await i.create(d,o.replace(/{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi,(u,f,g,v,L,T)=>{let w=window.moment(),m=a.clone().set({hour:w.get("hour"),minute:w.get("minute"),second:w.get("second")});return g&&m.add(parseInt(v,10),L),T?m.format(T.substring(1).trim()):m.format(t)}).replace(/{{\s*title\s*}}/gi,l).replace(/{{\s*time\s*}}/gi,window.moment().format("HH:mm")).replace(/{{\s*(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\s*:(.*?)}}/gi,(u,f,g)=>{let v=uo(f);return a.weekday(v).format(g.trim())}));return window.app.foldManager.save(c,s),c}catch(c){console.error(`Failed to create file: '${d}'`,c),new G.Notice("Unable to create new file.")}}function po(a,i){var e;return(e=i[ue(a,"week")])!=null?e:null}function go(){let a={};if(!gn())return a;let{vault:i}=window.app,{folder:e}=He(),t=i.getAbstractFileByPath(G.normalizePath(e));if(!t)throw new ft("Failed to find weekly notes folder");return G.Vault.recurseChildren(t,n=>{if(n instanceof G.TFile){let o=Me(n,"week");if(o){let s=ue(o,"week");a[s]=n}}}),a}var wt=class extends Error{};async function pn(a){let{vault:i}=window.app,{template:e,format:t,folder:n}=Be(),[o,s]=await $e(e),l=a.format(t),d=await Ue(n,l);try{let c=await i.create(d,o.replace(/{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi,(u,f,g,v,L,T)=>{let w=window.moment(),m=a.clone().set({hour:w.get("hour"),minute:w.get("minute"),second:w.get("second")});return g&&m.add(parseInt(v,10),L),T?m.format(T.substring(1).trim()):m.format(t)}).replace(/{{\s*date\s*}}/gi,l).replace(/{{\s*time\s*}}/gi,window.moment().format("HH:mm")).replace(/{{\s*title\s*}}/gi,l));return window.app.foldManager.save(c,s),c}catch(c){console.error(`Failed to create file: '${d}'`,c),new G.Notice("Unable to create new file.")}}function ho(a,i){var e;return(e=i[ue(a,"month")])!=null?e:null}function mo(){let a={};if(!hn())return a;let{vault:i}=window.app,{folder:e}=Be(),t=i.getAbstractFileByPath(G.normalizePath(e));if(!t)throw new wt("Failed to find monthly notes folder");return G.Vault.recurseChildren(t,n=>{if(n instanceof G.TFile){let o=Me(n,"month");if(o){let s=ue(o,"month");a[s]=n}}}),a}var bt=class extends Error{};async function fo(a){let{vault:i}=window.app,{template:e,format:t,folder:n}=We(),[o,s]=await $e(e),l=a.format(t),d=await Ue(n,l);try{let c=await i.create(d,o.replace(/{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi,(u,f,g,v,L,T)=>{let w=window.moment(),m=a.clone().set({hour:w.get("hour"),minute:w.get("minute"),second:w.get("second")});return g&&m.add(parseInt(v,10),L),T?m.format(T.substring(1).trim()):m.format(t)}).replace(/{{\s*date\s*}}/gi,l).replace(/{{\s*time\s*}}/gi,window.moment().format("HH:mm")).replace(/{{\s*title\s*}}/gi,l));return window.app.foldManager.save(c,s),c}catch(c){console.error(`Failed to create file: '${d}'`,c),new G.Notice("Unable to create new file.")}}function wo(a,i){var e;return(e=i[ue(a,"quarter")])!=null?e:null}function bo(){let a={};if(!mn())return a;let{vault:i}=window.app,{folder:e}=We(),t=i.getAbstractFileByPath(G.normalizePath(e));if(!t)throw new bt("Failed to find quarterly notes folder");return G.Vault.recurseChildren(t,n=>{if(n instanceof G.TFile){let o=Me(n,"quarter");if(o){let s=ue(o,"quarter");a[s]=n}}}),a}var kt=class extends Error{};async function ko(a){let{vault:i}=window.app,{template:e,format:t,folder:n}=_e(),[o,s]=await $e(e),l=a.format(t),d=await Ue(n,l);try{let c=await i.create(d,o.replace(/{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi,(u,f,g,v,L,T)=>{let w=window.moment(),m=a.clone().set({hour:w.get("hour"),minute:w.get("minute"),second:w.get("second")});return g&&m.add(parseInt(v,10),L),T?m.format(T.substring(1).trim()):m.format(t)}).replace(/{{\s*date\s*}}/gi,l).replace(/{{\s*time\s*}}/gi,window.moment().format("HH:mm")).replace(/{{\s*title\s*}}/gi,l));return window.app.foldManager.save(c,s),c}catch(c){console.error(`Failed to create file: '${d}'`,c),new G.Notice("Unable to create new file.")}}function yo(a,i){var e;return(e=i[ue(a,"year")])!=null?e:null}function vo(){let a={};if(!fn())return a;let{vault:i}=window.app,{folder:e}=_e(),t=i.getAbstractFileByPath(G.normalizePath(e));if(!t)throw new kt("Failed to find yearly notes folder");return G.Vault.recurseChildren(t,n=>{if(n instanceof G.TFile){let o=Me(n,"year");if(o){let s=ue(o,"year");a[s]=n}}}),a}function Eo(){var t,n;let{app:a}=window,i=a.internalPlugins.plugins["daily-notes"];if(i&&i.enabled)return!0;let e=a.plugins.getPlugin("periodic-notes");return e&&((n=(t=e.settings)==null?void 0:t.daily)==null?void 0:n.enabled)}function gn(){var e,t;let{app:a}=window;if(a.plugins.getPlugin("calendar"))return!0;let i=a.plugins.getPlugin("periodic-notes");return i&&((t=(e=i.settings)==null?void 0:e.weekly)==null?void 0:t.enabled)}function hn(){var e,t;let{app:a}=window,i=a.plugins.getPlugin("periodic-notes");return i&&((t=(e=i.settings)==null?void 0:e.monthly)==null?void 0:t.enabled)}function mn(){var e,t;let{app:a}=window,i=a.plugins.getPlugin("periodic-notes");return i&&((t=(e=i.settings)==null?void 0:e.quarterly)==null?void 0:t.enabled)}function fn(){var e,t;let{app:a}=window,i=a.plugins.getPlugin("periodic-notes");return i&&((t=(e=i.settings)==null?void 0:e.yearly)==null?void 0:t.enabled)}function Co(a){let i={day:Oe,week:He,month:Be,quarter:We,year:_e}[a];return i()}function xo(a,i){return{day:dn,month:pn,week:un}[a](i)}B.DEFAULT_DAILY_NOTE_FORMAT=gt;B.DEFAULT_MONTHLY_NOTE_FORMAT=on;B.DEFAULT_QUARTERLY_NOTE_FORMAT=rn;B.DEFAULT_WEEKLY_NOTE_FORMAT=ht;B.DEFAULT_YEARLY_NOTE_FORMAT=sn;B.appHasDailyNotesPluginLoaded=Eo;B.appHasMonthlyNotesPluginLoaded=hn;B.appHasQuarterlyNotesPluginLoaded=mn;B.appHasWeeklyNotesPluginLoaded=gn;B.appHasYearlyNotesPluginLoaded=fn;B.createDailyNote=dn;B.createMonthlyNote=pn;B.createPeriodicNote=xo;B.createQuarterlyNote=fo;B.createWeeklyNote=un;B.createYearlyNote=ko;B.getAllDailyNotes=lo;B.getAllMonthlyNotes=mo;B.getAllQuarterlyNotes=bo;B.getAllWeeklyNotes=go;B.getAllYearlyNotes=vo;B.getDailyNote=ao;B.getDailyNoteSettings=Oe;B.getDateFromFile=Me;B.getDateFromPath=so;B.getDateUID=ue;B.getMonthlyNote=ho;B.getMonthlyNoteSettings=Be;B.getPeriodicNoteSettings=Co;B.getQuarterlyNote=wo;B.getQuarterlyNoteSettings=We;B.getTemplateInfo=$e;B.getWeeklyNote=po;B.getWeeklyNoteSettings=He;B.getYearlyNote=yo;B.getYearlyNoteSettings=_e});var mr={};Qt(mr,{default:()=>pt});module.exports=Zn(mr);var pe=require("obsidian");var ge="wrot-view";var Y=require("obsidian"),V={viewPlacement:"right",headerDateFormat:"YYYY\u5E74MM\u6708DD\u65E5",timestampFormat:"YYYY/MM/DD HH:mm:ss",bgColorLight:"#f8f8f8",bgColorDark:"#303030",textColorLight:"#454545",textColorDark:"#dcddde",submitLabel:"\u6295\u7A3F",submitIcon:"send",inputPlaceholder:"\u3042\u306A\u305F\u304C\u66F8\u304F\u306E\u3092\u5F85\u3063\u3066\u3044\u307E\u3059...",enableOgpFetch:!0,checkStrikethrough:!1,tagColorRulesEnabled:!1,tagColorRules:[],followObsidianFontSize:!1,pins:[],pinLimit:3},Jn=600,et=class extends Y.PluginSettingTab{constructor(e,t){super(e,t);this.narrowObserver=null;this.unlockedRules=new Set;this.skipLockReset=!1;this.plugin=t}hide(){this.narrowObserver&&(this.narrowObserver.disconnect(),this.narrowObserver=null),super.hide()}collectScrollCandidates(){let e=[];this.containerEl.scrollHeight>this.containerEl.clientHeight&&e.push(this.containerEl);let t=this.containerEl.parentElement;for(;t;){let o=getComputedStyle(t).overflowY;if(((o==="auto"||o==="scroll"||o==="overlay")&&t.scrollHeight>t.clientHeight||t.scrollTop>0)&&e.push(t),t=t.parentElement,!t||t===document.body||t===document.documentElement)break}return e}withScrollPreserved(e){let t=this.collectScrollCandidates().map(o=>({el:o,top:o.scrollTop}));e();let n=()=>{for(let{el:o,top:s}of t)o.scrollTop!==s&&(o.scrollTop=s)};n(),requestAnimationFrame(n),setTimeout(n,0),setTimeout(n,50)}display(){let{containerEl:e}=this;e.empty(),e.addClass("wr-settings"),this.skipLockReset?this.skipLockReset=!1:this.unlockedRules.clear(),this.narrowObserver&&(this.narrowObserver.disconnect(),this.narrowObserver=null);let t=()=>{let r=e.clientWidth>0&&e.clientWidth<Jn;e.toggleClass("wr-settings-narrow",r)};requestAnimationFrame(t),typeof ResizeObserver!="undefined"&&(this.narrowObserver=new ResizeObserver(()=>{requestAnimationFrame(t)}),this.narrowObserver.observe(e)),new Y.Setting(e).setName("\u57FA\u672C\u8A2D\u5B9A").setHeading(),new Y.Setting(e).setName("\u8868\u793A\u4F4D\u7F6E").setDesc("Wrot\u30D1\u30CD\u30EB\u306E\u8868\u793A\u4F4D\u7F6E\u3092\u9078\u3073\u307E\u3059\u3002").addDropdown(r=>r.addOption("left","\u5DE6\u30B5\u30A4\u30C9\u30D0\u30FC").addOption("right","\u53F3\u30B5\u30A4\u30C9\u30D0\u30FC").addOption("main","\u30E1\u30A4\u30F3\u30A8\u30EA\u30A2").setValue(this.plugin.settings.viewPlacement).onChange(async h=>{this.plugin.settings.viewPlacement=h,await this.plugin.saveSettings()})),new Y.Setting(e).setName("Obsidian\u306E\u30D5\u30A9\u30F3\u30C8\u30B5\u30A4\u30BA\u306B\u8FFD\u5F93").setDesc("Obsidian\u306E\u5916\u89B3\u8A2D\u5B9A\u306BWrot\u306E\u6587\u5B57\u30B5\u30A4\u30BA\u3092\u5408\u308F\u305B\u307E\u3059\u3002").addToggle(r=>r.setValue(this.plugin.settings.followObsidianFontSize).onChange(async h=>{this.plugin.settings.followObsidianFontSize=h,await this.plugin.saveSettings(),this.plugin.applyFontFollow()}));let n;new Y.Setting(e).setName("\u30D8\u30C3\u30C0\u30FC\u65E5\u4ED8\u8868\u793A\u5F62\u5F0F").setDesc("\u65E5\u4ED8\u30CA\u30D3\u306B\u8868\u793A\u3059\u308B\u65E5\u4ED8\u306E\u30D5\u30A9\u30FC\u30DE\u30C3\u30C8\u3092\u6307\u5B9A\u3057\u307E\u3059\u3002\uFF08YYYY, MM, DD \u306A\u3069\u304C\u4F7F\u3048\u307E\u3059\uFF09\u7A7A\u6B04\u3067\u521D\u671F\u5024\u306B\u623B\u308A\u307E\u3059\u3002").addText(r=>{n=r,r.setPlaceholder(V.headerDateFormat).setValue(this.plugin.settings.headerDateFormat).onChange(async h=>{this.plugin.settings.headerDateFormat=h||V.headerDateFormat,await this.plugin.saveSettings(),this.plugin.refreshViews()})}).addExtraButton(r=>r.setIcon("reset").setTooltip("\u521D\u671F\u5024\u306B\u623B\u3059").onClick(async()=>{this.plugin.settings.headerDateFormat=V.headerDateFormat,await this.plugin.saveSettings(),this.plugin.refreshViews(),n.setValue(V.headerDateFormat)}));let o;new Y.Setting(e).setName("\u30BF\u30A4\u30E0\u30B9\u30BF\u30F3\u30D7\u8868\u793A\u5F62\u5F0F").setDesc("\u6295\u7A3F\u306E\u65E5\u6642\u30D5\u30A9\u30FC\u30DE\u30C3\u30C8\u3092\u6307\u5B9A\u3057\u307E\u3059\u3002\uFF08YYYY, MM, DD, HH, mm, ss \u304C\u4F7F\u3048\u307E\u3059\uFF09").addText(r=>{o=r,r.setPlaceholder("YYYY/MM/DD HH:mm:ss").setValue(this.plugin.settings.timestampFormat).onChange(async h=>{this.plugin.settings.timestampFormat=h||V.timestampFormat,await this.plugin.saveSettings(),this.plugin.refreshViews()})}).addExtraButton(r=>r.setIcon("reset").setTooltip("\u521D\u671F\u5024\u306B\u623B\u3059").onClick(async()=>{this.plugin.settings.timestampFormat=V.timestampFormat,await this.plugin.saveSettings(),this.plugin.refreshViews(),o.setValue(V.timestampFormat)}));let s;new Y.Setting(e).setName("\u80CC\u666F\u8272\uFF08\u30E9\u30A4\u30C8\u30E2\u30FC\u30C9\uFF09").setDesc("\u30E9\u30A4\u30C8\u30C6\u30FC\u30DE\u3067\u306E\u6295\u7A3F\u30FB\u6295\u7A3F\u30D5\u30A9\u30FC\u30E0\u306E\u80CC\u666F\u8272\u3092\u8A2D\u5B9A\u3057\u307E\u3059\u3002").setClass("wr-reverse-controls").addColorPicker(r=>{s=r,r.setValue(this.plugin.settings.bgColorLight).onChange(async h=>{this.plugin.settings.bgColorLight=h,await this.plugin.saveSettings(),this.plugin.applyBgColor()})}).addExtraButton(r=>r.setIcon("reset").setTooltip("\u521D\u671F\u5024\u306B\u623B\u3059").onClick(async()=>{this.plugin.settings.bgColorLight=V.bgColorLight,await this.plugin.saveSettings(),this.plugin.applyBgColor(),s.setValue(V.bgColorLight)}));let l;new Y.Setting(e).setName("\u6587\u5B57\u8272\uFF08\u30E9\u30A4\u30C8\u30E2\u30FC\u30C9\uFF09").setDesc("\u30E9\u30A4\u30C8\u30C6\u30FC\u30DE\u3067\u306E\u30C6\u30AD\u30B9\u30C8\u30FB\u30A2\u30A4\u30B3\u30F3\u306E\u8272\u3092\u8A2D\u5B9A\u3057\u307E\u3059\u3002").setClass("wr-reverse-controls").addColorPicker(r=>{l=r,r.setValue(this.plugin.settings.textColorLight).onChange(async h=>{this.plugin.settings.textColorLight=h,await this.plugin.saveSettings(),this.plugin.applyBgColor()})}).addExtraButton(r=>r.setIcon("reset").setTooltip("\u521D\u671F\u5024\u306B\u623B\u3059").onClick(async()=>{this.plugin.settings.textColorLight=V.textColorLight,await this.plugin.saveSettings(),this.plugin.applyBgColor(),l.setValue(V.textColorLight)}));let d;new Y.Setting(e).setName("\u80CC\u666F\u8272\uFF08\u30C0\u30FC\u30AF\u30E2\u30FC\u30C9\uFF09").setDesc("\u30C0\u30FC\u30AF\u30C6\u30FC\u30DE\u3067\u306E\u6295\u7A3F\u30FB\u6295\u7A3F\u30D5\u30A9\u30FC\u30E0\u306E\u80CC\u666F\u8272\u3092\u8A2D\u5B9A\u3057\u307E\u3059\u3002").setClass("wr-reverse-controls").addColorPicker(r=>{d=r,r.setValue(this.plugin.settings.bgColorDark).onChange(async h=>{this.plugin.settings.bgColorDark=h,await this.plugin.saveSettings(),this.plugin.applyBgColor()})}).addExtraButton(r=>r.setIcon("reset").setTooltip("\u521D\u671F\u5024\u306B\u623B\u3059").onClick(async()=>{this.plugin.settings.bgColorDark=V.bgColorDark,await this.plugin.saveSettings(),this.plugin.applyBgColor(),d.setValue(V.bgColorDark)}));let c;new Y.Setting(e).setName("\u6587\u5B57\u8272\uFF08\u30C0\u30FC\u30AF\u30E2\u30FC\u30C9\uFF09").setDesc("\u30C0\u30FC\u30AF\u30C6\u30FC\u30DE\u3067\u306E\u30C6\u30AD\u30B9\u30C8\u30FB\u30A2\u30A4\u30B3\u30F3\u306E\u8272\u3092\u8A2D\u5B9A\u3057\u307E\u3059\u3002").setClass("wr-reverse-controls").addColorPicker(r=>{c=r,r.setValue(this.plugin.settings.textColorDark).onChange(async h=>{this.plugin.settings.textColorDark=h,await this.plugin.saveSettings(),this.plugin.applyBgColor()})}).addExtraButton(r=>r.setIcon("reset").setTooltip("\u521D\u671F\u5024\u306B\u623B\u3059").onClick(async()=>{this.plugin.settings.textColorDark=V.textColorDark,await this.plugin.saveSettings(),this.plugin.applyBgColor(),c.setValue(V.textColorDark)})),new Y.Setting(e).setName("\u8868\u793A\u8A2D\u5B9A").setHeading();let u;new Y.Setting(e).setName("\u6295\u7A3F\u30DC\u30BF\u30F3\u306E\u30C6\u30AD\u30B9\u30C8").setDesc("\u6295\u7A3F\u30DC\u30BF\u30F3\u306B\u8868\u793A\u3059\u308B\u30C6\u30AD\u30B9\u30C8\u3092\u5909\u66F4\u3067\u304D\u307E\u3059\u3002").addText(r=>{u=r,r.setPlaceholder("\u6295\u7A3F").setValue(this.plugin.settings.submitLabel).onChange(async h=>{this.plugin.settings.submitLabel=h||V.submitLabel,await this.plugin.saveSettings(),this.plugin.updateSubmitLabel()})}).addExtraButton(r=>r.setIcon("reset").setTooltip("\u521D\u671F\u5024\u306B\u623B\u3059").onClick(async()=>{this.plugin.settings.submitLabel=V.submitLabel,await this.plugin.saveSettings(),u.setValue(V.submitLabel),this.plugin.updateSubmitLabel()}));let f,g=new Y.Setting(e).setName("\u6295\u7A3F\u30DC\u30BF\u30F3\u306E\u30A2\u30A4\u30B3\u30F3"),v=g.descEl;v.appendText("\u6295\u7A3F\u30DC\u30BF\u30F3\u306E\u30A2\u30A4\u30B3\u30F3\u3092\u5909\u66F4\u3067\u304D\u307E\u3059\u3002\u30A2\u30A4\u30B3\u30F3\u540D\u306F "),v.createEl("a",{text:"\u3053\u3061\u3089",href:"https://lucide.dev/icons/"}).setAttr("target","_blank"),v.appendText(" \u304B\u3089\u30B3\u30D4\u30FC\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u7A7A\u6B04\u306B\u3059\u308B\u3068\u30A2\u30A4\u30B3\u30F3\u3092\u975E\u8868\u793A\u306B\u3067\u304D\u307E\u3059\u3002"),g.addText(r=>{f=r,r.setPlaceholder("send").setValue(this.plugin.settings.submitIcon).onChange(async h=>{this.plugin.settings.submitIcon=h.trim(),await this.plugin.saveSettings(),this.plugin.updateSubmitIcon()})}).addExtraButton(r=>r.setIcon("reset").setTooltip("\u521D\u671F\u5024\u306B\u623B\u3059").onClick(async()=>{this.plugin.settings.submitIcon=V.submitIcon,await this.plugin.saveSettings(),f.setValue(V.submitIcon),this.plugin.updateSubmitIcon()}));let T;new Y.Setting(e).setName("\u6295\u7A3F\u30D5\u30A9\u30FC\u30E0\u306E\u7A7A\u6B04\u30E1\u30C3\u30BB\u30FC\u30B8").setDesc("\u6295\u7A3F\u30D5\u30A9\u30FC\u30E0\u304C\u7A7A\u306E\u6642\u306B\u8868\u793A\u3055\u308C\u308B\u30C6\u30AD\u30B9\u30C8\u3092\u5909\u66F4\u3067\u304D\u307E\u3059\u3002\u7A7A\u6B04\u306B\u3059\u308B\u3068\u975E\u8868\u793A\u306B\u306A\u308A\u307E\u3059\u3002").addText(r=>{T=r,r.setPlaceholder(V.inputPlaceholder).setValue(this.plugin.settings.inputPlaceholder).onChange(async h=>{this.plugin.settings.inputPlaceholder=h,await this.plugin.saveSettings(),this.plugin.updateInputPlaceholder()})}).addExtraButton(r=>r.setIcon("reset").setTooltip("\u521D\u671F\u5024\u306B\u623B\u3059").onClick(async()=>{this.plugin.settings.inputPlaceholder=V.inputPlaceholder,await this.plugin.saveSettings(),T.setValue(V.inputPlaceholder),this.plugin.updateInputPlaceholder()})),new Y.Setting(e).setName("\u30D4\u30F3\u7559\u3081\u306E\u4E0A\u9650").setDesc("\u30BF\u30A4\u30E0\u30E9\u30A4\u30F3\u306B\u56FA\u5B9A\u3067\u304D\u308B\u30E1\u30E2\u306E\u6700\u5927\u4EF6\u6570\u3092\u8A2D\u5B9A\u3057\u307E\u3059\u3002").addDropdown(r=>r.addOption("1","1 \u4EF6").addOption("3","3 \u4EF6").addOption("5","5 \u4EF6").setValue(String(this.plugin.settings.pinLimit)).onChange(async h=>{let p=Number(h);this.plugin.settings.pinLimit=p,this.plugin.settings.pins.length>p&&(this.plugin.settings.pins=this.plugin.settings.pins.slice(0,p)),await this.plugin.saveSettings(),this.plugin.refreshViews()})),new Y.Setting(e).setName("URL\u30D7\u30EC\u30D3\u30E5\u30FC").setDesc("\u30E1\u30E2\u5185\u306EURL\u304B\u3089OGP\u60C5\u5831\u3092\u81EA\u52D5\u53D6\u5F97\u3057\u3066\u8868\u793A\u3057\u307E\u3059\u3002\u30AA\u30D5\u306B\u3059\u308B\u3068\u5916\u90E8\u901A\u4FE1\u3092\u884C\u3044\u307E\u305B\u3093\u3002").addToggle(r=>r.setValue(this.plugin.settings.enableOgpFetch).onChange(async h=>{this.plugin.settings.enableOgpFetch=h,await this.plugin.saveSettings()})),new Y.Setting(e).setName("\u30C1\u30A7\u30C3\u30AF\u6E08\u307F\u306E\u53D6\u308A\u6D88\u3057\u7DDA").setDesc("\u30C1\u30A7\u30C3\u30AF\u30DC\u30C3\u30AF\u30B9\u304CON\u306E\u9805\u76EE\u306B\u53D6\u308A\u6D88\u3057\u7DDA\u3092\u8868\u793A\u3057\u307E\u3059\u3002").addToggle(r=>r.setValue(this.plugin.settings.checkStrikethrough).onChange(async h=>{this.plugin.settings.checkStrikethrough=h,await this.plugin.saveSettings(),this.plugin.refreshViews()})),new Y.Setting(e).setName("\u30BF\u30B0\u5225\u306B\u8272\u3092\u5909\u3048\u308B").setDesc("\u6307\u5B9A\u30BF\u30B0\u3092\u542B\u3080\u6295\u7A3F\u306E\u80CC\u666F\u8272\u3068\u6587\u5B57\u8272\u3092\u5909\u66F4\u3057\u307E\u3059\u3002\u8907\u6570\u30EB\u30FC\u30EB\u306B\u8A72\u5F53\u3059\u308B\u5834\u5408\u306F\u672C\u6587\u3067\u5148\u306B\u51FA\u305F\u30BF\u30B0\u304C\u512A\u5148\u3055\u308C\u307E\u3059\u3002").addToggle(r=>r.setValue(this.plugin.settings.tagColorRulesEnabled).onChange(async h=>{this.plugin.settings.tagColorRulesEnabled=h,await this.plugin.saveSettings(),this.plugin.applyTagColorRules(),this.plugin.refreshAllWrDecorations();let p=this.plugin.settings.tagColorRules,y=p.length===0||p.length===1&&p[0].tag.trim()==="";h&&y&&this.unlockedRules.add(0),this.skipLockReset=!0,this.withScrollPreserved(()=>this.display())}));let w=e.createDiv({cls:"wr-tag-rules-container"}),m=e.createDiv(),C=()=>{if(w.empty(),m.empty(),!this.plugin.settings.tagColorRulesEnabled)return;let r=()=>document.body.classList.contains("theme-dark"),h=()=>r()?this.plugin.settings.bgColorDark:this.plugin.settings.bgColorLight,p=()=>r()?this.plugin.settings.textColorDark:this.plugin.settings.textColorLight,y=E=>E===V.bgColorLight,D=E=>E===V.textColorLight,R=E=>/^#[0-9a-fA-F]{6}$/.test(E)&&!(r()&&y(E))?E:h(),F=E=>/^#[0-9a-fA-F]{6}$/.test(E)&&!(r()&&D(E))?E:p(),Q=()=>{let E=getComputedStyle(document.body).getPropertyValue("--text-accent").trim();if(/^#[0-9a-fA-F]{6}$/.test(E))return E;let N=document.createElement("div");N.style.color=E||"var(--text-accent)",N.style.display="none",document.body.appendChild(N);let k=getComputedStyle(N).color;document.body.removeChild(N);let P=k.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/);if(P){let O=U=>parseInt(U,10).toString(16).padStart(2,"0");return`#${O(P[1])}${O(P[2])}${O(P[3])}`}return p()},K=E=>{let N=F(E.textColor),k=R(E.bgColor);return this.plugin.blendColor(N,k,.45)},z=(E,N,k,P,O,U,M,ee,Z,Qe,se)=>{E||w.createEl("hr",{cls:"wr-tag-rule-separator"});let ae=w.createDiv({cls:"wr-tag-rule-group"}),te=()=>this.unlockedRules.has(k),ye=new Y.Setting(ae).setName(`\u30EB\u30FC\u30EB ${N}`).setClass("wr-tag-rule-label-setting"),de=null;ye.addExtraButton(I=>{de=I.extraSettingsEl,I.setIcon(te()?"lock-keyhole-open":"lock-keyhole").setTooltip(te()?"\u30ED\u30C3\u30AF\u3059\u308B":"\u7DE8\u96C6\u3059\u308B\u306B\u306F\u30ED\u30C3\u30AF\u3092\u89E3\u9664").onClick(()=>{te()?this.unlockedRules.delete(k):this.unlockedRules.add(k),ce()})});let ve=null;se&&ye.addExtraButton(I=>{ve=I.extraSettingsEl,I.setIcon(se.kind==="delete"?"trash-2":"reset").setTooltip(se.kind==="delete"?"\u3053\u306E\u30EB\u30FC\u30EB\u3092\u524A\u9664":"\u521D\u671F\u5024\u306B\u623B\u3059").onClick(async()=>{te()&&await se.handler()})});let De=null;new Y.Setting(ae).setName("\u30BF\u30B0").setDesc("\u8272\u3092\u5909\u3048\u305F\u3044\u30BF\u30B0\u540D\u3092\u5165\u529B\u3057\u307E\u3059\u3002\uFF08# \u306F\u7701\u7565\u3067\u304D\u307E\u3059\uFF09").addText(I=>{De=I.inputEl,I.setPlaceholder("\u30BF\u30B0\u540D").setValue(P.tag).onChange(async ne=>{await O(ne.replace(/^#/,"").trim())})});let Ge=null;new Y.Setting(ae).setName("\u80CC\u666F\u8272").setDesc("\u3053\u306E\u30BF\u30B0\u3092\u542B\u3080\u6295\u7A3F\u306E\u80CC\u666F\u8272\u3092\u8A2D\u5B9A\u3057\u307E\u3059\u3002").setClass("wr-reverse-controls").addColorPicker(I=>{Ge=I.colorPickerEl,I.setValue(R(P.bgColor)).onChange(async ne=>{await U(ne)})});let Xe=null;new Y.Setting(ae).setName("\u6587\u5B57\u8272").setDesc("\u3053\u306E\u30BF\u30B0\u3092\u542B\u3080\u6295\u7A3F\u306E\u672C\u6587\u6587\u5B57\u8272\u3092\u8A2D\u5B9A\u3057\u307E\u3059\u3002\uFF08\u30BF\u30B0\u30FB\u30EA\u30F3\u30AF\u30FBURL\u306F\u30A2\u30AF\u30BB\u30F3\u30C8\u30AB\u30E9\u30FC\u5074\u3067\u8A2D\u5B9A\u3057\u307E\u3059\uFF09").setClass("wr-reverse-controls").addColorPicker(I=>{Xe=I.colorPickerEl,I.setValue(F(P.textColor)).onChange(async ne=>{await M(ne)})});let Ke,Ne=null,x=null;new Y.Setting(ae).setName("\u30A2\u30AF\u30BB\u30F3\u30C8\u30AB\u30E9\u30FC").setDesc("\u30BF\u30B0\u30FB\u30EA\u30F3\u30AF\u30FBURL\u30FB\u30B3\u30D4\u30FC\u5B8C\u4E86\u30A2\u30A4\u30B3\u30F3\u306A\u3069\u30A2\u30AF\u30BB\u30F3\u30C8\u30AB\u30E9\u30FC\u304C\u4F7F\u308F\u308C\u308B\u8981\u7D20\u306E\u8272\u3092\u8A2D\u5B9A\u3057\u307E\u3059\u3002\u672A\u8A2D\u5B9A\u6642\u306F\u30C6\u30FC\u30DE\u306E\u30A2\u30AF\u30BB\u30F3\u30C8\u30AB\u30E9\u30FC\u3092\u4F7F\u3044\u307E\u3059\u3002").setClass("wr-reverse-controls").addColorPicker(I=>{Ke=I,Ne=I.colorPickerEl;let ne=P.accentColor&&/^#[0-9a-fA-F]{6}$/.test(P.accentColor)?P.accentColor:Q();I.setValue(ne).onChange(async we=>{await ee(we)})}).addExtraButton(I=>{x=I.extraSettingsEl,I.setIcon("reset").setTooltip("\u521D\u671F\u5024\u306B\u623B\u3059").onClick(async()=>{te()&&(await ee(void 0),Ke.setValue(Q()))})});let $,H=null,W=null,X=!1;new Y.Setting(ae).setName("\u30B5\u30D6\u30AB\u30E9\u30FC").setDesc("\u30BF\u30A4\u30E0\u30B9\u30BF\u30F3\u30D7\u30FB\u30A2\u30A4\u30B3\u30F3\u30FB\u30EA\u30B9\u30C8\u30DE\u30FC\u30AB\u30FC\u30FB\u5F15\u7528\u7DDA\u30FB\u30C1\u30A7\u30C3\u30AF\u30DC\u30C3\u30AF\u30B9\u306A\u3069\u30B5\u30D6\u8981\u7D20\u306E\u8272\u3092\u307E\u3068\u3081\u3066\u8A2D\u5B9A\u3057\u307E\u3059\u3002\u672A\u8A2D\u5B9A\u6642\u306F\u80CC\u666F\u8272\u3068\u6587\u5B57\u8272\u304B\u3089\u81EA\u52D5\u7B97\u51FA\u3057\u307E\u3059\u3002").setClass("wr-reverse-controls").addColorPicker(I=>{$=I,H=I.colorPickerEl;let ne=P.subColor&&/^#[0-9a-fA-F]{6}$/.test(P.subColor)?P.subColor:K(P);I.setValue(ne).onChange(async we=>{X||(await Z(we),fe(),ce())})}).addExtraButton(I=>{W=I.extraSettingsEl,I.setIcon("reset").setTooltip("\u521D\u671F\u5024\u306B\u623B\u3059").onClick(async()=>{te()&&(await Z(void 0),X=!0,$.setValue(K(P)),X=!1,fe(),ce())})});let le=ae.createDiv({cls:"wr-sub-color-scope"}),J=[],Te=()=>!!P.subColor&&/^#[0-9a-fA-F]{6}$/.test(P.subColor),fe=()=>{if(le.empty(),J.length=0,!Te())return;let I=we=>{let Ze=P.subColorScope;return Ze?Ze[we]!==!1:!0},ne=[["buttons","\u30BF\u30A4\u30E0\u30B9\u30BF\u30F3\u30D7\u30FB\u30E1\u30CB\u30E5\u30FC\u30FB\u30D4\u30F3\u306B\u30B5\u30D6\u30AB\u30E9\u30FC\u3092\u9069\u7528","\u30AA\u30D5\u306E\u3068\u304D\u306F\u81EA\u52D5\u8A2D\u5B9A\u3055\u308C\u305F\u8272\u306B\u306A\u308A\u307E\u3059\u3002"],["quote","\u5F15\u7528\u306B\u30B5\u30D6\u30AB\u30E9\u30FC\u3092\u9069\u7528","\u30AA\u30D5\u306E\u3068\u304D\u306F\u81EA\u52D5\u8A2D\u5B9A\u3055\u308C\u305F\u8272\u306B\u306A\u308A\u307E\u3059\u3002"],["list","\u30EA\u30B9\u30C8\u30FB\u30C1\u30A7\u30C3\u30AF\u30DC\u30C3\u30AF\u30B9\u306B\u30B5\u30D6\u30AB\u30E9\u30FC\u3092\u9069\u7528","\u30AA\u30D5\u306E\u3068\u304D\u306F\u81EA\u52D5\u8A2D\u5B9A\u3055\u308C\u305F\u8272\u306B\u306A\u308A\u307E\u3059\u3002"],["ogp","OGP\u30AB\u30FC\u30C9\u306B\u30B5\u30D6\u30AB\u30E9\u30FC\u3092\u9069\u7528","\u30AA\u30D5\u306E\u3068\u304D\u306F\u81EA\u52D5\u8A2D\u5B9A\u3055\u308C\u305F\u8272\u306B\u306A\u308A\u307E\u3059\u3002"]];for(let[we,Ze,Un]of ne)new Y.Setting(le).setName(Ze).setDesc(Un).addToggle(Yt=>{J.push(Yt.toggleEl),Yt.setValue(I(we)).onChange(async Vn=>{await Qe(we,Vn)})})},j=(I,ne)=>{I&&(ne?(I.setAttr("disabled","true"),I.setAttr("aria-disabled","true"),I.addClass("wr-tag-rule-disabled")):(I.removeAttribute("disabled"),I.removeAttribute("aria-disabled"),I.removeClass("wr-tag-rule-disabled")))},ce=()=>{let I=te();ae.toggleClass("wr-tag-rule-locked",!I),j(De,!I),j(Ge,!I),j(Xe,!I),j(Ne,!I),j(x,!I),j(H,!I),j(W,!I),j(ve,!I);for(let ne of J)j(ne,!I);de&&((0,Y.setIcon)(de,I?"lock-keyhole-open":"lock-keyhole"),de.setAttr("aria-label",I?"\u30ED\u30C3\u30AF\u3059\u308B":"\u7DE8\u96C6\u3059\u308B\u306B\u306F\u30ED\u30C3\u30AF\u3092\u89E3\u9664"))};fe(),ce()};if(this.plugin.settings.tagColorRules.length===0){let E=h(),N=p(),k={tag:"",bgColor:E,textColor:N},P=async()=>{let O=k.tag.trim()!=="",U=k.bgColor!==E,M=k.textColor!==N,ee=k.accentColor!==void 0,Z=k.subColor!==void 0;(O||U||M||ee||Z)&&(this.plugin.settings.tagColorRules.push({...k}),await this.plugin.saveSettings(),this.plugin.applyTagColorRules(),this.plugin.refreshAllWrDecorations(),b())};z(!0,1,0,k,async O=>{k.tag=O,await P()},async O=>{k.bgColor=O,await P()},async O=>{k.textColor=O,await P()},async O=>{O===void 0?delete k.accentColor:k.accentColor=O,await P()},async O=>{O===void 0?(delete k.subColor,delete k.subColorScope):k.subColor=O,await P()},async(O,U)=>{var ee;let M=(ee=k.subColorScope)!=null?ee:{buttons:!0,quote:!0,list:!0,ogp:!0};M[O]=U,k.subColorScope=M,await P()},null),m.empty();return}let A=this.plugin.settings.tagColorRules.length;this.plugin.settings.tagColorRules.forEach((E,N)=>{let k=A===1?{kind:"reset",handler:async()=>{E.tag="",E.bgColor=h(),E.textColor=p(),delete E.accentColor,delete E.subColor,delete E.subColorScope,await this.plugin.saveSettings(),this.plugin.applyTagColorRules(),this.plugin.refreshAllWrDecorations(),b()}}:{kind:"delete",handler:async()=>{this.plugin.settings.tagColorRules.splice(N,1),await this.plugin.saveSettings(),this.plugin.applyTagColorRules(),this.plugin.refreshAllWrDecorations(),b()}};z(N===0,N+1,N,E,async P=>{E.tag=P,await this.plugin.saveSettings(),this.plugin.applyTagColorRules(),this.plugin.refreshAllWrDecorations()},async P=>{E.bgColor=P,await this.plugin.saveSettings(),this.plugin.applyTagColorRules()},async P=>{E.textColor=P,await this.plugin.saveSettings(),this.plugin.applyTagColorRules()},async P=>{P===void 0?delete E.accentColor:E.accentColor=P,await this.plugin.saveSettings(),this.plugin.applyTagColorRules()},async P=>{P===void 0?(delete E.subColor,delete E.subColorScope):E.subColor=P,await this.plugin.saveSettings(),this.plugin.applyTagColorRules()},async(P,O)=>{var M;let U=(M=E.subColorScope)!=null?M:{buttons:!0,quote:!0,list:!0,ogp:!0};U[P]=O,E.subColorScope=U,await this.plugin.saveSettings(),this.plugin.applyTagColorRules()},k)}),m.empty(),new Y.Setting(m).addButton(E=>E.setButtonText("\u30EB\u30FC\u30EB\u3092\u8FFD\u52A0").setCta().onClick(async()=>{let N=this.plugin.settings.tagColorRules.length;this.plugin.settings.tagColorRules.push({tag:"",bgColor:V.bgColorLight,textColor:V.textColorLight}),this.unlockedRules.clear(),this.unlockedRules.add(N),await this.plugin.saveSettings(),this.plugin.applyTagColorRules(),b()}))},b=()=>{this.withScrollPreserved(()=>C())};C()}};var _=require("obsidian");tt();async function Fe(a,i,e){await a.vault.process(i,t=>{let n=t.split(`
-`);if(e<0||e>=n.length)return t;let s=n[e].match(/^((?:>\s?)*- \[)([ x])(\] .*)$/);return s?(n[e]=s[1]+(s[2]===" "?"x":" ")+s[3],n.join(`
-`)):t})}async function tn(a,i,e,t){let n=!1;return await a.vault.process(i,o=>{let s=o.split(`
-`);for(let l=0;l<s.length;l++){let d=s[l].match(/^(```wr\s+)(\S+)(.*)$/);if(d&&d[2].trim()===e)return d[3].includes(`^${t}`)?(n=!1,o):(s[l]=`${d[1]}${d[2]}${d[3]} ^${t}`,n=!0,s.join(`
-`))}return o}),n}async function nn(a,i,e){let n="```wr "+moment().format("YYYY-MM-DDTHH:mm:ss.SSSZ")+`
-`+e+"\n```";await a.vault.process(i,o=>{if(o.length===0)return n;let s=o.endsWith(`
+var __create = Object.create;
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __esm = (fn, res) => function __init() {
+  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+};
+var __commonJS = (cb, mod) => function __require() {
+  return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+};
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-`)?"":o.endsWith(`
-`)?`
-`:`
+// src/utils/blockSegmenter.ts
+function sanitizeLang(raw) {
+  const trimmed = raw.trim();
+  return LANG_SANITIZE_RE.test(trimmed) ? trimmed : "";
+}
+function parseBlocks(lines) {
+  const blocks = [];
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    const fenceMatch = line.match(CODE_FENCE_RE);
+    if (fenceMatch) {
+      const tildes = fenceMatch[2].length;
+      const lang = sanitizeLang(fenceMatch[3]);
+      const openLine = i;
+      let closeLine = lines.length - 1;
+      let foundClose = false;
+      for (let j = i + 1; j < lines.length; j++) {
+        const candidate = lines[j].match(CODE_FENCE_RE);
+        if (candidate && candidate[2].length >= tildes && candidate[3].trim() === "") {
+          closeLine = j;
+          foundClose = true;
+          break;
+        }
+      }
+      blocks.push({
+        kind: "codeblock",
+        fenceOpenLine: openLine,
+        fenceCloseLine: closeLine,
+        contentStartLine: openLine + 1,
+        contentEndLine: foundClose ? closeLine - 1 : closeLine,
+        lang,
+        fenceTildes: tildes
+      });
+      i = closeLine + 1;
+      continue;
+    }
+    const trimmed = line.trim();
+    if (trimmed.startsWith("$$")) {
+      const afterOpen = trimmed.slice(2);
+      const closeIdx = afterOpen.lastIndexOf("$$");
+      if (closeIdx > 0 && afterOpen.slice(closeIdx + 2).trim() === "") {
+        const tex = afterOpen.slice(0, closeIdx);
+        if (tex.length > 0) {
+          blocks.push({
+            kind: "mathblock",
+            fenceOpenLine: i,
+            fenceCloseLine: i,
+            contentStartLine: i,
+            contentEndLine: i,
+            singleLineMath: true,
+            singleLineMathTex: tex
+          });
+          i++;
+          continue;
+        }
+      }
+      if (trimmed === "$$" || trimmed.startsWith("$$") && !trimmed.slice(2).includes("$$")) {
+        const openLine = i;
+        let closeLine = lines.length - 1;
+        let foundClose = false;
+        for (let j = i + 1; j < lines.length; j++) {
+          const jTrim = lines[j].trim();
+          if (jTrim.endsWith("$$")) {
+            closeLine = j;
+            foundClose = true;
+            break;
+          }
+        }
+        blocks.push({
+          kind: "mathblock",
+          fenceOpenLine: openLine,
+          fenceCloseLine: closeLine,
+          contentStartLine: openLine + 1,
+          contentEndLine: foundClose ? closeLine - 1 : closeLine
+        });
+        i = closeLine + 1;
+        continue;
+      }
+    }
+    i++;
+  }
+  return blocks;
+}
+function segmentBlocks(text) {
+  const lines = text.split("\n");
+  const blocks = parseBlocks(lines);
+  const segments = [];
+  let cursor = 0;
+  for (const block of blocks) {
+    if (block.fenceOpenLine > cursor) {
+      const textLines = lines.slice(cursor, block.fenceOpenLine);
+      segments.push({
+        kind: "text",
+        text: textLines.join("\n"),
+        startLine: cursor
+      });
+    }
+    if (block.kind === "codeblock") {
+      const codeLines = block.contentEndLine >= block.contentStartLine ? lines.slice(block.contentStartLine, block.contentEndLine + 1) : [];
+      segments.push({
+        kind: "codeblock",
+        lang: block.lang || "",
+        code: codeLines.join("\n"),
+        startLine: block.fenceOpenLine,
+        endLine: block.fenceCloseLine,
+        fenceTildes: block.fenceTildes || 3
+      });
+    } else {
+      let tex;
+      if (block.singleLineMath) {
+        tex = block.singleLineMathTex || "";
+      } else {
+        const openLine = lines[block.fenceOpenLine].trim();
+        const texParts = [];
+        if (openLine !== "$$" && openLine.startsWith("$$")) {
+          texParts.push(openLine.slice(2));
+        }
+        if (block.contentEndLine >= block.contentStartLine) {
+          texParts.push(...lines.slice(block.contentStartLine, block.contentEndLine + 1));
+        }
+        if (block.fenceCloseLine !== block.fenceOpenLine) {
+          const closeLine = lines[block.fenceCloseLine];
+          const closeTrim = closeLine.trim();
+          if (closeTrim !== "$$" && closeTrim.endsWith("$$")) {
+            texParts.push(closeTrim.slice(0, -2));
+          }
+        }
+        tex = texParts.join("\n");
+      }
+      segments.push({
+        kind: "mathblock",
+        tex,
+        startLine: block.fenceOpenLine,
+        endLine: block.fenceCloseLine
+      });
+    }
+    cursor = block.fenceCloseLine + 1;
+  }
+  if (cursor < lines.length) {
+    const tailLines = lines.slice(cursor);
+    segments.push({
+      kind: "text",
+      text: tailLines.join("\n"),
+      startLine: cursor
+    });
+  }
+  return segments;
+}
+function findBlockRanges(lines) {
+  const blocks = parseBlocks(lines);
+  return blocks.map((b) => {
+    const range = {
+      kind: b.kind,
+      startLine: b.fenceOpenLine,
+      endLine: b.fenceCloseLine
+    };
+    if (b.kind === "codeblock") range.lang = b.lang;
+    return range;
+  });
+}
+function extractNonBlockText(text) {
+  const segments = segmentBlocks(text);
+  return segments.filter((s) => s.kind === "text").map((s) => s.text).join("\n");
+}
+var CODE_FENCE_RE, LANG_SANITIZE_RE;
+var init_blockSegmenter = __esm({
+  "src/utils/blockSegmenter.ts"() {
+    CODE_FENCE_RE = /^(\s*)(~{3,})(.*)$/;
+    LANG_SANITIZE_RE = /^[a-zA-Z0-9_+-]{0,32}$/;
+  }
+});
 
-`;return o+s+n})}var Ve=require("obsidian"),ze=Kn(wn(),1);function bn(a){var l;let i=(0,ze.getDailyNoteSettings)(),e=(i==null?void 0:i.format)||"YYYY-MM-DD",t=((l=i==null?void 0:i.folder)==null?void 0:l.trim())||"",n=a.format(e),o=n.endsWith(".md")?n:`${n}.md`,s=t?`${t}/${o}`:o;return{path:(0,Ve.normalizePath)(s),filename:n,format:e}}async function Lo(a,i){let e=i.lastIndexOf("/");if(e<=0)return;let t=i.substring(0,e);a.vault.getAbstractFileByPath(t)||await a.vault.createFolder(t)}function Se(a,i){let{path:e}=bn(i),t=a.vault.getAbstractFileByPath(e);return t instanceof Ve.TFile?t:null}async function yt(a,i){var d,c;let{path:e,filename:t,format:n}=bn(i),o=a.vault.getAbstractFileByPath(e);if(o instanceof Ve.TFile)return o;await Lo(a,e);let s=((c=(d=(0,ze.getDailyNoteSettings)())==null?void 0:d.template)==null?void 0:c.trim())||"",l="";if(s)try{let[u]=await(0,ze.getTemplateInfo)(s);l=u.replace(/{{\s*date\s*}}/gi,t).replace(/{{\s*time\s*}}/gi,moment().format("HH:mm")).replace(/{{\s*title\s*}}/gi,t).replace(/{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi,(f,g,v,L,T,w)=>{let m=moment(),C=i.clone().set({hour:m.get("hour"),minute:m.get("minute"),second:m.get("second")});return v&&C.add(parseInt(L,10),T),w?C.format(w.substring(1).trim()):C.format(n)}).replace(/{{\s*yesterday\s*}}/gi,i.clone().subtract(1,"day").format(n)).replace(/{{\s*tomorrow\s*}}/gi,i.clone().add(1,"day").format(n))}catch(u){l=""}return await a.vault.create(e,l)}Ie();var kn=[".png",".jpg",".jpeg",".gif",".webp",".svg",".bmp"],To=/(?:https?|obsidian):\/\/[^\s<>"'\]]+/g,$o=/^https?:\/\/(twitter\.com|x\.com)\/\w+\/status\/\d+/,Ye=/^([^\[\]\n#]+)#\^(wr-\d{17})$/;function re(a){try{let i=new URL(a);return["https:","http:","obsidian:"].includes(i.protocol)}catch(i){return!1}}function Et(a){try{let i=new URL(a);return["https:","http:"].includes(i.protocol)}catch(i){return!1}}function vt(a){return a.replace(/[.,;:!?)]+$/,"")}function nt(a){if($o.test(a))return"twitter";try{let i=new URL(a);if(i.protocol==="obsidian:"){let t=i.searchParams.get("file");if(t){let n=decodeURIComponent(t).toLowerCase();if(kn.some(o=>n.endsWith(o)))return"image"}return"generic"}let e=i.pathname.toLowerCase();if(kn.some(t=>e.endsWith(t)))return"image"}catch(i){}return"generic"}function yn(a){try{let i=new URL(a);if(i.protocol!=="obsidian:")return null;let e=i.searchParams.get("file");if(!e)return null;let t=decodeURIComponent(e);return t.split("/").pop()||t}catch(i){return null}}function Pe(a){let i=[],e=new Set;for(let t of a.matchAll(To)){let n=vt(t[0]);e.has(n)||(e.add(n),i.push({url:n,type:nt(n)}))}return i}function Ce(a,i,e){let t=[],n=new Set,o=Re(i);for(let s of o){if(s.kind==="codeblock"){let l=a.createDiv({cls:"wr-codeblock-display"});if(e.renderCodeBlock)e.renderCodeBlock(s.code,s.lang,l,s.fenceTildes);else{let c=l.createEl("pre").createEl("code");s.lang&&c.addClass(`language-${s.lang}`),c.textContent=s.code}continue}if(s.kind==="mathblock"){let l=a.createDiv({cls:"wr-math-display"});if(e.renderMathBlock)e.renderMathBlock(s.tex,l);else try{let{renderMath:d,finishRenderMath:c}=require("obsidian"),u=d(s.tex,!0);l.appendChild(u),c()}catch(d){l.textContent=s.tex}continue}Mo(a,s.text,s.startLine,e,t,n)}return t}function Mo(a,i,e,t,n,o){let s=i.split(`
-`),l=null,d=null,c=[],u=null,f=null,g=0;for(let v=0;v<s.length;v++){let L=s[v],T=L.match(/^((?:>\s?)+)(.*)$/),w=!T&&L.match(/^- \[([ x])\] (.*)$/),m=!T&&!w&&L.match(/^- (.+)$/),C=!T&&!w&&!m&&L.match(/^\d+\.\s?(.+)$/);if(T){l=null,d=null;let b=(T[1].match(/>/g)||[]).length,r=T[2];for(;c.length>b;)c.pop();for(;c.length<b;){let F=(c.length>0?c[c.length-1]:a).createEl("blockquote",{cls:"wr-blockquote"});c.push(F)}let h=c[c.length-1],p=r.match(/^- \[([ x])\] (.*)$/),y=!p&&r.match(/^- (.+)$/),D=!p&&!y&&r.match(/^\d+\.\s?(.+)$/);if(p||y){(u===null||f!=="ul"||g!==b||u.parentElement!==h)&&(u=h.createEl("ul",{cls:"wr-bullet-list"}),f="ul",g=b);let R=u.createEl("li");if(p){R.addClass("wr-check-item");let F=R.createEl("input",{attr:{type:"checkbox"}});if(p[1]==="x"&&(F.checked=!0),t.onCheckToggle){let K=e+v,z=t.onCheckToggle;F.addEventListener("click",()=>{z(K,F.checked)})}else F.disabled=!0;let Q=p[1]==="x"&&t.checkStrikethrough?R.createEl("span",{cls:"wr-check-done"}):R;be(Q,p[2],t,n,o)}else y&&be(R,y[1],t,n,o)}else if(D){(u===null||f!=="ol"||g!==b||u.parentElement!==h)&&(u=h.createEl("ol",{cls:"wr-ordered-list"}),f="ol",g=b);let R=u.createEl("li");be(R,D[1],t,n,o)}else u=null,f=null,h.childNodes.length>0&&h.createEl("br"),be(h,r,t,n,o)}else if(w||m){c=[],u=null,f=null,d!=="ul"&&(l=a.createEl("ul",{cls:"wr-bullet-list"}),d="ul");let b=l.createEl("li");if(w){b.addClass("wr-check-item");let r=b.createEl("input",{attr:{type:"checkbox"}});if(w[1]==="x"&&(r.checked=!0),t.onCheckToggle){let p=e+v,y=t.onCheckToggle;r.addEventListener("click",()=>{y(p,r.checked)})}else r.disabled=!0;let h=w[1]==="x"&&t.checkStrikethrough?b.createEl("span",{cls:"wr-check-done"}):b;be(h,w[2],t,n,o)}else m&&be(b,m[1],t,n,o)}else if(C){c=[],u=null,f=null,d!=="ol"&&(l=a.createEl("ol",{cls:"wr-ordered-list"}),d="ol");let b=l.createEl("li");be(b,C[1],t,n,o)}else{let b=l!==null||c.length>0;l=null,d=null,c=[],u=null,f=null,v>0&&!b&&a.appendText(`
-`),be(a,L,t,n,o)}}}var So=/\.(png|jpg|jpeg|gif|svg|webp|bmp)$/i;function be(a,i,e,t,n){let o=/(\$[^$]+\$|`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*|~~[^~]+~~|==[^=]+=+|!\[\[[^\]]+\]\]|\[\[[^\]]+\]\]|\[[^\[\]\n]+\]\((?:https?|obsidian):\/\/[^\s)]+\)|#[^\s#]+|(?:https?|obsidian):\/\/[^\s<>"'\]]+)/g,s=i.split(o);for(let l of s){if(!l)continue;let d=l.match(/^`([^`]+)`$/);if(d){a.createEl("code",{cls:"wr-inline-code",text:d[1]});continue}let c=l.match(/^\*\*(.+)\*\*$/);if(c){a.createEl("strong",{text:c[1]});continue}let u=l.match(/^\*(.+)\*$/);if(u){a.createEl("em",{text:u[1]});continue}let f=l.match(/^~~(.+)~~$/);if(f){a.createEl("del",{text:f[1]});continue}let g=l.match(/^==(.+)==$/);if(g){a.createEl("mark",{cls:"wr-highlight",text:g[1]});continue}let v=l.match(/^\[([^\[\]\n]+)\]\(((?:https?|obsidian):\/\/[^\s)]+)\)$/);if(v){let w=v[1],m=v[2];if(re(m)){let C=a.createEl("a",{cls:"wr-url",text:w,href:m});C.setAttr("target","_blank"),C.setAttr("rel","noopener"),C.addEventListener("click",b=>{b.preventDefault(),window.open(m,"_blank")}),n.has(m)||(n.add(m),t.push({url:m,type:nt(m)}))}else a.appendText(l);continue}let L=l.match(/^!\[\[(.+)\]\]$/),T=!L&&l.match(/^\[\[(.+)\]\]$/);if(L){let w=L[1];if(So.test(w)&&e.resolveImagePath){let m=e.resolveImagePath(w);m?a.createEl("img",{cls:"wr-embed-img",attr:{src:m,alt:w,loading:"lazy"}}):a.createEl("span",{cls:"wr-embed-missing",text:`![[${w}]]`})}else{let C=(e.resolveLinkTarget?e.resolveLinkTarget(w):!0)?"wr-internal-link":"wr-internal-link wr-internal-link-unresolved",b=a.createEl("a",{cls:C,text:w});if(e.onInternalLinkClick){let r=e.onInternalLinkClick;b.addEventListener("click",h=>{h.preventDefault(),h.stopPropagation(),r(w)})}}}else if(T){let w=T[1],m=w.match(Ye);if(m&&e.renderQuoteCard){let C=a.createEl("span",{cls:"wr-quote-card-slot"});e.renderQuoteCard(C,m[1],m[2])}else{let b=(e.resolveLinkTarget?e.resolveLinkTarget(w):!0)?"wr-internal-link":"wr-internal-link wr-internal-link-unresolved",r=a.createEl("a",{cls:b,text:w});if(e.onInternalLinkClick){let h=e.onInternalLinkClick;r.addEventListener("click",p=>{p.preventDefault(),p.stopPropagation(),h(w)})}}}else if(l.match(/^#[^\s#]+$/)){let w=a.createEl("span",{cls:"wr-tag",text:l});if(e.onTagClick){let m=e.onTagClick;w.addEventListener("click",C=>{C.stopPropagation(),m(l)})}}else if(l.match(/^\$([^$]+)\$$/)){let w=l.slice(1,-1),m=a.createEl("span",{cls:"wr-math"});try{let{renderMath:C,finishRenderMath:b}=require("obsidian"),r=C(w,!1);m.appendChild(r),b()}catch(C){m.textContent=l}}else if(l.match(/^obsidian:\/\//)){let w=vt(l),m=l.slice(w.length),C=yn(w),b=nt(w),r=b==="image",h=!!(C&&e.resolveImagePath&&e.resolveImagePath(C)),p=r&&h,y=r&&!h;if(p)m&&a.appendText(m);else{let D=C||w,R=y?"wr-internal-link wr-internal-link-unresolved":"wr-internal-link";a.createEl("a",{cls:R,text:D}).addEventListener("click",Q=>{Q.preventDefault(),Q.stopPropagation(),re(w)&&window.open(w)}),m&&a.appendText(m)}n.has(w)||(n.add(w),t.push({url:w,type:b}))}else if(l.match(/^https?:\/\//)){let w=vt(l),m=l.slice(w.length);if(re(w)){let C=a.createEl("a",{cls:"wr-url",text:w,href:w});C.setAttr("target","_blank"),C.setAttr("rel","noopener"),C.addEventListener("click",b=>{b.preventDefault(),window.open(w,"_blank")}),m&&a.appendText(m),n.has(w)||(n.add(w),t.push({url:w,type:nt(w)}))}else a.appendText(l)}else a.appendText(l)}}function oe(a,i,e){let t=document.createElement(a);return i&&(t.className=i),e&&(t.textContent=e),t}function Ct(a,i){a.addEventListener("click",e=>{e.preventDefault(),e.stopPropagation(),re(i)&&window.open(i,"_blank")})}function ot(a,i,e){let t=oe("a","wr-media-link");t.href=i,t.target="_blank",t.rel="noopener",Ct(t,i);let n=oe("img","wr-inline-img");if(Et(i))n.src=i;else if(i.startsWith("obsidian://")&&e){let o=yn(i),s=o?e(o):null;s&&(n.src=s)}n.loading="lazy",t.appendChild(n),a.appendChild(t)}function rt(a,i){let e=oe("a","wr-ogp-card");if(e.href=i.url,e.target="_blank",e.rel="noopener",Ct(e,i.url),i.image&&Et(i.image)){let o=oe("img","wr-ogp-thumb");o.src=i.image,o.loading="lazy",e.appendChild(o)}let t=oe("div","wr-ogp-body");i.title&&t.appendChild(oe("div","wr-ogp-title",i.title)),i.description&&t.appendChild(oe("div","wr-ogp-desc",i.description));let n=i.siteName||Po(i.url);t.appendChild(oe("div","wr-ogp-site",n)),e.appendChild(t),a.appendChild(e)}function it(a,i){let e=oe("a","wr-ogp-card wr-twitter-card");if(e.href=i.url,e.target="_blank",e.rel="noopener",Ct(e,i.url),i.image&&Et(i.image)){let n=oe("img","wr-ogp-thumb");n.src=i.image,n.loading="lazy",e.appendChild(n)}let t=oe("div","wr-ogp-body");i.title&&t.appendChild(oe("div","wr-ogp-title",i.title)),i.description&&t.appendChild(oe("div","wr-ogp-desc",i.description)),t.appendChild(oe("div","wr-ogp-site","X (Twitter)")),e.appendChild(t),a.appendChild(e)}function st(a,i,e,t){for(let n of i)if(n.type==="image")ot(a,n.url,t);else{if(n.url.startsWith("obsidian://"))continue;{let o=oe("div","wr-ogp-loading");a.appendChild(o),e.fetchOGP(n.url).then(s=>{if(o.textContent="",!s||!s.title&&!s.description){o.remove();return}n.type==="twitter"?it(o,s):rt(o,s)})}}}function Po(a){try{return new URL(a).hostname.replace(/^www\./,"")}catch(i){return a}}var me=require("obsidian");tt();var ke=new Map,qo=8;function Do(a){return ke.get(a)}function No(a,i){for(ke.has(a)&&ke.delete(a),ke.set(a,i);ke.size>qo;){let e=ke.keys().next().value;if(e===void 0)break;ke.delete(e)}}function St(a){ke.delete(a)}function Pt(a,i,e,t){let n=i.basename;document.querySelectorAll(`a.wr-quote-card[data-quote-file="${CSS.escape(n)}"]`).forEach(s=>{var g;let l=s.parentElement;if(!l)return;let d=s.dataset.quoteFile,c=s.dataset.quoteBlock,u=(g=s.dataset.quoteContext)!=null?g:"",f=s.dataset.quoteTsFormat;!d||!c||(s.remove(),xe(l,d,c,a,u,{timestampFormat:f,resolveRuleClass:e,resolveRuleAccent:t}))})}function xt(a,i){if(!i.startsWith("wr-"))return!1;let e=i.slice(3);return a.time.replace(/[-:.TZ+]/g,"").slice(0,17)===e}var Ro="YYYY/MM/DD HH:mm";function Io(a,i){return moment(a).format(i||Ro)}var Fo=/[\s]*\[\[[^\[\]]+#\^wr-\d{17}\]\][\s]*/g,Lt="QT:",Ao="QT: ...";function Oo(a){return a.replace(Fo,` ${Lt}`)}var Ho=/!\[\[[^\[\]]+\.(?:png|jpe?g|gif|webp|svg|bmp)\]\]/gi,Tt="@@WR_IMAGE_EMBED@@";function Bo(a){return a.replace(Ho,Tt)}var Wo=/\$\$[\s\S]+?\$\$/g,$t="@@WR_MATH_BLOCK@@";function _o(a){return a.replace(Wo,$t)}var Uo=/(?:```|~~~)[\s\S]+?(?:```|~~~)/g,Mt="@@WR_CODE_BLOCK@@";function Vo(a){return a.replace(Uo,Mt)}function zo(a){let i=document.createTreeWalker(a,NodeFilter.SHOW_TEXT),e=[],t;for(;t=i.nextNode();)t.data.includes(Tt)&&e.push(t);for(let n of e){let o=n.parentNode;if(!o)continue;let s=n.data.split(Tt),l=document.createDocumentFragment();s.forEach((d,c)=>{if(d&&l.appendChild(document.createTextNode(d)),c<s.length-1){let u=document.createElement("span");u.className="wr-quote-image-marker";let f=document.createElement("span");f.className="wr-quote-image-marker-icon",(0,me.setIcon)(f,"image"),u.appendChild(f),u.appendChild(document.createTextNode(" image")),l.appendChild(u)}}),o.replaceChild(l,n)}}function Yo(a){let i=document.createTreeWalker(a,NodeFilter.SHOW_TEXT),e=[],t;for(;t=i.nextNode();)t.data.includes($t)&&e.push(t);for(let n of e){let o=n.parentNode;if(!o)continue;let s=n.data.split($t),l=document.createDocumentFragment();s.forEach((d,c)=>{if(d&&l.appendChild(document.createTextNode(d)),c<s.length-1){let u=document.createElement("span");u.className="wr-quote-math-marker";let f=document.createElement("span");f.className="wr-quote-math-marker-icon",(0,me.setIcon)(f,"sigma"),u.appendChild(f),u.appendChild(document.createTextNode(" math")),l.appendChild(u)}}),o.replaceChild(l,n)}}function jo(a){let i=document.createTreeWalker(a,NodeFilter.SHOW_TEXT),e=[],t;for(;t=i.nextNode();)t.data.includes(Mt)&&e.push(t);for(let n of e){let o=n.parentNode;if(!o)continue;let s=n.data.split(Mt),l=document.createDocumentFragment();s.forEach((d,c)=>{if(d&&l.appendChild(document.createTextNode(d)),c<s.length-1){let u=document.createElement("span");u.className="wr-quote-code-marker";let f=document.createElement("span");f.className="wr-quote-code-marker-icon",(0,me.setIcon)(f,"code"),u.appendChild(f),u.appendChild(document.createTextNode(" code")),l.appendChild(u)}}),o.replaceChild(l,n)}}function Qo(a){let i=document.createTreeWalker(a,NodeFilter.SHOW_TEXT),e=[],t;for(;t=i.nextNode();)t.data.includes(Lt)&&e.push(t);for(let n of e){let o=n.parentNode;if(!o)continue;let s=n.data.split(Lt),l=document.createDocumentFragment();s.forEach((d,c)=>{if(d&&l.appendChild(document.createTextNode(d)),c<s.length-1){let u=document.createElement("span");u.className="wr-nested-quote-marker",u.textContent=Ao,l.appendChild(u)}}),o.replaceChild(l,n)}}var Go=3,vn=200;function Xo(a,i,e){let n=Vo(_o(Bo(Oo(i)))).split(`
-`).filter(s=>s.trim().length>0).slice(0,Go),o={resolveImagePath:s=>{let l=e.metadataCache.getFirstLinkpathDest(s,"");return l?e.vault.getResourcePath(l):null},resolveLinkTarget:s=>e.metadataCache.getFirstLinkpathDest(s,"")!==null};for(let s of n){let l=s.length>vn?s.slice(0,vn)+"\u2026":s,d=a.createDiv({cls:"wr-quote-card-line"}),c=l.match(/^- \[([ x])\] (.*)$/),u=!c&&l.match(/^- (.+)$/),f=!c&&!u&&l.match(/^(\d+)\.\s?(.+)$/);if(c){d.createSpan({cls:"wr-quote-card-marker-slot wr-quote-card-marker-check"}).createSpan({cls:c[1]==="x"?"wr-quote-card-check wr-quote-card-check-done":"wr-quote-card-check"});let v=d.createSpan({cls:"wr-quote-card-line-text"});Ce(v,c[2],o)}else if(u){let g=d.createSpan({cls:"wr-quote-card-marker-slot wr-quote-card-marker-bullet"});g.textContent="\u30FB";let v=d.createSpan({cls:"wr-quote-card-line-text"});Ce(v,u[1],o)}else if(f){let g=d.createSpan({cls:"wr-quote-card-marker-slot wr-quote-card-marker-ol"});g.textContent=`${f[1]}.`;let v=d.createSpan({cls:"wr-quote-card-line-text"});Ce(v,f[2],o)}else{let g=d.createSpan({cls:"wr-quote-card-line-text"});Ce(g,l,o)}}Qo(a),zo(a),Yo(a),jo(a)}function Ko(a,i,e,t,n,o){i.empty(),Xo(i,t.content,n),e.textContent=Io(t.time,o)}function je(a,i,e){a.classList.add("wr-quote-card-dead"),i.textContent="(\u5143\u6295\u7A3F\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093)",e.textContent=""}function Zo(a,i,e){let t=[80,250,500,900],n=!1;for(let o of t)setTimeout(()=>{if(n)return;let s=Jo(a,i);if(s.length!==0){n=!0;for(let l of s){l.classList.remove("wr-quote-jump-flash"),l.offsetWidth;let d=Array.from(l.classList).find(u=>/^wr-tag-rule-\d+$/.test(u)),c=d&&e?e(d):null;if(c){let u=parseInt(c.slice(1,3),16),f=parseInt(c.slice(3,5),16),g=parseInt(c.slice(5,7),16);l.style.setProperty("--wr-flash-color",`rgba(${u}, ${f}, ${g}, 0.22)`)}else l.style.removeProperty("--wr-flash-color");l.classList.add("wr-quote-jump-flash"),setTimeout(()=>{l.classList.remove("wr-quote-jump-flash"),l.style.removeProperty("--wr-flash-color")},1600)}}},o)}function Jo(a,i){let e=Array.from(document.querySelectorAll(`.wr-block-id-${a}`));return me.Platform.isMobile?me.Platform.isPhone?e.filter(o=>!o.classList.contains("wr-card")):e.filter(o=>o.classList.contains("wr-card")).some(o=>{let s=o.closest(".workspace-drawer");return s!==null&&!s.classList.contains("is-pinned")})?e.filter(o=>!o.classList.contains("wr-card")):e:e}function xe(a,i,e,t,n,o){let s=o==null?void 0:o.localMemos,l=o==null?void 0:o.timestampFormat,d=o==null?void 0:o.resolveRuleClass,c=o==null?void 0:o.resolveRuleAccent,u=a.createEl("a",{cls:"wr-quote-card"});u.setAttr("href",`${i}#^${e}`),u.dataset.quoteFile=i,u.dataset.quoteBlock=e,u.dataset.quoteContext=n,l&&(u.dataset.quoteTsFormat=l);let f=u.createDiv({cls:"wr-quote-card-body",text:"\u2026"}),g=u.createDiv({cls:"wr-quote-card-meta"}),v=t.metadataCache.getFirstLinkpathDest(i,n);if(!(v instanceof me.TFile)){je(u,f,g);return}let L=w=>{if(Ko(u,f,g,w,t,l),d){Array.from(u.classList).filter(C=>/^wr-tag-rule-\d+$/.test(C)).forEach(C=>u.classList.remove(C));let m=d(w.content);m&&u.classList.add(m)}u.addEventListener("click",async m=>{m.preventDefault(),m.stopPropagation();let C=require("obsidian");if(t.workspace.getActiveViewOfType(C.MarkdownView))await t.workspace.openLinkText(`${i}#^${e}`,n,!1);else{let r=t.workspace.getMostRecentLeaf();r&&r.view instanceof C.MarkdownView?(t.workspace.setActiveLeaf(r,{focus:!0}),await t.workspace.openLinkText(`${i}#^${e}`,n,!1)):await t.workspace.openLinkText(`${i}#^${e}`,n,!0)}Zo(e,t,c)})};if(s){let w=s.find(m=>xt(m,e));if(w){L(w);return}je(u,f,g);return}let T=Do(v.path);if(T){let w=T.find(m=>xt(m,e));if(w){L(w);return}je(u,f,g);return}t.vault.cachedRead(v).then(w=>{let m=Ee(w);No(v.path,m);let C=m.find(b=>xt(b,e));C?L(C):je(u,f,g)}).catch(()=>{je(u,f,g)})}var er="Pasted Image",En={"image/png":"png","image/jpeg":"jpg","image/gif":"gif","image/webp":"webp","image/svg+xml":"svg","image/bmp":"bmp"};function qt(a){return a.type.startsWith("image/")}function tr(a){if(En[a.type])return En[a.type];let i=/^image\/(.+)$/.exec(a.type);if(i)return i[1];let e=/\.([a-zA-Z0-9]+)$/.exec(a.name);return e?e[1].toLowerCase():"png"}async function Cn(a,i,e){let t=await i.arrayBuffer(),n=tr(i),o=`${er} ${moment().format("YYYYMMDDHHmmss")}`,l=await a.vault.getAvailablePathForAttachments(o,n,e);return await a.vault.createBinary(l,t)}function xn(a){return`![[${a.name}]]`}function nr(a,i){if(!a)return i;let e=a.match(/^([\s\S]*?)\n?(\[\[[^\[\]]+#\^wr-\d{17}\]\])\s*$/);if(e){let o=e[1].replace(/\n+$/,""),s=e[2];return o?`${o}
-${i}
-${s}`:`${i}
-${s}`}let t=a.split(`
-`),n=t.length;for(let o=t.length-1;o>=0;o--)if(/^>(\s|$)/.test(t[o]))n=o;else if(t[o].trim()===""&&n===o+1)n=o;else break;if(n<t.length){let o=t.slice(0,n),s=t.slice(n),l=o.join(`
-`).replace(/\n+$/,""),d=s.join(`
-`).replace(/^\n+/,"");return l?`${l}
-${i}
+// src/utils/memoParser.ts
+var memoParser_exports = {};
+__export(memoParser_exports, {
+  parseMemos: () => parseMemos
+});
+function parseMemos(fileContent) {
+  const memos = [];
+  const lines = fileContent.split("\n");
+  let i = 0;
+  while (i < lines.length) {
+    const openMatch = lines[i].trim().match(OPENING_REGEX);
+    if (openMatch) {
+      const lineStart = i;
+      const rawLines = [lines[i]];
+      const time = openMatch[1].split(/\s/)[0];
+      i++;
+      const bodyLines = [];
+      while (i < lines.length && lines[i].trim() !== "```") {
+        bodyLines.push(lines[i]);
+        rawLines.push(lines[i]);
+        i++;
+      }
+      if (i < lines.length) {
+        rawLines.push(lines[i]);
+        i++;
+      }
+      const content = bodyLines.join("\n").trim();
+      const tagSource = extractNonBlockText(content);
+      const tags = tagSource.match(/#[^\s#]+/g) || [];
+      memos.push({
+        time,
+        tags,
+        content,
+        rawBlock: rawLines.join("\n"),
+        lineStart,
+        lineEnd: lineStart + rawLines.length - 1
+      });
+    } else {
+      i++;
+    }
+  }
+  return memos.reverse();
+}
+var OPENING_REGEX;
+var init_memoParser = __esm({
+  "src/utils/memoParser.ts"() {
+    init_blockSegmenter();
+    OPENING_REGEX = /^```wr\s+(.+)$/;
+  }
+});
 
-${d}`:`${i}
+// node_modules/obsidian-daily-notes-interface/dist/main.js
+var require_main = __commonJS({
+  "node_modules/obsidian-daily-notes-interface/dist/main.js"(exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var obsidian = require("obsidian");
+    var DEFAULT_DAILY_NOTE_FORMAT = "YYYY-MM-DD";
+    var DEFAULT_WEEKLY_NOTE_FORMAT = "gggg-[W]ww";
+    var DEFAULT_MONTHLY_NOTE_FORMAT = "YYYY-MM";
+    var DEFAULT_QUARTERLY_NOTE_FORMAT = "YYYY-[Q]Q";
+    var DEFAULT_YEARLY_NOTE_FORMAT = "YYYY";
+    function shouldUsePeriodicNotesSettings(periodicity) {
+      var _a, _b;
+      const periodicNotes = window.app.plugins.getPlugin("periodic-notes");
+      return periodicNotes && ((_b = (_a = periodicNotes.settings) == null ? void 0 : _a[periodicity]) == null ? void 0 : _b.enabled);
+    }
+    function getDailyNoteSettings2() {
+      var _a, _b, _c, _d;
+      try {
+        const { internalPlugins, plugins } = window.app;
+        if (shouldUsePeriodicNotesSettings("daily")) {
+          const { format: format2, folder: folder2, template: template2 } = ((_b = (_a = plugins.getPlugin("periodic-notes")) == null ? void 0 : _a.settings) == null ? void 0 : _b.daily) || {};
+          return {
+            format: format2 || DEFAULT_DAILY_NOTE_FORMAT,
+            folder: (folder2 == null ? void 0 : folder2.trim()) || "",
+            template: (template2 == null ? void 0 : template2.trim()) || ""
+          };
+        }
+        const { folder, format, template } = ((_d = (_c = internalPlugins.getPluginById("daily-notes")) == null ? void 0 : _c.instance) == null ? void 0 : _d.options) || {};
+        return {
+          format: format || DEFAULT_DAILY_NOTE_FORMAT,
+          folder: (folder == null ? void 0 : folder.trim()) || "",
+          template: (template == null ? void 0 : template.trim()) || ""
+        };
+      } catch (err) {
+        console.info("No custom daily note settings found!", err);
+      }
+    }
+    function getWeeklyNoteSettings() {
+      var _a, _b, _c, _d, _e, _f, _g;
+      try {
+        const pluginManager = window.app.plugins;
+        const calendarSettings = (_a = pluginManager.getPlugin("calendar")) == null ? void 0 : _a.options;
+        const periodicNotesSettings = (_c = (_b = pluginManager.getPlugin("periodic-notes")) == null ? void 0 : _b.settings) == null ? void 0 : _c.weekly;
+        if (shouldUsePeriodicNotesSettings("weekly")) {
+          return {
+            format: periodicNotesSettings.format || DEFAULT_WEEKLY_NOTE_FORMAT,
+            folder: ((_d = periodicNotesSettings.folder) == null ? void 0 : _d.trim()) || "",
+            template: ((_e = periodicNotesSettings.template) == null ? void 0 : _e.trim()) || ""
+          };
+        }
+        const settings = calendarSettings || {};
+        return {
+          format: settings.weeklyNoteFormat || DEFAULT_WEEKLY_NOTE_FORMAT,
+          folder: ((_f = settings.weeklyNoteFolder) == null ? void 0 : _f.trim()) || "",
+          template: ((_g = settings.weeklyNoteTemplate) == null ? void 0 : _g.trim()) || ""
+        };
+      } catch (err) {
+        console.info("No custom weekly note settings found!", err);
+      }
+    }
+    function getMonthlyNoteSettings() {
+      var _a, _b, _c, _d;
+      const pluginManager = window.app.plugins;
+      try {
+        const settings = shouldUsePeriodicNotesSettings("monthly") && ((_b = (_a = pluginManager.getPlugin("periodic-notes")) == null ? void 0 : _a.settings) == null ? void 0 : _b.monthly) || {};
+        return {
+          format: settings.format || DEFAULT_MONTHLY_NOTE_FORMAT,
+          folder: ((_c = settings.folder) == null ? void 0 : _c.trim()) || "",
+          template: ((_d = settings.template) == null ? void 0 : _d.trim()) || ""
+        };
+      } catch (err) {
+        console.info("No custom monthly note settings found!", err);
+      }
+    }
+    function getQuarterlyNoteSettings() {
+      var _a, _b, _c, _d;
+      const pluginManager = window.app.plugins;
+      try {
+        const settings = shouldUsePeriodicNotesSettings("quarterly") && ((_b = (_a = pluginManager.getPlugin("periodic-notes")) == null ? void 0 : _a.settings) == null ? void 0 : _b.quarterly) || {};
+        return {
+          format: settings.format || DEFAULT_QUARTERLY_NOTE_FORMAT,
+          folder: ((_c = settings.folder) == null ? void 0 : _c.trim()) || "",
+          template: ((_d = settings.template) == null ? void 0 : _d.trim()) || ""
+        };
+      } catch (err) {
+        console.info("No custom quarterly note settings found!", err);
+      }
+    }
+    function getYearlyNoteSettings() {
+      var _a, _b, _c, _d;
+      const pluginManager = window.app.plugins;
+      try {
+        const settings = shouldUsePeriodicNotesSettings("yearly") && ((_b = (_a = pluginManager.getPlugin("periodic-notes")) == null ? void 0 : _a.settings) == null ? void 0 : _b.yearly) || {};
+        return {
+          format: settings.format || DEFAULT_YEARLY_NOTE_FORMAT,
+          folder: ((_c = settings.folder) == null ? void 0 : _c.trim()) || "",
+          template: ((_d = settings.template) == null ? void 0 : _d.trim()) || ""
+        };
+      } catch (err) {
+        console.info("No custom yearly note settings found!", err);
+      }
+    }
+    function join(...partSegments) {
+      let parts = [];
+      for (let i = 0, l = partSegments.length; i < l; i++) {
+        parts = parts.concat(partSegments[i].split("/"));
+      }
+      const newParts = [];
+      for (let i = 0, l = parts.length; i < l; i++) {
+        const part = parts[i];
+        if (!part || part === ".")
+          continue;
+        else
+          newParts.push(part);
+      }
+      if (parts[0] === "")
+        newParts.unshift("");
+      return newParts.join("/");
+    }
+    function basename(fullPath) {
+      let base = fullPath.substring(fullPath.lastIndexOf("/") + 1);
+      if (base.lastIndexOf(".") != -1)
+        base = base.substring(0, base.lastIndexOf("."));
+      return base;
+    }
+    async function ensureFolderExists(path) {
+      const dirs = path.replace(/\\/g, "/").split("/");
+      dirs.pop();
+      if (dirs.length) {
+        const dir = join(...dirs);
+        if (!window.app.vault.getAbstractFileByPath(dir)) {
+          await window.app.vault.createFolder(dir);
+        }
+      }
+    }
+    async function getNotePath(directory, filename) {
+      if (!filename.endsWith(".md")) {
+        filename += ".md";
+      }
+      const path = obsidian.normalizePath(join(directory, filename));
+      await ensureFolderExists(path);
+      return path;
+    }
+    async function getTemplateInfo2(template) {
+      const { metadataCache, vault } = window.app;
+      const templatePath = obsidian.normalizePath(template);
+      if (templatePath === "/") {
+        return Promise.resolve(["", null]);
+      }
+      try {
+        const templateFile = metadataCache.getFirstLinkpathDest(templatePath, "");
+        const contents = await vault.cachedRead(templateFile);
+        const IFoldInfo = window.app.foldManager.load(templateFile);
+        return [contents, IFoldInfo];
+      } catch (err) {
+        console.error(`Failed to read the daily note template '${templatePath}'`, err);
+        new obsidian.Notice("Failed to read the daily note template");
+        return ["", null];
+      }
+    }
+    function getDateUID(date, granularity = "day") {
+      const ts = date.clone().startOf(granularity).format();
+      return `${granularity}-${ts}`;
+    }
+    function removeEscapedCharacters(format) {
+      return format.replace(/\[[^\]]*\]/g, "");
+    }
+    function isFormatAmbiguous(format, granularity) {
+      if (granularity === "week") {
+        const cleanFormat = removeEscapedCharacters(format);
+        return /w{1,2}/i.test(cleanFormat) && (/M{1,4}/.test(cleanFormat) || /D{1,4}/.test(cleanFormat));
+      }
+      return false;
+    }
+    function getDateFromFile(file, granularity) {
+      return getDateFromFilename(file.basename, granularity);
+    }
+    function getDateFromPath(path, granularity) {
+      return getDateFromFilename(basename(path), granularity);
+    }
+    function getDateFromFilename(filename, granularity) {
+      const getSettings = {
+        day: getDailyNoteSettings2,
+        week: getWeeklyNoteSettings,
+        month: getMonthlyNoteSettings,
+        quarter: getQuarterlyNoteSettings,
+        year: getYearlyNoteSettings
+      };
+      const format = getSettings[granularity]().format.split("/").pop();
+      const noteDate = window.moment(filename, format, true);
+      if (!noteDate.isValid()) {
+        return null;
+      }
+      if (isFormatAmbiguous(format, granularity)) {
+        if (granularity === "week") {
+          const cleanFormat = removeEscapedCharacters(format);
+          if (/w{1,2}/i.test(cleanFormat)) {
+            return window.moment(
+              filename,
+              // If format contains week, remove day & month formatting
+              format.replace(/M{1,4}/g, "").replace(/D{1,4}/g, ""),
+              false
+            );
+          }
+        }
+      }
+      return noteDate;
+    }
+    var DailyNotesFolderMissingError = class extends Error {
+    };
+    async function createDailyNote(date) {
+      const app = window.app;
+      const { vault } = app;
+      const moment2 = window.moment;
+      const { template, format, folder } = getDailyNoteSettings2();
+      const [templateContents, IFoldInfo] = await getTemplateInfo2(template);
+      const filename = date.format(format);
+      const normalizedPath = await getNotePath(folder, filename);
+      try {
+        const createdFile = await vault.create(normalizedPath, templateContents.replace(/{{\s*date\s*}}/gi, filename).replace(/{{\s*time\s*}}/gi, moment2().format("HH:mm")).replace(/{{\s*title\s*}}/gi, filename).replace(/{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi, (_, _timeOrDate, calc, timeDelta, unit, momentFormat) => {
+          const now = moment2();
+          const currentDate = date.clone().set({
+            hour: now.get("hour"),
+            minute: now.get("minute"),
+            second: now.get("second")
+          });
+          if (calc) {
+            currentDate.add(parseInt(timeDelta, 10), unit);
+          }
+          if (momentFormat) {
+            return currentDate.format(momentFormat.substring(1).trim());
+          }
+          return currentDate.format(format);
+        }).replace(/{{\s*yesterday\s*}}/gi, date.clone().subtract(1, "day").format(format)).replace(/{{\s*tomorrow\s*}}/gi, date.clone().add(1, "d").format(format)));
+        app.foldManager.save(createdFile, IFoldInfo);
+        return createdFile;
+      } catch (err) {
+        console.error(`Failed to create file: '${normalizedPath}'`, err);
+        new obsidian.Notice("Unable to create new file.");
+      }
+    }
+    function getDailyNote(date, dailyNotes) {
+      var _a;
+      return (_a = dailyNotes[getDateUID(date, "day")]) != null ? _a : null;
+    }
+    function getAllDailyNotes() {
+      const { vault } = window.app;
+      const { folder } = getDailyNoteSettings2();
+      const dailyNotesFolder = vault.getAbstractFileByPath(obsidian.normalizePath(folder));
+      if (!dailyNotesFolder) {
+        throw new DailyNotesFolderMissingError("Failed to find daily notes folder");
+      }
+      const dailyNotes = {};
+      obsidian.Vault.recurseChildren(dailyNotesFolder, (note) => {
+        if (note instanceof obsidian.TFile) {
+          const date = getDateFromFile(note, "day");
+          if (date) {
+            const dateString = getDateUID(date, "day");
+            dailyNotes[dateString] = note;
+          }
+        }
+      });
+      return dailyNotes;
+    }
+    var WeeklyNotesFolderMissingError = class extends Error {
+    };
+    function getDaysOfWeek() {
+      const { moment: moment2 } = window;
+      let weekStart = moment2.localeData()._week.dow;
+      const daysOfWeek = [
+        "sunday",
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday"
+      ];
+      while (weekStart) {
+        daysOfWeek.push(daysOfWeek.shift());
+        weekStart--;
+      }
+      return daysOfWeek;
+    }
+    function getDayOfWeekNumericalValue(dayOfWeekName) {
+      return getDaysOfWeek().indexOf(dayOfWeekName.toLowerCase());
+    }
+    async function createWeeklyNote(date) {
+      const { vault } = window.app;
+      const { template, format, folder } = getWeeklyNoteSettings();
+      const [templateContents, IFoldInfo] = await getTemplateInfo2(template);
+      const filename = date.format(format);
+      const normalizedPath = await getNotePath(folder, filename);
+      try {
+        const createdFile = await vault.create(normalizedPath, templateContents.replace(/{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi, (_, _timeOrDate, calc, timeDelta, unit, momentFormat) => {
+          const now = window.moment();
+          const currentDate = date.clone().set({
+            hour: now.get("hour"),
+            minute: now.get("minute"),
+            second: now.get("second")
+          });
+          if (calc) {
+            currentDate.add(parseInt(timeDelta, 10), unit);
+          }
+          if (momentFormat) {
+            return currentDate.format(momentFormat.substring(1).trim());
+          }
+          return currentDate.format(format);
+        }).replace(/{{\s*title\s*}}/gi, filename).replace(/{{\s*time\s*}}/gi, window.moment().format("HH:mm")).replace(/{{\s*(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\s*:(.*?)}}/gi, (_, dayOfWeek, momentFormat) => {
+          const day = getDayOfWeekNumericalValue(dayOfWeek);
+          return date.weekday(day).format(momentFormat.trim());
+        }));
+        window.app.foldManager.save(createdFile, IFoldInfo);
+        return createdFile;
+      } catch (err) {
+        console.error(`Failed to create file: '${normalizedPath}'`, err);
+        new obsidian.Notice("Unable to create new file.");
+      }
+    }
+    function getWeeklyNote(date, weeklyNotes) {
+      var _a;
+      return (_a = weeklyNotes[getDateUID(date, "week")]) != null ? _a : null;
+    }
+    function getAllWeeklyNotes() {
+      const weeklyNotes = {};
+      if (!appHasWeeklyNotesPluginLoaded()) {
+        return weeklyNotes;
+      }
+      const { vault } = window.app;
+      const { folder } = getWeeklyNoteSettings();
+      const weeklyNotesFolder = vault.getAbstractFileByPath(obsidian.normalizePath(folder));
+      if (!weeklyNotesFolder) {
+        throw new WeeklyNotesFolderMissingError("Failed to find weekly notes folder");
+      }
+      obsidian.Vault.recurseChildren(weeklyNotesFolder, (note) => {
+        if (note instanceof obsidian.TFile) {
+          const date = getDateFromFile(note, "week");
+          if (date) {
+            const dateString = getDateUID(date, "week");
+            weeklyNotes[dateString] = note;
+          }
+        }
+      });
+      return weeklyNotes;
+    }
+    var MonthlyNotesFolderMissingError = class extends Error {
+    };
+    async function createMonthlyNote(date) {
+      const { vault } = window.app;
+      const { template, format, folder } = getMonthlyNoteSettings();
+      const [templateContents, IFoldInfo] = await getTemplateInfo2(template);
+      const filename = date.format(format);
+      const normalizedPath = await getNotePath(folder, filename);
+      try {
+        const createdFile = await vault.create(normalizedPath, templateContents.replace(/{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi, (_, _timeOrDate, calc, timeDelta, unit, momentFormat) => {
+          const now = window.moment();
+          const currentDate = date.clone().set({
+            hour: now.get("hour"),
+            minute: now.get("minute"),
+            second: now.get("second")
+          });
+          if (calc) {
+            currentDate.add(parseInt(timeDelta, 10), unit);
+          }
+          if (momentFormat) {
+            return currentDate.format(momentFormat.substring(1).trim());
+          }
+          return currentDate.format(format);
+        }).replace(/{{\s*date\s*}}/gi, filename).replace(/{{\s*time\s*}}/gi, window.moment().format("HH:mm")).replace(/{{\s*title\s*}}/gi, filename));
+        window.app.foldManager.save(createdFile, IFoldInfo);
+        return createdFile;
+      } catch (err) {
+        console.error(`Failed to create file: '${normalizedPath}'`, err);
+        new obsidian.Notice("Unable to create new file.");
+      }
+    }
+    function getMonthlyNote(date, monthlyNotes) {
+      var _a;
+      return (_a = monthlyNotes[getDateUID(date, "month")]) != null ? _a : null;
+    }
+    function getAllMonthlyNotes() {
+      const monthlyNotes = {};
+      if (!appHasMonthlyNotesPluginLoaded()) {
+        return monthlyNotes;
+      }
+      const { vault } = window.app;
+      const { folder } = getMonthlyNoteSettings();
+      const monthlyNotesFolder = vault.getAbstractFileByPath(obsidian.normalizePath(folder));
+      if (!monthlyNotesFolder) {
+        throw new MonthlyNotesFolderMissingError("Failed to find monthly notes folder");
+      }
+      obsidian.Vault.recurseChildren(monthlyNotesFolder, (note) => {
+        if (note instanceof obsidian.TFile) {
+          const date = getDateFromFile(note, "month");
+          if (date) {
+            const dateString = getDateUID(date, "month");
+            monthlyNotes[dateString] = note;
+          }
+        }
+      });
+      return monthlyNotes;
+    }
+    var QuarterlyNotesFolderMissingError = class extends Error {
+    };
+    async function createQuarterlyNote(date) {
+      const { vault } = window.app;
+      const { template, format, folder } = getQuarterlyNoteSettings();
+      const [templateContents, IFoldInfo] = await getTemplateInfo2(template);
+      const filename = date.format(format);
+      const normalizedPath = await getNotePath(folder, filename);
+      try {
+        const createdFile = await vault.create(normalizedPath, templateContents.replace(/{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi, (_, _timeOrDate, calc, timeDelta, unit, momentFormat) => {
+          const now = window.moment();
+          const currentDate = date.clone().set({
+            hour: now.get("hour"),
+            minute: now.get("minute"),
+            second: now.get("second")
+          });
+          if (calc) {
+            currentDate.add(parseInt(timeDelta, 10), unit);
+          }
+          if (momentFormat) {
+            return currentDate.format(momentFormat.substring(1).trim());
+          }
+          return currentDate.format(format);
+        }).replace(/{{\s*date\s*}}/gi, filename).replace(/{{\s*time\s*}}/gi, window.moment().format("HH:mm")).replace(/{{\s*title\s*}}/gi, filename));
+        window.app.foldManager.save(createdFile, IFoldInfo);
+        return createdFile;
+      } catch (err) {
+        console.error(`Failed to create file: '${normalizedPath}'`, err);
+        new obsidian.Notice("Unable to create new file.");
+      }
+    }
+    function getQuarterlyNote(date, quarterly) {
+      var _a;
+      return (_a = quarterly[getDateUID(date, "quarter")]) != null ? _a : null;
+    }
+    function getAllQuarterlyNotes() {
+      const quarterly = {};
+      if (!appHasQuarterlyNotesPluginLoaded()) {
+        return quarterly;
+      }
+      const { vault } = window.app;
+      const { folder } = getQuarterlyNoteSettings();
+      const quarterlyFolder = vault.getAbstractFileByPath(obsidian.normalizePath(folder));
+      if (!quarterlyFolder) {
+        throw new QuarterlyNotesFolderMissingError("Failed to find quarterly notes folder");
+      }
+      obsidian.Vault.recurseChildren(quarterlyFolder, (note) => {
+        if (note instanceof obsidian.TFile) {
+          const date = getDateFromFile(note, "quarter");
+          if (date) {
+            const dateString = getDateUID(date, "quarter");
+            quarterly[dateString] = note;
+          }
+        }
+      });
+      return quarterly;
+    }
+    var YearlyNotesFolderMissingError = class extends Error {
+    };
+    async function createYearlyNote(date) {
+      const { vault } = window.app;
+      const { template, format, folder } = getYearlyNoteSettings();
+      const [templateContents, IFoldInfo] = await getTemplateInfo2(template);
+      const filename = date.format(format);
+      const normalizedPath = await getNotePath(folder, filename);
+      try {
+        const createdFile = await vault.create(normalizedPath, templateContents.replace(/{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi, (_, _timeOrDate, calc, timeDelta, unit, momentFormat) => {
+          const now = window.moment();
+          const currentDate = date.clone().set({
+            hour: now.get("hour"),
+            minute: now.get("minute"),
+            second: now.get("second")
+          });
+          if (calc) {
+            currentDate.add(parseInt(timeDelta, 10), unit);
+          }
+          if (momentFormat) {
+            return currentDate.format(momentFormat.substring(1).trim());
+          }
+          return currentDate.format(format);
+        }).replace(/{{\s*date\s*}}/gi, filename).replace(/{{\s*time\s*}}/gi, window.moment().format("HH:mm")).replace(/{{\s*title\s*}}/gi, filename));
+        window.app.foldManager.save(createdFile, IFoldInfo);
+        return createdFile;
+      } catch (err) {
+        console.error(`Failed to create file: '${normalizedPath}'`, err);
+        new obsidian.Notice("Unable to create new file.");
+      }
+    }
+    function getYearlyNote(date, yearlyNotes) {
+      var _a;
+      return (_a = yearlyNotes[getDateUID(date, "year")]) != null ? _a : null;
+    }
+    function getAllYearlyNotes() {
+      const yearlyNotes = {};
+      if (!appHasYearlyNotesPluginLoaded()) {
+        return yearlyNotes;
+      }
+      const { vault } = window.app;
+      const { folder } = getYearlyNoteSettings();
+      const yearlyNotesFolder = vault.getAbstractFileByPath(obsidian.normalizePath(folder));
+      if (!yearlyNotesFolder) {
+        throw new YearlyNotesFolderMissingError("Failed to find yearly notes folder");
+      }
+      obsidian.Vault.recurseChildren(yearlyNotesFolder, (note) => {
+        if (note instanceof obsidian.TFile) {
+          const date = getDateFromFile(note, "year");
+          if (date) {
+            const dateString = getDateUID(date, "year");
+            yearlyNotes[dateString] = note;
+          }
+        }
+      });
+      return yearlyNotes;
+    }
+    function appHasDailyNotesPluginLoaded() {
+      var _a, _b;
+      const { app } = window;
+      const dailyNotesPlugin = app.internalPlugins.plugins["daily-notes"];
+      if (dailyNotesPlugin && dailyNotesPlugin.enabled) {
+        return true;
+      }
+      const periodicNotes = app.plugins.getPlugin("periodic-notes");
+      return periodicNotes && ((_b = (_a = periodicNotes.settings) == null ? void 0 : _a.daily) == null ? void 0 : _b.enabled);
+    }
+    function appHasWeeklyNotesPluginLoaded() {
+      var _a, _b;
+      const { app } = window;
+      if (app.plugins.getPlugin("calendar")) {
+        return true;
+      }
+      const periodicNotes = app.plugins.getPlugin("periodic-notes");
+      return periodicNotes && ((_b = (_a = periodicNotes.settings) == null ? void 0 : _a.weekly) == null ? void 0 : _b.enabled);
+    }
+    function appHasMonthlyNotesPluginLoaded() {
+      var _a, _b;
+      const { app } = window;
+      const periodicNotes = app.plugins.getPlugin("periodic-notes");
+      return periodicNotes && ((_b = (_a = periodicNotes.settings) == null ? void 0 : _a.monthly) == null ? void 0 : _b.enabled);
+    }
+    function appHasQuarterlyNotesPluginLoaded() {
+      var _a, _b;
+      const { app } = window;
+      const periodicNotes = app.plugins.getPlugin("periodic-notes");
+      return periodicNotes && ((_b = (_a = periodicNotes.settings) == null ? void 0 : _a.quarterly) == null ? void 0 : _b.enabled);
+    }
+    function appHasYearlyNotesPluginLoaded() {
+      var _a, _b;
+      const { app } = window;
+      const periodicNotes = app.plugins.getPlugin("periodic-notes");
+      return periodicNotes && ((_b = (_a = periodicNotes.settings) == null ? void 0 : _a.yearly) == null ? void 0 : _b.enabled);
+    }
+    function getPeriodicNoteSettings(granularity) {
+      const getSettings = {
+        day: getDailyNoteSettings2,
+        week: getWeeklyNoteSettings,
+        month: getMonthlyNoteSettings,
+        quarter: getQuarterlyNoteSettings,
+        year: getYearlyNoteSettings
+      }[granularity];
+      return getSettings();
+    }
+    function createPeriodicNote(granularity, date) {
+      const createFn = {
+        day: createDailyNote,
+        month: createMonthlyNote,
+        week: createWeeklyNote
+      };
+      return createFn[granularity](date);
+    }
+    exports.DEFAULT_DAILY_NOTE_FORMAT = DEFAULT_DAILY_NOTE_FORMAT;
+    exports.DEFAULT_MONTHLY_NOTE_FORMAT = DEFAULT_MONTHLY_NOTE_FORMAT;
+    exports.DEFAULT_QUARTERLY_NOTE_FORMAT = DEFAULT_QUARTERLY_NOTE_FORMAT;
+    exports.DEFAULT_WEEKLY_NOTE_FORMAT = DEFAULT_WEEKLY_NOTE_FORMAT;
+    exports.DEFAULT_YEARLY_NOTE_FORMAT = DEFAULT_YEARLY_NOTE_FORMAT;
+    exports.appHasDailyNotesPluginLoaded = appHasDailyNotesPluginLoaded;
+    exports.appHasMonthlyNotesPluginLoaded = appHasMonthlyNotesPluginLoaded;
+    exports.appHasQuarterlyNotesPluginLoaded = appHasQuarterlyNotesPluginLoaded;
+    exports.appHasWeeklyNotesPluginLoaded = appHasWeeklyNotesPluginLoaded;
+    exports.appHasYearlyNotesPluginLoaded = appHasYearlyNotesPluginLoaded;
+    exports.createDailyNote = createDailyNote;
+    exports.createMonthlyNote = createMonthlyNote;
+    exports.createPeriodicNote = createPeriodicNote;
+    exports.createQuarterlyNote = createQuarterlyNote;
+    exports.createWeeklyNote = createWeeklyNote;
+    exports.createYearlyNote = createYearlyNote;
+    exports.getAllDailyNotes = getAllDailyNotes;
+    exports.getAllMonthlyNotes = getAllMonthlyNotes;
+    exports.getAllQuarterlyNotes = getAllQuarterlyNotes;
+    exports.getAllWeeklyNotes = getAllWeeklyNotes;
+    exports.getAllYearlyNotes = getAllYearlyNotes;
+    exports.getDailyNote = getDailyNote;
+    exports.getDailyNoteSettings = getDailyNoteSettings2;
+    exports.getDateFromFile = getDateFromFile;
+    exports.getDateFromPath = getDateFromPath;
+    exports.getDateUID = getDateUID;
+    exports.getMonthlyNote = getMonthlyNote;
+    exports.getMonthlyNoteSettings = getMonthlyNoteSettings;
+    exports.getPeriodicNoteSettings = getPeriodicNoteSettings;
+    exports.getQuarterlyNote = getQuarterlyNote;
+    exports.getQuarterlyNoteSettings = getQuarterlyNoteSettings;
+    exports.getTemplateInfo = getTemplateInfo2;
+    exports.getWeeklyNote = getWeeklyNote;
+    exports.getWeeklyNoteSettings = getWeeklyNoteSettings;
+    exports.getYearlyNote = getYearlyNote;
+    exports.getYearlyNoteSettings = getYearlyNoteSettings;
+  }
+});
 
-${d}`}return`${a}
-${i}`}var at=class extends _.ItemView{constructor(e,t){super(e);this.anchoredToToday=!0;this.fileChangeRef=null;this.fileDeleteRef=null;this.fileCreateRef=null;this.ignoreNextModify=!1;this.ignoreModifyUntil=0;this.activeFormatMode=null;this.refreshing=!1;this.toolbarResizeObserver=null;this.currentMenu=null;this.pendingImage=null;this.pendingImageUrl=null;this.thumbnailContainer=null;this.imageAddBtn=null;this.submitBtnEl=null;this.plugin=t,this.currentDate=moment(),this.scope=new _.Scope(this.app.scope)}getViewType(){return ge}getDisplayText(){return"Wrot"}getIcon(){return"feather"}async onOpen(){let e=this.contentEl;e.empty(),e.addClass("wr-container"),this.buildDateNav(e),this.buildInputArea(e),this.listContainer=e.createDiv({cls:"wr-list"}),this.scope.register(["Mod"],"Enter",t=>{if(document.activeElement===this.textarea)return t.preventDefault(),t.stopPropagation(),this.submitMemo(),!1}),await this.refresh(),this.registerFileWatcher(),this.registerEvent(this.app.workspace.on("active-leaf-change",t=>{t===this.leaf&&this.maybeRollToToday()}))}async onClose(){this.unregisterFileWatcher(),this.toolbarResizeObserver&&(this.toolbarResizeObserver.disconnect(),this.toolbarResizeObserver=null),this.clearPendingImage(),this.contentEl.empty()}registerFileWatcher(){this.unregisterFileWatcher(),this.fileChangeRef=this.app.vault.on("modify",t=>{if(this.ignoreNextModify){this.ignoreNextModify=!1;return}if(Date.now()<this.ignoreModifyUntil||!(t instanceof _.TFile))return;let n=Se(this.app,this.currentDate);n&&t.path===n.path&&this.refresh()});let e=/^(md|png|jpe?g|gif|webp|svg|bmp)$/i;this.fileDeleteRef=this.app.metadataCache.on("deleted",t=>{t instanceof _.TFile&&e.test(t.extension)&&this.refresh()}),this.fileCreateRef=this.app.vault.on("create",t=>{t instanceof _.TFile&&e.test(t.extension)&&this.refresh()})}unregisterFileWatcher(){this.fileChangeRef&&(this.app.vault.offref(this.fileChangeRef),this.fileChangeRef=null),this.fileDeleteRef&&(this.app.vault.offref(this.fileDeleteRef),this.fileDeleteRef=null),this.fileCreateRef&&(this.app.vault.offref(this.fileCreateRef),this.fileCreateRef=null)}async maybeRollToToday(){if(!this.anchoredToToday)return;let e=moment();this.currentDate.isSame(e,"day")||(this.currentDate=e,await this.refresh())}async openOrFocusFile(e){let t=null;if(this.app.workspace.iterateAllLeaves(o=>{var l;if(t)return;let s=o.view;((l=s==null?void 0:s.file)==null?void 0:l.path)===e.path&&(t=o)}),t){this.app.workspace.revealLeaf(t),this.app.workspace.setActiveLeaf(t,{focus:!0});return}let n=this.app.workspace.getLeaf("tab");await n.openFile(e),this.app.workspace.setActiveLeaf(n,{focus:!0})}buildDateNav(e){let t=e.createDiv({cls:"wr-date-nav"}),n=t.createEl("button",{cls:"wr-nav-btn"});(0,_.setIcon)(n,"chevron-left"),n.addEventListener("click",()=>{this.currentDate=this.currentDate.clone().subtract(1,"day"),this.anchoredToToday=!1,this.refresh()}),this.dateLabel=t.createEl("span",{cls:"wr-date-label"}),this.dateLabel.addEventListener("click",async()=>{var d;this.dateLabel.classList.add("wr-date-label-active"),setTimeout(()=>this.dateLabel.classList.remove("wr-date-label-active"),300);let l=(d=Se(this.app,this.currentDate))!=null?d:await yt(this.app,this.currentDate);await this.openOrFocusFile(l)});let o=t.createEl("button",{cls:"wr-nav-btn"});(0,_.setIcon)(o,"chevron-right"),o.addEventListener("click",()=>{this.currentDate=this.currentDate.clone().add(1,"day"),this.anchoredToToday=!1,this.refresh()}),t.createEl("button",{cls:"wr-today-btn",text:"\u4ECA\u65E5"}).addEventListener("click",()=>{this.currentDate=moment(),this.anchoredToToday=!0,this.refresh()})}buildInputArea(e){let t=e.createDiv({cls:"wr-input-area"}),o=t.createDiv({cls:"wr-input-header"}).createEl("button",{cls:"wr-submit-btn"});this.submitLabelEl=o.createSpan({text:`${this.plugin.settings.submitLabel} `}),this.submitIconEl=o.createSpan({cls:"wr-submit-icon"}),this.plugin.settings.submitIcon&&(0,_.setIcon)(this.submitIconEl,this.plugin.settings.submitIcon),o.addEventListener("click",()=>this.submitMemo()),this.submitBtnEl=o,this.textarea=t.createEl("textarea",{cls:"wr-textarea",attr:{placeholder:this.plugin.settings.inputPlaceholder}});let s=()=>{this.textarea.style.height="auto",this.textarea.style.height=this.textarea.scrollHeight+"px"};this.textarea.addEventListener("input",s),this.textarea.addEventListener("keydown",r=>{if(!r.isComposing&&!(r.key==="Enter"&&(r.ctrlKey||r.metaKey))&&r.key==="Enter"&&!r.shiftKey){let h=this.textarea,p=h.selectionStart,y=h.value,D=y.lastIndexOf(`
-`,p-1)+1,R=y.slice(D,p),F=R.match(/^- \[[ x]\] (.*)$/),Q=!F&&R.match(/^- (.*)$/),K=!F&&!Q&&R.match(/^(\d+)\.\s?(.*)$/);if(F){if(r.preventDefault(),F[1]==="")h.value=y.slice(0,D)+y.slice(p),h.selectionStart=h.selectionEnd=D;else{let z=`
-- [ ] `;h.value=y.slice(0,p)+z+y.slice(p),h.selectionStart=h.selectionEnd=p+z.length}h.dispatchEvent(new Event("input"))}else if(Q)r.preventDefault(),Q[1]===""?(h.value=y.slice(0,D)+y.slice(p),h.selectionStart=h.selectionEnd=D):(h.value=y.slice(0,p)+`
-- `+y.slice(p),h.selectionStart=h.selectionEnd=p+3),h.dispatchEvent(new Event("input"));else if(K){if(r.preventDefault(),K[2]==="")h.value=y.slice(0,D)+y.slice(p),h.selectionStart=h.selectionEnd=D;else{let q=`
-${parseInt(K[1])+1}. `;h.value=y.slice(0,p)+q+y.slice(p),h.selectionStart=h.selectionEnd=p+q.length}h.dispatchEvent(new Event("input"))}}},!0),this.thumbnailContainer=t.createDiv({cls:"wr-thumbnail-container"}),this.thumbnailContainer.style.display="none",this.textarea.addEventListener("paste",r=>{var y;let h=(y=r.clipboardData)==null?void 0:y.files;if(!h||h.length===0)return;let p=h[0];qt(p)&&(r.preventDefault(),this.setPendingImage(p))}),this.textarea.addEventListener("dragover",r=>{var h;(h=r.dataTransfer)!=null&&h.types.includes("Files")&&r.preventDefault()}),this.textarea.addEventListener("drop",r=>{var y;let h=(y=r.dataTransfer)==null?void 0:y.files;if(!h||h.length===0)return;let p=h[0];qt(p)&&(r.preventDefault(),this.setPendingImage(p))});let l=t.createDiv({cls:"wr-input-toolbar"}),d=l.createEl("button",{cls:"wr-toolbar-btn"});(0,_.setIcon)(d,"image-plus"),d.addEventListener("mousedown",r=>r.preventDefault()),d.addEventListener("click",()=>this.openImagePicker()),this.imageAddBtn=d;let c=l.createEl("button",{cls:"wr-toolbar-btn"});(0,_.setIcon)(c,"paperclip"),c.addEventListener("mousedown",r=>r.preventDefault());let u=l.createEl("button",{cls:"wr-toolbar-btn"});(0,_.setIcon)(u,"bold"),u.addEventListener("mousedown",r=>r.preventDefault());let f=l.createEl("button",{cls:"wr-toolbar-btn"});(0,_.setIcon)(f,"italic"),f.addEventListener("mousedown",r=>r.preventDefault());let g=l.createEl("button",{cls:"wr-toolbar-btn"});(0,_.setIcon)(g,"list"),g.addEventListener("mousedown",r=>r.preventDefault());let v=l.createEl("button",{cls:"wr-toolbar-btn"});(0,_.setIcon)(v,"list-checks"),v.addEventListener("mousedown",r=>r.preventDefault());let L=l.createEl("button",{cls:"wr-toolbar-btn"});(0,_.setIcon)(L,"list-ordered"),L.addEventListener("mousedown",r=>r.preventDefault()),c.addEventListener("click",()=>{let r=this.textarea;r.selectionStart!==r.selectionEnd?this.wrapSelectionWithEmbedBrackets():this.toggleInlineWrap("![[","]]"),this.updateEmbedBtnActive(c)});let T=()=>{let r=this.isInsideMarker("**"),h=this.isInsideMarker("*");u.toggleClass("wr-toolbar-active",this.activeFormatMode==="bold"||r),f.toggleClass("wr-toolbar-active",this.activeFormatMode==="italic"||h),u.toggleClass("wr-toolbar-disabled",this.activeFormatMode==="italic"||h),f.toggleClass("wr-toolbar-disabled",this.activeFormatMode==="bold"||r)},w=()=>{if(this.activeFormatMode===null)return;let r=this.textarea,h=r.selectionStart,p=r.value.slice(0,h);this.activeFormatMode==="bold"?p.includes("**")||(this.activeFormatMode=null,T()):this.activeFormatMode==="italic"&&(p.replace(/\*\*/g,"").includes("*")||(this.activeFormatMode=null,T()))};u.addEventListener("click",()=>{if(this.activeFormatMode==="italic"||this.isInsideMarker("*"))return;let r=this.textarea;if(r.selectionStart!==r.selectionEnd){this.wrapSelection("**","**"),T();return}if(this.activeFormatMode==="bold"){let h=r.selectionStart;h>=2&&r.value.slice(h-2,h)==="**"?(r.value=r.value.slice(0,h-2)+r.value.slice(h),r.selectionStart=r.selectionEnd=h-2):(r.value=r.value.slice(0,h)+"**"+r.value.slice(h),r.selectionStart=r.selectionEnd=h+2),this.activeFormatMode=null}else{let h=r.selectionStart;r.value=r.value.slice(0,h)+"**"+r.value.slice(h),r.selectionStart=r.selectionEnd=h+2,this.activeFormatMode="bold"}r.focus(),r.dispatchEvent(new Event("input")),T()}),f.addEventListener("click",()=>{if(this.activeFormatMode==="bold"||this.isInsideMarker("**"))return;let r=this.textarea;if(r.selectionStart!==r.selectionEnd){this.wrapSelection("*","*"),T();return}if(this.activeFormatMode==="italic"){let h=r.selectionStart;h>=1&&r.value.slice(h-1,h)==="*"?(r.value=r.value.slice(0,h-1)+r.value.slice(h),r.selectionStart=r.selectionEnd=h-1):(r.value=r.value.slice(0,h)+"*"+r.value.slice(h),r.selectionStart=r.selectionEnd=h+1),this.activeFormatMode=null}else{let h=r.selectionStart;r.value=r.value.slice(0,h)+"*"+r.value.slice(h),r.selectionStart=r.selectionEnd=h+1,this.activeFormatMode="italic"}r.focus(),r.dispatchEvent(new Event("input")),T()}),g.addEventListener("click",()=>{this.insertAtLineStart("- "),this.updateToolbarActive(g,v,L)}),v.addEventListener("click",()=>{this.insertAtLineStart("- [ ] "),this.updateToolbarActive(g,v,L)}),L.addEventListener("click",()=>{this.insertAtLineStart("1. "),this.updateToolbarActive(g,v,L)});let m=l.createEl("button",{cls:"wr-toolbar-btn wr-format-btn"});(0,_.setIcon)(m,"ellipsis"),m.addEventListener("mousedown",r=>r.preventDefault()),m.addEventListener("click",r=>{let h=this.textarea,p=h.selectionStart!==h.selectionEnd;this.openMenu(m,y=>{y.addItem(D=>D.setTitle("\u30B3\u30FC\u30C9").setIcon("code").onClick(()=>{let R=this.textarea;R.selectionStart!==R.selectionEnd?this.wrapSelection("`","`"):this.insertCodeBlock()})),y.addItem(D=>D.setTitle("\u6570\u5F0F").setIcon("sigma").onClick(()=>{let R=this.textarea;R.selectionStart!==R.selectionEnd?this.wrapSelection("$","$"):this.insertMathBlock()})),y.addItem(D=>D.setTitle("\u5F15\u7528").setIcon("quote").onClick(()=>this.toggleBlockPrefix("> "))),y.addSeparator(),y.addItem(D=>{D.setTitle("\u30EA\u30F3\u30AF").setIcon("link").onClick(()=>this.insertMarkdownLink()),p||D.setDisabled(!0)}),y.addItem(D=>{D.setTitle("\u53D6\u308A\u6D88\u3057\u7DDA").setIcon("strikethrough").onClick(()=>this.wrapSelection("~~","~~")),p||D.setDisabled(!0)}),y.addItem(D=>{D.setTitle("\u30CF\u30A4\u30E9\u30A4\u30C8").setIcon("highlighter").onClick(()=>this.wrapSelection("==","==")),p||D.setDisabled(!0)}),y.addSeparator(),y.addItem(D=>{D.setTitle("\u8A2D\u5B9A").setIcon("settings").onClick(()=>{let R=this.app.setting;R!=null&&R.open&&(R!=null&&R.openTabById)&&(R.open(),R.openTabById("wrot"))})})},r)});let C=()=>{w(),this.updateToolbarActive(g,v,L),this.updateEmbedBtnActive(c),T(),this.updateSubmitBtnState()};this.registerDomEvent(document,"selectionchange",()=>{document.activeElement===this.textarea&&C()}),this.textarea.addEventListener("focus",C),this.textarea.addEventListener("input",C);let b=()=>{let r=l.querySelectorAll(".wr-toolbar-btn");if(r.length<2)return;let h=r[0],y=r[r.length-1].offsetTop>h.offsetTop;l.toggleClass("wr-toolbar-wrapped",y)};requestAnimationFrame(b),typeof ResizeObserver!="undefined"&&(this.toolbarResizeObserver=new ResizeObserver(()=>{requestAnimationFrame(b)}),this.toolbarResizeObserver.observe(l))}openImagePicker(){var o;if(this.pendingImage)return;let e=document.createElement("input");e.type="file",e.accept="image/png, image/gif, image/jpeg",e.multiple=!1,e.style.display="none",document.body.appendChild(e),(o=this.imageAddBtn)==null||o.toggleClass("wr-toolbar-active",!0);let t=()=>{var s;(s=this.imageAddBtn)==null||s.toggleClass("wr-toolbar-active",!1),window.removeEventListener("focus",t),window.removeEventListener("pointerdown",n,!0)},n=s=>{var l;(l=this.imageAddBtn)!=null&&l.contains(s.target)||t()};window.addEventListener("focus",t),window.addEventListener("pointerdown",n,!0),e.addEventListener("change",()=>{var l;let s=(l=e.files)==null?void 0:l[0];s&&this.setPendingImage(s),document.body.removeChild(e),t()}),e.click()}setPendingImage(e){this.clearPendingImage(),this.pendingImage=e,this.pendingImageUrl=URL.createObjectURL(e),this.renderThumbnail(),this.updateImageAddBtnState(),this.updateSubmitBtnState()}clearPendingImage(){this.pendingImageUrl&&(URL.revokeObjectURL(this.pendingImageUrl),this.pendingImageUrl=null),this.pendingImage=null,this.thumbnailContainer&&(this.thumbnailContainer.empty(),this.thumbnailContainer.style.display="none"),this.updateImageAddBtnState(),this.updateSubmitBtnState()}renderThumbnail(){if(!this.thumbnailContainer||!this.pendingImageUrl)return;this.thumbnailContainer.empty(),this.thumbnailContainer.style.display="";let e=this.thumbnailContainer.createDiv({cls:"wr-thumbnail"}),t=e.createEl("img",{cls:"wr-thumbnail-img"});t.src=this.pendingImageUrl;let n=e.createEl("button",{cls:"wr-thumbnail-remove"});(0,_.setIcon)(n,"x"),n.setAttr("aria-label","\u753B\u50CF\u3092\u524A\u9664"),n.addEventListener("mousedown",o=>o.preventDefault()),n.addEventListener("click",()=>this.clearPendingImage())}updateImageAddBtnState(){if(!this.imageAddBtn)return;let e=this.pendingImage!==null;this.imageAddBtn.toggleClass("wr-toolbar-disabled",e),this.imageAddBtn.disabled=e}updateSubmitBtnState(){if(!this.submitBtnEl)return;let e=this.textarea.value.trim().length>0||this.pendingImage!==null;this.submitBtnEl.toggleClass("wr-submit-active",e)}async submitMemo(){if(this.activeFormatMode){let t=this.activeFormatMode==="bold"?"**":"*";this.textarea.value=this.textarea.value+t,this.activeFormatMode=null}let e=this.textarea.value.trim().replace(/＃/g,"#");if(!(!e&&!this.pendingImage)){this.anchoredToToday&&!this.currentDate.isSame(moment(),"day")&&(this.currentDate=moment());try{let t=await yt(this.app,this.currentDate),n=e;if(this.pendingImage){let o=await Cn(this.app,this.pendingImage,t),s=xn(o);n=nr(n,s)}this.ignoreNextModify=!0,await nn(this.app,t,n),this.textarea.value="",this.textarea.style.height="",this.activeFormatMode=null,this.clearPendingImage(),this.textarea.dispatchEvent(new Event("input")),await this.refresh()}catch(t){new _.Notice(`\u30E1\u30E2\u306E\u4FDD\u5B58\u306B\u5931\u6557\u3057\u307E\u3057\u305F: ${t}`)}}}async refresh(){if(!this.refreshing&&!(Date.now()<this.ignoreModifyUntil)){this.refreshing=!0;try{let e=this.currentDate.isSame(moment(),"day"),t=this.currentDate.format(this.plugin.settings.headerDateFormat);this.dateLabel.setText(e?`${t}\uFF08\u4ECA\u65E5\uFF09`:t),this.listContainer.empty();let n=await this.resolvePinnedMemos(),o=new Set(n.map(c=>c.memo.time));for(let{memo:c,filePath:u}of n)this.renderMemoCard(c,{pinned:!0,filePath:u});let s=Se(this.app,this.currentDate);if(!s){n.length===0&&this.listContainer.createDiv({cls:"wr-empty",text:"\u30E1\u30E2\u306F\u3042\u308A\u307E\u305B\u3093"});return}let l=await this.app.vault.cachedRead(s),d=Ee(l);if(d.length===0){n.length===0&&this.listContainer.createDiv({cls:"wr-empty",text:"\u30E1\u30E2\u306F\u3042\u308A\u307E\u305B\u3093"});return}for(let c of d)o.has(c.time)||this.renderMemoCard(c,{pinned:!1,filePath:s.path})}finally{this.refreshing=!1}}}async resolvePinnedMemos(){let e=this.plugin.settings.pins;if(!e||e.length===0)return[];let t=[],n=new Map;for(let o of e){let s=n.get(o.file);if(s===void 0){let d=this.app.vault.getAbstractFileByPath(o.file);if(!(d instanceof _.TFile)){n.set(o.file,null);continue}let c=await this.app.vault.cachedRead(d);s=Ee(c),n.set(o.file,s)}if(!s)continue;let l=s.find(d=>d.time===o.timestamp);l&&t.push({memo:l,filePath:o.file})}return t}isPinned(e){return this.plugin.settings.pins.some(t=>t.timestamp===e.time)}async cleanupOrphanPins(){let e=this.plugin.settings.pins;if(e.length===0)return!1;let t=new Map,n=[];for(let o of e){let s=t.get(o.file);if(s===void 0){let l=this.app.vault.getAbstractFileByPath(o.file);if(!(l instanceof _.TFile)){t.set(o.file,null);continue}let d=await this.app.vault.cachedRead(l);s=Ee(d),t.set(o.file,s)}s&&s.some(l=>l.time===o.timestamp)&&n.push(o)}return n.length===e.length?!1:(this.plugin.settings.pins=n,await this.plugin.saveSettings(),!0)}async addPin(e,t){await this.cleanupOrphanPins();let n=this.plugin.settings.pinLimit;this.plugin.settings.pins.length>=n||this.isPinned(e)||(this.plugin.settings.pins=[{timestamp:e.time,file:t},...this.plugin.settings.pins],await this.plugin.saveSettings(),await this.refresh())}async removePin(e){let t=this.plugin.settings.pins.length;this.plugin.settings.pins=this.plugin.settings.pins.filter(n=>n.timestamp!==e.time),this.plugin.settings.pins.length!==t&&await this.plugin.saveSettings(),await this.cleanupOrphanPins(),await this.refresh()}renderMemoCard(e,t){let n=this.listContainer.createDiv({cls:"wr-card"});t.pinned&&n.classList.add("wr-card-pinned");let o=e.time.replace(/[-:.TZ+]/g,"").slice(0,17);n.classList.add(`wr-block-id-wr-${o}`);let s=this.plugin.findTagColorRule(e.tags);if(s){let m=this.plugin.settings.tagColorRules.indexOf(s);m>=0&&n.classList.add(`wr-tag-rule-${m}`)}let l=n.createDiv({cls:"wr-content"}),d=m=>{let C=this.app.metadataCache.getFirstLinkpathDest(m,"");return C?this.app.vault.getResourcePath(C):null},c=Se(this.app,this.currentDate),u=(c==null?void 0:c.path)||"",g=Ce(l,e.content,{onTagClick:m=>this.openSearch(m),onCheckToggle:async m=>{let C=Se(this.app,this.currentDate);if(!C)return;let b=e.lineStart+1+m;this.ignoreModifyUntil=Date.now()+500,this.plugin.quoteRefreshSuppressedUntil=Date.now()+500,await Fe(this.app,C,b)},onInternalLinkClick:m=>{this.app.workspace.openLinkText(m,"",!1)},checkStrikethrough:this.plugin.settings.checkStrikethrough,resolveImagePath:d,resolveLinkTarget:m=>this.app.metadataCache.getFirstLinkpathDest(m,"")!==null,renderQuoteCard:(m,C,b)=>{xe(m,C,b,this.app,u,{timestampFormat:this.plugin.settings.timestampFormat,resolveRuleClass:r=>this.plugin.getTagRuleClassForContent(r),resolveRuleAccent:r=>this.plugin.getRuleAccentColor(r)})},renderCodeBlock:(m,C,b,r)=>{let h="~".repeat(Math.max(3,r)),p=(C?`${h}${C}
-`:`${h}
-`)+m+`
-${h}`;_.MarkdownRenderer.render(this.app,p,b,"",this).catch(()=>{let D=b.createEl("pre").createEl("code");C&&D.addClass(`language-${C}`),D.textContent=m})},renderMathBlock:(m,C)=>{try{let b=(0,_.renderMath)(m,!0);C.appendChild(b),(0,_.finishRenderMath)()}catch(b){C.textContent=m}}}).filter(m=>m.type==="image"||!m.url.startsWith("obsidian://"));if(g.length>0){let m=document.createElement("div");m.className="wr-media-area";let C=l.querySelector(".wr-quote-card-slot");C&&C.parentNode?C.parentNode.insertBefore(m,C):n.appendChild(m),st(m,g,this.plugin.ogpCache,d)}let v=n.createDiv({cls:"wr-card-footer"}),L=this.plugin.settings.timestampFormat||"YYYY/MM/DD HH:mm:ss",T=moment(e.time).format(L);v.createEl("span",{cls:"wr-timestamp",text:T});let w=v.createEl("span",{cls:"wr-menu-btn"});if((0,_.setIcon)(w,"ellipsis"),w.addEventListener("click",async m=>{await this.cleanupOrphanPins();let C=this.isPinned(e),b=this.plugin.settings.pinLimit,r=!C&&this.plugin.settings.pins.length>=b;this.openMenu(w,h=>{h.addItem(p=>p.setTitle("\u30B3\u30D4\u30FC").setIcon("copy").onClick(async()=>{await navigator.clipboard.writeText(e.content)})),h.addItem(p=>p.setTitle("\u5F15\u7528").setIcon("quote").onClick(()=>{this.insertQuoteToForm(e,t.filePath)})),C?h.addItem(p=>p.setTitle("\u30D4\u30F3\u3092\u5916\u3059").setIcon("pin-off").onClick(async()=>{await this.removePin(e)})):(h.addItem(p=>{p.setTitle("\u30D4\u30F3\u7559\u3081").setIcon("pin").onClick(async()=>{r||await this.addPin(e,t.filePath)}),r&&p.setDisabled(!0)}),r&&h.addItem(p=>{p.setTitle(`\u30D4\u30F3\u7559\u3081\u306F${b}\u4EF6\u307E\u3067\u3067\u3059\u3002`).setDisabled(!0);let y=p.dom;y==null||y.classList.add("wr-menu-hint","is-label")}))},m)}),t.pinned){let m=n.createEl("span",{cls:"wr-pin-indicator"});(0,_.setIcon)(m,"pin")}}insertAtLineStart(e){let t=this.textarea,n=t.selectionStart,o=t.value,s=n>0?o.lastIndexOf(`
-`,n-1)+1:0,l=o.slice(s,o.indexOf(`
-`,s)===-1?void 0:o.indexOf(`
-`,s)),d=["- [ ] ","- [x] ","- "],c="";for(let f of d)if(l.startsWith(f)){c=f;break}if(!c){let f=l.match(/^\d+\.\s?/);f&&(c=f[0])}c===e||e==="1. "&&c.match(/^\d+\. $/)?(t.value=o.slice(0,s)+o.slice(s+c.length),t.selectionStart=t.selectionEnd=s):c?(t.value=o.slice(0,s)+e+o.slice(s+c.length),t.selectionStart=t.selectionEnd=s+e.length):(t.value=o.slice(0,s)+e+o.slice(s),t.selectionStart=t.selectionEnd=s+e.length),t.focus(),t.dispatchEvent(new Event("input"))}async insertQuoteToForm(e,t){let o=`wr-${e.time.replace(/[-:.TZ+]/g,"").slice(0,17)}`,s=this.app.vault.getAbstractFileByPath(t);if(!(s instanceof _.TFile))return;this.ignoreNextModify=!0,this.plugin.quoteRefreshSuppressedUntil=Date.now()+500,await tn(this.app,s,e.time,o);let d=`[[${s.basename}#^${o}]]`,c=this.textarea,u=/\[\[[^\[\]]+#\^wr-\d{17}\]\]/g,f=c.value,g,v;u.test(f)?(g=f.replace(u,d),v=0):f.length===0?(g=`
-${d}`,v=0):(g=`${f}
+// src/main.ts
+var main_exports = {};
+__export(main_exports, {
+  default: () => WrotPlugin
+});
+module.exports = __toCommonJS(main_exports);
+var import_obsidian8 = require("obsidian");
 
-${d}`,v=f.length+1),c.value=g,c.selectionStart=c.selectionEnd=v,c.focus(),c.dispatchEvent(new Event("input"))}insertCodeBlock(){this.insertFenceBlock(`~~~
+// src/constants.ts
+var VIEW_TYPE_WROT = "wrot-view";
 
-~~~`)}insertMathBlock(){this.insertFenceBlock(`$$
+// src/settings.ts
+var import_obsidian = require("obsidian");
+var DEFAULT_SETTINGS = {
+  viewPlacement: "right",
+  headerDateFormat: "YYYY\u5E74MM\u6708DD\u65E5",
+  timestampFormat: "YYYY/MM/DD HH:mm:ss",
+  bgColorLight: "#f8f8f8",
+  bgColorDark: "#303030",
+  textColorLight: "#454545",
+  textColorDark: "#dcddde",
+  submitLabel: "\u6295\u7A3F",
+  submitIcon: "send",
+  inputPlaceholder: "\u3042\u306A\u305F\u304C\u66F8\u304F\u306E\u3092\u5F85\u3063\u3066\u3044\u307E\u3059...",
+  enableOgpFetch: true,
+  checkStrikethrough: false,
+  tagColorRulesEnabled: false,
+  tagColorRules: [],
+  followObsidianFontSize: false,
+  pins: [],
+  pinLimit: 3
+};
+var SETTINGS_NARROW_THRESHOLD_PX = 600;
+var WrotSettingTab = class extends import_obsidian.PluginSettingTab {
+  constructor(app, plugin) {
+    super(app, plugin);
+    this.narrowObserver = null;
+    // メモリ上のみ。設定タブを開き直すたびに全ルールがロック状態に戻る
+    this.unlockedRules = /* @__PURE__ */ new Set();
+    // display()内部からの再構築でロック状態を保持したい場合にtrueにする
+    this.skipLockReset = false;
+    this.plugin = plugin;
+  }
+  hide() {
+    if (this.narrowObserver) {
+      this.narrowObserver.disconnect();
+      this.narrowObserver = null;
+    }
+    super.hide();
+  }
+  // Obsidianのバージョン/プラットフォーム差を吸収するためスクロール対象候補を網羅的に収集する
+  collectScrollCandidates() {
+    const list = [];
+    if (this.containerEl.scrollHeight > this.containerEl.clientHeight) {
+      list.push(this.containerEl);
+    }
+    let el2 = this.containerEl.parentElement;
+    while (el2) {
+      const style = getComputedStyle(el2);
+      const overflowY = style.overflowY;
+      const scrolls = (overflowY === "auto" || overflowY === "scroll" || overflowY === "overlay") && el2.scrollHeight > el2.clientHeight;
+      if (scrolls || el2.scrollTop > 0) {
+        list.push(el2);
+      }
+      el2 = el2.parentElement;
+      if (!el2 || el2 === document.body || el2 === document.documentElement) break;
+    }
+    return list;
+  }
+  // 設定タブのスクロール位置を保ったまま `work` を実行する
+  withScrollPreserved(work) {
+    const before = this.collectScrollCandidates().map((el2) => ({ el: el2, top: el2.scrollTop }));
+    work();
+    const restore = () => {
+      for (const { el: el2, top } of before) {
+        if (el2.scrollTop !== top) el2.scrollTop = top;
+      }
+    };
+    restore();
+    requestAnimationFrame(restore);
+    setTimeout(restore, 0);
+    setTimeout(restore, 50);
+  }
+  display() {
+    const { containerEl } = this;
+    containerEl.empty();
+    containerEl.addClass("wr-settings");
+    if (this.skipLockReset) {
+      this.skipLockReset = false;
+    } else {
+      this.unlockedRules.clear();
+    }
+    if (this.narrowObserver) {
+      this.narrowObserver.disconnect();
+      this.narrowObserver = null;
+    }
+    const updateNarrow = () => {
+      const narrow = containerEl.clientWidth > 0 && containerEl.clientWidth < SETTINGS_NARROW_THRESHOLD_PX;
+      containerEl.toggleClass("wr-settings-narrow", narrow);
+    };
+    requestAnimationFrame(updateNarrow);
+    if (typeof ResizeObserver !== "undefined") {
+      this.narrowObserver = new ResizeObserver(() => {
+        requestAnimationFrame(updateNarrow);
+      });
+      this.narrowObserver.observe(containerEl);
+    }
+    new import_obsidian.Setting(containerEl).setName("\u57FA\u672C\u8A2D\u5B9A").setHeading();
+    new import_obsidian.Setting(containerEl).setName("\u8868\u793A\u4F4D\u7F6E").setDesc("Wrot\u30D1\u30CD\u30EB\u306E\u8868\u793A\u4F4D\u7F6E\u3092\u9078\u3073\u307E\u3059\u3002").addDropdown(
+      (dropdown) => dropdown.addOption("left", "\u5DE6\u30B5\u30A4\u30C9\u30D0\u30FC").addOption("right", "\u53F3\u30B5\u30A4\u30C9\u30D0\u30FC").addOption("main", "\u30E1\u30A4\u30F3\u30A8\u30EA\u30A2").setValue(this.plugin.settings.viewPlacement).onChange(async (value) => {
+        this.plugin.settings.viewPlacement = value;
+        await this.plugin.saveSettings();
+      })
+    );
+    new import_obsidian.Setting(containerEl).setName("Obsidian\u306E\u30D5\u30A9\u30F3\u30C8\u30B5\u30A4\u30BA\u306B\u8FFD\u5F93").setDesc("Obsidian\u306E\u5916\u89B3\u8A2D\u5B9A\u306BWrot\u306E\u6587\u5B57\u30B5\u30A4\u30BA\u3092\u5408\u308F\u305B\u307E\u3059\u3002").addToggle(
+      (toggle) => toggle.setValue(this.plugin.settings.followObsidianFontSize).onChange(async (value) => {
+        this.plugin.settings.followObsidianFontSize = value;
+        await this.plugin.saveSettings();
+        this.plugin.applyFontFollow();
+      })
+    );
+    let headerDateText;
+    new import_obsidian.Setting(containerEl).setName("\u30D8\u30C3\u30C0\u30FC\u65E5\u4ED8\u8868\u793A\u5F62\u5F0F").setDesc("\u65E5\u4ED8\u30CA\u30D3\u306B\u8868\u793A\u3059\u308B\u65E5\u4ED8\u306E\u30D5\u30A9\u30FC\u30DE\u30C3\u30C8\u3092\u6307\u5B9A\u3057\u307E\u3059\u3002\uFF08YYYY, MM, DD \u306A\u3069\u304C\u4F7F\u3048\u307E\u3059\uFF09\u7A7A\u6B04\u3067\u521D\u671F\u5024\u306B\u623B\u308A\u307E\u3059\u3002").addText((text) => {
+      headerDateText = text;
+      text.setPlaceholder(DEFAULT_SETTINGS.headerDateFormat).setValue(this.plugin.settings.headerDateFormat).onChange(async (value) => {
+        this.plugin.settings.headerDateFormat = value || DEFAULT_SETTINGS.headerDateFormat;
+        await this.plugin.saveSettings();
+        this.plugin.refreshViews();
+      });
+    }).addExtraButton(
+      (btn) => btn.setIcon("reset").setTooltip("\u521D\u671F\u5024\u306B\u623B\u3059").onClick(async () => {
+        this.plugin.settings.headerDateFormat = DEFAULT_SETTINGS.headerDateFormat;
+        await this.plugin.saveSettings();
+        this.plugin.refreshViews();
+        headerDateText.setValue(DEFAULT_SETTINGS.headerDateFormat);
+      })
+    );
+    let tsText;
+    new import_obsidian.Setting(containerEl).setName("\u30BF\u30A4\u30E0\u30B9\u30BF\u30F3\u30D7\u8868\u793A\u5F62\u5F0F").setDesc("\u6295\u7A3F\u306E\u65E5\u6642\u30D5\u30A9\u30FC\u30DE\u30C3\u30C8\u3092\u6307\u5B9A\u3057\u307E\u3059\u3002\uFF08YYYY, MM, DD, HH, mm, ss \u304C\u4F7F\u3048\u307E\u3059\uFF09").addText((text) => {
+      tsText = text;
+      text.setPlaceholder("YYYY/MM/DD HH:mm:ss").setValue(this.plugin.settings.timestampFormat).onChange(async (value) => {
+        this.plugin.settings.timestampFormat = value || DEFAULT_SETTINGS.timestampFormat;
+        await this.plugin.saveSettings();
+        this.plugin.refreshViews();
+      });
+    }).addExtraButton(
+      (btn) => btn.setIcon("reset").setTooltip("\u521D\u671F\u5024\u306B\u623B\u3059").onClick(async () => {
+        this.plugin.settings.timestampFormat = DEFAULT_SETTINGS.timestampFormat;
+        await this.plugin.saveSettings();
+        this.plugin.refreshViews();
+        tsText.setValue(DEFAULT_SETTINGS.timestampFormat);
+      })
+    );
+    let lightPicker;
+    new import_obsidian.Setting(containerEl).setName("\u80CC\u666F\u8272\uFF08\u30E9\u30A4\u30C8\u30E2\u30FC\u30C9\uFF09").setDesc("\u30E9\u30A4\u30C8\u30C6\u30FC\u30DE\u3067\u306E\u6295\u7A3F\u30FB\u6295\u7A3F\u30D5\u30A9\u30FC\u30E0\u306E\u80CC\u666F\u8272\u3092\u8A2D\u5B9A\u3057\u307E\u3059\u3002").setClass("wr-reverse-controls").addColorPicker((picker) => {
+      lightPicker = picker;
+      picker.setValue(this.plugin.settings.bgColorLight).onChange(async (value) => {
+        this.plugin.settings.bgColorLight = value;
+        await this.plugin.saveSettings();
+        this.plugin.applyBgColor();
+      });
+    }).addExtraButton(
+      (btn) => btn.setIcon("reset").setTooltip("\u521D\u671F\u5024\u306B\u623B\u3059").onClick(async () => {
+        this.plugin.settings.bgColorLight = DEFAULT_SETTINGS.bgColorLight;
+        await this.plugin.saveSettings();
+        this.plugin.applyBgColor();
+        lightPicker.setValue(DEFAULT_SETTINGS.bgColorLight);
+      })
+    );
+    let textLightPicker;
+    new import_obsidian.Setting(containerEl).setName("\u6587\u5B57\u8272\uFF08\u30E9\u30A4\u30C8\u30E2\u30FC\u30C9\uFF09").setDesc("\u30E9\u30A4\u30C8\u30C6\u30FC\u30DE\u3067\u306E\u30C6\u30AD\u30B9\u30C8\u30FB\u30A2\u30A4\u30B3\u30F3\u306E\u8272\u3092\u8A2D\u5B9A\u3057\u307E\u3059\u3002").setClass("wr-reverse-controls").addColorPicker((picker) => {
+      textLightPicker = picker;
+      picker.setValue(this.plugin.settings.textColorLight).onChange(async (value) => {
+        this.plugin.settings.textColorLight = value;
+        await this.plugin.saveSettings();
+        this.plugin.applyBgColor();
+      });
+    }).addExtraButton(
+      (btn) => btn.setIcon("reset").setTooltip("\u521D\u671F\u5024\u306B\u623B\u3059").onClick(async () => {
+        this.plugin.settings.textColorLight = DEFAULT_SETTINGS.textColorLight;
+        await this.plugin.saveSettings();
+        this.plugin.applyBgColor();
+        textLightPicker.setValue(DEFAULT_SETTINGS.textColorLight);
+      })
+    );
+    let darkPicker;
+    new import_obsidian.Setting(containerEl).setName("\u80CC\u666F\u8272\uFF08\u30C0\u30FC\u30AF\u30E2\u30FC\u30C9\uFF09").setDesc("\u30C0\u30FC\u30AF\u30C6\u30FC\u30DE\u3067\u306E\u6295\u7A3F\u30FB\u6295\u7A3F\u30D5\u30A9\u30FC\u30E0\u306E\u80CC\u666F\u8272\u3092\u8A2D\u5B9A\u3057\u307E\u3059\u3002").setClass("wr-reverse-controls").addColorPicker((picker) => {
+      darkPicker = picker;
+      picker.setValue(this.plugin.settings.bgColorDark).onChange(async (value) => {
+        this.plugin.settings.bgColorDark = value;
+        await this.plugin.saveSettings();
+        this.plugin.applyBgColor();
+      });
+    }).addExtraButton(
+      (btn) => btn.setIcon("reset").setTooltip("\u521D\u671F\u5024\u306B\u623B\u3059").onClick(async () => {
+        this.plugin.settings.bgColorDark = DEFAULT_SETTINGS.bgColorDark;
+        await this.plugin.saveSettings();
+        this.plugin.applyBgColor();
+        darkPicker.setValue(DEFAULT_SETTINGS.bgColorDark);
+      })
+    );
+    let textDarkPicker;
+    new import_obsidian.Setting(containerEl).setName("\u6587\u5B57\u8272\uFF08\u30C0\u30FC\u30AF\u30E2\u30FC\u30C9\uFF09").setDesc("\u30C0\u30FC\u30AF\u30C6\u30FC\u30DE\u3067\u306E\u30C6\u30AD\u30B9\u30C8\u30FB\u30A2\u30A4\u30B3\u30F3\u306E\u8272\u3092\u8A2D\u5B9A\u3057\u307E\u3059\u3002").setClass("wr-reverse-controls").addColorPicker((picker) => {
+      textDarkPicker = picker;
+      picker.setValue(this.plugin.settings.textColorDark).onChange(async (value) => {
+        this.plugin.settings.textColorDark = value;
+        await this.plugin.saveSettings();
+        this.plugin.applyBgColor();
+      });
+    }).addExtraButton(
+      (btn) => btn.setIcon("reset").setTooltip("\u521D\u671F\u5024\u306B\u623B\u3059").onClick(async () => {
+        this.plugin.settings.textColorDark = DEFAULT_SETTINGS.textColorDark;
+        await this.plugin.saveSettings();
+        this.plugin.applyBgColor();
+        textDarkPicker.setValue(DEFAULT_SETTINGS.textColorDark);
+      })
+    );
+    new import_obsidian.Setting(containerEl).setName("\u8868\u793A\u8A2D\u5B9A").setHeading();
+    let submitText;
+    new import_obsidian.Setting(containerEl).setName("\u6295\u7A3F\u30DC\u30BF\u30F3\u306E\u30C6\u30AD\u30B9\u30C8").setDesc("\u6295\u7A3F\u30DC\u30BF\u30F3\u306B\u8868\u793A\u3059\u308B\u30C6\u30AD\u30B9\u30C8\u3092\u5909\u66F4\u3067\u304D\u307E\u3059\u3002").addText((text) => {
+      submitText = text;
+      text.setPlaceholder("\u6295\u7A3F").setValue(this.plugin.settings.submitLabel).onChange(async (value) => {
+        this.plugin.settings.submitLabel = value || DEFAULT_SETTINGS.submitLabel;
+        await this.plugin.saveSettings();
+        this.plugin.updateSubmitLabel();
+      });
+    }).addExtraButton(
+      (btn) => btn.setIcon("reset").setTooltip("\u521D\u671F\u5024\u306B\u623B\u3059").onClick(async () => {
+        this.plugin.settings.submitLabel = DEFAULT_SETTINGS.submitLabel;
+        await this.plugin.saveSettings();
+        submitText.setValue(DEFAULT_SETTINGS.submitLabel);
+        this.plugin.updateSubmitLabel();
+      })
+    );
+    let iconText;
+    const iconSetting = new import_obsidian.Setting(containerEl).setName("\u6295\u7A3F\u30DC\u30BF\u30F3\u306E\u30A2\u30A4\u30B3\u30F3");
+    const descEl = iconSetting.descEl;
+    descEl.appendText("\u6295\u7A3F\u30DC\u30BF\u30F3\u306E\u30A2\u30A4\u30B3\u30F3\u3092\u5909\u66F4\u3067\u304D\u307E\u3059\u3002\u30A2\u30A4\u30B3\u30F3\u540D\u306F ");
+    const link = descEl.createEl("a", { text: "\u3053\u3061\u3089", href: "https://lucide.dev/icons/" });
+    link.setAttr("target", "_blank");
+    descEl.appendText(" \u304B\u3089\u30B3\u30D4\u30FC\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u7A7A\u6B04\u306B\u3059\u308B\u3068\u30A2\u30A4\u30B3\u30F3\u3092\u975E\u8868\u793A\u306B\u3067\u304D\u307E\u3059\u3002");
+    iconSetting.addText((text) => {
+      iconText = text;
+      text.setPlaceholder("send").setValue(this.plugin.settings.submitIcon).onChange(async (value) => {
+        this.plugin.settings.submitIcon = value.trim();
+        await this.plugin.saveSettings();
+        this.plugin.updateSubmitIcon();
+      });
+    }).addExtraButton(
+      (btn) => btn.setIcon("reset").setTooltip("\u521D\u671F\u5024\u306B\u623B\u3059").onClick(async () => {
+        this.plugin.settings.submitIcon = DEFAULT_SETTINGS.submitIcon;
+        await this.plugin.saveSettings();
+        iconText.setValue(DEFAULT_SETTINGS.submitIcon);
+        this.plugin.updateSubmitIcon();
+      })
+    );
+    let placeholderText;
+    new import_obsidian.Setting(containerEl).setName("\u6295\u7A3F\u30D5\u30A9\u30FC\u30E0\u306E\u7A7A\u6B04\u30E1\u30C3\u30BB\u30FC\u30B8").setDesc("\u6295\u7A3F\u30D5\u30A9\u30FC\u30E0\u304C\u7A7A\u306E\u6642\u306B\u8868\u793A\u3055\u308C\u308B\u30C6\u30AD\u30B9\u30C8\u3092\u5909\u66F4\u3067\u304D\u307E\u3059\u3002\u7A7A\u6B04\u306B\u3059\u308B\u3068\u975E\u8868\u793A\u306B\u306A\u308A\u307E\u3059\u3002").addText((text) => {
+      placeholderText = text;
+      text.setPlaceholder(DEFAULT_SETTINGS.inputPlaceholder).setValue(this.plugin.settings.inputPlaceholder).onChange(async (value) => {
+        this.plugin.settings.inputPlaceholder = value;
+        await this.plugin.saveSettings();
+        this.plugin.updateInputPlaceholder();
+      });
+    }).addExtraButton(
+      (btn) => btn.setIcon("reset").setTooltip("\u521D\u671F\u5024\u306B\u623B\u3059").onClick(async () => {
+        this.plugin.settings.inputPlaceholder = DEFAULT_SETTINGS.inputPlaceholder;
+        await this.plugin.saveSettings();
+        placeholderText.setValue(DEFAULT_SETTINGS.inputPlaceholder);
+        this.plugin.updateInputPlaceholder();
+      })
+    );
+    new import_obsidian.Setting(containerEl).setName("\u30D4\u30F3\u7559\u3081\u306E\u4E0A\u9650").setDesc("\u30BF\u30A4\u30E0\u30E9\u30A4\u30F3\u306B\u56FA\u5B9A\u3067\u304D\u308B\u30E1\u30E2\u306E\u6700\u5927\u4EF6\u6570\u3092\u8A2D\u5B9A\u3057\u307E\u3059\u3002").addDropdown(
+      (dropdown) => dropdown.addOption("1", "1 \u4EF6").addOption("3", "3 \u4EF6").addOption("5", "5 \u4EF6").setValue(String(this.plugin.settings.pinLimit)).onChange(async (value) => {
+        const limit = Number(value);
+        this.plugin.settings.pinLimit = limit;
+        if (this.plugin.settings.pins.length > limit) {
+          this.plugin.settings.pins = this.plugin.settings.pins.slice(0, limit);
+        }
+        await this.plugin.saveSettings();
+        this.plugin.refreshViews();
+      })
+    );
+    new import_obsidian.Setting(containerEl).setName("URL\u30D7\u30EC\u30D3\u30E5\u30FC").setDesc("\u30E1\u30E2\u5185\u306EURL\u304B\u3089OGP\u60C5\u5831\u3092\u81EA\u52D5\u53D6\u5F97\u3057\u3066\u8868\u793A\u3057\u307E\u3059\u3002\u30AA\u30D5\u306B\u3059\u308B\u3068\u5916\u90E8\u901A\u4FE1\u3092\u884C\u3044\u307E\u305B\u3093\u3002").addToggle(
+      (toggle) => toggle.setValue(this.plugin.settings.enableOgpFetch).onChange(async (value) => {
+        this.plugin.settings.enableOgpFetch = value;
+        await this.plugin.saveSettings();
+      })
+    );
+    new import_obsidian.Setting(containerEl).setName("\u30C1\u30A7\u30C3\u30AF\u6E08\u307F\u306E\u53D6\u308A\u6D88\u3057\u7DDA").setDesc("\u30C1\u30A7\u30C3\u30AF\u30DC\u30C3\u30AF\u30B9\u304CON\u306E\u9805\u76EE\u306B\u53D6\u308A\u6D88\u3057\u7DDA\u3092\u8868\u793A\u3057\u307E\u3059\u3002").addToggle(
+      (toggle) => toggle.setValue(this.plugin.settings.checkStrikethrough).onChange(async (value) => {
+        this.plugin.settings.checkStrikethrough = value;
+        await this.plugin.saveSettings();
+        this.plugin.refreshViews();
+      })
+    );
+    new import_obsidian.Setting(containerEl).setName("\u30BF\u30B0\u5225\u306B\u8272\u3092\u5909\u3048\u308B").setDesc(
+      "\u6307\u5B9A\u30BF\u30B0\u3092\u542B\u3080\u6295\u7A3F\u306E\u80CC\u666F\u8272\u3068\u6587\u5B57\u8272\u3092\u5909\u66F4\u3057\u307E\u3059\u3002\u8907\u6570\u30EB\u30FC\u30EB\u306B\u8A72\u5F53\u3059\u308B\u5834\u5408\u306F\u672C\u6587\u3067\u5148\u306B\u51FA\u305F\u30BF\u30B0\u304C\u512A\u5148\u3055\u308C\u307E\u3059\u3002"
+    ).addToggle(
+      (toggle) => toggle.setValue(this.plugin.settings.tagColorRulesEnabled).onChange(async (v) => {
+        this.plugin.settings.tagColorRulesEnabled = v;
+        await this.plugin.saveSettings();
+        this.plugin.applyTagColorRules();
+        this.plugin.refreshAllWrDecorations();
+        const rules = this.plugin.settings.tagColorRules;
+        const noMeaningfulRule = rules.length === 0 || rules.length === 1 && rules[0].tag.trim() === "";
+        if (v && noMeaningfulRule) {
+          this.unlockedRules.add(0);
+        }
+        this.skipLockReset = true;
+        this.withScrollPreserved(() => this.display());
+      })
+    );
+    const rulesContainer = containerEl.createDiv({ cls: "wr-tag-rules-container" });
+    const addBtnContainer = containerEl.createDiv();
+    const renderRulesInner = () => {
+      rulesContainer.empty();
+      addBtnContainer.empty();
+      if (!this.plugin.settings.tagColorRulesEnabled) return;
+      const isDarkTheme = () => document.body.classList.contains("theme-dark");
+      const getDefaultBg = () => isDarkTheme() ? this.plugin.settings.bgColorDark : this.plugin.settings.bgColorLight;
+      const getDefaultText = () => isDarkTheme() ? this.plugin.settings.textColorDark : this.plugin.settings.textColorLight;
+      const isLightDefaultBg = (v) => v === DEFAULT_SETTINGS.bgColorLight;
+      const isLightDefaultText = (v) => v === DEFAULT_SETTINGS.textColorLight;
+      const resolveRuleBg = (v) => /^#[0-9a-fA-F]{6}$/.test(v) && !(isDarkTheme() && isLightDefaultBg(v)) ? v : getDefaultBg();
+      const resolveRuleText = (v) => /^#[0-9a-fA-F]{6}$/.test(v) && !(isDarkTheme() && isLightDefaultText(v)) ? v : getDefaultText();
+      const getDefaultAccent = () => {
+        const raw = getComputedStyle(document.body).getPropertyValue("--text-accent").trim();
+        if (/^#[0-9a-fA-F]{6}$/.test(raw)) return raw;
+        const probe = document.createElement("div");
+        probe.style.color = raw || "var(--text-accent)";
+        probe.style.display = "none";
+        document.body.appendChild(probe);
+        const resolved = getComputedStyle(probe).color;
+        document.body.removeChild(probe);
+        const m = resolved.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+        if (m) {
+          const toHex = (n) => parseInt(n, 10).toString(16).padStart(2, "0");
+          return `#${toHex(m[1])}${toHex(m[2])}${toHex(m[3])}`;
+        }
+        return getDefaultText();
+      };
+      const getDefaultSub = (rule) => {
+        const fg = resolveRuleText(rule.textColor);
+        const bg = resolveRuleBg(rule.bgColor);
+        return this.plugin.blendColor(fg, bg, 0.45);
+      };
+      const buildRuleGroup = (isFirst, ruleNumber, ruleKey, initial, onTagChange, onBgChange, onFgChange, onAccentChange, onSubChange, onScopeChange, trailing) => {
+        if (!isFirst) {
+          rulesContainer.createEl("hr", { cls: "wr-tag-rule-separator" });
+        }
+        const groupEl = rulesContainer.createDiv({ cls: "wr-tag-rule-group" });
+        const isUnlocked = () => this.unlockedRules.has(ruleKey);
+        const labelSetting = new import_obsidian.Setting(groupEl).setName(`\u30EB\u30FC\u30EB ${ruleNumber}`).setClass("wr-tag-rule-label-setting");
+        let lockBtnEl = null;
+        labelSetting.addExtraButton((btn) => {
+          lockBtnEl = btn.extraSettingsEl;
+          btn.setIcon(isUnlocked() ? "lock-keyhole-open" : "lock-keyhole").setTooltip(isUnlocked() ? "\u30ED\u30C3\u30AF\u3059\u308B" : "\u7DE8\u96C6\u3059\u308B\u306B\u306F\u30ED\u30C3\u30AF\u3092\u89E3\u9664").onClick(() => {
+            if (isUnlocked()) {
+              this.unlockedRules.delete(ruleKey);
+            } else {
+              this.unlockedRules.add(ruleKey);
+            }
+            applyLockState();
+          });
+        });
+        let trailingBtnEl = null;
+        if (trailing) {
+          labelSetting.addExtraButton((btn) => {
+            trailingBtnEl = btn.extraSettingsEl;
+            btn.setIcon(trailing.kind === "delete" ? "trash-2" : "reset").setTooltip(trailing.kind === "delete" ? "\u3053\u306E\u30EB\u30FC\u30EB\u3092\u524A\u9664" : "\u521D\u671F\u5024\u306B\u623B\u3059").onClick(async () => {
+              if (!isUnlocked()) return;
+              await trailing.handler();
+            });
+          });
+        }
+        let tagInputEl = null;
+        new import_obsidian.Setting(groupEl).setName("\u30BF\u30B0").setDesc("\u8272\u3092\u5909\u3048\u305F\u3044\u30BF\u30B0\u540D\u3092\u5165\u529B\u3057\u307E\u3059\u3002\uFF08# \u306F\u7701\u7565\u3067\u304D\u307E\u3059\uFF09").addText((text) => {
+          tagInputEl = text.inputEl;
+          text.setPlaceholder("\u30BF\u30B0\u540D").setValue(initial.tag).onChange(async (v) => {
+            await onTagChange(v.replace(/^#/, "").trim());
+          });
+        });
+        let bgPickerEl = null;
+        new import_obsidian.Setting(groupEl).setName("\u80CC\u666F\u8272").setDesc("\u3053\u306E\u30BF\u30B0\u3092\u542B\u3080\u6295\u7A3F\u306E\u80CC\u666F\u8272\u3092\u8A2D\u5B9A\u3057\u307E\u3059\u3002").setClass("wr-reverse-controls").addColorPicker((picker) => {
+          bgPickerEl = picker.colorPickerEl;
+          picker.setValue(resolveRuleBg(initial.bgColor)).onChange(async (v) => {
+            await onBgChange(v);
+          });
+        });
+        let fgPickerEl = null;
+        new import_obsidian.Setting(groupEl).setName("\u6587\u5B57\u8272").setDesc("\u3053\u306E\u30BF\u30B0\u3092\u542B\u3080\u6295\u7A3F\u306E\u672C\u6587\u6587\u5B57\u8272\u3092\u8A2D\u5B9A\u3057\u307E\u3059\u3002\uFF08\u30BF\u30B0\u30FB\u30EA\u30F3\u30AF\u30FBURL\u306F\u30A2\u30AF\u30BB\u30F3\u30C8\u30AB\u30E9\u30FC\u5074\u3067\u8A2D\u5B9A\u3057\u307E\u3059\uFF09").setClass("wr-reverse-controls").addColorPicker((picker) => {
+          fgPickerEl = picker.colorPickerEl;
+          picker.setValue(resolveRuleText(initial.textColor)).onChange(async (v) => {
+            await onFgChange(v);
+          });
+        });
+        let accentPicker;
+        let accentPickerEl = null;
+        let accentResetBtnEl = null;
+        new import_obsidian.Setting(groupEl).setName("\u30A2\u30AF\u30BB\u30F3\u30C8\u30AB\u30E9\u30FC").setDesc("\u30BF\u30B0\u30FB\u30EA\u30F3\u30AF\u30FBURL\u30FB\u30B3\u30D4\u30FC\u5B8C\u4E86\u30A2\u30A4\u30B3\u30F3\u306A\u3069\u30A2\u30AF\u30BB\u30F3\u30C8\u30AB\u30E9\u30FC\u304C\u4F7F\u308F\u308C\u308B\u8981\u7D20\u306E\u8272\u3092\u8A2D\u5B9A\u3057\u307E\u3059\u3002\u672A\u8A2D\u5B9A\u6642\u306F\u30C6\u30FC\u30DE\u306E\u30A2\u30AF\u30BB\u30F3\u30C8\u30AB\u30E9\u30FC\u3092\u4F7F\u3044\u307E\u3059\u3002").setClass("wr-reverse-controls").addColorPicker((picker) => {
+          accentPicker = picker;
+          accentPickerEl = picker.colorPickerEl;
+          const initialAccent = initial.accentColor && /^#[0-9a-fA-F]{6}$/.test(initial.accentColor) ? initial.accentColor : getDefaultAccent();
+          picker.setValue(initialAccent).onChange(async (v) => {
+            await onAccentChange(v);
+          });
+        }).addExtraButton((btn) => {
+          accentResetBtnEl = btn.extraSettingsEl;
+          btn.setIcon("reset").setTooltip("\u521D\u671F\u5024\u306B\u623B\u3059").onClick(async () => {
+            if (!isUnlocked()) return;
+            await onAccentChange(void 0);
+            accentPicker.setValue(getDefaultAccent());
+          });
+        });
+        let subPicker;
+        let subPickerEl = null;
+        let subResetBtnEl = null;
+        let suppressSubChange = false;
+        new import_obsidian.Setting(groupEl).setName("\u30B5\u30D6\u30AB\u30E9\u30FC").setDesc("\u30BF\u30A4\u30E0\u30B9\u30BF\u30F3\u30D7\u30FB\u30A2\u30A4\u30B3\u30F3\u30FB\u30EA\u30B9\u30C8\u30DE\u30FC\u30AB\u30FC\u30FB\u5F15\u7528\u7DDA\u30FB\u30C1\u30A7\u30C3\u30AF\u30DC\u30C3\u30AF\u30B9\u306A\u3069\u30B5\u30D6\u8981\u7D20\u306E\u8272\u3092\u307E\u3068\u3081\u3066\u8A2D\u5B9A\u3057\u307E\u3059\u3002\u672A\u8A2D\u5B9A\u6642\u306F\u80CC\u666F\u8272\u3068\u6587\u5B57\u8272\u304B\u3089\u81EA\u52D5\u7B97\u51FA\u3057\u307E\u3059\u3002").setClass("wr-reverse-controls").addColorPicker((picker) => {
+          subPicker = picker;
+          subPickerEl = picker.colorPickerEl;
+          const initialSub = initial.subColor && /^#[0-9a-fA-F]{6}$/.test(initial.subColor) ? initial.subColor : getDefaultSub(initial);
+          picker.setValue(initialSub).onChange(async (v) => {
+            if (suppressSubChange) return;
+            await onSubChange(v);
+            renderScope();
+            applyLockState();
+          });
+        }).addExtraButton((btn) => {
+          subResetBtnEl = btn.extraSettingsEl;
+          btn.setIcon("reset").setTooltip("\u521D\u671F\u5024\u306B\u623B\u3059").onClick(async () => {
+            if (!isUnlocked()) return;
+            await onSubChange(void 0);
+            suppressSubChange = true;
+            subPicker.setValue(getDefaultSub(initial));
+            suppressSubChange = false;
+            renderScope();
+            applyLockState();
+          });
+        });
+        const scopeContainer = groupEl.createDiv({ cls: "wr-sub-color-scope" });
+        const scopeToggleEls = [];
+        const isSubCustomized = () => !!initial.subColor && /^#[0-9a-fA-F]{6}$/.test(initial.subColor);
+        const renderScope = () => {
+          scopeContainer.empty();
+          scopeToggleEls.length = 0;
+          if (!isSubCustomized()) return;
+          const isOn = (key) => {
+            const s = initial.subColorScope;
+            if (!s) return true;
+            return s[key] !== false;
+          };
+          const groups = [
+            ["buttons", "\u30BF\u30A4\u30E0\u30B9\u30BF\u30F3\u30D7\u30FB\u30E1\u30CB\u30E5\u30FC\u30FB\u30D4\u30F3\u306B\u30B5\u30D6\u30AB\u30E9\u30FC\u3092\u9069\u7528", "\u30AA\u30D5\u306E\u3068\u304D\u306F\u81EA\u52D5\u8A2D\u5B9A\u3055\u308C\u305F\u8272\u306B\u306A\u308A\u307E\u3059\u3002"],
+            ["quote", "\u5F15\u7528\u306B\u30B5\u30D6\u30AB\u30E9\u30FC\u3092\u9069\u7528", "\u30AA\u30D5\u306E\u3068\u304D\u306F\u81EA\u52D5\u8A2D\u5B9A\u3055\u308C\u305F\u8272\u306B\u306A\u308A\u307E\u3059\u3002"],
+            ["list", "\u30EA\u30B9\u30C8\u30FB\u30C1\u30A7\u30C3\u30AF\u30DC\u30C3\u30AF\u30B9\u306B\u30B5\u30D6\u30AB\u30E9\u30FC\u3092\u9069\u7528", "\u30AA\u30D5\u306E\u3068\u304D\u306F\u81EA\u52D5\u8A2D\u5B9A\u3055\u308C\u305F\u8272\u306B\u306A\u308A\u307E\u3059\u3002"],
+            ["ogp", "OGP\u30AB\u30FC\u30C9\u306B\u30B5\u30D6\u30AB\u30E9\u30FC\u3092\u9069\u7528", "\u30AA\u30D5\u306E\u3068\u304D\u306F\u81EA\u52D5\u8A2D\u5B9A\u3055\u308C\u305F\u8272\u306B\u306A\u308A\u307E\u3059\u3002"]
+          ];
+          for (const [key, name, desc] of groups) {
+            new import_obsidian.Setting(scopeContainer).setName(name).setDesc(desc).addToggle((tg) => {
+              scopeToggleEls.push(tg.toggleEl);
+              tg.setValue(isOn(key)).onChange(async (v) => {
+                await onScopeChange(key, v);
+              });
+            });
+          }
+        };
+        const setDisabled = (el2, disabled) => {
+          if (!el2) return;
+          if (disabled) {
+            el2.setAttr("disabled", "true");
+            el2.setAttr("aria-disabled", "true");
+            el2.addClass("wr-tag-rule-disabled");
+          } else {
+            el2.removeAttribute("disabled");
+            el2.removeAttribute("aria-disabled");
+            el2.removeClass("wr-tag-rule-disabled");
+          }
+        };
+        const applyLockState = () => {
+          const unlocked = isUnlocked();
+          groupEl.toggleClass("wr-tag-rule-locked", !unlocked);
+          setDisabled(tagInputEl, !unlocked);
+          setDisabled(bgPickerEl, !unlocked);
+          setDisabled(fgPickerEl, !unlocked);
+          setDisabled(accentPickerEl, !unlocked);
+          setDisabled(accentResetBtnEl, !unlocked);
+          setDisabled(subPickerEl, !unlocked);
+          setDisabled(subResetBtnEl, !unlocked);
+          setDisabled(trailingBtnEl, !unlocked);
+          for (const el2 of scopeToggleEls) setDisabled(el2, !unlocked);
+          if (lockBtnEl) {
+            (0, import_obsidian.setIcon)(lockBtnEl, unlocked ? "lock-keyhole-open" : "lock-keyhole");
+            lockBtnEl.setAttr(
+              "aria-label",
+              unlocked ? "\u30ED\u30C3\u30AF\u3059\u308B" : "\u7DE8\u96C6\u3059\u308B\u306B\u306F\u30ED\u30C3\u30AF\u3092\u89E3\u9664"
+            );
+          }
+        };
+        renderScope();
+        applyLockState();
+      };
+      const isEmpty = this.plugin.settings.tagColorRules.length === 0;
+      if (isEmpty) {
+        const placeholderBg = getDefaultBg();
+        const placeholderText2 = getDefaultText();
+        const placeholder = {
+          tag: "",
+          bgColor: placeholderBg,
+          textColor: placeholderText2
+        };
+        const promoteIfNeeded = async () => {
+          const hasTag = placeholder.tag.trim() !== "";
+          const bgChanged = placeholder.bgColor !== placeholderBg;
+          const fgChanged = placeholder.textColor !== placeholderText2;
+          const accentChanged = placeholder.accentColor !== void 0;
+          const subChanged = placeholder.subColor !== void 0;
+          if (hasTag || bgChanged || fgChanged || accentChanged || subChanged) {
+            this.plugin.settings.tagColorRules.push({ ...placeholder });
+            await this.plugin.saveSettings();
+            this.plugin.applyTagColorRules();
+            this.plugin.refreshAllWrDecorations();
+            renderRules();
+          }
+        };
+        buildRuleGroup(
+          true,
+          1,
+          0,
+          placeholder,
+          async (v) => {
+            placeholder.tag = v;
+            await promoteIfNeeded();
+          },
+          async (v) => {
+            placeholder.bgColor = v;
+            await promoteIfNeeded();
+          },
+          async (v) => {
+            placeholder.textColor = v;
+            await promoteIfNeeded();
+          },
+          async (v) => {
+            if (v === void 0) delete placeholder.accentColor;
+            else placeholder.accentColor = v;
+            await promoteIfNeeded();
+          },
+          async (v) => {
+            if (v === void 0) {
+              delete placeholder.subColor;
+              delete placeholder.subColorScope;
+            } else {
+              placeholder.subColor = v;
+            }
+            await promoteIfNeeded();
+          },
+          async (key, value) => {
+            var _a;
+            const current = (_a = placeholder.subColorScope) != null ? _a : {
+              buttons: true,
+              quote: true,
+              list: true,
+              ogp: true
+            };
+            current[key] = value;
+            placeholder.subColorScope = current;
+            await promoteIfNeeded();
+          },
+          null
+        );
+        addBtnContainer.empty();
+        return;
+      }
+      const ruleCount = this.plugin.settings.tagColorRules.length;
+      this.plugin.settings.tagColorRules.forEach((rule, idx) => {
+        const trailing = ruleCount === 1 ? {
+          kind: "reset",
+          handler: async () => {
+            rule.tag = "";
+            rule.bgColor = getDefaultBg();
+            rule.textColor = getDefaultText();
+            delete rule.accentColor;
+            delete rule.subColor;
+            delete rule.subColorScope;
+            await this.plugin.saveSettings();
+            this.plugin.applyTagColorRules();
+            this.plugin.refreshAllWrDecorations();
+            renderRules();
+          }
+        } : {
+          kind: "delete",
+          handler: async () => {
+            this.plugin.settings.tagColorRules.splice(idx, 1);
+            await this.plugin.saveSettings();
+            this.plugin.applyTagColorRules();
+            this.plugin.refreshAllWrDecorations();
+            renderRules();
+          }
+        };
+        buildRuleGroup(
+          idx === 0,
+          idx + 1,
+          idx,
+          rule,
+          async (v) => {
+            rule.tag = v;
+            await this.plugin.saveSettings();
+            this.plugin.applyTagColorRules();
+            this.plugin.refreshAllWrDecorations();
+          },
+          async (v) => {
+            rule.bgColor = v;
+            await this.plugin.saveSettings();
+            this.plugin.applyTagColorRules();
+          },
+          async (v) => {
+            rule.textColor = v;
+            await this.plugin.saveSettings();
+            this.plugin.applyTagColorRules();
+          },
+          async (v) => {
+            if (v === void 0) {
+              delete rule.accentColor;
+            } else {
+              rule.accentColor = v;
+            }
+            await this.plugin.saveSettings();
+            this.plugin.applyTagColorRules();
+          },
+          async (v) => {
+            if (v === void 0) {
+              delete rule.subColor;
+              delete rule.subColorScope;
+            } else {
+              rule.subColor = v;
+            }
+            await this.plugin.saveSettings();
+            this.plugin.applyTagColorRules();
+          },
+          async (key, value) => {
+            var _a;
+            const current = (_a = rule.subColorScope) != null ? _a : {
+              buttons: true,
+              quote: true,
+              list: true,
+              ogp: true
+            };
+            current[key] = value;
+            rule.subColorScope = current;
+            await this.plugin.saveSettings();
+            this.plugin.applyTagColorRules();
+          },
+          trailing
+        );
+      });
+      addBtnContainer.empty();
+      new import_obsidian.Setting(addBtnContainer).addButton(
+        (btn) => btn.setButtonText("\u30EB\u30FC\u30EB\u3092\u8FFD\u52A0").setCta().onClick(async () => {
+          const newIndex = this.plugin.settings.tagColorRules.length;
+          this.plugin.settings.tagColorRules.push({
+            tag: "",
+            bgColor: DEFAULT_SETTINGS.bgColorLight,
+            textColor: DEFAULT_SETTINGS.textColorLight
+          });
+          this.unlockedRules.clear();
+          this.unlockedRules.add(newIndex);
+          await this.plugin.saveSettings();
+          this.plugin.applyTagColorRules();
+          renderRules();
+        })
+      );
+    };
+    const renderRules = () => {
+      this.withScrollPreserved(() => renderRulesInner());
+    };
+    renderRulesInner();
+  }
+};
 
-$$`)}insertFenceBlock(e){let t=this.textarea,n=t.selectionStart,o=t.value,s=n>0?o.lastIndexOf(`
-`,n-1)+1:0,l=o.slice(s,n).trim()===""&&(o.indexOf(`
-`,n)===-1||o.slice(n,o.indexOf(`
-`,n)).trim()===""),d=o.slice(0,s),c=o.slice(s);l||(d.length>0&&!d.endsWith(`
+// src/views/WrotView.ts
+var import_obsidian4 = require("obsidian");
+init_memoParser();
 
-`)&&(d+=d.endsWith(`
-`)?`
-`:`
+// src/utils/memoWriter.ts
+async function toggleCheckbox(app, file, lineNumber) {
+  await app.vault.process(file, (data) => {
+    const lines = data.split("\n");
+    if (lineNumber < 0 || lineNumber >= lines.length) return data;
+    const line = lines[lineNumber];
+    const match = line.match(/^((?:>\s?)*- \[)([ x])(\] .*)$/);
+    if (!match) return data;
+    lines[lineNumber] = match[1] + (match[2] === " " ? "x" : " ") + match[3];
+    return lines.join("\n");
+  });
+}
+async function ensureBlockIdOnFence(app, file, memoTimestamp, blockId) {
+  let added = false;
+  await app.vault.process(file, (data) => {
+    const lines = data.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      const m = lines[i].match(/^(```wr\s+)(\S+)(.*)$/);
+      if (!m) continue;
+      if (m[2].trim() !== memoTimestamp) continue;
+      if (m[3].includes(`^${blockId}`)) {
+        added = false;
+        return data;
+      }
+      lines[i] = `${m[1]}${m[2]}${m[3]} ^${blockId}`;
+      added = true;
+      return lines.join("\n");
+    }
+    return data;
+  });
+  return added;
+}
+async function appendMemo(app, file, content) {
+  const time = moment().format("YYYY-MM-DDTHH:mm:ss.SSSZ");
+  const memoBlock = "```wr " + time + "\n" + content + "\n```";
+  await app.vault.process(file, (data) => {
+    if (data.length === 0) return memoBlock;
+    const separator = data.endsWith("\n\n") ? "" : data.endsWith("\n") ? "\n" : "\n\n";
+    return data + separator + memoBlock;
+  });
+}
 
-`),c=`
-`+c);let u=c.replace(/^\n+/,""),f="";u.length>0&&(f=`
-`,c=u);let g=d.length+3;t.value=d+e+f+c,t.selectionStart=t.selectionEnd=g,t.focus(),t.dispatchEvent(new Event("input"))}updateToolbarActive(e,t,n){let o=this.textarea,s=o.selectionStart,l=o.value,d=l.lastIndexOf(`
-`,s-1)+1,c=l.indexOf(`
-`,d),u=l.slice(d,c===-1?void 0:c),f=u.startsWith("- ")&&!u.match(/^- \[[ x]\] /),g=!!u.match(/^- \[[ x]\] /),v=!!u.match(/^\d+\.\s?/);e.toggleClass("wr-toolbar-active",f),t.toggleClass("wr-toolbar-active",g),n.toggleClass("wr-toolbar-active",v)}isInsideMarker(e){let t=this.textarea,n=t.selectionStart,o=t.selectionEnd;if(n===o)return!1;let s=t.value.slice(n,o);return e==="**"?/^\*\*[\s\S]+\*\*$/.test(s):!(!/^\*[\s\S]+\*$/.test(s)||s.startsWith("**")||s.endsWith("**"))}updateEmbedBtnActive(e){let t=this.textarea,n=t.selectionStart,o=t.selectionEnd,s=t.value,l=!1;if(n!==o)l=/^!?\[\[[^\]]*\]\]$/.test(s.slice(n,o));else{let d=s.slice(Math.max(0,n-100),n),c=s.slice(n,n+100);l=!!d.match(/!\[\[([^\]]*?)$/)&&!!c.match(/^([^\]]*?)\]\]/)}e.toggleClass("wr-toolbar-active",l)}toggleInlineWrap(e,t){let n=this.textarea,o=n.selectionStart,s=n.value,l=s.slice(Math.max(0,o-100),o),d=s.slice(o,o+100),c=[["![[","]]",/!\[\[([^\]]*?)$/,/^([^\]]*?)\]\]/],["`","`",/`([^`]*?)$/,/^([^`]*?)`/],["$","$",/\$([^$]*?)$/,/^([^$]*?)\$/]],u=null,f=null,g=null;for(let[w,m,C,b]of c){let r=l.match(C),h=d.match(b);if(r&&h){u=[w,m],f=r,g=h;break}}if(!u||!f||!g){let w=e+t;n.value=s.slice(0,o)+w+s.slice(o),n.selectionStart=n.selectionEnd=o+e.length,n.focus(),n.dispatchEvent(new Event("input"));return}let v=o-f[0].length,L=o+g[0].length,T=f[1]+g[1];u[0]===e?(n.value=s.slice(0,v)+T+s.slice(L),n.selectionStart=n.selectionEnd=v+f[1].length):(n.value=s.slice(0,v)+e+T+t+s.slice(L),n.selectionStart=n.selectionEnd=v+e.length+f[1].length),n.focus(),n.dispatchEvent(new Event("input"))}wrapSelection(e,t){let n=this.textarea,o=n.selectionStart,s=n.selectionEnd;if(o===s)return;let l=n.value,d=["**","*","~~","==","$"],c=e==="*"?["*","**","~~","==","$"]:e==="**"?["**","*","~~","==","$"]:d;for(let g of c){let v=l.slice(o,s);if(!(g==="*"&&(v.startsWith("**")||v.endsWith("**")))&&v.length>=g.length*2&&v.startsWith(g)&&v.endsWith(g)){let L=v.slice(g.length,v.length-g.length);n.value=l.slice(0,o)+L+l.slice(s),n.selectionStart=o,n.selectionEnd=o+L.length,n.focus(),n.dispatchEvent(new Event("input"));return}}let u=!1;for(let g of d){let v=l.slice(o-g.length,o),L=l.slice(s,s+g.length);if(v===g&&L===g){let T=l.slice(0,o-g.length)+l.slice(o,s)+l.slice(s+g.length);if(o-=g.length,s-=g.length,n.value=T,u=!0,g===e){n.selectionStart=o,n.selectionEnd=s,n.focus(),n.dispatchEvent(new Event("input"));return}break}}let f=n.value;n.value=f.slice(0,o)+e+f.slice(o,s)+t+f.slice(s),n.selectionStart=o,n.selectionEnd=s+e.length+t.length,n.focus(),n.dispatchEvent(new Event("input"))}wrapSelectionWithEmbedBrackets(){let e=this.textarea,t=e.selectionStart,n=e.selectionEnd;if(t===n)return;let o=e.value,s=o.slice(t,n),l=s.match(/^(!?)\[\[([^\]]*)\]\]$/);if(l){let f=l[2],g=o.slice(0,t)+f+o.slice(n);e.value=g;let v=t+f.length;e.selectionStart=e.selectionEnd=v,e.focus(),e.dispatchEvent(new Event("input"));return}if(/!?\[\[[^\]]*\]\]/.test(s))return;let d="![["+s+"]]",c=o.slice(0,t)+d+o.slice(n);e.value=c;let u=t+d.length;e.selectionStart=e.selectionEnd=u,e.focus(),e.dispatchEvent(new Event("input"))}toggleBlockPrefix(e){let t=this.textarea,n=t.selectionStart,o=t.selectionEnd,s=t.value,l=s.lastIndexOf(`
-`,n-1)+1,d=s.indexOf(`
-`,o-1),c=d===-1?s.length:d,u=s.slice(l,c),f=u.split(`
-`),L=(f.every(w=>w.startsWith(e))?f.map(w=>w.slice(e.length)):f.map(w=>e+w)).join(`
-`);t.value=s.slice(0,l)+L+s.slice(c);let T=L.length-u.length;t.selectionStart=t.selectionEnd=c+T,t.focus(),t.dispatchEvent(new Event("input"))}openSearch(e){var n,o;let t=(o=(n=this.app.internalPlugins)==null?void 0:n.getPluginById)==null?void 0:o.call(n,"global-search");t!=null&&t.instance?t.instance.openGlobalSearch(`"${e.replace(/"/g,'\\"')}"`):new _.Notice("\u691C\u7D22\u30D7\u30E9\u30B0\u30A4\u30F3\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093")}insertMarkdownLink(){let e=this.textarea,t=e.selectionStart,n=e.selectionEnd;if(t===n)return;let o=e.value,s=o.slice(t,n);e.value=o.slice(0,t)+"["+s+"]()"+o.slice(n);let l=t+1+s.length+2;e.selectionStart=e.selectionEnd=l,e.focus(),e.dispatchEvent(new Event("input"))}openMenu(e,t,n){this.currentMenu&&this.currentMenu.hide();let o=new _.Menu;t(o);let s=o.dom;s==null||s.classList.add("wr-menu"),e.toggleClass("wr-toolbar-active",!0),this.currentMenu=o,o.onHide(()=>{e.toggleClass("wr-toolbar-active",!1),this.currentMenu===o&&(this.currentMenu=null)}),o.showAtMouseEvent(n)}};var he=require("obsidian");Ie();function Tn(a){a.registerMarkdownPostProcessor((i,e)=>{$n(i,a),or(i,a,e==null?void 0:e.sourcePath)}),a.registerEvent(a.app.workspace.on("active-leaf-change",()=>{Ln(a)})),a.registerEvent(a.app.workspace.on("layout-change",()=>{Ln(a)})),a.registerEvent(a.app.vault.on("modify",i=>{i instanceof he.TFile&&(St(i.path),!(Date.now()<a.quoteRefreshSuppressedUntil)&&Pt(a.app,i,e=>a.getTagRuleClassForContent(e),e=>a.getRuleAccentColor(e)))})),a.registerEvent(a.app.vault.on("delete",i=>{i instanceof he.TFile&&(St(i.path),Pt(a.app,i,e=>a.getTagRuleClassForContent(e),e=>a.getRuleAccentColor(e)))}))}function $n(a,i){a.querySelectorAll('code.language-wr, .block-language-wr code, pre > code[class*="language-wr"]').forEach(t=>{let n=t;if(!(t.textContent||"").trim())return;let s=t.closest(".block-language-wr")||t.closest("pre");s instanceof HTMLElement&&rr(s,n,i);let l=t.querySelector(".wr-reading-tag, .wr-reading-url, .wr-internal-link, .wr-inline-code"),d=s==null?void 0:s.querySelector(".wr-reading-list, .wr-blockquote, .wr-embed-img, .wr-plain-text, .wr-codeblock-display, .wr-math-display");l||d||ir(n,i)})}function Ln(a){setTimeout(()=>{document.querySelectorAll(".markdown-reading-view").forEach(i=>{$n(i,a)})},100)}async function or(a,i,e){let t=a.querySelectorAll('code.language-wr, .block-language-wr code, pre > code[class*="language-wr"]');if(t.length===0||!e)return;let n=i.app.vault.getAbstractFileByPath(e);if(!(n instanceof he.TFile))return;let o;try{let s=await i.app.vault.cachedRead(n),{parseMemos:l}=await Promise.resolve().then(()=>(tt(),en));o=l(s)}catch(s){return}t.forEach(s=>{let l=s,d=l.closest(".block-language-wr")||l.closest("pre");if(!(d instanceof HTMLElement)||Array.from(d.classList).some(g=>g.startsWith("wr-block-id-wr-")))return;let c=(l.getAttribute("data-wr-original")||l.textContent||"").trim();if(!c)return;let u=o.find(g=>g.content.trim()===c);if(!u)return;let f=u.time.replace(/[-:.TZ+]/g,"").slice(0,17);d.classList.add(`wr-block-id-wr-${f}`)})}function rr(a,i,e){let t=a.parentElement,n=[a];t&&t.querySelectorAll(".code-block-flair, .copy-code-button").forEach(u=>{u instanceof HTMLElement&&n.push(u)}),a.querySelectorAll(".code-block-flair, .copy-code-button").forEach(u=>{u instanceof HTMLElement&&n.push(u)});for(let u of n){let f=Array.from(u.classList);for(let g of f)/^wr-tag-rule-\d+$/.test(g)&&u.classList.remove(g)}let s=(i.getAttribute("data-wr-original")||i.textContent||"").match(/#[^\s#]+/g)||[],l=e.findTagColorRule(s);if(!l)return;let d=e.settings.tagColorRules.indexOf(l);if(d<0)return;let c=`wr-tag-rule-${d}`;for(let u of n)u.classList.add(c)}function ir(a,i){var v;let e=a.closest(".block-language-wr")||a.closest("pre");if(!e)return;let t=e.parentElement||e;t.querySelectorAll(".code-block-flair, .copy-code-button").forEach(L=>{L.classList.add("wr-flair-bg")}),e.querySelectorAll(".code-block-flair, .copy-code-button").forEach(L=>{L.classList.add("wr-flair-bg")});let n=[...Array.from(t.querySelectorAll(".copy-code-button")),...Array.from(e.querySelectorAll(".copy-code-button"))],o=()=>{var T;let L=Array.from(e.classList).find(w=>/^wr-tag-rule-\d+$/.test(w));if(L){let w=parseInt(L.slice(12),10),m=(T=i.settings.tagColorRules)==null?void 0:T[w];if(m!=null&&m.accentColor&&/^#[0-9a-fA-F]{6}$/.test(m.accentColor))return m.accentColor}return getComputedStyle(document.body).getPropertyValue("--text-accent").trim()||"#adc718"};for(let L of n)L.addEventListener("click",()=>{let T=o(),w=()=>{L.querySelectorAll("svg, svg *").forEach(m=>{m.setAttribute("stroke",T),m.setAttribute("color",T)})};w(),setTimeout(w,50),setTimeout(w,150)});e.querySelectorAll(".wr-media-area").forEach(L=>L.remove());let s=L=>{let T=i.app.metadataCache.getFirstLinkpathDest(L,"");return T?i.app.vault.getResourcePath(T):null},l=a.textContent||"",d=/\[\[[^\[\]]+#\^wr-\d{17}\]\]/.test(l);lr(a,i);let c=[],u=[],f=[a];e.querySelectorAll(".wr-reading-list, .wr-blockquote, .wr-plain-text").forEach(L=>{f.push(L)});for(let L of f){let T=document.createTreeWalker(L,NodeFilter.SHOW_TEXT),w,m=[];for(;w=T.nextNode();){let C=w.textContent||"";if(!C.includes("#")&&!C.match(/(?:https?|obsidian):\/\//)&&!C.includes("[[")&&!C.includes("`")&&!C.includes("*")&&!C.includes("~")&&!C.includes("=")&&!C.includes("$"))continue;let b=document.createDocumentFragment(),r=C.split(/(\$[^$]+\$|`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*|~~[^~]+~~|==[^=]+=+|!\[\[[^\]]+\]\]|\[\[[^\]]+\]\]|\[[^\[\]\n]+\]\((?:https?|obsidian):\/\/[^\s)]+\)|#[^\s#]+|(?:https?|obsidian):\/\/[^\s<>"'\]]+)/g),h=!1,p=/\.(png|jpg|jpeg|gif|svg|webp|bmp)$/i;for(let y of r){if(!y)continue;let D=y.match(/^`([^`]+)`$/);if(D){let q=document.createElement("span");q.className="wr-inline-code";let A=document.createElement("span");A.className="wr-backtick",A.textContent="`";let E=document.createElement("span");E.className="wr-backtick",E.textContent="`",q.appendChild(A),q.appendChild(document.createTextNode(D[1])),q.appendChild(E),b.appendChild(q),h=!0;continue}let R=[[/^\*\*(.+)\*\*$/,"strong","**"],[/^\*(.+)\*$/,"em","*"],[/^~~(.+)~~$/,"del","~~"],[/^==(.+)==$/,"mark","=="]],F=!1;for(let[q,A,E]of R){let N=y.match(q);if(N){let k=document.createElement(A);A==="mark"&&(k.className="wr-highlight");let P=document.createElement("span");P.className="wr-backtick",P.textContent=E;let O=document.createElement("span");O.className="wr-backtick",O.textContent=E,k.appendChild(P),k.appendChild(document.createTextNode(N[1])),k.appendChild(O),b.appendChild(k),h=!0,F=!0;break}}if(F)continue;let Q=y.match(/^\[([^\[\]\n]+)\]\(((?:https?|obsidian):\/\/[^\s)]+)\)$/);if(Q){let q=Q[1],A=Q[2];if(re(A)){let E=document.createElement("span");E.className="wr-reading-url",E.textContent=q,E.addEventListener("pointerup",N=>{N.preventDefault(),N.stopPropagation(),re(A)&&window.open(A,"_blank")}),b.appendChild(E),A.startsWith("http")&&c.push(A),h=!0}else b.appendChild(document.createTextNode(y));continue}let K=y.match(/^!\[\[(.+)\]\]$/),z=!K&&y.match(/^\[\[(.+)\]\]$/);if(K){let q=K[1];if(p.test(q)){let A=i.app.metadataCache.getFirstLinkpathDest(q,"");if(A){let E=document.createElement("img");E.className=d?"wr-embed-img wr-rv-inline-img":"wr-embed-img",E.src=i.app.vault.getResourcePath(A),E.alt=q,E.loading="lazy",d?b.appendChild(E):u.push(E),h=!0;continue}else{let E=document.createElement("span");E.className="wr-embed-missing",E.textContent=`![[${q}]]`,b.appendChild(E)}h=!0;continue}else{let A=document.createElement("a"),E=i.app.metadataCache.getFirstLinkpathDest(q,"")!==null;A.className=E?"wr-internal-link":"wr-internal-link wr-internal-link-unresolved",A.textContent=q,A.addEventListener("click",N=>{N.preventDefault(),N.stopPropagation(),i.app.workspace.openLinkText(q,"",!1)}),b.appendChild(A)}h=!0}else if(z){let q=z[1],A=q.match(Ye);if(A){let E=document.createElement("span");E.className="wr-quote-card-slot",xe(E,A[1],A[2],i.app,"",{timestampFormat:i.settings.timestampFormat,resolveRuleClass:N=>i.getTagRuleClassForContent(N),resolveRuleAccent:N=>i.getRuleAccentColor(N)}),b.appendChild(E)}else{let E=document.createElement("a"),N=i.app.metadataCache.getFirstLinkpathDest(q,"")!==null;E.className=N?"wr-internal-link":"wr-internal-link wr-internal-link-unresolved",E.textContent=q,E.addEventListener("click",k=>{k.preventDefault(),k.stopPropagation(),i.app.workspace.openLinkText(q,"",!1)}),b.appendChild(E)}h=!0}else if(y.match(/^#[^\s#]+$/)){let q=document.createElement("span");q.className="wr-reading-tag",q.textContent=y,b.appendChild(q),h=!0}else if(y.match(/^\$([^$]+)\$$/)){let q=y.slice(1,-1),A=document.createElement("span");A.className="wr-math";try{let{renderMath:E,finishRenderMath:N}=require("obsidian"),k=E(q,!1);A.appendChild(k),N()}catch(E){A.textContent=y}b.appendChild(A),h=!0}else if(y.match(/^obsidian:\/\//)){let q=y.replace(/[.,;:!?)]+$/,""),A=y.slice(q.length),E=null;try{let ee=new URL(q).searchParams.get("file");if(ee){let Z=decodeURIComponent(ee);E=Z.split("/").pop()||Z}}catch(M){}let N=(E==null?void 0:E.toLowerCase())||"",k=p.test(N),P=E?i.app.metadataCache.getFirstLinkpathDest(E,""):null,O=k&&P!==null,U=k&&P===null;if(O)A&&b.appendChild(document.createTextNode(A));else{let M=document.createElement("a");M.className=U?"wr-internal-link wr-internal-link-unresolved":"wr-internal-link",M.textContent=E||q,M.addEventListener("click",ee=>{ee.preventDefault(),ee.stopPropagation(),re(q)&&window.open(q)}),b.appendChild(M),A&&b.appendChild(document.createTextNode(A))}c.push(q),h=!0}else if(y.match(/^https?:\/\//)){let q=y.replace(/[.,;:!?)]+$/,""),A=y.slice(q.length),E=document.createElement("span");E.className="wr-reading-url",E.textContent=q,E.addEventListener("pointerup",N=>{N.preventDefault(),N.stopPropagation(),re(q)&&window.open(q,"_blank")}),b.appendChild(E),A&&b.appendChild(document.createTextNode(A)),c.push(q),h=!0}else b.appendChild(document.createTextNode(y))}h&&m.push({node:w,fragments:b})}for(let{node:C,fragments:b}of m)(v=C.parentNode)==null||v.replaceChild(b,C)}let g=a.closest(".block-language-wr")||a.closest("pre");if(g){let L=d?g.querySelector(".wr-quote-card-slot"):null,T=w=>{L&&L.parentNode?L.parentNode.insertBefore(w,L):g.appendChild(w)};if(u.length>0)for(let w of u)T(w);if(c.length>0){let w=Pe(c.join(" ")).filter(m=>m.type==="image"||!m.url.startsWith("obsidian://"));if(w.length>0&&!g.querySelector(".wr-media-area")){let m=document.createElement("div");m.className="wr-media-area",T(m),st(m,w,i.ogpCache,s)}}}}function sr(a,i){let e=document.createElement("div");e.className="wr-codeblock-display";let t="~".repeat(Math.max(3,a.fenceTildes)),n=(a.lang?`${t}${a.lang}
-`:`${t}
-`)+a.code+`
-${t}`;return he.MarkdownRenderer.render(i.app,n,e,"",i).catch(()=>{e.empty();let s=e.createEl("pre").createEl("code");a.lang&&s.addClass(`language-${a.lang}`),s.textContent=a.code}),e}function ar(a){let i=document.createElement("div");i.className="wr-math-display";try{let e=(0,he.renderMath)(a.tex,!0);i.appendChild(e),(0,he.finishRenderMath)()}catch(e){i.textContent=a.tex}return i}function lr(a,i){var w,m,C;let e=a.textContent||"",t=Re(e),n=a.closest(".block-language-wr")||a.closest("pre");if(!n)return;a.textContent="";let o=[],s=null,l=null,d=[],c=[],u=null,f=null,g=0,v=()=>{d.length>0&&(o.push(d.join(`
-`)),d=[])},L=()=>{s&&(o.push(s),s=null,l=null)};for(let b of t){if(b.kind==="codeblock"){L(),v(),o.push(sr(b,i));continue}if(b.kind==="mathblock"){L(),v(),o.push(ar(b));continue}let r=b.text.split(`
-`),h=b.startLine;for(let p=0;p<r.length;p++){let y=h+p,D=r[p],R=D.match(/^((?:>\s?)+)(.*)$/),F=!R&&D.match(/^- \[([ x])\] (.*)$/),Q=!R&&!F&&D.match(/^- (.+)$/),K=!R&&!F&&!Q&&D.match(/^\d+\.\s?(.+)$/);if(R){s&&(o.push(s),s=null,l=null),v();let z=(R[1].match(/>/g)||[]).length,q=R[2],A=o[o.length-1];if(!(c.length>0&&A instanceof HTMLElement&&A===c[0])){let U=document.createElement("blockquote");U.className="wr-blockquote",o.push(U),c=[U]}for(;c.length>z;)c.pop();for(;c.length<z;){let U=c[c.length-1],M=document.createElement("blockquote");M.className="wr-blockquote",U.appendChild(M),c.push(M)}let N=c[c.length-1],k=q.match(/^- \[([ x])\] (.*)$/),P=!k&&q.match(/^- (.+)$/),O=!k&&!P&&q.match(/^\d+\.\s?(.+)$/);if(k||P){(u===null||f!=="ul"||g!==z||u.parentElement!==N)&&(u=document.createElement("ul"),u.className="wr-reading-list",N.appendChild(u),f="ul",g=z);let U=document.createElement("li");if(k){U.className="wr-check-item";let M=document.createElement("input");M.type="checkbox",k[1]==="x"&&(M.checked=!0);let ee=y;if(M.addEventListener("click",async()=>{let Z=i.app.workspace.getActiveFile();if(!Z)return;let se=(await i.app.vault.read(Z)).split(`
-`),ae=e.trim();for(let te=0;te<se.length;te++)if(se[te].match(/^```wr\s+/)){let ye=[],de=te+1;for(;de<se.length&&se[de].trim()!=="```";)ye.push(se[de]),de++;if(ye.join(`
-`).trim()===ae){await Fe(i.app,Z,te+1+ee);return}}}),U.appendChild(M),k[1]==="x"&&i.settings.checkStrikethrough){let Z=document.createElement("span");Z.className="wr-check-done",Z.appendChild(document.createTextNode(k[2])),U.appendChild(Z)}else U.appendChild(document.createTextNode(k[2]))}else P&&U.appendChild(document.createTextNode(P[1]));u.appendChild(U)}else if(O){(u===null||f!=="ol"||g!==z||u.parentElement!==N)&&(u=document.createElement("ol"),u.className="wr-reading-list",N.appendChild(u),f="ol",g=z);let U=document.createElement("li");U.appendChild(document.createTextNode(O[1])),u.appendChild(U)}else u=null,f=null,N.childNodes.length>0&&((w=N.lastChild)==null?void 0:w.nodeName)!=="OL"&&((m=N.lastChild)==null?void 0:m.nodeName)!=="UL"&&((C=N.lastChild)==null?void 0:C.nodeName)!=="BLOCKQUOTE"&&N.appendChild(document.createElement("br")),N.appendChild(document.createTextNode(q))}else if(F||Q){c=[],u=null,f=null,l!=="ul"&&(s&&o.push(s),v(),s=document.createElement("ul"),s.className="wr-reading-list",l="ul");let z=document.createElement("li");if(F){z.className="wr-check-item";let q=document.createElement("input");q.type="checkbox",F[1]==="x"&&(q.checked=!0);let A=y;if(q.addEventListener("click",async()=>{let E=i.app.workspace.getActiveFile();if(!E)return;let k=(await i.app.vault.read(E)).split(`
-`),P=e.trim();for(let O=0;O<k.length;O++)if(k[O].match(/^```wr\s+/)){let U=[],M=O+1;for(;M<k.length&&k[M].trim()!=="```";)U.push(k[M]),M++;if(U.join(`
-`).trim()===P){await Fe(i.app,E,O+1+A);return}}}),z.appendChild(q),F[1]==="x"&&i.settings.checkStrikethrough){let E=document.createElement("span");E.className="wr-check-done",E.appendChild(document.createTextNode(F[2])),z.appendChild(E)}else z.appendChild(document.createTextNode(F[2]))}else Q&&z.appendChild(document.createTextNode(Q[1]));s.appendChild(z)}else if(K){c=[],u=null,f=null,l!=="ol"&&(s&&o.push(s),v(),s=document.createElement("ol"),s.className="wr-reading-list",l="ol");let z=document.createElement("li");z.appendChild(document.createTextNode(K[1])),s.appendChild(z)}else c=[],u=null,f=null,s&&(o.push(s),s=null,l=null),d.push(D)}}for(s&&o.push(s),v(),a.setAttribute("data-wr-original",e);o.length>0&&o[o.length-1]==="";)o.pop();a.classList.add("wr-code-hidden");let T=!1;for(let b of o)if(typeof b=="string"){if(b.trim()===""&&T){let r=document.createElement("div");r.className="wr-spacer",n.appendChild(r)}else if(b.trim()!==""){let r=document.createElement("div");r.className="wr-plain-text",r.textContent=b,n.appendChild(r),T=!0}}else n.appendChild(b),T=!0}var S=require("@codemirror/view"),qe=require("@codemirror/state"),Bn=require("obsidian");Ie();var Mn=qe.StateEffect.define(),Vt=qe.StateEffect.define(),zt=qe.StateEffect.define(),cr=S.Decoration.mark({class:"wr-tag-highlight"}),Sn=S.Decoration.mark({class:"wr-url-highlight"}),Pn=S.Decoration.mark({class:"wr-ol-highlight"}),dr=S.Decoration.mark({class:"wr-internal-link-highlight"}),ur=S.Decoration.mark({class:"wr-internal-link-highlight wr-internal-link-unresolved"}),qn=S.Decoration.mark({class:"wr-inline-code-highlight"}),pr=S.Decoration.mark({class:"wr-math-highlight"}),Dn=S.Decoration.mark({class:"wr-bold-highlight"}),Nn=S.Decoration.mark({class:"wr-italic-highlight"}),Rn=S.Decoration.mark({class:"wr-strike-highlight"}),In=S.Decoration.mark({class:"wr-highlight-highlight"}),ie=S.Decoration.replace({}),Fn=S.Decoration.line({class:"wr-hidden-line"}),An=new Map;function Le(a){let i=a.filter(Boolean).join(" "),e=An.get(i);return e||(e=S.Decoration.line({class:i}),An.set(i,e)),e}var lt=class extends S.WidgetType{toDOM(){let i=document.createElement("span");return i.className="wr-lp-marker wr-lp-bullet",i.textContent="\u2022",i}eq(){return!0}},ct=class extends S.WidgetType{constructor(e,t){super();this.checked=e;this.pos=t}toDOM(e){let t=document.createElement("span");t.className="wr-lp-marker wr-lp-check";let n=document.createElement("input");return n.type="checkbox",n.checked=this.checked,n.addEventListener("click",o=>{o.preventDefault();let s=!this.checked;n.checked=s;let l=s?"x":" ";e.dispatch({changes:{from:this.pos+3,to:this.pos+4,insert:l}})}),t.appendChild(n),t}updateDOM(e){let t=e.querySelector('input[type="checkbox"]');return t?(t.checked!==this.checked&&(t.checked=this.checked),!0):!1}eq(e){return this.checked===e.checked}ignoreEvent(){return!1}},dt=class extends S.WidgetType{constructor(e){super();this.label=e}toDOM(){let e=document.createElement("span");return e.className="wr-lp-marker wr-lp-ol",e.textContent=this.label,e}eq(e){return this.label===e.label}},Nt=class extends S.WidgetType{constructor(e,t,n=!1){super();this.url=e;this.displayName=t;this.unresolved=n}toDOM(){let e=document.createElement("a");return e.className=this.unresolved?"wr-internal-link wr-internal-link-unresolved":"wr-internal-link",e.textContent=this.displayName,e.addEventListener("click",t=>{t.preventDefault(),t.stopPropagation(),re(this.url)&&window.open(this.url)}),e}eq(e){return this.url===e.url&&this.unresolved===e.unresolved}ignoreEvent(){return!1}},Rt=class extends S.WidgetType{constructor(e,t){super();this.label=e;this.url=t}toDOM(){let e=document.createElement("a");return e.className="wr-url-highlight",e.textContent=this.label,e.addEventListener("click",t=>{t.preventDefault(),t.stopPropagation(),re(this.url)&&window.open(this.url,"_blank")}),e}eq(e){return this.url===e.url&&this.label===e.label}ignoreEvent(){return!1}},It=class extends S.WidgetType{constructor(e,t,n){super();this.fileName=e;this.app=t;this.resolved=n}toDOM(){let e=document.createElement("a");return e.className=this.resolved?"wr-internal-link":"wr-internal-link wr-internal-link-unresolved",e.textContent=this.fileName,e.addEventListener("click",t=>{t.preventDefault(),t.stopPropagation(),this.app.workspace.openLinkText(this.fileName,"",!1)}),e}eq(e){return this.fileName===e.fileName&&this.resolved===e.resolved}ignoreEvent(){return!1}},Ft=class extends S.WidgetType{constructor(e){super();this.fileName=e}toDOM(){let e=document.createElement("span");return e.className="wr-embed-missing",e.textContent=`![[${this.fileName}]]`,e}eq(e){return this.fileName===e.fileName}ignoreEvent(){return!1}},At=class extends S.WidgetType{constructor(e){super();this.tex=e}toDOM(){let e=document.createElement("span");e.className="wr-math";try{let{renderMath:t,finishRenderMath:n}=require("obsidian"),o=t(this.tex,!1);e.appendChild(o),n()}catch(t){e.textContent=`$${this.tex}$`}return e}eq(e){return this.tex===e.tex}},Ot=class extends S.WidgetType{constructor(e,t,n,o,s){super();this.code=e;this.lang=t;this.app=n;this.plugin=o;this.ruleClass=s}toDOM(){let e=document.createElement("div");e.className="wr-codeblock-display wr-lp-codeblock wr-codeblock-line",this.ruleClass&&e.classList.add(this.ruleClass);let t=e.createEl("pre");this.lang&&(t.className=`language-${this.lang}`);let n=t.createEl("code");return this.lang&&(n.className=`language-${this.lang}`),n.textContent=this.code,this.lang&&(0,Bn.loadPrism)().then(o=>{o.highlightElement(n)}).catch(()=>{}),e}eq(e){return this.code===e.code&&this.lang===e.lang&&this.ruleClass===e.ruleClass}ignoreEvent(){return!1}},Ht=class extends S.WidgetType{constructor(e,t){super();this.tex=e;this.ruleClass=t}toDOM(){let e=document.createElement("div");e.className="wr-math-display wr-lp-mathblock wr-codeblock-line",this.ruleClass&&e.classList.add(this.ruleClass);try{let{renderMath:t,finishRenderMath:n}=require("obsidian"),o=t(this.tex,!0);e.appendChild(o),n()}catch(t){e.textContent=this.tex}return e}eq(e){return this.tex===e.tex&&this.ruleClass===e.ruleClass}ignoreEvent(){return!1}},Dt=/\.(png|jpg|jpeg|gif|svg|webp|bmp)$/i,Bt=class extends S.WidgetType{constructor(e,t){super();this.images=e;this.ruleClass=t}toDOM(){let e=document.createElement("div");e.className="wr-media-area wr-lp-media",this.ruleClass&&e.classList.add(this.ruleClass);for(let{src:t,alt:n}of this.images){let o=document.createElement("img");o.className="wr-embed-img",o.src=t,o.alt=n,o.loading="lazy",e.appendChild(o)}return e}eq(e){return this.ruleClass!==e.ruleClass||this.images.length!==e.images.length?!1:this.images.every((t,n)=>t.src===e.images[n].src)}ignoreEvent(){return!0}},Wt=class extends S.WidgetType{constructor(e,t){super();this.src=e;this.alt=t}toDOM(){let e=document.createElement("div");e.className="wr-lp-inline-img-wrapper";let t=document.createElement("img");return t.className="wr-embed-img wr-lp-inline-img",t.src=this.src,t.alt=this.alt,t.loading="lazy",e.appendChild(t),e}eq(e){return this.src===e.src&&this.alt===e.alt}ignoreEvent(){return!0}},_t=class extends S.WidgetType{constructor(e,t,n,o){super();this.parsedUrls=e;this.ogpCache=t;this.ruleClass=n;this.resolveImagePath=o;this.cachedSnapshot=e.map(s=>{let l=t.get(s.url);return!!(l&&(l.title||l.description))})}eq(e){if(this.ruleClass!==e.ruleClass||this.parsedUrls.length!==e.parsedUrls.length)return!1;for(let t=0;t<this.parsedUrls.length;t++)if(this.parsedUrls[t].url!==e.parsedUrls[t].url||this.cachedSnapshot[t]!==e.cachedSnapshot[t])return!1;return!0}toDOM(){let e=document.createElement("div");e.className="wr-media-area wr-lp-media",this.ruleClass&&e.classList.add(this.ruleClass);for(let t of this.parsedUrls)if(t.type==="image")ot(e,t.url,this.resolveImagePath);else{let n=this.ogpCache.get(t.url);n&&(n.title||n.description)&&(t.type==="twitter"?it(e,n):rt(e,n))}return e}ignoreEvent(){return!1}},Ut=class extends S.WidgetType{constructor(e,t,n,o,s,l,d,c,u,f,g){super();this.fileName=e;this.blockId=t;this.parsedUrls=n;this.app=o;this.currentFilePath=s;this.ruleClass=l;this.timestampFormat=d;this.ogpCache=c;this.resolveImagePath=u;this.resolveQuoteRuleClass=f;this.resolveQuoteRuleAccent=g;this.cachedSnapshot=n.map(v=>{let L=c.get(v.url);return!!(L&&(L.title||L.description))})}eq(e){if(this.fileName!==e.fileName||this.blockId!==e.blockId||this.ruleClass!==e.ruleClass||this.timestampFormat!==e.timestampFormat||this.parsedUrls.length!==e.parsedUrls.length)return!1;for(let t=0;t<this.parsedUrls.length;t++)if(this.parsedUrls[t].url!==e.parsedUrls[t].url||this.cachedSnapshot[t]!==e.cachedSnapshot[t])return!1;return!0}toDOM(){let e=document.createElement("div");if(e.className="wr-quote-block",this.ruleClass&&e.classList.add(this.ruleClass),this.parsedUrls.length>0){let n=document.createElement("div");n.className="wr-media-area wr-lp-media",this.ruleClass&&n.classList.add(this.ruleClass);let o=!1;for(let s of this.parsedUrls)if(s.type==="image")ot(n,s.url,this.resolveImagePath),o=!0;else{let l=this.ogpCache.get(s.url);l&&(l.title||l.description)&&(s.type==="twitter"?it(n,l):rt(n,l),o=!0)}o&&e.appendChild(n)}let t=document.createElement("span");return t.className="wr-quote-card-slot wr-lp-quote-card",this.ruleClass&&t.classList.add(this.ruleClass),xe(t,this.fileName,this.blockId,this.app,this.currentFilePath,{timestampFormat:this.timestampFormat,resolveRuleClass:this.resolveQuoteRuleClass,resolveRuleAccent:this.resolveQuoteRuleAccent}),e.appendChild(t),e}ignoreEvent(){return!0}};function On(a,i){let e=[],t=a.state.doc;for(let n=1;n<=t.lines;n++){if(!t.line(n).text.trim().startsWith("```wr"))continue;let s=n,l=0;for(let b=s+1;b<=t.lines;b++)if(t.line(b).text.trim()==="```"){l=b;break}if(l===0)continue;let d=[];for(let b=s+1;b<l;b++)d.push(t.line(b).text);let c=Zt(d),u=new Set;for(let b of c)for(let r=b.startLine;r<=b.endLine;r++)u.add(s+1+r);let f=[],g=[];for(let b=s+1;b<l;b++){if(u.has(b))continue;let r=t.line(b),h=/(?:https?|obsidian):\/\/[^\s<>"'\]]+/g,p;for(;(p=h.exec(r.text))!==null;)f.push(p[0]);let y=r.text.match(/#[^\s#]+/g);y&&g.push(...y)}let v=null;if(i){let b=i.findTagColorRule(g);if(b){let r=i.settings.tagColorRules.indexOf(b);r>=0&&(v=`wr-tag-rule-${r}`)}}let T=t.line(s).text.match(/\^(wr-\d{17})/),w=T?T[1]:null,m=!1,C=-1;for(let b=s+1;b<l;b++)if(/\[\[[^\[\]]+#\^wr-\d{17}\]\]/.test(t.line(b).text)){m=!0,C=b;break}e.push({startLn:s,endLn:l,urlTexts:f,ruleClass:v,innerBlocks:c,blockId:w,hasQuoteMarker:m,quoteLineIdx:C}),n=l}return e}function Hn(a,i,e,t,n,o){var f;let s=new qe.RangeSetBuilder,l=a.state.doc,d=!a.contentDOM.closest(".is-live-preview"),c=new Set;for(let g of a.state.selection.ranges){let v=l.lineAt(g.from).number,L=l.lineAt(g.to).number;for(let T=v;T<=L;T++)c.add(T)}let u=g=>{for(let v=g.startLn;v<=g.endLn;v++)if(c.has(v))return!0;return!1};try{for(let g of e){let v=l.line(g.startLn);s.add(v.from,v.from,Le(["wr-codeblock-line",g.ruleClass,g.blockId?`wr-block-id-${g.blockId}`:null]));let L=u(g),T=[],w=new Map,m=new Set;for(let h of g.innerBlocks){let p=g.startLn+1+h.startLine,y=g.startLn+1+h.endLine;w.set(p,{range:h,docStart:p,docEnd:y});for(let D=p;D<=y;D++)m.add(D)}for(let h=g.startLn+1;h<g.endLn;h++){let p=l.line(h),y=d||L,D=w.get(h);if(y&&m.has(h)){s.add(p.from,p.from,Le(["wr-codeblock-line",g.ruleClass,g.blockId?`wr-block-id-${g.blockId}`:null]));continue}if(D&&!y){let{range:x,docStart:$,docEnd:H}=D,W=[],X=$+1,le=H-1;for(let j=X;j<=le;j++)W.push(l.line(j).text);let J;if(x.kind==="mathblock"&&$===H){let j=l.line($).text.trim();J=j.startsWith("$$")&&j.endsWith("$$")&&j.length>=4?j.slice(2,-2):j}else J=W.join(`
-`);s.add(p.from,p.from,Le(["wr-codeblock-line",g.ruleClass,g.blockId?`wr-block-id-${g.blockId}`:null]));let Te=l.line($),fe=x.kind==="codeblock"?S.Decoration.replace({widget:new Ot(J,x.lang||"",t,n,g.ruleClass)}):S.Decoration.replace({widget:new Ht(J,g.ruleClass)});s.add(Te.from,Te.to,fe);for(let j=$+1;j<=H;j++){let ce=l.line(j);s.add(ce.from,ce.from,Fn),ce.to>ce.from&&s.add(ce.from,ce.to,S.Decoration.replace({}))}h=H;continue}if(m.has(h))continue;let R=p.text.match(/^(?:>\s?)+/),F=R?R[0].length:0,Q=R?(R[0].match(/>/g)||[]).length:0,K=Q>0?p.text.slice(F):"",z=Q>0&&/^(?:- \[[ x]\] |- |\d+\.\s?)/.test(K),q=Q>0,A=!y&&/obsidian:\/\//.test(p.text),E=(()=>{if(y||g.hasQuoteMarker)return!1;let x=p.text.trim();if(!/^!\[\[[^\]]+\]\]$/.test(x))return!1;let $=x.slice(3,-2);return Dt.test($)?t.metadataCache.getFirstLinkpathDest($,"")!==null:!1})(),N=y||!g.hasQuoteMarker?!1:/^\s*\[\[[^\[\]]+#\^wr-\d{17}\]\]\s*$/.test(p.text);if(E||N)s.add(p.from,p.from,Fn);else if((q||z)&&!y){let x=`wr-blockquote-depth-${Math.min(Q,5)}`;s.add(p.from,p.from,Le(["wr-codeblock-line","wr-blockquote-line",x,g.ruleClass,g.blockId?`wr-block-id-${g.blockId}`:null]))}else A?s.add(p.from,p.from,Le(["wr-codeblock-line","wr-obsidian-url-line",g.ruleClass,g.blockId?`wr-block-id-${g.blockId}`:null])):s.add(p.from,p.from,Le(["wr-codeblock-line",g.ruleClass,g.blockId?`wr-block-id-${g.blockId}`:null]));let k=[],P=[],O=p.text.match(/^- \[([ x])\] /),U=!O&&p.text.match(/^- /);if(q){if(y?k.push({from:p.from,to:p.from+F,deco:S.Decoration.mark({class:"wr-quote-highlight"})}):(k.push({from:p.from,to:p.from+F,deco:ie}),p.to>p.from+F&&k.push({from:p.from+F,to:p.to,deco:S.Decoration.mark({class:"wr-blockquote-wrap"})})),z){let x=K.match(/^- \[([ x])\] /),$=!x&&K.match(/^- /),H=!x&&!$&&K.match(/^(\d+\.)\s?/);if(x){let W=x[1]==="x";if(y){let X=W?S.Decoration.mark({class:"wr-check-checked"}):S.Decoration.mark({class:"wr-check-unchecked"});k.push({from:p.from+F,to:p.from+F+x[0].length,deco:X})}else k.push({from:p.from+F,to:p.from+F+x[0].length,deco:S.Decoration.replace({widget:new ct(W,p.from+F)})});W&&o&&p.to>p.from+F+x[0].length&&k.push({from:p.from+F+x[0].length,to:p.to,deco:S.Decoration.mark({class:"wr-check-done"})})}else $?y?k.push({from:p.from+F,to:p.from+F+2,deco:S.Decoration.mark({class:"wr-list-highlight"})}):k.push({from:p.from+F,to:p.from+F+2,deco:S.Decoration.replace({widget:new lt})}):H&&(y?k.push({from:p.from+F,to:p.from+F+H[0].length,deco:Pn}):k.push({from:p.from+F,to:p.from+F+H[0].length,deco:S.Decoration.replace({widget:new dt(H[1])})}))}}else if(O){let x=O[1]==="x";if(y){let $=x?S.Decoration.mark({class:"wr-check-checked"}):S.Decoration.mark({class:"wr-check-unchecked"});k.push({from:p.from,to:p.from+O[0].length,deco:$})}else k.push({from:p.from,to:p.from+O[0].length,deco:S.Decoration.replace({widget:new ct(x,p.from)})});x&&o&&p.to>p.from+O[0].length&&k.push({from:p.from+O[0].length,to:p.to,deco:S.Decoration.mark({class:"wr-check-done"})})}else if(U)y?k.push({from:p.from,to:p.from+2,deco:S.Decoration.mark({class:"wr-list-highlight"})}):k.push({from:p.from,to:p.from+2,deco:S.Decoration.replace({widget:new lt})});else{let x=p.text.match(/^(\d+\.)\s?/);x&&(y?k.push({from:p.from,to:p.from+x[0].length,deco:Pn}):k.push({from:p.from,to:p.from+x[0].length,deco:S.Decoration.replace({widget:new dt(x[1])})}))}let M,ee=/#[^\s#]+/g;for(;(M=ee.exec(p.text))!==null;)k.push({from:p.from+M.index,to:p.from+M.index+M[0].length,deco:cr});let Z=[],Qe=/\[([^\[\]\n]+)\]\(((?:https?|obsidian):\/\/[^\s)]+)\)/g;for(;(M=Qe.exec(p.text))!==null;){let x=p.from+M.index,$=x+M[0].length,H=M[1],W=M[2];re(W)&&(Z.push({from:x,to:$}),y?k.push({from:x,to:$,deco:Sn}):k.push({from:x,to:$,deco:S.Decoration.replace({widget:new Rt(H,W)})}))}let se=(x,$)=>Z.some(H=>x>=H.from&&$<=H.to),ae=/(?:https?|obsidian):\/\/[^\s<>"'\]]+/g;for(;(M=ae.exec(p.text))!==null;){let x=p.from+M.index,$=x+M[0].length;if(!se(x,$))if(M[0].startsWith("obsidian://")&&!y){let H=null;try{let fe=new URL(M[0]).searchParams.get("file");if(fe){let j=decodeURIComponent(fe);H=j.split("/").pop()||j}}catch(Te){}let W=!!H&&Dt.test(H),X=H?t.metadataCache.getFirstLinkpathDest(H,""):null,le=W&&X!==null,J=W&&X===null;le?k.push({from:x,to:$,deco:ie}):k.push({from:x,to:$,deco:S.Decoration.replace({widget:new Nt(M[0],H||M[0],J)})})}else k.push({from:x,to:$,deco:Sn})}let te=/!?\[\[[^\]]+\]\]/g;for(;(M=te.exec(p.text))!==null;){let x=p.from+M.index,$=x+M[0].length,H=M[0].startsWith("!"),W=H?M[0].slice(3,-2):M[0].slice(2,-2),X=t.metadataCache.getFirstLinkpathDest(W,"")!==null;if(!y){if(H&&Dt.test(W)){let le=t.metadataCache.getFirstLinkpathDest(W,"");if(le){let J=t.vault.getResourcePath(le);g.hasQuoteMarker?k.push({from:x,to:$,deco:S.Decoration.replace({widget:new Wt(J,W)})}):(k.push({from:x,to:$,deco:ie}),T.push({src:J,alt:W}));continue}k.push({from:x,to:$,deco:S.Decoration.replace({widget:new Ft(W)})});continue}if(!H&&W.match(Ye)){k.push({from:x,to:$,deco:ie});continue}k.push({from:x,to:$,deco:S.Decoration.replace({widget:new It(W,t,X)})});continue}k.push({from:x,to:$,deco:X?dr:ur})}let ye=/`[^`]+`/g;for(;(M=ye.exec(p.text))!==null;){let x=p.from+M.index,$=x+M[0].length;P.push({from:x,to:$}),y?k.push({from:x,to:$,deco:qn}):(k.push({from:x,to:x+1,deco:ie}),k.push({from:x+1,to:$-1,deco:qn}),k.push({from:$-1,to:$,deco:ie}))}let de=/\$([^$]+)\$/g;for(;(M=de.exec(p.text))!==null;){let x=p.from+M.index,$=x+M[0].length;P.some(H=>x>=H.from&&$<=H.to)||(P.push({from:x,to:$}),y?k.push({from:x,to:$,deco:pr}):k.push({from:x,to:$,deco:S.Decoration.replace({widget:new At(M[1])})}))}let ve=(x,$)=>P.some(H=>x>=H.from&&$<=H.to),De=[],Ge=/\*\*[^*]+\*\*/g;for(;(M=Ge.exec(p.text))!==null;){let x=p.from+M.index,$=x+M[0].length;ve(x,$)||(De.push({from:x,to:$}),y?k.push({from:x,to:$,deco:Dn}):(k.push({from:x,to:x+2,deco:ie}),k.push({from:x+2,to:$-2,deco:Dn}),k.push({from:$-2,to:$,deco:ie})))}{let x=[...p.text];for(let W of De){let X=W.from-p.from,le=W.to-p.from;for(let J=X;J<le&&J<x.length;J++)x[J]=" "}let $=x.join(""),H=/\*([^*]+)\*/g;for(;(M=H.exec($))!==null;){let W=p.from+M.index,X=W+M[0].length;ve(W,X)||(y?k.push({from:W,to:X,deco:Nn}):(k.push({from:W,to:W+1,deco:ie}),k.push({from:W+1,to:X-1,deco:Nn}),k.push({from:X-1,to:X,deco:ie})))}}let Xe=/~~[^~]+~~/g;for(;(M=Xe.exec(p.text))!==null;){let x=p.from+M.index,$=x+M[0].length;ve(x,$)||(y?k.push({from:x,to:$,deco:Rn}):(k.push({from:x,to:x+2,deco:ie}),k.push({from:x+2,to:$-2,deco:Rn}),k.push({from:$-2,to:$,deco:ie})))}let Ke=/==([^=]+)==/g;for(;(M=Ke.exec(p.text))!==null;){let x=p.from+M.index,$=x+M[0].length;ve(x,$)||(y?k.push({from:x,to:$,deco:In}):(k.push({from:x,to:x+2,deco:ie}),k.push({from:x+2,to:$-2,deco:In}),k.push({from:$-2,to:$,deco:ie})))}let Ne=x=>x.point===!0;k.sort((x,$)=>{if(x.from!==$.from)return x.from-$.from;let H=Ne(x.deco)?0:1,W=Ne($.deco)?0:1;return H!==W?H-W:x.to-$.to});for(let x of k)s.add(x.from,x.to,x.deco)}let C=l.line(g.endLn);s.add(C.from,C.from,Le(["wr-codeblock-line",g.ruleClass,g.blockId?`wr-block-id-${g.blockId}`:null]));let b=l.line(g.endLn);T.length>0&&!L&&s.add(b.to,b.to,S.Decoration.widget({widget:new Bt(T,g.ruleClass),side:1}));let r=h=>{let p=t.metadataCache.getFirstLinkpathDest(h,"");return p?t.vault.getResourcePath(p):null};if(g.hasQuoteMarker&&!L){let h=null,p=null;for(let y=g.startLn+1;y<g.endLn;y++){let D=l.line(y).text.match(/\[\[([^\[\]]+)#\^(wr-\d{17})\]\]/);if(D){h=D[1],p=D[2];break}}if(h&&p){let y=g.urlTexts.length>0?Pe(g.urlTexts.join(" ")).filter(R=>R.type==="image"||!R.url.startsWith("obsidian://")):[],D=((f=t.workspace.getActiveFile())==null?void 0:f.path)||"";s.add(b.to,b.to,S.Decoration.widget({widget:new Ut(h,p,y,t,D,g.ruleClass,n.settings.timestampFormat||"YYYY/MM/DD HH:mm",i,r,R=>n.getTagRuleClassForContent(R),R=>n.getRuleAccentColor(R)),side:2}))}}else if(!g.hasQuoteMarker&&g.urlTexts.length>0){let h=Pe(g.urlTexts.join(" ")).filter(p=>p.type==="image"||!p.url.startsWith("obsidian://"));h.length>0&&s.add(b.to,b.to,S.Decoration.widget({widget:new _t(h,i,g.ruleClass,r),side:2}))}}}catch(g){console.debug("Wrot: decoration skipped",g)}return s.finish()}function Wn(a,i,e,t){return S.ViewPlugin.fromClass(class{constructor(n){this.currentView=n,this.blocks=On(n,e),this.decorations=Hn(n,a,this.blocks,i,e,t()),requestAnimationFrame(()=>this.fetchMissing())}update(n){this.currentView=n.view;let o=n.transactions.some(d=>d.effects.some(c=>c.is(Mn))),s=n.transactions.some(d=>d.effects.some(c=>c.is(Vt))),l=n.transactions.some(d=>d.effects.some(c=>c.is(zt)));(n.docChanged||n.viewportChanged||n.selectionSet||o||s||l)&&(this.blocks=On(n.view,e),this.decorations=Hn(n.view,a,this.blocks,i,e,t()),o||this.fetchMissing())}fetchMissing(){for(let n of this.blocks){let o=Pe(n.urlTexts.join(" "));for(let s of o)s.type!=="image"&&(a.get(s.url)||a.fetchOGP(s.url).then(()=>{try{this.currentView.dispatch({effects:Mn.of(null)})}catch(l){}}))}}},{decorations:n=>n.decorations,eventHandlers:{click(n){var d;let o=n.target;if(!(o instanceof HTMLElement))return!1;let s=o.closest(".wr-url-highlight");if(!s||!s.closest(".wr-codeblock-line, .HyperMD-codeblock"))return!1;let l=(d=s.textContent)==null?void 0:d.trim();return!l||!re(l)?!1:(n.preventDefault(),n.stopPropagation(),window.open(l,"_blank"),!0)}}})}var _n=require("obsidian"),gr=36e5,ut=class{constructor(){this.cache=new Map;this.pending=new Map;this.enabled=!0}get(i){let e=this.cache.get(i);return e&&Date.now()-e.timestamp<gr?e.data:null}async fetchOGP(i){if(!this.enabled||i.startsWith("obsidian://"))return null;let e=this.get(i);if(e)return e;let t=this.pending.get(i);if(t)return t;let n=this.doFetch(i);this.pending.set(i,n);try{return await n}finally{this.pending.delete(i)}}isPublicUrl(i){try{let e=new URL(i);if(!["http:","https:"].includes(e.protocol))return!1;let t=e.hostname.toLowerCase();return!(t==="localhost"||t==="[::1]"||/^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|127\.|0\.)/.test(t)||t.endsWith(".local")||t.endsWith(".internal"))}catch(e){return!1}}async doFetch(i){if(!this.isPublicUrl(i))return null;try{let t=(await(0,_n.requestUrl)({url:i,headers:{"User-Agent":"Mozilla/5.0 (compatible; ObsidianBot/1.0)",Accept:"text/html"}})).text,n=this.parseOGP(t,i);return this.cache.set(i,{data:n,timestamp:Date.now()}),n}catch(e){return null}}parseOGP(i,e){var o,s;let t=l=>{let d=new RegExp(`<meta[^>]*(?:property|name)=["']og:${l}["'][^>]*content=["']([^"']*)["']`,"i"),c=i.match(d);if(c)return c[1];let u=new RegExp(`<meta[^>]*content=["']([^"']*)["'][^>]*(?:property|name)=["']og:${l}["']`,"i"),f=i.match(u);return f==null?void 0:f[1]};return{title:t("title")||((s=(o=i.match(/<title[^>]*>([^<]*)<\/title>/i))==null?void 0:o[1])==null?void 0:s.trim()),description:t("description"),image:t("image"),siteName:t("site_name"),url:e}}clear(){this.cache.clear()}};var hr=/^(png|jpe?g|gif|webp|svg|bmp)$/i,pt=class extends pe.Plugin{constructor(){super(...arguments);this.quoteRefreshSuppressedUntil=0;this.bgStyleEl=null;this.tagRuleStyleEl=null;this.fontStyleEl=null}async onload(){await this.loadSettings(),await(0,pe.loadMathJax)(),this.ogpCache=new ut,this.ogpCache.enabled=this.settings.enableOgpFetch,this.registerView(ge,t=>new at(t,this)),this.addRibbonIcon("feather","Wrot",()=>{this.activateView()}),this.addCommand({id:"open-wrot",name:"Open Wrot",callback:()=>this.activateView()}),Tn(this),this.registerEditorExtension([Wn(this.ogpCache,this.app,this,()=>this.settings.checkStrikethrough)]),this.addSettingTab(new et(this.app,this)),this.applyFontFollow(),this.applyBgColor(),this.applyTagColorRules(),this.registerEvent(this.app.workspace.on("css-change",()=>{this.applyBgColor(),this.applyTagColorRules()}));let e=t=>{t instanceof pe.TFile&&hr.test(t.extension)&&this.refreshAttachmentDecorations()};this.registerEvent(this.app.metadataCache.on("deleted",e)),this.registerEvent(this.app.vault.on("create",e)),this.registerEvent(this.app.vault.on("rename",e))}refreshAttachmentDecorations(){this.app.workspace.iterateAllLeaves(e=>{var s;let t=e.view;if(!(t instanceof pe.MarkdownView))return;let n=t.previewMode;if(n!=null&&n.rerender)try{n.rerender(!0)}catch(l){}let o=(s=t.editor)==null?void 0:s.cm;if(o!=null&&o.dispatch)try{o.dispatch({effects:zt.of(null)})}catch(l){}})}applyFontFollow(){document.body.classList.toggle("wr-font-follow",this.settings.followObsidianFontSize),this.fontStyleEl&&this.fontStyleEl.remove(),this.fontStyleEl=document.createElement("style"),this.fontStyleEl.id="wr-font-override",document.head.appendChild(this.fontStyleEl),this.settings.followObsidianFontSize?this.fontStyleEl.textContent=`
+// src/utils/dailyNote.ts
+var import_obsidian2 = require("obsidian");
+var import_obsidian_daily_notes_interface = __toESM(require_main(), 1);
+function buildNotePath(date) {
+  var _a;
+  const settings = (0, import_obsidian_daily_notes_interface.getDailyNoteSettings)();
+  const format = (settings == null ? void 0 : settings.format) || "YYYY-MM-DD";
+  const folder = ((_a = settings == null ? void 0 : settings.folder) == null ? void 0 : _a.trim()) || "";
+  const filename = date.format(format);
+  const withExt = filename.endsWith(".md") ? filename : `${filename}.md`;
+  const joined = folder ? `${folder}/${withExt}` : withExt;
+  return { path: (0, import_obsidian2.normalizePath)(joined), filename, format };
+}
+async function ensureFolderForPath(app, path) {
+  const lastSlash = path.lastIndexOf("/");
+  if (lastSlash <= 0) return;
+  const dir = path.substring(0, lastSlash);
+  const existing = app.vault.getAbstractFileByPath(dir);
+  if (existing) return;
+  await app.vault.createFolder(dir);
+}
+function getDailyNoteFile(app, date) {
+  const { path } = buildNotePath(date);
+  const file = app.vault.getAbstractFileByPath(path);
+  return file instanceof import_obsidian2.TFile ? file : null;
+}
+async function getOrCreateDailyNote(app, date) {
+  var _a, _b;
+  const { path, filename, format } = buildNotePath(date);
+  const existing = app.vault.getAbstractFileByPath(path);
+  if (existing instanceof import_obsidian2.TFile) return existing;
+  await ensureFolderForPath(app, path);
+  const template = ((_b = (_a = (0, import_obsidian_daily_notes_interface.getDailyNoteSettings)()) == null ? void 0 : _a.template) == null ? void 0 : _b.trim()) || "";
+  let body = "";
+  if (template) {
+    try {
+      const [contents] = await (0, import_obsidian_daily_notes_interface.getTemplateInfo)(template);
+      body = contents.replace(/{{\s*date\s*}}/gi, filename).replace(/{{\s*time\s*}}/gi, moment().format("HH:mm")).replace(/{{\s*title\s*}}/gi, filename).replace(
+        /{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi,
+        (_match, _type, calc, delta, unit, customFmt) => {
+          const now = moment();
+          const cur = date.clone().set({
+            hour: now.get("hour"),
+            minute: now.get("minute"),
+            second: now.get("second")
+          });
+          if (calc) cur.add(parseInt(delta, 10), unit);
+          return customFmt ? cur.format(customFmt.substring(1).trim()) : cur.format(format);
+        }
+      ).replace(
+        /{{\s*yesterday\s*}}/gi,
+        date.clone().subtract(1, "day").format(format)
+      ).replace(
+        /{{\s*tomorrow\s*}}/gi,
+        date.clone().add(1, "day").format(format)
+      );
+    } catch (e) {
+      body = "";
+    }
+  }
+  return await app.vault.create(path, body);
+}
+
+// src/utils/urlRenderer.ts
+init_blockSegmenter();
+var IMAGE_EXTENSIONS = [
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".gif",
+  ".webp",
+  ".svg",
+  ".bmp"
+];
+var URL_REGEX = /(?:https?|obsidian):\/\/[^\s<>"'\]]+/g;
+var TWITTER_REGEX = /^https?:\/\/(twitter\.com|x\.com)\/\w+\/status\/\d+/;
+var QUOTE_LINK_RE = /^([^\[\]\n#]+)#\^(wr-\d{17})$/;
+function isSafeUrl(url) {
+  try {
+    const parsed = new URL(url);
+    return ["https:", "http:", "obsidian:"].includes(parsed.protocol);
+  } catch (e) {
+    return false;
+  }
+}
+function isSafeImageUrl(url) {
+  try {
+    const parsed = new URL(url);
+    return ["https:", "http:"].includes(parsed.protocol);
+  } catch (e) {
+    return false;
+  }
+}
+function cleanUrl(raw) {
+  return raw.replace(/[.,;:!?)]+$/, "");
+}
+function classifyUrl(url) {
+  if (TWITTER_REGEX.test(url)) return "twitter";
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol === "obsidian:") {
+      const filePath = parsed.searchParams.get("file");
+      if (filePath) {
+        const target = decodeURIComponent(filePath).toLowerCase();
+        if (IMAGE_EXTENSIONS.some((ext) => target.endsWith(ext))) {
+          return "image";
+        }
+      }
+      return "generic";
+    }
+    const pathname = parsed.pathname.toLowerCase();
+    if (IMAGE_EXTENSIONS.some((ext) => pathname.endsWith(ext))) {
+      return "image";
+    }
+  } catch (e) {
+  }
+  return "generic";
+}
+function extractObsidianFileName(url) {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== "obsidian:") return null;
+    const filePath = parsed.searchParams.get("file");
+    if (!filePath) return null;
+    const decoded = decodeURIComponent(filePath);
+    return decoded.split("/").pop() || decoded;
+  } catch (e) {
+    return null;
+  }
+}
+function extractUrls(text) {
+  const urls = [];
+  const seen = /* @__PURE__ */ new Set();
+  for (const m of text.matchAll(URL_REGEX)) {
+    const url = cleanUrl(m[0]);
+    if (seen.has(url)) continue;
+    seen.add(url);
+    urls.push({ url, type: classifyUrl(url) });
+  }
+  return urls;
+}
+function renderTextWithTagsAndUrls(container, text, callbacks) {
+  const urls = [];
+  const seen = /* @__PURE__ */ new Set();
+  const segments = segmentBlocks(text);
+  for (const segment of segments) {
+    if (segment.kind === "codeblock") {
+      const blockEl = container.createDiv({ cls: "wr-codeblock-display" });
+      if (callbacks.renderCodeBlock) {
+        callbacks.renderCodeBlock(segment.code, segment.lang, blockEl, segment.fenceTildes);
+      } else {
+        const pre = blockEl.createEl("pre");
+        const codeEl = pre.createEl("code");
+        if (segment.lang) codeEl.addClass(`language-${segment.lang}`);
+        codeEl.textContent = segment.code;
+      }
+      continue;
+    }
+    if (segment.kind === "mathblock") {
+      const blockEl = container.createDiv({ cls: "wr-math-display" });
+      if (callbacks.renderMathBlock) {
+        callbacks.renderMathBlock(segment.tex, blockEl);
+      } else {
+        try {
+          const { renderMath: renderMath3, finishRenderMath: finishRenderMath3 } = require("obsidian");
+          const rendered = renderMath3(segment.tex, true);
+          blockEl.appendChild(rendered);
+          finishRenderMath3();
+        } catch (e) {
+          blockEl.textContent = segment.tex;
+        }
+      }
+      continue;
+    }
+    renderTextSegment(container, segment.text, segment.startLine, callbacks, urls, seen);
+  }
+  return urls;
+}
+function renderTextSegment(container, text, lineOffset, callbacks, urls, seen) {
+  const lines = text.split("\n");
+  let currentList = null;
+  let currentListType = null;
+  let quoteStack = [];
+  let quoteList = null;
+  let quoteListType = null;
+  let quoteListDepth = 0;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const quoteMatch = line.match(/^((?:>\s?)+)(.*)$/);
+    const checkMatch = !quoteMatch && line.match(/^- \[([ x])\] (.*)$/);
+    const listMatch = !quoteMatch && !checkMatch && line.match(/^- (.+)$/);
+    const olMatch = !quoteMatch && !checkMatch && !listMatch && line.match(/^\d+\.\s?(.+)$/);
+    if (quoteMatch) {
+      currentList = null;
+      currentListType = null;
+      const depth = (quoteMatch[1].match(/>/g) || []).length;
+      const body = quoteMatch[2];
+      while (quoteStack.length > depth) {
+        quoteStack.pop();
+      }
+      while (quoteStack.length < depth) {
+        const parent = quoteStack.length > 0 ? quoteStack[quoteStack.length - 1] : container;
+        const bq = parent.createEl("blockquote", { cls: "wr-blockquote" });
+        quoteStack.push(bq);
+      }
+      const target = quoteStack[quoteStack.length - 1];
+      const innerCheck = body.match(/^- \[([ x])\] (.*)$/);
+      const innerList = !innerCheck && body.match(/^- (.+)$/);
+      const innerOl = !innerCheck && !innerList && body.match(/^\d+\.\s?(.+)$/);
+      if (innerCheck || innerList) {
+        if (quoteList === null || quoteListType !== "ul" || quoteListDepth !== depth || quoteList.parentElement !== target) {
+          quoteList = target.createEl("ul", { cls: "wr-bullet-list" });
+          quoteListType = "ul";
+          quoteListDepth = depth;
+        }
+        const li = quoteList.createEl("li");
+        if (innerCheck) {
+          li.addClass("wr-check-item");
+          const checkbox = li.createEl("input", { attr: { type: "checkbox" } });
+          if (innerCheck[1] === "x") checkbox.checked = true;
+          if (callbacks.onCheckToggle) {
+            const lineIdx = lineOffset + i;
+            const cb = callbacks.onCheckToggle;
+            checkbox.addEventListener("click", () => {
+              cb(lineIdx, checkbox.checked);
+            });
+          } else {
+            checkbox.disabled = true;
+          }
+          const textContainer = innerCheck[1] === "x" && callbacks.checkStrikethrough ? li.createEl("span", { cls: "wr-check-done" }) : li;
+          renderInlineTokens(textContainer, innerCheck[2], callbacks, urls, seen);
+        } else if (innerList) {
+          renderInlineTokens(li, innerList[1], callbacks, urls, seen);
+        }
+      } else if (innerOl) {
+        if (quoteList === null || quoteListType !== "ol" || quoteListDepth !== depth || quoteList.parentElement !== target) {
+          quoteList = target.createEl("ol", { cls: "wr-ordered-list" });
+          quoteListType = "ol";
+          quoteListDepth = depth;
+        }
+        const li = quoteList.createEl("li");
+        renderInlineTokens(li, innerOl[1], callbacks, urls, seen);
+      } else {
+        quoteList = null;
+        quoteListType = null;
+        if (target.childNodes.length > 0) {
+          target.createEl("br");
+        }
+        renderInlineTokens(target, body, callbacks, urls, seen);
+      }
+    } else if (checkMatch || listMatch) {
+      quoteStack = [];
+      quoteList = null;
+      quoteListType = null;
+      if (currentListType !== "ul") {
+        currentList = container.createEl("ul", { cls: "wr-bullet-list" });
+        currentListType = "ul";
+      }
+      const li = currentList.createEl("li");
+      if (checkMatch) {
+        li.addClass("wr-check-item");
+        const checkbox = li.createEl("input", { attr: { type: "checkbox" } });
+        if (checkMatch[1] === "x") checkbox.checked = true;
+        if (callbacks.onCheckToggle) {
+          const lineIdx = lineOffset + i;
+          const cb = callbacks.onCheckToggle;
+          checkbox.addEventListener("click", () => {
+            cb(lineIdx, checkbox.checked);
+          });
+        } else {
+          checkbox.disabled = true;
+        }
+        const textContainer = checkMatch[1] === "x" && callbacks.checkStrikethrough ? li.createEl("span", { cls: "wr-check-done" }) : li;
+        renderInlineTokens(textContainer, checkMatch[2], callbacks, urls, seen);
+      } else if (listMatch) {
+        renderInlineTokens(li, listMatch[1], callbacks, urls, seen);
+      }
+    } else if (olMatch) {
+      quoteStack = [];
+      quoteList = null;
+      quoteListType = null;
+      if (currentListType !== "ol") {
+        currentList = container.createEl("ol", { cls: "wr-ordered-list" });
+        currentListType = "ol";
+      }
+      const li = currentList.createEl("li");
+      renderInlineTokens(li, olMatch[1], callbacks, urls, seen);
+    } else {
+      const prevWasBlock = currentList !== null || quoteStack.length > 0;
+      currentList = null;
+      currentListType = null;
+      quoteStack = [];
+      quoteList = null;
+      quoteListType = null;
+      if (i > 0 && !prevWasBlock) container.appendText("\n");
+      renderInlineTokens(container, line, callbacks, urls, seen);
+    }
+  }
+}
+var IMAGE_EXT_RE = /\.(png|jpg|jpeg|gif|svg|webp|bmp)$/i;
+function renderInlineTokens(container, text, callbacks, urls, seen) {
+  const TOKEN_REGEX = /(\$[^$]+\$|`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*|~~[^~]+~~|==[^=]+=+|!\[\[[^\]]+\]\]|\[\[[^\]]+\]\]|\[[^\[\]\n]+\]\((?:https?|obsidian):\/\/[^\s)]+\)|#[^\s#]+|(?:https?|obsidian):\/\/[^\s<>"'\]]+)/g;
+  const parts = text.split(TOKEN_REGEX);
+  for (const part of parts) {
+    if (!part) continue;
+    const codeMatch = part.match(/^`([^`]+)`$/);
+    if (codeMatch) {
+      container.createEl("code", { cls: "wr-inline-code", text: codeMatch[1] });
+      continue;
+    }
+    const boldMatch = part.match(/^\*\*(.+)\*\*$/);
+    if (boldMatch) {
+      container.createEl("strong", { text: boldMatch[1] });
+      continue;
+    }
+    const italicMatch = part.match(/^\*(.+)\*$/);
+    if (italicMatch) {
+      container.createEl("em", { text: italicMatch[1] });
+      continue;
+    }
+    const strikeMatch = part.match(/^~~(.+)~~$/);
+    if (strikeMatch) {
+      container.createEl("del", { text: strikeMatch[1] });
+      continue;
+    }
+    const highlightMatch = part.match(/^==(.+)==$/);
+    if (highlightMatch) {
+      container.createEl("mark", { cls: "wr-highlight", text: highlightMatch[1] });
+      continue;
+    }
+    const mdLinkMatch = part.match(/^\[([^\[\]\n]+)\]\(((?:https?|obsidian):\/\/[^\s)]+)\)$/);
+    if (mdLinkMatch) {
+      const label = mdLinkMatch[1];
+      const url = mdLinkMatch[2];
+      if (isSafeUrl(url)) {
+        const link = container.createEl("a", {
+          cls: "wr-url",
+          text: label,
+          href: url
+        });
+        link.setAttr("target", "_blank");
+        link.setAttr("rel", "noopener");
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          window.open(url, "_blank");
+        });
+        if (!seen.has(url)) {
+          seen.add(url);
+          urls.push({ url, type: classifyUrl(url) });
+        }
+      } else {
+        container.appendText(part);
+      }
+      continue;
+    }
+    const embedMatch = part.match(/^!\[\[(.+)\]\]$/);
+    const linkMatch = !embedMatch && part.match(/^\[\[(.+)\]\]$/);
+    if (embedMatch) {
+      const fileName = embedMatch[1];
+      if (IMAGE_EXT_RE.test(fileName) && callbacks.resolveImagePath) {
+        const src = callbacks.resolveImagePath(fileName);
+        if (src) {
+          container.createEl("img", {
+            cls: "wr-embed-img",
+            attr: { src, alt: fileName, loading: "lazy" }
+          });
+        } else {
+          container.createEl("span", { cls: "wr-embed-missing", text: `![[${fileName}]]` });
+        }
+      } else {
+        const resolved = callbacks.resolveLinkTarget ? callbacks.resolveLinkTarget(fileName) : true;
+        const cls = resolved ? "wr-internal-link" : "wr-internal-link wr-internal-link-unresolved";
+        const linkEl = container.createEl("a", { cls, text: fileName });
+        if (callbacks.onInternalLinkClick) {
+          const cb = callbacks.onInternalLinkClick;
+          linkEl.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            cb(fileName);
+          });
+        }
+      }
+    } else if (linkMatch) {
+      const linkName = linkMatch[1];
+      const quoteMatch = linkName.match(QUOTE_LINK_RE);
+      if (quoteMatch && callbacks.renderQuoteCard) {
+        const slot = container.createEl("span", { cls: "wr-quote-card-slot" });
+        callbacks.renderQuoteCard(slot, quoteMatch[1], quoteMatch[2]);
+      } else {
+        const resolved = callbacks.resolveLinkTarget ? callbacks.resolveLinkTarget(linkName) : true;
+        const cls = resolved ? "wr-internal-link" : "wr-internal-link wr-internal-link-unresolved";
+        const linkEl = container.createEl("a", { cls, text: linkName });
+        if (callbacks.onInternalLinkClick) {
+          const cb = callbacks.onInternalLinkClick;
+          linkEl.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            cb(linkName);
+          });
+        }
+      }
+    } else if (part.match(/^#[^\s#]+$/)) {
+      const tagEl = container.createEl("span", {
+        cls: "wr-tag",
+        text: part
+      });
+      if (callbacks.onTagClick) {
+        const cb = callbacks.onTagClick;
+        tagEl.addEventListener("click", (e) => {
+          e.stopPropagation();
+          cb(part);
+        });
+      }
+    } else if (part.match(/^\$([^$]+)\$$/)) {
+      const mathContent = part.slice(1, -1);
+      const mathEl = container.createEl("span", { cls: "wr-math" });
+      try {
+        const { renderMath: renderMath3, finishRenderMath: finishRenderMath3 } = require("obsidian");
+        const rendered = renderMath3(mathContent, false);
+        mathEl.appendChild(rendered);
+        finishRenderMath3();
+      } catch (e) {
+        mathEl.textContent = part;
+      }
+    } else if (part.match(/^obsidian:\/\//)) {
+      const url = cleanUrl(part);
+      const trailing = part.slice(url.length);
+      const fileName = extractObsidianFileName(url);
+      const urlType = classifyUrl(url);
+      const looksLikeImage = urlType === "image";
+      const resolvedImage = !!(fileName && callbacks.resolveImagePath && callbacks.resolveImagePath(fileName));
+      const isImageEmbed = looksLikeImage && resolvedImage;
+      const isUnresolvedImage = looksLikeImage && !resolvedImage;
+      if (!isImageEmbed) {
+        const displayName = fileName || url;
+        const cls = isUnresolvedImage ? "wr-internal-link wr-internal-link-unresolved" : "wr-internal-link";
+        const link = container.createEl("a", {
+          cls,
+          text: displayName
+        });
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (isSafeUrl(url)) window.open(url);
+        });
+        if (trailing) container.appendText(trailing);
+      } else if (trailing) {
+        container.appendText(trailing);
+      }
+      if (!seen.has(url)) {
+        seen.add(url);
+        urls.push({ url, type: urlType });
+      }
+    } else if (part.match(/^https?:\/\//)) {
+      const url = cleanUrl(part);
+      const trailing = part.slice(url.length);
+      if (isSafeUrl(url)) {
+        const link = container.createEl("a", {
+          cls: "wr-url",
+          text: url,
+          href: url
+        });
+        link.setAttr("target", "_blank");
+        link.setAttr("rel", "noopener");
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          window.open(url, "_blank");
+        });
+        if (trailing) container.appendText(trailing);
+        if (!seen.has(url)) {
+          seen.add(url);
+          urls.push({ url, type: classifyUrl(url) });
+        }
+      } else {
+        container.appendText(part);
+      }
+    } else {
+      container.appendText(part);
+    }
+  }
+}
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text) e.textContent = text;
+  return e;
+}
+function makeClickableLink(element, url) {
+  element.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isSafeUrl(url)) window.open(url, "_blank");
+  });
+}
+function renderImagePreview(container, url, resolveImagePath) {
+  const wrapper = el("a", "wr-media-link");
+  wrapper.href = url;
+  wrapper.target = "_blank";
+  wrapper.rel = "noopener";
+  makeClickableLink(wrapper, url);
+  const img = el("img", "wr-inline-img");
+  if (isSafeImageUrl(url)) {
+    img.src = url;
+  } else if (url.startsWith("obsidian://") && resolveImagePath) {
+    const fileName = extractObsidianFileName(url);
+    const resolved = fileName ? resolveImagePath(fileName) : null;
+    if (resolved) img.src = resolved;
+  }
+  img.loading = "lazy";
+  wrapper.appendChild(img);
+  container.appendChild(wrapper);
+}
+function renderOGPCard(container, data) {
+  const card = el("a", "wr-ogp-card");
+  card.href = data.url;
+  card.target = "_blank";
+  card.rel = "noopener";
+  makeClickableLink(card, data.url);
+  if (data.image && isSafeImageUrl(data.image)) {
+    const thumb = el("img", "wr-ogp-thumb");
+    thumb.src = data.image;
+    thumb.loading = "lazy";
+    card.appendChild(thumb);
+  }
+  const body = el("div", "wr-ogp-body");
+  if (data.title) body.appendChild(el("div", "wr-ogp-title", data.title));
+  if (data.description) body.appendChild(el("div", "wr-ogp-desc", data.description));
+  const siteName = data.siteName || extractDomain(data.url);
+  body.appendChild(el("div", "wr-ogp-site", siteName));
+  card.appendChild(body);
+  container.appendChild(card);
+}
+function renderTwitterCard(container, data) {
+  const card = el("a", "wr-ogp-card wr-twitter-card");
+  card.href = data.url;
+  card.target = "_blank";
+  card.rel = "noopener";
+  makeClickableLink(card, data.url);
+  if (data.image && isSafeImageUrl(data.image)) {
+    const thumb = el("img", "wr-ogp-thumb");
+    thumb.src = data.image;
+    thumb.loading = "lazy";
+    card.appendChild(thumb);
+  }
+  const body = el("div", "wr-ogp-body");
+  if (data.title) body.appendChild(el("div", "wr-ogp-title", data.title));
+  if (data.description) body.appendChild(el("div", "wr-ogp-desc", data.description));
+  body.appendChild(el("div", "wr-ogp-site", "X (Twitter)"));
+  card.appendChild(body);
+  container.appendChild(card);
+}
+function renderUrlPreviews(container, urls, ogpCache, resolveImagePath) {
+  for (const pu of urls) {
+    if (pu.type === "image") {
+      renderImagePreview(container, pu.url, resolveImagePath);
+    } else if (pu.url.startsWith("obsidian://")) {
+      continue;
+    } else {
+      const placeholder = el("div", "wr-ogp-loading");
+      container.appendChild(placeholder);
+      ogpCache.fetchOGP(pu.url).then((data) => {
+        placeholder.textContent = "";
+        if (!data || !data.title && !data.description) {
+          placeholder.remove();
+          return;
+        }
+        if (pu.type === "twitter") {
+          renderTwitterCard(placeholder, data);
+        } else {
+          renderOGPCard(placeholder, data);
+        }
+      });
+    }
+  }
+}
+function extractDomain(url) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch (e) {
+    return url;
+  }
+}
+
+// src/utils/quoteCard.ts
+var import_obsidian3 = require("obsidian");
+init_memoParser();
+var MEMO_CACHE = /* @__PURE__ */ new Map();
+var MEMO_CACHE_MAX = 8;
+function getCachedMemos(filePath) {
+  return MEMO_CACHE.get(filePath);
+}
+function setCachedMemos(filePath, memos) {
+  if (MEMO_CACHE.has(filePath)) MEMO_CACHE.delete(filePath);
+  MEMO_CACHE.set(filePath, memos);
+  while (MEMO_CACHE.size > MEMO_CACHE_MAX) {
+    const oldest = MEMO_CACHE.keys().next().value;
+    if (oldest === void 0) break;
+    MEMO_CACHE.delete(oldest);
+  }
+}
+function invalidateMemoCache(filePath) {
+  MEMO_CACHE.delete(filePath);
+}
+function refreshQuoteCardsForFile(app, file, resolveRuleClass, resolveRuleAccent) {
+  const baseName = file.basename;
+  const cards = document.querySelectorAll(
+    `a.wr-quote-card[data-quote-file="${CSS.escape(baseName)}"]`
+  );
+  cards.forEach((card) => {
+    var _a;
+    const slot = card.parentElement;
+    if (!slot) return;
+    const fileName = card.dataset.quoteFile;
+    const blockId = card.dataset.quoteBlock;
+    const currentFilePath = (_a = card.dataset.quoteContext) != null ? _a : "";
+    const timestampFormat = card.dataset.quoteTsFormat;
+    if (!fileName || !blockId) return;
+    card.remove();
+    renderQuoteCard(slot, fileName, blockId, app, currentFilePath, {
+      timestampFormat,
+      resolveRuleClass,
+      resolveRuleAccent
+    });
+  });
+}
+function memoMatchesBlockId(memo, blockId) {
+  if (!blockId.startsWith("wr-")) return false;
+  const T = blockId.slice(3);
+  const memoT = memo.time.replace(/[-:.TZ+]/g, "").slice(0, 17);
+  return memoT === T;
+}
+var DEFAULT_TIMESTAMP_FORMAT = "YYYY/MM/DD HH:mm";
+function formatMemoTimestamp(time, format) {
+  return moment(time).format(format || DEFAULT_TIMESTAMP_FORMAT);
+}
+var NESTED_QUOTE_RE_INLINE = /[\s]*\[\[[^\[\]]+#\^wr-\d{17}\]\][\s]*/g;
+var NESTED_QUOTE_PLACEHOLDER = "QT:";
+var NESTED_QUOTE_DISPLAY = "QT: ...";
+function sanitizeNestedQuotes(text) {
+  return text.replace(NESTED_QUOTE_RE_INLINE, ` ${NESTED_QUOTE_PLACEHOLDER}`);
+}
+var IMAGE_EMBED_RE = /!\[\[[^\[\]]+\.(?:png|jpe?g|gif|webp|svg|bmp)\]\]/gi;
+var IMAGE_EMBED_PLACEHOLDER = "@@WR_IMAGE_EMBED@@";
+function sanitizeImageEmbeds(text) {
+  return text.replace(IMAGE_EMBED_RE, IMAGE_EMBED_PLACEHOLDER);
+}
+var MATH_BLOCK_RE = /\$\$[\s\S]+?\$\$/g;
+var MATH_BLOCK_PLACEHOLDER = "@@WR_MATH_BLOCK@@";
+function sanitizeMathBlocks(text) {
+  return text.replace(MATH_BLOCK_RE, MATH_BLOCK_PLACEHOLDER);
+}
+var CODE_BLOCK_RE = /(?:```|~~~)[\s\S]+?(?:```|~~~)/g;
+var CODE_BLOCK_PLACEHOLDER = "@@WR_CODE_BLOCK@@";
+function sanitizeCodeBlocks(text) {
+  return text.replace(CODE_BLOCK_RE, CODE_BLOCK_PLACEHOLDER);
+}
+function decorateImageEmbedMarkers(root) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const textNodes = [];
+  let n;
+  while (n = walker.nextNode()) {
+    if (n.data.includes(IMAGE_EMBED_PLACEHOLDER)) {
+      textNodes.push(n);
+    }
+  }
+  for (const tn of textNodes) {
+    const parent = tn.parentNode;
+    if (!parent) continue;
+    const parts = tn.data.split(IMAGE_EMBED_PLACEHOLDER);
+    const frag = document.createDocumentFragment();
+    parts.forEach((part, i) => {
+      if (part) frag.appendChild(document.createTextNode(part));
+      if (i < parts.length - 1) {
+        const span = document.createElement("span");
+        span.className = "wr-quote-image-marker";
+        const iconEl = document.createElement("span");
+        iconEl.className = "wr-quote-image-marker-icon";
+        (0, import_obsidian3.setIcon)(iconEl, "image");
+        span.appendChild(iconEl);
+        span.appendChild(document.createTextNode(" image"));
+        frag.appendChild(span);
+      }
+    });
+    parent.replaceChild(frag, tn);
+  }
+}
+function decorateMathBlockMarkers(root) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const textNodes = [];
+  let n;
+  while (n = walker.nextNode()) {
+    if (n.data.includes(MATH_BLOCK_PLACEHOLDER)) {
+      textNodes.push(n);
+    }
+  }
+  for (const tn of textNodes) {
+    const parent = tn.parentNode;
+    if (!parent) continue;
+    const parts = tn.data.split(MATH_BLOCK_PLACEHOLDER);
+    const frag = document.createDocumentFragment();
+    parts.forEach((part, i) => {
+      if (part) frag.appendChild(document.createTextNode(part));
+      if (i < parts.length - 1) {
+        const span = document.createElement("span");
+        span.className = "wr-quote-math-marker";
+        const iconEl = document.createElement("span");
+        iconEl.className = "wr-quote-math-marker-icon";
+        (0, import_obsidian3.setIcon)(iconEl, "sigma");
+        span.appendChild(iconEl);
+        span.appendChild(document.createTextNode(" math"));
+        frag.appendChild(span);
+      }
+    });
+    parent.replaceChild(frag, tn);
+  }
+}
+function decorateCodeBlockMarkers(root) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const textNodes = [];
+  let n;
+  while (n = walker.nextNode()) {
+    if (n.data.includes(CODE_BLOCK_PLACEHOLDER)) {
+      textNodes.push(n);
+    }
+  }
+  for (const tn of textNodes) {
+    const parent = tn.parentNode;
+    if (!parent) continue;
+    const parts = tn.data.split(CODE_BLOCK_PLACEHOLDER);
+    const frag = document.createDocumentFragment();
+    parts.forEach((part, i) => {
+      if (part) frag.appendChild(document.createTextNode(part));
+      if (i < parts.length - 1) {
+        const span = document.createElement("span");
+        span.className = "wr-quote-code-marker";
+        const iconEl = document.createElement("span");
+        iconEl.className = "wr-quote-code-marker-icon";
+        (0, import_obsidian3.setIcon)(iconEl, "code");
+        span.appendChild(iconEl);
+        span.appendChild(document.createTextNode(" code"));
+        frag.appendChild(span);
+      }
+    });
+    parent.replaceChild(frag, tn);
+  }
+}
+function decorateNestedQuoteMarkers(root) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const textNodes = [];
+  let n;
+  while (n = walker.nextNode()) {
+    if (n.data.includes(NESTED_QUOTE_PLACEHOLDER)) {
+      textNodes.push(n);
+    }
+  }
+  for (const tn of textNodes) {
+    const parent = tn.parentNode;
+    if (!parent) continue;
+    const parts = tn.data.split(NESTED_QUOTE_PLACEHOLDER);
+    const frag = document.createDocumentFragment();
+    parts.forEach((part, i) => {
+      if (part) frag.appendChild(document.createTextNode(part));
+      if (i < parts.length - 1) {
+        const span = document.createElement("span");
+        span.className = "wr-nested-quote-marker";
+        span.textContent = NESTED_QUOTE_DISPLAY;
+        frag.appendChild(span);
+      }
+    });
+    parent.replaceChild(frag, tn);
+  }
+}
+var PREVIEW_MAX_LINES = 3;
+var PREVIEW_MAX_CHARS_PER_LINE = 200;
+function renderPreviewLines(bodyEl, content, app) {
+  const sanitized = sanitizeCodeBlocks(
+    sanitizeMathBlocks(
+      sanitizeImageEmbeds(sanitizeNestedQuotes(content))
+    )
+  );
+  const lines = sanitized.split("\n").filter((l) => l.trim().length > 0).slice(0, PREVIEW_MAX_LINES);
+  const inlineCallbacks = {
+    resolveImagePath: (fileName) => {
+      const file = app.metadataCache.getFirstLinkpathDest(fileName, "");
+      return file ? app.vault.getResourcePath(file) : null;
+    },
+    resolveLinkTarget: (linkName) => {
+      return app.metadataCache.getFirstLinkpathDest(linkName, "") !== null;
+    }
+  };
+  for (const rawLine of lines) {
+    const line = rawLine.length > PREVIEW_MAX_CHARS_PER_LINE ? rawLine.slice(0, PREVIEW_MAX_CHARS_PER_LINE) + "\u2026" : rawLine;
+    const lineEl = bodyEl.createDiv({ cls: "wr-quote-card-line" });
+    const checkMatch = line.match(/^- \[([ x])\] (.*)$/);
+    const listMatch = !checkMatch && line.match(/^- (.+)$/);
+    const olMatch = !checkMatch && !listMatch && line.match(/^(\d+)\.\s?(.+)$/);
+    if (checkMatch) {
+      const slot = lineEl.createSpan({ cls: "wr-quote-card-marker-slot wr-quote-card-marker-check" });
+      slot.createSpan({
+        cls: checkMatch[1] === "x" ? "wr-quote-card-check wr-quote-card-check-done" : "wr-quote-card-check"
+      });
+      const textSpan = lineEl.createSpan({ cls: "wr-quote-card-line-text" });
+      renderTextWithTagsAndUrls(textSpan, checkMatch[2], inlineCallbacks);
+    } else if (listMatch) {
+      const slot = lineEl.createSpan({ cls: "wr-quote-card-marker-slot wr-quote-card-marker-bullet" });
+      slot.textContent = "\u30FB";
+      const textSpan = lineEl.createSpan({ cls: "wr-quote-card-line-text" });
+      renderTextWithTagsAndUrls(textSpan, listMatch[1], inlineCallbacks);
+    } else if (olMatch) {
+      const slot = lineEl.createSpan({ cls: "wr-quote-card-marker-slot wr-quote-card-marker-ol" });
+      slot.textContent = `${olMatch[1]}.`;
+      const textSpan = lineEl.createSpan({ cls: "wr-quote-card-line-text" });
+      renderTextWithTagsAndUrls(textSpan, olMatch[2], inlineCallbacks);
+    } else {
+      const textSpan = lineEl.createSpan({ cls: "wr-quote-card-line-text" });
+      renderTextWithTagsAndUrls(textSpan, line, inlineCallbacks);
+    }
+  }
+  decorateNestedQuoteMarkers(bodyEl);
+  decorateImageEmbedMarkers(bodyEl);
+  decorateMathBlockMarkers(bodyEl);
+  decorateCodeBlockMarkers(bodyEl);
+}
+function fillCardBody(card, bodyEl, metaEl, memo, app, timestampFormat) {
+  bodyEl.empty();
+  renderPreviewLines(bodyEl, memo.content, app);
+  metaEl.textContent = formatMemoTimestamp(memo.time, timestampFormat);
+}
+function markDead(card, bodyEl, metaEl) {
+  card.classList.add("wr-quote-card-dead");
+  bodyEl.textContent = "(\u5143\u6295\u7A3F\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093)";
+  metaEl.textContent = "";
+}
+function flashJumpTarget(blockId, app, resolveRuleAccent) {
+  const tryAt = [80, 250, 500, 900];
+  let applied = false;
+  for (const ms of tryAt) {
+    setTimeout(() => {
+      if (applied) return;
+      const targets = collectFlashTargets(blockId, app);
+      if (targets.length === 0) return;
+      applied = true;
+      const docTarget = targets.find((el2) => !el2.classList.contains("wr-card"));
+      if (docTarget) {
+        docTarget.scrollIntoView({ block: "center", behavior: "smooth" });
+      }
+      for (const el2 of targets) {
+        el2.classList.remove("wr-quote-jump-flash");
+        void el2.offsetWidth;
+        const ruleClass = Array.from(el2.classList).find((c) => /^wr-tag-rule-\d+$/.test(c));
+        const accent = ruleClass && resolveRuleAccent ? resolveRuleAccent(ruleClass) : null;
+        if (accent) {
+          const r = parseInt(accent.slice(1, 3), 16);
+          const g = parseInt(accent.slice(3, 5), 16);
+          const b = parseInt(accent.slice(5, 7), 16);
+          el2.style.setProperty("--wr-flash-color", `rgba(${r}, ${g}, ${b}, 0.22)`);
+        } else {
+          el2.style.removeProperty("--wr-flash-color");
+        }
+        el2.classList.add("wr-quote-jump-flash");
+        setTimeout(() => {
+          el2.classList.remove("wr-quote-jump-flash");
+          el2.style.removeProperty("--wr-flash-color");
+        }, 1600);
+      }
+    }, ms);
+  }
+}
+function collectFlashTargets(blockId, app) {
+  const all = Array.from(
+    document.querySelectorAll(`.wr-block-id-${blockId}`)
+  );
+  if (!import_obsidian3.Platform.isMobile) return all;
+  if (import_obsidian3.Platform.isPhone) {
+    return all.filter((el2) => !el2.classList.contains("wr-card"));
+  }
+  const wrCardEls = all.filter((el2) => el2.classList.contains("wr-card"));
+  const isUnpinnedDrawer = wrCardEls.some((el2) => {
+    const drawer = el2.closest(".workspace-drawer");
+    return drawer !== null && !drawer.classList.contains("is-pinned");
+  });
+  if (isUnpinnedDrawer) {
+    return all.filter((el2) => !el2.classList.contains("wr-card"));
+  }
+  return all;
+}
+function renderQuoteCard(slot, fileName, blockId, app, currentFilePath, options) {
+  const localMemos = options == null ? void 0 : options.localMemos;
+  const timestampFormat = options == null ? void 0 : options.timestampFormat;
+  const resolveRuleClass = options == null ? void 0 : options.resolveRuleClass;
+  const resolveRuleAccent = options == null ? void 0 : options.resolveRuleAccent;
+  const card = slot.createEl("a", { cls: "wr-quote-card" });
+  card.setAttr("href", `${fileName}#^${blockId}`);
+  card.dataset.quoteFile = fileName;
+  card.dataset.quoteBlock = blockId;
+  card.dataset.quoteContext = currentFilePath;
+  if (timestampFormat) card.dataset.quoteTsFormat = timestampFormat;
+  const bodyEl = card.createDiv({ cls: "wr-quote-card-body", text: "\u2026" });
+  const metaEl = card.createDiv({ cls: "wr-quote-card-meta" });
+  const file = app.metadataCache.getFirstLinkpathDest(fileName, currentFilePath);
+  if (!(file instanceof import_obsidian3.TFile)) {
+    markDead(card, bodyEl, metaEl);
+    return;
+  }
+  const setupClick = (memo) => {
+    fillCardBody(card, bodyEl, metaEl, memo, app, timestampFormat);
+    if (resolveRuleClass) {
+      Array.from(card.classList).filter((c) => /^wr-tag-rule-\d+$/.test(c)).forEach((c) => card.classList.remove(c));
+      const cls = resolveRuleClass(memo.content);
+      if (cls) card.classList.add(cls);
+    }
+    card.addEventListener("click", async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const obs = require("obsidian");
+      const activeView = app.workspace.getActiveViewOfType(obs.MarkdownView);
+      if (activeView) {
+        await app.workspace.openLinkText(`${fileName}#^${blockId}`, currentFilePath, false);
+      } else {
+        const recent = app.workspace.getMostRecentLeaf();
+        if (recent && recent.view instanceof obs.MarkdownView) {
+          app.workspace.setActiveLeaf(recent, { focus: true });
+          await app.workspace.openLinkText(`${fileName}#^${blockId}`, currentFilePath, false);
+        } else {
+          await app.workspace.openLinkText(`${fileName}#^${blockId}`, currentFilePath, true);
+        }
+      }
+      flashJumpTarget(blockId, app, resolveRuleAccent);
+    });
+  };
+  if (localMemos) {
+    const found = localMemos.find((m) => memoMatchesBlockId(m, blockId));
+    if (found) {
+      setupClick(found);
+      return;
+    }
+    markDead(card, bodyEl, metaEl);
+    return;
+  }
+  const cached = getCachedMemos(file.path);
+  if (cached) {
+    const found = cached.find((m) => memoMatchesBlockId(m, blockId));
+    if (found) {
+      setupClick(found);
+      return;
+    }
+    markDead(card, bodyEl, metaEl);
+    return;
+  }
+  app.vault.cachedRead(file).then((content) => {
+    const memos = parseMemos(content);
+    setCachedMemos(file.path, memos);
+    const found = memos.find((m) => memoMatchesBlockId(m, blockId));
+    if (found) {
+      setupClick(found);
+    } else {
+      markDead(card, bodyEl, metaEl);
+    }
+  }).catch(() => {
+    markDead(card, bodyEl, metaEl);
+  });
+}
+
+// src/utils/imageAttachment.ts
+var IMAGE_PREFIX = "Pasted Image";
+var MIME_TO_EXT = {
+  "image/png": "png",
+  "image/jpeg": "jpg",
+  "image/gif": "gif",
+  "image/webp": "webp",
+  "image/svg+xml": "svg",
+  "image/bmp": "bmp"
+};
+function isImageFile(file) {
+  return file.type.startsWith("image/");
+}
+function getExtension(file) {
+  if (MIME_TO_EXT[file.type]) return MIME_TO_EXT[file.type];
+  const match = /^image\/(.+)$/.exec(file.type);
+  if (match) return match[1];
+  const nameMatch = /\.([a-zA-Z0-9]+)$/.exec(file.name);
+  return nameMatch ? nameMatch[1].toLowerCase() : "png";
+}
+async function saveImageToVault(app, file, sourceFile) {
+  const buffer = await file.arrayBuffer();
+  const ext = getExtension(file);
+  const baseName = `${IMAGE_PREFIX} ${moment().format("YYYYMMDDHHmmss")}`;
+  const vault = app.vault;
+  const path = await vault.getAvailablePathForAttachments(
+    baseName,
+    ext,
+    sourceFile
+  );
+  return await app.vault.createBinary(path, buffer);
+}
+function buildEmbedLink(savedFile) {
+  return `![[${savedFile.name}]]`;
+}
+
+// src/views/WrotView.ts
+function insertEmbedAboveBottomBlock(bodyText, embed) {
+  if (!bodyText) return embed;
+  const markerMatch = bodyText.match(/^([\s\S]*?)\n?(\[\[[^\[\]]+#\^wr-\d{17}\]\])\s*$/);
+  if (markerMatch) {
+    const before = markerMatch[1].replace(/\n+$/, "");
+    const marker = markerMatch[2];
+    return before ? `${before}
+${embed}
+${marker}` : `${embed}
+${marker}`;
+  }
+  const lines = bodyText.split("\n");
+  let firstQuoteIdx = lines.length;
+  for (let i = lines.length - 1; i >= 0; i--) {
+    if (/^>(\s|$)/.test(lines[i])) {
+      firstQuoteIdx = i;
+    } else if (lines[i].trim() === "" && firstQuoteIdx === i + 1) {
+      firstQuoteIdx = i;
+    } else {
+      break;
+    }
+  }
+  if (firstQuoteIdx < lines.length) {
+    const above = lines.slice(0, firstQuoteIdx);
+    const below = lines.slice(firstQuoteIdx);
+    const aboveText = above.join("\n").replace(/\n+$/, "");
+    const belowText = below.join("\n").replace(/^\n+/, "");
+    return aboveText ? `${aboveText}
+${embed}
+
+${belowText}` : `${embed}
+
+${belowText}`;
+  }
+  return `${bodyText}
+${embed}`;
+}
+var WrotView = class extends import_obsidian4.ItemView {
+  constructor(leaf, plugin) {
+    super(leaf);
+    // 「今日」追従中フラグ。trueのときだけ日付変更を跨いで自動更新する
+    this.anchoredToToday = true;
+    this.fileChangeRef = null;
+    this.fileDeleteRef = null;
+    this.fileCreateRef = null;
+    this.ignoreNextModify = false;
+    this.ignoreModifyUntil = 0;
+    this.activeFormatMode = null;
+    this.refreshing = false;
+    this.toolbarResizeObserver = null;
+    this.currentMenu = null;
+    this.pendingImage = null;
+    this.pendingImageUrl = null;
+    this.thumbnailContainer = null;
+    this.imageAddBtn = null;
+    this.submitBtnEl = null;
+    this.plugin = plugin;
+    this.currentDate = moment();
+    this.scope = new import_obsidian4.Scope(this.app.scope);
+  }
+  getViewType() {
+    return VIEW_TYPE_WROT;
+  }
+  getDisplayText() {
+    return "Wrot";
+  }
+  getIcon() {
+    return "feather";
+  }
+  async onOpen() {
+    const container = this.contentEl;
+    container.empty();
+    container.addClass("wr-container");
+    this.buildDateNav(container);
+    this.buildInputArea(container);
+    this.listContainer = container.createDiv({ cls: "wr-list" });
+    this.scope.register(["Mod"], "Enter", (evt) => {
+      if (document.activeElement === this.textarea) {
+        evt.preventDefault();
+        evt.stopPropagation();
+        this.submitMemo();
+        return false;
+      }
+    });
+    await this.refresh();
+    this.registerFileWatcher();
+    this.registerEvent(
+      this.app.workspace.on("active-leaf-change", (leaf) => {
+        if (leaf !== this.leaf) return;
+        this.maybeRollToToday();
+      })
+    );
+  }
+  async onClose() {
+    this.unregisterFileWatcher();
+    if (this.toolbarResizeObserver) {
+      this.toolbarResizeObserver.disconnect();
+      this.toolbarResizeObserver = null;
+    }
+    this.clearPendingImage();
+    this.contentEl.empty();
+  }
+  registerFileWatcher() {
+    this.unregisterFileWatcher();
+    this.fileChangeRef = this.app.vault.on("modify", (file) => {
+      if (this.ignoreNextModify) {
+        this.ignoreNextModify = false;
+        return;
+      }
+      if (Date.now() < this.ignoreModifyUntil) {
+        return;
+      }
+      if (!(file instanceof import_obsidian4.TFile)) return;
+      const currentFile = getDailyNoteFile(
+        this.app,
+        this.currentDate
+      );
+      if (currentFile && file.path === currentFile.path) {
+        this.refresh();
+      }
+    });
+    const TRIGGER_EXT = /^(md|png|jpe?g|gif|webp|svg|bmp)$/i;
+    this.fileDeleteRef = this.app.metadataCache.on("deleted", (file) => {
+      if (!(file instanceof import_obsidian4.TFile)) return;
+      if (!TRIGGER_EXT.test(file.extension)) return;
+      this.refresh();
+    });
+    this.fileCreateRef = this.app.vault.on("create", (file) => {
+      if (!(file instanceof import_obsidian4.TFile)) return;
+      if (!TRIGGER_EXT.test(file.extension)) return;
+      this.refresh();
+    });
+  }
+  unregisterFileWatcher() {
+    if (this.fileChangeRef) {
+      this.app.vault.offref(this.fileChangeRef);
+      this.fileChangeRef = null;
+    }
+    if (this.fileDeleteRef) {
+      this.app.vault.offref(this.fileDeleteRef);
+      this.fileDeleteRef = null;
+    }
+    if (this.fileCreateRef) {
+      this.app.vault.offref(this.fileCreateRef);
+      this.fileCreateRef = null;
+    }
+  }
+  // 「今日」追従中のみ、現在日付を最新の今日へ更新する
+  async maybeRollToToday() {
+    if (!this.anchoredToToday) return;
+    const now = moment();
+    if (this.currentDate.isSame(now, "day")) return;
+    this.currentDate = now;
+    await this.refresh();
+  }
+  // 既に開かれているタブがあればそこへフォーカスし、なければ新規タブで開く
+  async openOrFocusFile(file) {
+    let existingLeaf = null;
+    this.app.workspace.iterateAllLeaves((leaf2) => {
+      var _a;
+      if (existingLeaf) return;
+      const view = leaf2.view;
+      if (((_a = view == null ? void 0 : view.file) == null ? void 0 : _a.path) === file.path) {
+        existingLeaf = leaf2;
+      }
+    });
+    if (existingLeaf) {
+      this.app.workspace.revealLeaf(existingLeaf);
+      this.app.workspace.setActiveLeaf(existingLeaf, { focus: true });
+      return;
+    }
+    const leaf = this.app.workspace.getLeaf("tab");
+    await leaf.openFile(file);
+    this.app.workspace.setActiveLeaf(leaf, { focus: true });
+  }
+  buildDateNav(container) {
+    const nav = container.createDiv({ cls: "wr-date-nav" });
+    const prevBtn = nav.createEl("button", { cls: "wr-nav-btn" });
+    (0, import_obsidian4.setIcon)(prevBtn, "chevron-left");
+    prevBtn.addEventListener("click", () => {
+      this.currentDate = this.currentDate.clone().subtract(1, "day");
+      this.anchoredToToday = false;
+      this.refresh();
+    });
+    this.dateLabel = nav.createEl("span", { cls: "wr-date-label" });
+    this.dateLabel.addEventListener("click", async () => {
+      var _a;
+      this.dateLabel.classList.add("wr-date-label-active");
+      setTimeout(() => this.dateLabel.classList.remove("wr-date-label-active"), 300);
+      const file = (_a = getDailyNoteFile(this.app, this.currentDate)) != null ? _a : await getOrCreateDailyNote(this.app, this.currentDate);
+      await this.openOrFocusFile(file);
+    });
+    const nextBtn = nav.createEl("button", { cls: "wr-nav-btn" });
+    (0, import_obsidian4.setIcon)(nextBtn, "chevron-right");
+    nextBtn.addEventListener("click", () => {
+      this.currentDate = this.currentDate.clone().add(1, "day");
+      this.anchoredToToday = false;
+      this.refresh();
+    });
+    const todayBtn = nav.createEl("button", { cls: "wr-today-btn", text: "\u4ECA\u65E5" });
+    todayBtn.addEventListener("click", () => {
+      this.currentDate = moment();
+      this.anchoredToToday = true;
+      this.refresh();
+    });
+  }
+  buildInputArea(container) {
+    const inputArea = container.createDiv({ cls: "wr-input-area" });
+    const header = inputArea.createDiv({ cls: "wr-input-header" });
+    const submitBtn = header.createEl("button", {
+      cls: "wr-submit-btn"
+    });
+    this.submitLabelEl = submitBtn.createSpan({ text: `${this.plugin.settings.submitLabel} ` });
+    this.submitIconEl = submitBtn.createSpan({ cls: "wr-submit-icon" });
+    if (this.plugin.settings.submitIcon) {
+      (0, import_obsidian4.setIcon)(this.submitIconEl, this.plugin.settings.submitIcon);
+    }
+    submitBtn.addEventListener("click", () => this.submitMemo());
+    this.submitBtnEl = submitBtn;
+    this.textarea = inputArea.createEl("textarea", {
+      cls: "wr-textarea",
+      attr: { placeholder: this.plugin.settings.inputPlaceholder }
+    });
+    const autoGrow = () => {
+      this.textarea.style.height = "auto";
+      this.textarea.style.height = this.textarea.scrollHeight + "px";
+    };
+    this.textarea.addEventListener("input", autoGrow);
+    this.textarea.addEventListener("keydown", (e) => {
+      if (e.isComposing) return;
+      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+        return;
+      }
+      if (e.key === "Enter" && !e.shiftKey) {
+        const ta = this.textarea;
+        const pos = ta.selectionStart;
+        const val = ta.value;
+        const lineStart = val.lastIndexOf("\n", pos - 1) + 1;
+        const line = val.slice(lineStart, pos);
+        const checkMatch = line.match(/^- \[[ x]\] (.*)$/);
+        const listMatch = !checkMatch && line.match(/^- (.*)$/);
+        const olMatch = !checkMatch && !listMatch && line.match(/^(\d+)\.\s?(.*)$/);
+        if (checkMatch) {
+          e.preventDefault();
+          if (checkMatch[1] === "") {
+            ta.value = val.slice(0, lineStart) + val.slice(pos);
+            ta.selectionStart = ta.selectionEnd = lineStart;
+          } else {
+            const insert = "\n- [ ] ";
+            ta.value = val.slice(0, pos) + insert + val.slice(pos);
+            ta.selectionStart = ta.selectionEnd = pos + insert.length;
+          }
+          ta.dispatchEvent(new Event("input"));
+        } else if (listMatch) {
+          e.preventDefault();
+          if (listMatch[1] === "") {
+            ta.value = val.slice(0, lineStart) + val.slice(pos);
+            ta.selectionStart = ta.selectionEnd = lineStart;
+          } else {
+            const insert = "\n- ";
+            ta.value = val.slice(0, pos) + insert + val.slice(pos);
+            ta.selectionStart = ta.selectionEnd = pos + insert.length;
+          }
+          ta.dispatchEvent(new Event("input"));
+        } else if (olMatch) {
+          e.preventDefault();
+          if (olMatch[2] === "") {
+            ta.value = val.slice(0, lineStart) + val.slice(pos);
+            ta.selectionStart = ta.selectionEnd = lineStart;
+          } else {
+            const nextNum = parseInt(olMatch[1]) + 1;
+            const insert = `
+${nextNum}. `;
+            ta.value = val.slice(0, pos) + insert + val.slice(pos);
+            ta.selectionStart = ta.selectionEnd = pos + insert.length;
+          }
+          ta.dispatchEvent(new Event("input"));
+        }
+      }
+    }, true);
+    this.thumbnailContainer = inputArea.createDiv({ cls: "wr-thumbnail-container" });
+    this.thumbnailContainer.style.display = "none";
+    this.textarea.addEventListener("paste", (e) => {
+      var _a;
+      const files = (_a = e.clipboardData) == null ? void 0 : _a.files;
+      if (!files || files.length === 0) return;
+      const file = files[0];
+      if (!isImageFile(file)) return;
+      e.preventDefault();
+      this.setPendingImage(file);
+    });
+    this.textarea.addEventListener("dragover", (e) => {
+      var _a;
+      if ((_a = e.dataTransfer) == null ? void 0 : _a.types.includes("Files")) {
+        e.preventDefault();
+      }
+    });
+    this.textarea.addEventListener("drop", (e) => {
+      var _a;
+      const files = (_a = e.dataTransfer) == null ? void 0 : _a.files;
+      if (!files || files.length === 0) return;
+      const file = files[0];
+      if (!isImageFile(file)) return;
+      e.preventDefault();
+      this.setPendingImage(file);
+    });
+    const toolbar = inputArea.createDiv({ cls: "wr-input-toolbar" });
+    const imageAddBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn" });
+    (0, import_obsidian4.setIcon)(imageAddBtn, "image-plus");
+    imageAddBtn.addEventListener("mousedown", (e) => e.preventDefault());
+    imageAddBtn.addEventListener("click", () => this.openImagePicker());
+    this.imageAddBtn = imageAddBtn;
+    const embedBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn" });
+    (0, import_obsidian4.setIcon)(embedBtn, "paperclip");
+    embedBtn.addEventListener("mousedown", (e) => e.preventDefault());
+    const boldBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn" });
+    (0, import_obsidian4.setIcon)(boldBtn, "bold");
+    boldBtn.addEventListener("mousedown", (e) => e.preventDefault());
+    const italicBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn" });
+    (0, import_obsidian4.setIcon)(italicBtn, "italic");
+    italicBtn.addEventListener("mousedown", (e) => e.preventDefault());
+    const listBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn" });
+    (0, import_obsidian4.setIcon)(listBtn, "list");
+    listBtn.addEventListener("mousedown", (e) => e.preventDefault());
+    const checkBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn" });
+    (0, import_obsidian4.setIcon)(checkBtn, "list-checks");
+    checkBtn.addEventListener("mousedown", (e) => e.preventDefault());
+    const olBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn" });
+    (0, import_obsidian4.setIcon)(olBtn, "list-ordered");
+    olBtn.addEventListener("mousedown", (e) => e.preventDefault());
+    embedBtn.addEventListener("click", () => {
+      const ta = this.textarea;
+      if (ta.selectionStart !== ta.selectionEnd) {
+        this.wrapSelectionWithEmbedBrackets();
+      } else {
+        this.toggleInlineWrap("![[", "]]");
+      }
+      this.updateEmbedBtnActive(embedBtn);
+    });
+    const updateFormatBtns = () => {
+      const insideBold = this.isInsideMarker("**");
+      const insideItalic = this.isInsideMarker("*");
+      boldBtn.toggleClass("wr-toolbar-active", this.activeFormatMode === "bold" || insideBold);
+      italicBtn.toggleClass("wr-toolbar-active", this.activeFormatMode === "italic" || insideItalic);
+      boldBtn.toggleClass("wr-toolbar-disabled", this.activeFormatMode === "italic" || insideItalic);
+      italicBtn.toggleClass("wr-toolbar-disabled", this.activeFormatMode === "bold" || insideBold);
+    };
+    const validateActiveFormatMode = () => {
+      if (this.activeFormatMode === null) return;
+      const ta = this.textarea;
+      const pos = ta.selectionStart;
+      const before = ta.value.slice(0, pos);
+      if (this.activeFormatMode === "bold") {
+        if (!before.includes("**")) {
+          this.activeFormatMode = null;
+          updateFormatBtns();
+        }
+      } else if (this.activeFormatMode === "italic") {
+        const stripped = before.replace(/\*\*/g, "");
+        if (!stripped.includes("*")) {
+          this.activeFormatMode = null;
+          updateFormatBtns();
+        }
+      }
+    };
+    boldBtn.addEventListener("click", () => {
+      if (this.activeFormatMode === "italic" || this.isInsideMarker("*")) return;
+      const ta = this.textarea;
+      if (ta.selectionStart !== ta.selectionEnd) {
+        this.wrapSelection("**", "**");
+        updateFormatBtns();
+        return;
+      }
+      if (this.activeFormatMode === "bold") {
+        const pos = ta.selectionStart;
+        if (pos >= 2 && ta.value.slice(pos - 2, pos) === "**") {
+          ta.value = ta.value.slice(0, pos - 2) + ta.value.slice(pos);
+          ta.selectionStart = ta.selectionEnd = pos - 2;
+        } else {
+          ta.value = ta.value.slice(0, pos) + "**" + ta.value.slice(pos);
+          ta.selectionStart = ta.selectionEnd = pos + 2;
+        }
+        this.activeFormatMode = null;
+      } else {
+        const pos = ta.selectionStart;
+        ta.value = ta.value.slice(0, pos) + "**" + ta.value.slice(pos);
+        ta.selectionStart = ta.selectionEnd = pos + 2;
+        this.activeFormatMode = "bold";
+      }
+      ta.focus();
+      ta.dispatchEvent(new Event("input"));
+      updateFormatBtns();
+    });
+    italicBtn.addEventListener("click", () => {
+      if (this.activeFormatMode === "bold" || this.isInsideMarker("**")) return;
+      const ta = this.textarea;
+      if (ta.selectionStart !== ta.selectionEnd) {
+        this.wrapSelection("*", "*");
+        updateFormatBtns();
+        return;
+      }
+      if (this.activeFormatMode === "italic") {
+        const pos = ta.selectionStart;
+        if (pos >= 1 && ta.value.slice(pos - 1, pos) === "*") {
+          ta.value = ta.value.slice(0, pos - 1) + ta.value.slice(pos);
+          ta.selectionStart = ta.selectionEnd = pos - 1;
+        } else {
+          ta.value = ta.value.slice(0, pos) + "*" + ta.value.slice(pos);
+          ta.selectionStart = ta.selectionEnd = pos + 1;
+        }
+        this.activeFormatMode = null;
+      } else {
+        const pos = ta.selectionStart;
+        ta.value = ta.value.slice(0, pos) + "*" + ta.value.slice(pos);
+        ta.selectionStart = ta.selectionEnd = pos + 1;
+        this.activeFormatMode = "italic";
+      }
+      ta.focus();
+      ta.dispatchEvent(new Event("input"));
+      updateFormatBtns();
+    });
+    listBtn.addEventListener("click", () => {
+      this.insertAtLineStart("- ");
+      this.updateToolbarActive(listBtn, checkBtn, olBtn);
+    });
+    checkBtn.addEventListener("click", () => {
+      this.insertAtLineStart("- [ ] ");
+      this.updateToolbarActive(listBtn, checkBtn, olBtn);
+    });
+    olBtn.addEventListener("click", () => {
+      this.insertAtLineStart("1. ");
+      this.updateToolbarActive(listBtn, checkBtn, olBtn);
+    });
+    const formatBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn wr-format-btn" });
+    (0, import_obsidian4.setIcon)(formatBtn, "ellipsis");
+    formatBtn.addEventListener("mousedown", (e) => e.preventDefault());
+    formatBtn.addEventListener("click", (e) => {
+      const ta = this.textarea;
+      const hasSelection = ta.selectionStart !== ta.selectionEnd;
+      this.openMenu(formatBtn, (menu) => {
+        menu.addItem((item) => item.setTitle("\u30B3\u30FC\u30C9").setIcon("code").onClick(() => {
+          const t = this.textarea;
+          if (t.selectionStart !== t.selectionEnd) {
+            this.wrapSelection("`", "`");
+          } else {
+            this.insertCodeBlock();
+          }
+        }));
+        menu.addItem((item) => item.setTitle("\u6570\u5F0F").setIcon("sigma").onClick(() => {
+          const t = this.textarea;
+          if (t.selectionStart !== t.selectionEnd) {
+            this.wrapSelection("$", "$");
+          } else {
+            this.insertMathBlock();
+          }
+        }));
+        menu.addItem((item) => item.setTitle("\u5F15\u7528").setIcon("quote").onClick(() => this.toggleBlockPrefix("> ")));
+        menu.addSeparator();
+        menu.addItem((item) => {
+          item.setTitle("\u30EA\u30F3\u30AF").setIcon("link").onClick(() => this.insertMarkdownLink());
+          if (!hasSelection) item.setDisabled(true);
+        });
+        menu.addItem((item) => {
+          item.setTitle("\u53D6\u308A\u6D88\u3057\u7DDA").setIcon("strikethrough").onClick(() => this.wrapSelection("~~", "~~"));
+          if (!hasSelection) item.setDisabled(true);
+        });
+        menu.addItem((item) => {
+          item.setTitle("\u30CF\u30A4\u30E9\u30A4\u30C8").setIcon("highlighter").onClick(() => this.wrapSelection("==", "=="));
+          if (!hasSelection) item.setDisabled(true);
+        });
+        menu.addSeparator();
+        menu.addItem((item) => {
+          item.setTitle("\u8A2D\u5B9A").setIcon("settings").onClick(() => {
+            const settingApi = this.app.setting;
+            if ((settingApi == null ? void 0 : settingApi.open) && (settingApi == null ? void 0 : settingApi.openTabById)) {
+              settingApi.open();
+              settingApi.openTabById("wrot");
+            }
+          });
+        });
+      }, e);
+    });
+    const updateActive = () => {
+      validateActiveFormatMode();
+      this.updateToolbarActive(listBtn, checkBtn, olBtn);
+      this.updateEmbedBtnActive(embedBtn);
+      updateFormatBtns();
+      this.updateSubmitBtnState();
+    };
+    this.registerDomEvent(document, "selectionchange", () => {
+      if (document.activeElement === this.textarea) updateActive();
+    });
+    this.textarea.addEventListener("focus", updateActive);
+    this.textarea.addEventListener("input", updateActive);
+    const updateToolbarWrapped = () => {
+      const buttons = toolbar.querySelectorAll(".wr-toolbar-btn");
+      if (buttons.length < 2) return;
+      const first = buttons[0];
+      const last = buttons[buttons.length - 1];
+      const wrapped = last.offsetTop > first.offsetTop;
+      toolbar.toggleClass("wr-toolbar-wrapped", wrapped);
+    };
+    requestAnimationFrame(updateToolbarWrapped);
+    if (typeof ResizeObserver !== "undefined") {
+      this.toolbarResizeObserver = new ResizeObserver(() => {
+        requestAnimationFrame(updateToolbarWrapped);
+      });
+      this.toolbarResizeObserver.observe(toolbar);
+    }
+  }
+  openImagePicker() {
+    var _a;
+    if (this.pendingImage) return;
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/png, image/gif, image/jpeg";
+    input.multiple = false;
+    input.style.display = "none";
+    document.body.appendChild(input);
+    (_a = this.imageAddBtn) == null ? void 0 : _a.toggleClass("wr-toolbar-active", true);
+    const deactivate = () => {
+      var _a2;
+      (_a2 = this.imageAddBtn) == null ? void 0 : _a2.toggleClass("wr-toolbar-active", false);
+      window.removeEventListener("focus", deactivate);
+      window.removeEventListener("pointerdown", onUserTap, true);
+    };
+    const onUserTap = (e) => {
+      var _a2;
+      if ((_a2 = this.imageAddBtn) == null ? void 0 : _a2.contains(e.target)) return;
+      deactivate();
+    };
+    window.addEventListener("focus", deactivate);
+    window.addEventListener("pointerdown", onUserTap, true);
+    input.addEventListener("change", () => {
+      var _a2;
+      const file = (_a2 = input.files) == null ? void 0 : _a2[0];
+      if (file) {
+        this.setPendingImage(file);
+      }
+      document.body.removeChild(input);
+      deactivate();
+    });
+    input.click();
+  }
+  setPendingImage(file) {
+    this.clearPendingImage();
+    this.pendingImage = file;
+    this.pendingImageUrl = URL.createObjectURL(file);
+    this.renderThumbnail();
+    this.updateImageAddBtnState();
+    this.updateSubmitBtnState();
+  }
+  clearPendingImage() {
+    if (this.pendingImageUrl) {
+      URL.revokeObjectURL(this.pendingImageUrl);
+      this.pendingImageUrl = null;
+    }
+    this.pendingImage = null;
+    if (this.thumbnailContainer) {
+      this.thumbnailContainer.empty();
+      this.thumbnailContainer.style.display = "none";
+    }
+    this.updateImageAddBtnState();
+    this.updateSubmitBtnState();
+  }
+  renderThumbnail() {
+    if (!this.thumbnailContainer || !this.pendingImageUrl) return;
+    this.thumbnailContainer.empty();
+    this.thumbnailContainer.style.display = "";
+    const wrap = this.thumbnailContainer.createDiv({ cls: "wr-thumbnail" });
+    const img = wrap.createEl("img", { cls: "wr-thumbnail-img" });
+    img.src = this.pendingImageUrl;
+    const removeBtn = wrap.createEl("button", { cls: "wr-thumbnail-remove" });
+    (0, import_obsidian4.setIcon)(removeBtn, "x");
+    removeBtn.setAttr("aria-label", "\u753B\u50CF\u3092\u524A\u9664");
+    removeBtn.addEventListener("mousedown", (e) => e.preventDefault());
+    removeBtn.addEventListener("click", () => this.clearPendingImage());
+  }
+  updateImageAddBtnState() {
+    if (!this.imageAddBtn) return;
+    const disabled = this.pendingImage !== null;
+    this.imageAddBtn.toggleClass("wr-toolbar-disabled", disabled);
+    this.imageAddBtn.disabled = disabled;
+  }
+  updateSubmitBtnState() {
+    if (!this.submitBtnEl) return;
+    const hasContent = this.textarea.value.trim().length > 0 || this.pendingImage !== null;
+    this.submitBtnEl.toggleClass("wr-submit-active", hasContent);
+  }
+  async submitMemo() {
+    if (this.activeFormatMode) {
+      const marker = this.activeFormatMode === "bold" ? "**" : "*";
+      this.textarea.value = this.textarea.value + marker;
+      this.activeFormatMode = null;
+    }
+    const rawText = this.textarea.value.trim().replace(/＃/g, "#");
+    if (!rawText && !this.pendingImage) return;
+    if (this.anchoredToToday && !this.currentDate.isSame(moment(), "day")) {
+      this.currentDate = moment();
+    }
+    try {
+      const file = await getOrCreateDailyNote(
+        this.app,
+        this.currentDate
+      );
+      let bodyText = rawText;
+      if (this.pendingImage) {
+        const savedFile = await saveImageToVault(this.app, this.pendingImage, file);
+        const embed = buildEmbedLink(savedFile);
+        bodyText = insertEmbedAboveBottomBlock(bodyText, embed);
+      }
+      this.ignoreNextModify = true;
+      await appendMemo(this.app, file, bodyText);
+      this.textarea.value = "";
+      this.textarea.style.height = "";
+      this.activeFormatMode = null;
+      this.clearPendingImage();
+      this.textarea.dispatchEvent(new Event("input"));
+      await this.refresh();
+    } catch (e) {
+      new import_obsidian4.Notice(`\u30E1\u30E2\u306E\u4FDD\u5B58\u306B\u5931\u6557\u3057\u307E\u3057\u305F: ${e}`);
+    }
+  }
+  async refresh() {
+    if (this.refreshing) return;
+    if (Date.now() < this.ignoreModifyUntil) return;
+    this.refreshing = true;
+    try {
+      const isToday = this.currentDate.isSame(moment(), "day");
+      const dateText = this.currentDate.format(this.plugin.settings.headerDateFormat);
+      this.dateLabel.setText(isToday ? `${dateText}\uFF08\u4ECA\u65E5\uFF09` : dateText);
+      this.listContainer.empty();
+      const pinnedResolved = await this.resolvePinnedMemos();
+      const pinnedTimestamps = new Set(pinnedResolved.map((p) => p.memo.time));
+      for (const { memo, filePath } of pinnedResolved) {
+        this.renderMemoCard(memo, { pinned: true, filePath });
+      }
+      const file = getDailyNoteFile(
+        this.app,
+        this.currentDate
+      );
+      if (!file) {
+        if (pinnedResolved.length === 0) {
+          this.listContainer.createDiv({
+            cls: "wr-empty",
+            text: "\u30E1\u30E2\u306F\u3042\u308A\u307E\u305B\u3093"
+          });
+        }
+        return;
+      }
+      const content = await this.app.vault.cachedRead(file);
+      const memos = parseMemos(content);
+      if (memos.length === 0) {
+        if (pinnedResolved.length === 0) {
+          this.listContainer.createDiv({
+            cls: "wr-empty",
+            text: "\u30E1\u30E2\u306F\u3042\u308A\u307E\u305B\u3093"
+          });
+        }
+        return;
+      }
+      for (const memo of memos) {
+        if (pinnedTimestamps.has(memo.time)) continue;
+        this.renderMemoCard(memo, { pinned: false, filePath: file.path });
+      }
+    } finally {
+      this.refreshing = false;
+    }
+  }
+  // \u30d4\u30f3\u8a2d\u5b9a\u304b\u3089\u5b9f\u4f53\u30e1\u30e2\u3092\u89e3\u6c7a\u3059\u308b\uff08\u8a2d\u5b9a\u306e\u6574\u7406\u306f\u30d4\u30f3\u8ffd\u52a0/\u524a\u9664\u5074\u3067\u884c\u3046\uff09
+  async resolvePinnedMemos() {
+    const pins = this.plugin.settings.pins;
+    if (!pins || pins.length === 0) return [];
+    const resolved = [];
+    const seenFiles = /* @__PURE__ */ new Map();
+    for (const pin of pins) {
+      let memos = seenFiles.get(pin.file);
+      if (memos === void 0) {
+        const file = this.app.vault.getAbstractFileByPath(pin.file);
+        if (!(file instanceof import_obsidian4.TFile)) {
+          seenFiles.set(pin.file, null);
+          continue;
+        }
+        const content = await this.app.vault.cachedRead(file);
+        memos = parseMemos(content);
+        seenFiles.set(pin.file, memos);
+      }
+      if (!memos) continue;
+      const memo = memos.find((m) => m.time === pin.timestamp);
+      if (memo) {
+        resolved.push({ memo, filePath: pin.file });
+      }
+    }
+    return resolved;
+  }
+  isPinned(memo) {
+    return this.plugin.settings.pins.some((p) => p.timestamp === memo.time);
+  }
+  async cleanupOrphanPins() {
+    const pins = this.plugin.settings.pins;
+    if (pins.length === 0) return false;
+    const cache = /* @__PURE__ */ new Map();
+    const surviving = [];
+    for (const pin of pins) {
+      let memos = cache.get(pin.file);
+      if (memos === void 0) {
+        const file = this.app.vault.getAbstractFileByPath(pin.file);
+        if (!(file instanceof import_obsidian4.TFile)) {
+          cache.set(pin.file, null);
+          continue;
+        }
+        const content = await this.app.vault.cachedRead(file);
+        memos = parseMemos(content);
+        cache.set(pin.file, memos);
+      }
+      if (!memos) continue;
+      if (memos.some((m) => m.time === pin.timestamp)) {
+        surviving.push(pin);
+      }
+    }
+    if (surviving.length === pins.length) return false;
+    this.plugin.settings.pins = surviving;
+    await this.plugin.saveSettings();
+    return true;
+  }
+  async addPin(memo, filePath) {
+    await this.cleanupOrphanPins();
+    const limit = this.plugin.settings.pinLimit;
+    if (this.plugin.settings.pins.length >= limit) return;
+    if (this.isPinned(memo)) return;
+    this.plugin.settings.pins = [
+      { timestamp: memo.time, file: filePath },
+      ...this.plugin.settings.pins
+    ];
+    await this.plugin.saveSettings();
+    await this.refresh();
+  }
+  async removePin(memo) {
+    const before = this.plugin.settings.pins.length;
+    this.plugin.settings.pins = this.plugin.settings.pins.filter(
+      (p) => p.timestamp !== memo.time
+    );
+    if (this.plugin.settings.pins.length !== before) {
+      await this.plugin.saveSettings();
+    }
+    await this.cleanupOrphanPins();
+    await this.refresh();
+  }
+  async jumpToDailyNoteBlock(memo, filePath) {
+    const file = this.app.vault.getAbstractFileByPath(filePath);
+    if (!(file instanceof import_obsidian4.TFile)) {
+      new import_obsidian4.Notice("\u5143\u306E\u30CE\u30FC\u30C8\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093");
+      await this.cleanupOrphanPins();
+      await this.refresh();
+      return;
+    }
+    await this.openOrFocusFile(file);
+    const blockId = `wr-${memo.time.replace(/[-:.TZ+]/g, "").slice(0, 17)}`;
+    await this.app.workspace.openLinkText(
+      `${file.basename}#^${blockId}`,
+      file.path,
+      false
+    );
+    flashJumpTarget(blockId, this.app, (rc) => this.plugin.getRuleAccentColor(rc));
+  }
+  renderMemoCard(memo, options) {
+    const card = this.listContainer.createDiv({ cls: "wr-card" });
+    if (options.pinned) card.classList.add("wr-card-pinned");
+    const T = memo.time.replace(/[-:.TZ+]/g, "").slice(0, 17);
+    card.classList.add(`wr-block-id-wr-${T}`);
+    const rule = this.plugin.findTagColorRule(memo.tags);
+    if (rule) {
+      const idx = this.plugin.settings.tagColorRules.indexOf(rule);
+      if (idx >= 0) card.classList.add(`wr-tag-rule-${idx}`);
+    }
+    const contentEl = card.createDiv({ cls: "wr-content" });
+    const resolveImagePath = (fileName) => {
+      const file = this.app.metadataCache.getFirstLinkpathDest(fileName, "");
+      return file ? this.app.vault.getResourcePath(file) : null;
+    };
+    const currentFile = getDailyNoteFile(this.app, this.currentDate);
+    const currentFilePath = (currentFile == null ? void 0 : currentFile.path) || "";
+    const urls = renderTextWithTagsAndUrls(contentEl, memo.content, {
+      onTagClick: (tag) => this.openSearch(tag),
+      onCheckToggle: async (lineIndex) => {
+        const file = getDailyNoteFile(this.app, this.currentDate);
+        if (!file) return;
+        const fileLine = memo.lineStart + 1 + lineIndex;
+        this.ignoreModifyUntil = Date.now() + 500;
+        this.plugin.quoteRefreshSuppressedUntil = Date.now() + 500;
+        await toggleCheckbox(this.app, file, fileLine);
+      },
+      onInternalLinkClick: (linkName) => {
+        this.app.workspace.openLinkText(linkName, "", false);
+      },
+      checkStrikethrough: this.plugin.settings.checkStrikethrough,
+      resolveImagePath,
+      resolveLinkTarget: (linkName) => {
+        return this.app.metadataCache.getFirstLinkpathDest(linkName, "") !== null;
+      },
+      renderQuoteCard: (slot, fileName, blockId) => {
+        renderQuoteCard(slot, fileName, blockId, this.app, currentFilePath, {
+          timestampFormat: this.plugin.settings.timestampFormat,
+          resolveRuleClass: (content) => this.plugin.getTagRuleClassForContent(content),
+          resolveRuleAccent: (ruleClass) => this.plugin.getRuleAccentColor(ruleClass)
+        });
+      },
+      renderCodeBlock: (code, lang, blockEl, fenceTildes) => {
+        const fence = "~".repeat(Math.max(3, fenceTildes));
+        const source = (lang ? `${fence}${lang}
+` : `${fence}
+`) + code + `
+${fence}`;
+        import_obsidian4.MarkdownRenderer.render(this.app, source, blockEl, "", this).catch(() => {
+          const pre = blockEl.createEl("pre");
+          const codeEl = pre.createEl("code");
+          if (lang) codeEl.addClass(`language-${lang}`);
+          codeEl.textContent = code;
+        });
+      },
+      renderMathBlock: (tex, blockEl) => {
+        try {
+          const rendered = (0, import_obsidian4.renderMath)(tex, true);
+          blockEl.appendChild(rendered);
+          (0, import_obsidian4.finishRenderMath)();
+        } catch (e) {
+          blockEl.textContent = tex;
+        }
+      }
+    });
+    const previewUrls = urls.filter(
+      (pu) => pu.type === "image" || !pu.url.startsWith("obsidian://")
+    );
+    if (previewUrls.length > 0) {
+      const mediaEl = document.createElement("div");
+      mediaEl.className = "wr-media-area";
+      const quoteSlot = contentEl.querySelector(".wr-quote-card-slot");
+      if (quoteSlot && quoteSlot.parentNode) {
+        quoteSlot.parentNode.insertBefore(mediaEl, quoteSlot);
+      } else {
+        card.appendChild(mediaEl);
+      }
+      renderUrlPreviews(mediaEl, previewUrls, this.plugin.ogpCache, resolveImagePath);
+    }
+    const footer = card.createDiv({ cls: "wr-card-footer" });
+    const fmt = this.plugin.settings.timestampFormat || "YYYY/MM/DD HH:mm:ss";
+    const formatted = moment(memo.time).format(fmt);
+    footer.createEl("span", { cls: "wr-timestamp", text: formatted });
+    const menuBtn = footer.createEl("span", { cls: "wr-menu-btn" });
+    (0, import_obsidian4.setIcon)(menuBtn, "ellipsis");
+    menuBtn.addEventListener("click", async (e) => {
+      await this.cleanupOrphanPins();
+      const pinned = this.isPinned(memo);
+      const pinLimit = this.plugin.settings.pinLimit;
+      const limitReached = !pinned && this.plugin.settings.pins.length >= pinLimit;
+      this.openMenu(menuBtn, (menu) => {
+        menu.addItem(
+          (item) => item.setTitle("\u30B3\u30D4\u30FC").setIcon("copy").onClick(async () => {
+            await navigator.clipboard.writeText(memo.content);
+          })
+        );
+        menu.addItem(
+          (item) => item.setTitle("\u5F15\u7528").setIcon("quote").onClick(() => {
+            this.insertQuoteToForm(memo, options.filePath);
+          })
+        );
+        if (pinned) {
+          menu.addItem(
+            (item) => item.setTitle("\u5143\u306E\u30CE\u30FC\u30C8\u3078\u30B8\u30E3\u30F3\u30D7").setIcon("reply").onClick(async () => {
+              await this.jumpToDailyNoteBlock(memo, options.filePath);
+            })
+          );
+          menu.addItem(
+            (item) => item.setTitle("\u30D4\u30F3\u3092\u5916\u3059").setIcon("pin-off").onClick(async () => {
+              await this.removePin(memo);
+            })
+          );
+        } else {
+          menu.addItem((item) => {
+            item.setTitle("\u30D4\u30F3\u7559\u3081").setIcon("pin").onClick(async () => {
+              if (limitReached) return;
+              await this.addPin(memo, options.filePath);
+            });
+            if (limitReached) item.setDisabled(true);
+          });
+          if (limitReached) {
+            menu.addItem((item) => {
+              item.setTitle(`\u30D4\u30F3\u7559\u3081\u306F${pinLimit}\u4EF6\u307E\u3067\u3067\u3059\u3002`).setDisabled(true);
+              const itemDom = item.dom;
+              itemDom == null ? void 0 : itemDom.classList.add("wr-menu-hint", "is-label");
+            });
+          }
+        }
+      }, e);
+    });
+    if (options.pinned) {
+      const pinIndicator = card.createEl("span", { cls: "wr-pin-indicator" });
+      (0, import_obsidian4.setIcon)(pinIndicator, "pin");
+    }
+  }
+  insertAtLineStart(prefix) {
+    const ta = this.textarea;
+    const pos = ta.selectionStart;
+    const val = ta.value;
+    const lineStart = pos > 0 ? val.lastIndexOf("\n", pos - 1) + 1 : 0;
+    const lineText = val.slice(lineStart, val.indexOf("\n", lineStart) === -1 ? void 0 : val.indexOf("\n", lineStart));
+    const prefixes = ["- [ ] ", "- [x] ", "- "];
+    let existingPrefix = "";
+    for (const p of prefixes) {
+      if (lineText.startsWith(p)) {
+        existingPrefix = p;
+        break;
+      }
+    }
+    if (!existingPrefix) {
+      const olMatch = lineText.match(/^\d+\.\s?/);
+      if (olMatch) existingPrefix = olMatch[0];
+    }
+    const isSameType = existingPrefix === prefix || prefix === "1. " && existingPrefix.match(/^\d+\. $/);
+    if (isSameType) {
+      ta.value = val.slice(0, lineStart) + val.slice(lineStart + existingPrefix.length);
+      ta.selectionStart = ta.selectionEnd = lineStart;
+    } else if (existingPrefix) {
+      ta.value = val.slice(0, lineStart) + prefix + val.slice(lineStart + existingPrefix.length);
+      ta.selectionStart = ta.selectionEnd = lineStart + prefix.length;
+    } else {
+      ta.value = val.slice(0, lineStart) + prefix + val.slice(lineStart);
+      ta.selectionStart = ta.selectionEnd = lineStart + prefix.length;
+    }
+    ta.focus();
+    ta.dispatchEvent(new Event("input"));
+  }
+  async insertQuoteToForm(memo, srcFilePath) {
+    const T = memo.time.replace(/[-:.TZ+]/g, "").slice(0, 17);
+    const blockId = `wr-${T}`;
+    const srcFile = this.app.vault.getAbstractFileByPath(srcFilePath);
+    if (!(srcFile instanceof import_obsidian4.TFile)) return;
+    this.ignoreNextModify = true;
+    this.plugin.quoteRefreshSuppressedUntil = Date.now() + 500;
+    await ensureBlockIdOnFence(this.app, srcFile, memo.time, blockId);
+    const fileBaseName = srcFile.basename;
+    const marker = `[[${fileBaseName}#^${blockId}]]`;
+    const ta = this.textarea;
+    const QUOTE_RE = /\[\[[^\[\]]+#\^wr-\d{17}\]\]/g;
+    const existing = ta.value;
+    let next;
+    let cursorPos;
+    if (QUOTE_RE.test(existing)) {
+      next = existing.replace(QUOTE_RE, marker);
+      cursorPos = 0;
+    } else if (existing.length === 0) {
+      next = `
+${marker}`;
+      cursorPos = 0;
+    } else {
+      next = `${existing}
+
+${marker}`;
+      cursorPos = existing.length + 1;
+    }
+    ta.value = next;
+    ta.selectionStart = ta.selectionEnd = cursorPos;
+    ta.focus();
+    ta.dispatchEvent(new Event("input"));
+  }
+  insertCodeBlock() {
+    this.insertFenceBlock("~~~\n\n~~~");
+  }
+  insertMathBlock() {
+    this.insertFenceBlock("$$\n\n$$");
+  }
+  insertFenceBlock(insert) {
+    const ta = this.textarea;
+    const pos = ta.selectionStart;
+    const val = ta.value;
+    const lineStart = pos > 0 ? val.lastIndexOf("\n", pos - 1) + 1 : 0;
+    const currentLineIsEmpty = val.slice(lineStart, pos).trim() === "" && (val.indexOf("\n", pos) === -1 || val.slice(pos, val.indexOf("\n", pos)).trim() === "");
+    let before = val.slice(0, lineStart);
+    let after = val.slice(lineStart);
+    if (!currentLineIsEmpty) {
+      const needsLeadingNewline = before.length > 0 && !before.endsWith("\n\n");
+      if (needsLeadingNewline) before += before.endsWith("\n") ? "\n" : "\n\n";
+      after = "\n" + after;
+    }
+    const afterStripped = after.replace(/^\n+/, "");
+    let separator = "";
+    if (afterStripped.length > 0) {
+      separator = "\n";
+      after = afterStripped;
+    }
+    const cursorOffset = before.length + 3;
+    ta.value = before + insert + separator + after;
+    ta.selectionStart = ta.selectionEnd = cursorOffset;
+    ta.focus();
+    ta.dispatchEvent(new Event("input"));
+  }
+  updateToolbarActive(listBtn, checkBtn, olBtn) {
+    const ta = this.textarea;
+    const pos = ta.selectionStart;
+    const val = ta.value;
+    const lineStart = val.lastIndexOf("\n", pos - 1) + 1;
+    const lineEnd = val.indexOf("\n", lineStart);
+    const line = val.slice(lineStart, lineEnd === -1 ? void 0 : lineEnd);
+    const isList = line.startsWith("- ") && !line.match(/^- \[[ x]\] /);
+    const isCheck = !!line.match(/^- \[[ x]\] /);
+    const isOl = !!line.match(/^\d+\.\s?/);
+    listBtn.toggleClass("wr-toolbar-active", isList);
+    checkBtn.toggleClass("wr-toolbar-active", isCheck);
+    olBtn.toggleClass("wr-toolbar-active", isOl);
+  }
+  // 選択範囲が指定マーカー(**または*)で完全に囲まれているか判定する。
+  // 選択なし時は常にfalse(カーソル移動でボタン状態が揺れるUXを避けるため)
+  isInsideMarker(marker) {
+    const ta = this.textarea;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    if (start === end) return false;
+    const selected = ta.value.slice(start, end);
+    if (marker === "**") {
+      return /^\*\*[\s\S]+\*\*$/.test(selected);
+    }
+    if (!/^\*[\s\S]+\*$/.test(selected)) return false;
+    if (selected.startsWith("**") || selected.endsWith("**")) return false;
+    return true;
+  }
+  updateEmbedBtnActive(embedBtn) {
+    const ta = this.textarea;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const val = ta.value;
+    let isEmbed = false;
+    if (start !== end) {
+      isEmbed = /^!?\[\[[^\]]*\]\]$/.test(val.slice(start, end));
+    } else {
+      const before = val.slice(Math.max(0, start - 100), start);
+      const after = val.slice(start, start + 100);
+      isEmbed = !!before.match(/!\[\[([^\]]*?)$/) && !!after.match(/^([^\]]*?)\]\]/);
+    }
+    embedBtn.toggleClass("wr-toolbar-active", isEmbed);
+  }
+  toggleInlineWrap(open, close) {
+    const ta = this.textarea;
+    const pos = ta.selectionStart;
+    const val = ta.value;
+    const before = val.slice(Math.max(0, pos - 100), pos);
+    const after = val.slice(pos, pos + 100);
+    const wrapTypes = [
+      ["![[", "]]", /!\[\[([^\]]*?)$/, /^([^\]]*?)\]\]/],
+      ["`", "`", /`([^`]*?)$/, /^([^`]*?)`/],
+      ["$", "$", /\$([^$]*?)$/, /^([^$]*?)\$/]
+    ];
+    let currentType = null;
+    let currentBefore = null;
+    let currentAfter = null;
+    for (const [wo, wc, beforeRe, afterRe] of wrapTypes) {
+      const bm = before.match(beforeRe);
+      const am = after.match(afterRe);
+      if (bm && am) {
+        currentType = [wo, wc];
+        currentBefore = bm;
+        currentAfter = am;
+        break;
+      }
+    }
+    if (!currentType || !currentBefore || !currentAfter) {
+      const insert = open + close;
+      ta.value = val.slice(0, pos) + insert + val.slice(pos);
+      ta.selectionStart = ta.selectionEnd = pos + open.length;
+      ta.focus();
+      ta.dispatchEvent(new Event("input"));
+      return;
+    }
+    const start = pos - currentBefore[0].length;
+    const end = pos + currentAfter[0].length;
+    const content = currentBefore[1] + currentAfter[1];
+    if (currentType[0] === open) {
+      ta.value = val.slice(0, start) + content + val.slice(end);
+      ta.selectionStart = ta.selectionEnd = start + currentBefore[1].length;
+    } else {
+      ta.value = val.slice(0, start) + open + content + close + val.slice(end);
+      ta.selectionStart = ta.selectionEnd = start + open.length + currentBefore[1].length;
+    }
+    ta.focus();
+    ta.dispatchEvent(new Event("input"));
+  }
+  wrapSelection(open, close) {
+    const ta = this.textarea;
+    let start = ta.selectionStart;
+    let end = ta.selectionEnd;
+    if (start === end) return;
+    const val = ta.value;
+    const markers = ["**", "*", "~~", "==", "$"];
+    const orderedForInner = open === "*" ? ["*", "**", "~~", "==", "$"] : open === "**" ? ["**", "*", "~~", "==", "$"] : markers;
+    for (const m of orderedForInner) {
+      const selected = val.slice(start, end);
+      if (m === "*" && (selected.startsWith("**") || selected.endsWith("**"))) continue;
+      if (selected.length >= m.length * 2 && selected.startsWith(m) && selected.endsWith(m)) {
+        const inner = selected.slice(m.length, selected.length - m.length);
+        ta.value = val.slice(0, start) + inner + val.slice(end);
+        ta.selectionStart = start;
+        ta.selectionEnd = start + inner.length;
+        ta.focus();
+        ta.dispatchEvent(new Event("input"));
+        return;
+      }
+    }
+    let unwrapped = false;
+    for (const m of markers) {
+      const before = val.slice(start - m.length, start);
+      const after = val.slice(end, end + m.length);
+      if (before === m && after === m) {
+        const newVal = val.slice(0, start - m.length) + val.slice(start, end) + val.slice(end + m.length);
+        start -= m.length;
+        end -= m.length;
+        ta.value = newVal;
+        unwrapped = true;
+        if (m === open) {
+          ta.selectionStart = start;
+          ta.selectionEnd = end;
+          ta.focus();
+          ta.dispatchEvent(new Event("input"));
+          return;
+        }
+        break;
+      }
+    }
+    const currentVal = ta.value;
+    ta.value = currentVal.slice(0, start) + open + currentVal.slice(start, end) + close + currentVal.slice(end);
+    ta.selectionStart = start;
+    ta.selectionEnd = end + open.length + close.length;
+    ta.focus();
+    ta.dispatchEvent(new Event("input"));
+  }
+  // 選択範囲を `![[...]]` で挟む。既に挟まれていれば外す。入れ子になる場合は何もしない
+  wrapSelectionWithEmbedBrackets() {
+    const ta = this.textarea;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    if (start === end) return;
+    const val = ta.value;
+    const selected = val.slice(start, end);
+    const unwrapMatch = selected.match(/^(!?)\[\[([^\]]*)\]\]$/);
+    if (unwrapMatch) {
+      const inner = unwrapMatch[2];
+      const newVal2 = val.slice(0, start) + inner + val.slice(end);
+      ta.value = newVal2;
+      const caret2 = start + inner.length;
+      ta.selectionStart = ta.selectionEnd = caret2;
+      ta.focus();
+      ta.dispatchEvent(new Event("input"));
+      return;
+    }
+    if (/!?\[\[[^\]]*\]\]/.test(selected)) return;
+    const wrapped = "![[" + selected + "]]";
+    const newVal = val.slice(0, start) + wrapped + val.slice(end);
+    ta.value = newVal;
+    const caret = start + wrapped.length;
+    ta.selectionStart = ta.selectionEnd = caret;
+    ta.focus();
+    ta.dispatchEvent(new Event("input"));
+  }
+  toggleBlockPrefix(prefix) {
+    const ta = this.textarea;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const val = ta.value;
+    const lineStart = val.lastIndexOf("\n", start - 1) + 1;
+    const lineEnd = val.indexOf("\n", end - 1);
+    const blockEnd = lineEnd === -1 ? val.length : lineEnd;
+    const block = val.slice(lineStart, blockEnd);
+    const lines = block.split("\n");
+    const allHavePrefix = lines.every((l) => l.startsWith(prefix));
+    const newLines = allHavePrefix ? lines.map((l) => l.slice(prefix.length)) : lines.map((l) => prefix + l);
+    const newBlock = newLines.join("\n");
+    ta.value = val.slice(0, lineStart) + newBlock + val.slice(blockEnd);
+    const diff = newBlock.length - block.length;
+    ta.selectionStart = ta.selectionEnd = blockEnd + diff;
+    ta.focus();
+    ta.dispatchEvent(new Event("input"));
+  }
+  openSearch(tag) {
+    var _a, _b;
+    const searchPlugin = (_b = (_a = this.app.internalPlugins) == null ? void 0 : _a.getPluginById) == null ? void 0 : _b.call(
+      _a,
+      "global-search"
+    );
+    if (searchPlugin == null ? void 0 : searchPlugin.instance) {
+      searchPlugin.instance.openGlobalSearch(`"${tag.replace(/"/g, '\\"')}"`);
+    } else {
+      new import_obsidian4.Notice("\u691C\u7D22\u30D7\u30E9\u30B0\u30A4\u30F3\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093");
+    }
+  }
+  insertMarkdownLink() {
+    const ta = this.textarea;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    if (start === end) return;
+    const val = ta.value;
+    const selected = val.slice(start, end);
+    ta.value = val.slice(0, start) + "[" + selected + "]()" + val.slice(end);
+    const cursorPos = start + 1 + selected.length + 2;
+    ta.selectionStart = ta.selectionEnd = cursorPos;
+    ta.focus();
+    ta.dispatchEvent(new Event("input"));
+  }
+  // メニューは同時に1つだけ開く。トリガーボタンには開いている間 active クラスを付与
+  openMenu(trigger, buildMenu, evt) {
+    if (this.currentMenu) {
+      this.currentMenu.hide();
+    }
+    const menu = new import_obsidian4.Menu();
+    buildMenu(menu);
+    const menuDom = menu.dom;
+    menuDom == null ? void 0 : menuDom.classList.add("wr-menu");
+    trigger.toggleClass("wr-toolbar-active", true);
+    this.currentMenu = menu;
+    menu.onHide(() => {
+      trigger.toggleClass("wr-toolbar-active", false);
+      if (this.currentMenu === menu) {
+        this.currentMenu = null;
+      }
+    });
+    menu.showAtMouseEvent(evt);
+  }
+};
+
+// src/postProcessor.ts
+var import_obsidian5 = require("obsidian");
+init_blockSegmenter();
+function registerWrotPostProcessor(plugin) {
+  plugin.registerMarkdownPostProcessor((el2, ctx) => {
+    highlightAllWrBlocks(el2, plugin);
+    void applyBlockIdClasses(el2, plugin, ctx == null ? void 0 : ctx.sourcePath);
+  });
+  plugin.registerEvent(
+    plugin.app.workspace.on("active-leaf-change", () => {
+      rehighlightAllReadingViews(plugin);
+    })
+  );
+  plugin.registerEvent(
+    plugin.app.workspace.on("layout-change", () => {
+      rehighlightAllReadingViews(plugin);
+    })
+  );
+  plugin.registerEvent(
+    plugin.app.vault.on("modify", (file) => {
+      if (!(file instanceof import_obsidian5.TFile)) return;
+      invalidateMemoCache(file.path);
+      if (Date.now() < plugin.quoteRefreshSuppressedUntil) return;
+      refreshQuoteCardsForFile(
+        plugin.app,
+        file,
+        (content) => plugin.getTagRuleClassForContent(content),
+        (ruleClass) => plugin.getRuleAccentColor(ruleClass)
+      );
+    })
+  );
+  plugin.registerEvent(
+    plugin.app.vault.on("delete", (file) => {
+      if (!(file instanceof import_obsidian5.TFile)) return;
+      invalidateMemoCache(file.path);
+      refreshQuoteCardsForFile(
+        plugin.app,
+        file,
+        (content) => plugin.getTagRuleClassForContent(content),
+        (ruleClass) => plugin.getRuleAccentColor(ruleClass)
+      );
+    })
+  );
+}
+function highlightAllWrBlocks(el2, plugin) {
+  const codeEls = el2.querySelectorAll(
+    'code.language-wr, .block-language-wr code, pre > code[class*="language-wr"]'
+  );
+  codeEls.forEach((code) => {
+    const codeEl = code;
+    const text = code.textContent || "";
+    if (!text.trim()) return;
+    const parentBlock = code.closest(".block-language-wr") || code.closest("pre");
+    if (parentBlock instanceof HTMLElement) {
+      applyTagRuleClass(parentBlock, codeEl, plugin);
+    }
+    const hasProcessedInCode = code.querySelector(".wr-reading-tag, .wr-reading-url, .wr-internal-link, .wr-inline-code");
+    const hasProcessedInBlock = parentBlock == null ? void 0 : parentBlock.querySelector(".wr-reading-list, .wr-blockquote, .wr-embed-img, .wr-plain-text, .wr-codeblock-display, .wr-math-display");
+    if (hasProcessedInCode || hasProcessedInBlock) return;
+    processCodeBlock(codeEl, plugin);
+  });
+}
+function rehighlightAllReadingViews(plugin) {
+  setTimeout(() => {
+    document.querySelectorAll(".markdown-reading-view").forEach((view) => {
+      highlightAllWrBlocks(view, plugin);
+    });
+  }, 100);
+}
+async function applyBlockIdClasses(el2, plugin, sourcePath) {
+  const codeEls = el2.querySelectorAll(
+    'code.language-wr, .block-language-wr code, pre > code[class*="language-wr"]'
+  );
+  if (codeEls.length === 0) return;
+  if (!sourcePath) return;
+  const file = plugin.app.vault.getAbstractFileByPath(sourcePath);
+  if (!(file instanceof import_obsidian5.TFile)) return;
+  let memos;
+  try {
+    const content = await plugin.app.vault.cachedRead(file);
+    const { parseMemos: parseMemos2 } = await Promise.resolve().then(() => (init_memoParser(), memoParser_exports));
+    memos = parseMemos2(content);
+  } catch (e) {
+    return;
+  }
+  codeEls.forEach((code) => {
+    const codeEl = code;
+    const block = codeEl.closest(".block-language-wr") || codeEl.closest("pre");
+    if (!(block instanceof HTMLElement)) return;
+    if (Array.from(block.classList).some((c) => c.startsWith("wr-block-id-wr-"))) return;
+    const codeText = (codeEl.getAttribute("data-wr-original") || codeEl.textContent || "").trim();
+    if (!codeText) return;
+    const memo = memos.find((m) => m.content.trim() === codeText);
+    if (!memo) return;
+    const T = memo.time.replace(/[-:.TZ+]/g, "").slice(0, 17);
+    block.classList.add(`wr-block-id-wr-${T}`);
+  });
+}
+function applyTagRuleClass(block, code, plugin) {
+  const container = block.parentElement;
+  const targets = [block];
+  if (container) {
+    container.querySelectorAll(".code-block-flair, .copy-code-button").forEach((el2) => {
+      if (el2 instanceof HTMLElement) targets.push(el2);
+    });
+  }
+  block.querySelectorAll(".code-block-flair, .copy-code-button").forEach((el2) => {
+    if (el2 instanceof HTMLElement) targets.push(el2);
+  });
+  for (const t of targets) {
+    const existing = Array.from(t.classList);
+    for (const cls2 of existing) {
+      if (/^wr-tag-rule-\d+$/.test(cls2)) t.classList.remove(cls2);
+    }
+  }
+  const rawText = code.getAttribute("data-wr-original") || code.textContent || "";
+  const blockTags = rawText.match(/#[^\s#]+/g) || [];
+  const rule = plugin.findTagColorRule(blockTags);
+  if (!rule) return;
+  const idx = plugin.settings.tagColorRules.indexOf(rule);
+  if (idx < 0) return;
+  const cls = `wr-tag-rule-${idx}`;
+  for (const t of targets) t.classList.add(cls);
+}
+function processCodeBlock(code, plugin) {
+  var _a;
+  const block = code.closest(".block-language-wr") || code.closest("pre");
+  if (!block) return;
+  const container = block.parentElement || block;
+  container.querySelectorAll(".code-block-flair, .copy-code-button").forEach((el2) => {
+    el2.classList.add("wr-flair-bg");
+  });
+  block.querySelectorAll(".code-block-flair, .copy-code-button").forEach((el2) => {
+    el2.classList.add("wr-flair-bg");
+  });
+  const copyButtons = [
+    ...Array.from(container.querySelectorAll(".copy-code-button")),
+    ...Array.from(block.querySelectorAll(".copy-code-button"))
+  ];
+  const resolveAccentForBlock = () => {
+    var _a2;
+    const ruleClass = Array.from(block.classList).find((c) => /^wr-tag-rule-\d+$/.test(c));
+    if (ruleClass) {
+      const idx = parseInt(ruleClass.slice("wr-tag-rule-".length), 10);
+      const rule = (_a2 = plugin.settings.tagColorRules) == null ? void 0 : _a2[idx];
+      if ((rule == null ? void 0 : rule.accentColor) && /^#[0-9a-fA-F]{6}$/.test(rule.accentColor)) {
+        return rule.accentColor;
+      }
+    }
+    return getComputedStyle(document.body).getPropertyValue("--text-accent").trim() || "#adc718";
+  };
+  for (const btn of copyButtons) {
+    btn.addEventListener("click", () => {
+      const successColor = resolveAccentForBlock();
+      const applySvgColor = () => {
+        btn.querySelectorAll("svg, svg *").forEach((svg) => {
+          svg.setAttribute("stroke", successColor);
+          svg.setAttribute("color", successColor);
+        });
+      };
+      applySvgColor();
+      setTimeout(applySvgColor, 50);
+      setTimeout(applySvgColor, 150);
+    });
+  }
+  block.querySelectorAll(".wr-media-area").forEach((el2) => el2.remove());
+  const resolveImagePath = (fileName) => {
+    const file = plugin.app.metadataCache.getFirstLinkpathDest(fileName, "");
+    return file ? plugin.app.vault.getResourcePath(file) : null;
+  };
+  const blockFullText = code.textContent || "";
+  const hasQuoteMarker = /\[\[[^\[\]]+#\^wr-\d{17}\]\]/.test(blockFullText);
+  convertListLines(code, plugin);
+  const tailUrls = [];
+  const tailEmbedImages = [];
+  const walkTargets = [code];
+  block.querySelectorAll(".wr-reading-list, .wr-blockquote, .wr-plain-text").forEach((el2) => {
+    walkTargets.push(el2);
+  });
+  for (const walkTarget of walkTargets) {
+    const walker = document.createTreeWalker(walkTarget, NodeFilter.SHOW_TEXT);
+    let textNode;
+    const nodesToReplace = [];
+    while (textNode = walker.nextNode()) {
+      const text = textNode.textContent || "";
+      if (!text.includes("#") && !text.match(/(?:https?|obsidian):\/\//) && !text.includes("[[") && !text.includes("`") && !text.includes("*") && !text.includes("~") && !text.includes("=") && !text.includes("$")) continue;
+      const frag = document.createDocumentFragment();
+      const parts = text.split(/(\$[^$]+\$|`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*|~~[^~]+~~|==[^=]+=+|!\[\[[^\]]+\]\]|\[\[[^\]]+\]\]|\[[^\[\]\n]+\]\((?:https?|obsidian):\/\/[^\s)]+\)|#[^\s#]+|(?:https?|obsidian):\/\/[^\s<>"'\]]+)/g);
+      let hasMatch = false;
+      const IMAGE_EXT = /\.(png|jpg|jpeg|gif|svg|webp|bmp)$/i;
+      for (const part of parts) {
+        if (!part) continue;
+        const codeMatch = part.match(/^`([^`]+)`$/);
+        if (codeMatch) {
+          const codeEl = document.createElement("span");
+          codeEl.className = "wr-inline-code";
+          const tickOpen = document.createElement("span");
+          tickOpen.className = "wr-backtick";
+          tickOpen.textContent = "`";
+          const tickClose = document.createElement("span");
+          tickClose.className = "wr-backtick";
+          tickClose.textContent = "`";
+          codeEl.appendChild(tickOpen);
+          codeEl.appendChild(document.createTextNode(codeMatch[1]));
+          codeEl.appendChild(tickClose);
+          frag.appendChild(codeEl);
+          hasMatch = true;
+          continue;
+        }
+        const formatPatterns = [
+          [/^\*\*(.+)\*\*$/, "strong", "**"],
+          [/^\*(.+)\*$/, "em", "*"],
+          [/^~~(.+)~~$/, "del", "~~"],
+          [/^==(.+)==$/, "mark", "=="]
+        ];
+        let formatHandled = false;
+        for (const [re, tag, marker] of formatPatterns) {
+          const m = part.match(re);
+          if (m) {
+            const el2 = document.createElement(tag);
+            if (tag === "mark") el2.className = "wr-highlight";
+            const mOpen = document.createElement("span");
+            mOpen.className = "wr-backtick";
+            mOpen.textContent = marker;
+            const mClose = document.createElement("span");
+            mClose.className = "wr-backtick";
+            mClose.textContent = marker;
+            el2.appendChild(mOpen);
+            el2.appendChild(document.createTextNode(m[1]));
+            el2.appendChild(mClose);
+            frag.appendChild(el2);
+            hasMatch = true;
+            formatHandled = true;
+            break;
+          }
+        }
+        if (formatHandled) continue;
+        const mdLinkMatch = part.match(/^\[([^\[\]\n]+)\]\(((?:https?|obsidian):\/\/[^\s)]+)\)$/);
+        if (mdLinkMatch) {
+          const label = mdLinkMatch[1];
+          const url = mdLinkMatch[2];
+          if (isSafeUrl(url)) {
+            const span = document.createElement("span");
+            span.className = "wr-reading-url";
+            span.textContent = label;
+            span.addEventListener("pointerup", (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (isSafeUrl(url)) window.open(url, "_blank");
+            });
+            frag.appendChild(span);
+            if (url.startsWith("http")) tailUrls.push(url);
+            hasMatch = true;
+          } else {
+            frag.appendChild(document.createTextNode(part));
+          }
+          continue;
+        }
+        const embedMatch = part.match(/^!\[\[(.+)\]\]$/);
+        const linkMatch = !embedMatch && part.match(/^\[\[(.+)\]\]$/);
+        if (embedMatch) {
+          const fileName = embedMatch[1];
+          if (IMAGE_EXT.test(fileName)) {
+            const file = plugin.app.metadataCache.getFirstLinkpathDest(fileName, "");
+            if (file) {
+              const img = document.createElement("img");
+              img.className = hasQuoteMarker ? "wr-embed-img wr-rv-inline-img" : "wr-embed-img";
+              img.src = plugin.app.vault.getResourcePath(file);
+              img.alt = fileName;
+              img.loading = "lazy";
+              if (hasQuoteMarker) {
+                frag.appendChild(img);
+              } else {
+                tailEmbedImages.push(img);
+              }
+              hasMatch = true;
+              continue;
+            } else {
+              const span = document.createElement("span");
+              span.className = "wr-embed-missing";
+              span.textContent = `![[${fileName}]]`;
+              frag.appendChild(span);
+            }
+            hasMatch = true;
+            continue;
+          } else {
+            const a = document.createElement("a");
+            const resolved = plugin.app.metadataCache.getFirstLinkpathDest(fileName, "") !== null;
+            a.className = resolved ? "wr-internal-link" : "wr-internal-link wr-internal-link-unresolved";
+            a.textContent = fileName;
+            a.addEventListener("click", (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              plugin.app.workspace.openLinkText(fileName, "", false);
+            });
+            frag.appendChild(a);
+          }
+          hasMatch = true;
+        } else if (linkMatch) {
+          const linkName = linkMatch[1];
+          const quoteMatch = linkName.match(QUOTE_LINK_RE);
+          if (quoteMatch) {
+            const slot = document.createElement("span");
+            slot.className = "wr-quote-card-slot";
+            renderQuoteCard(slot, quoteMatch[1], quoteMatch[2], plugin.app, "", {
+              timestampFormat: plugin.settings.timestampFormat,
+              resolveRuleClass: (content) => plugin.getTagRuleClassForContent(content),
+              resolveRuleAccent: (ruleClass) => plugin.getRuleAccentColor(ruleClass)
+            });
+            frag.appendChild(slot);
+          } else {
+            const a = document.createElement("a");
+            const resolved = plugin.app.metadataCache.getFirstLinkpathDest(linkName, "") !== null;
+            a.className = resolved ? "wr-internal-link" : "wr-internal-link wr-internal-link-unresolved";
+            a.textContent = linkName;
+            a.addEventListener("click", (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              plugin.app.workspace.openLinkText(linkName, "", false);
+            });
+            frag.appendChild(a);
+          }
+          hasMatch = true;
+        } else if (part.match(/^#[^\s#]+$/)) {
+          const span = document.createElement("span");
+          span.className = "wr-reading-tag";
+          span.textContent = part;
+          frag.appendChild(span);
+          hasMatch = true;
+        } else if (part.match(/^\$([^$]+)\$$/)) {
+          const mathContent = part.slice(1, -1);
+          const mathEl = document.createElement("span");
+          mathEl.className = "wr-math";
+          try {
+            const { renderMath: renderMath3, finishRenderMath: finishRenderMath3 } = require("obsidian");
+            const rendered = renderMath3(mathContent, false);
+            mathEl.appendChild(rendered);
+            finishRenderMath3();
+          } catch (e) {
+            mathEl.textContent = part;
+          }
+          frag.appendChild(mathEl);
+          hasMatch = true;
+        } else if (part.match(/^obsidian:\/\//)) {
+          const cleaned = part.replace(/[.,;:!?)]+$/, "");
+          const trailing = part.slice(cleaned.length);
+          let fileName = null;
+          try {
+            const params = new URL(cleaned).searchParams;
+            const filePath = params.get("file");
+            if (filePath) {
+              const decoded = decodeURIComponent(filePath);
+              fileName = decoded.split("/").pop() || decoded;
+            }
+          } catch (e) {
+          }
+          const lowerName = (fileName == null ? void 0 : fileName.toLowerCase()) || "";
+          const looksLikeImage = IMAGE_EXT.test(lowerName);
+          const resolved = fileName ? plugin.app.metadataCache.getFirstLinkpathDest(fileName, "") : null;
+          const isImageEmbed = looksLikeImage && resolved !== null;
+          const isUnresolvedImage = looksLikeImage && resolved === null;
+          if (!isImageEmbed) {
+            const link = document.createElement("a");
+            link.className = isUnresolvedImage ? "wr-internal-link wr-internal-link-unresolved" : "wr-internal-link";
+            link.textContent = fileName || cleaned;
+            link.addEventListener("click", (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (isSafeUrl(cleaned)) window.open(cleaned);
+            });
+            frag.appendChild(link);
+            if (trailing) frag.appendChild(document.createTextNode(trailing));
+          } else if (trailing) {
+            frag.appendChild(document.createTextNode(trailing));
+          }
+          tailUrls.push(cleaned);
+          hasMatch = true;
+        } else if (part.match(/^https?:\/\//)) {
+          const cleaned = part.replace(/[.,;:!?)]+$/, "");
+          const trailing = part.slice(cleaned.length);
+          const span = document.createElement("span");
+          span.className = "wr-reading-url";
+          span.textContent = cleaned;
+          span.addEventListener("pointerup", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (isSafeUrl(cleaned)) window.open(cleaned, "_blank");
+          });
+          frag.appendChild(span);
+          if (trailing) {
+            frag.appendChild(document.createTextNode(trailing));
+          }
+          tailUrls.push(cleaned);
+          hasMatch = true;
+        } else {
+          frag.appendChild(document.createTextNode(part));
+        }
+      }
+      if (hasMatch) {
+        nodesToReplace.push({ node: textNode, fragments: frag });
+      }
+    }
+    for (const { node, fragments } of nodesToReplace) {
+      (_a = node.parentNode) == null ? void 0 : _a.replaceChild(fragments, node);
+    }
+  }
+  const blockEl = code.closest(".block-language-wr") || code.closest("pre");
+  if (blockEl) {
+    const quoteSlot = hasQuoteMarker ? blockEl.querySelector(".wr-quote-card-slot") : null;
+    const insertMediaNode = (node) => {
+      if (quoteSlot && quoteSlot.parentNode) {
+        quoteSlot.parentNode.insertBefore(node, quoteSlot);
+      } else {
+        blockEl.appendChild(node);
+      }
+    };
+    if (tailEmbedImages.length > 0) {
+      for (const img of tailEmbedImages) {
+        insertMediaNode(img);
+      }
+    }
+    if (tailUrls.length > 0) {
+      const parsedUrls = extractUrls(tailUrls.join(" ")).filter(
+        (pu) => pu.type === "image" || !pu.url.startsWith("obsidian://")
+      );
+      if (parsedUrls.length > 0 && !blockEl.querySelector(".wr-media-area")) {
+        const mediaEl = document.createElement("div");
+        mediaEl.className = "wr-media-area";
+        insertMediaNode(mediaEl);
+        renderUrlPreviews(mediaEl, parsedUrls, plugin.ogpCache, resolveImagePath);
+      }
+    }
+  }
+}
+function renderCodeBlockFragment(segment, plugin) {
+  const blockEl = document.createElement("div");
+  blockEl.className = "wr-codeblock-display";
+  const fence = "~".repeat(Math.max(3, segment.fenceTildes));
+  const source = (segment.lang ? `${fence}${segment.lang}
+` : `${fence}
+`) + segment.code + `
+${fence}`;
+  import_obsidian5.MarkdownRenderer.render(plugin.app, source, blockEl, "", plugin).catch(() => {
+    blockEl.empty();
+    const pre = blockEl.createEl("pre");
+    const codeEl = pre.createEl("code");
+    if (segment.lang) codeEl.addClass(`language-${segment.lang}`);
+    codeEl.textContent = segment.code;
+  });
+  return blockEl;
+}
+function renderMathBlockFragment(segment) {
+  const blockEl = document.createElement("div");
+  blockEl.className = "wr-math-display";
+  try {
+    const rendered = (0, import_obsidian5.renderMath)(segment.tex, true);
+    blockEl.appendChild(rendered);
+    (0, import_obsidian5.finishRenderMath)();
+  } catch (e) {
+    blockEl.textContent = segment.tex;
+  }
+  return blockEl;
+}
+function convertListLines(code, plugin) {
+  var _a, _b, _c;
+  const fullText = code.textContent || "";
+  const segments = segmentBlocks(fullText);
+  const block = code.closest(".block-language-wr") || code.closest("pre");
+  if (!block) return;
+  code.textContent = "";
+  const fragments = [];
+  let currentListEl = null;
+  let currentListType = null;
+  let plainLines = [];
+  let quoteStack = [];
+  let quoteListEl = null;
+  let quoteListType = null;
+  let quoteListDepth = 0;
+  const flushPlain = () => {
+    if (plainLines.length > 0) {
+      fragments.push(plainLines.join("\n"));
+      plainLines = [];
+    }
+  };
+  const flushList = () => {
+    if (currentListEl) {
+      fragments.push(currentListEl);
+      currentListEl = null;
+      currentListType = null;
+    }
+  };
+  for (const segment of segments) {
+    if (segment.kind === "codeblock") {
+      flushList();
+      flushPlain();
+      fragments.push(renderCodeBlockFragment(segment, plugin));
+      continue;
+    }
+    if (segment.kind === "mathblock") {
+      flushList();
+      flushPlain();
+      fragments.push(renderMathBlockFragment(segment));
+      continue;
+    }
+    const lines = segment.text.split("\n");
+    const lineOffset = segment.startLine;
+    for (let li2 = 0; li2 < lines.length; li2++) {
+      const i = lineOffset + li2;
+      const line = lines[li2];
+      const quoteMatch = line.match(/^((?:>\s?)+)(.*)$/);
+      const checkMatch = !quoteMatch && line.match(/^- \[([ x])\] (.*)$/);
+      const listMatch = !quoteMatch && !checkMatch && line.match(/^- (.+)$/);
+      const olMatch = !quoteMatch && !checkMatch && !listMatch && line.match(/^\d+\.\s?(.+)$/);
+      if (quoteMatch) {
+        if (currentListEl) {
+          fragments.push(currentListEl);
+          currentListEl = null;
+          currentListType = null;
+        }
+        flushPlain();
+        const depth = (quoteMatch[1].match(/>/g) || []).length;
+        const body = quoteMatch[2];
+        const lastFrag = fragments[fragments.length - 1];
+        const continuingQuote = quoteStack.length > 0 && lastFrag instanceof HTMLElement && lastFrag === quoteStack[0];
+        if (!continuingQuote) {
+          const root = document.createElement("blockquote");
+          root.className = "wr-blockquote";
+          fragments.push(root);
+          quoteStack = [root];
+        }
+        while (quoteStack.length > depth) {
+          quoteStack.pop();
+        }
+        while (quoteStack.length < depth) {
+          const parent = quoteStack[quoteStack.length - 1];
+          const bq = document.createElement("blockquote");
+          bq.className = "wr-blockquote";
+          parent.appendChild(bq);
+          quoteStack.push(bq);
+        }
+        const target = quoteStack[quoteStack.length - 1];
+        const innerCheck = body.match(/^- \[([ x])\] (.*)$/);
+        const innerList = !innerCheck && body.match(/^- (.+)$/);
+        const innerOl = !innerCheck && !innerList && body.match(/^\d+\.\s?(.+)$/);
+        if (innerCheck || innerList) {
+          if (quoteListEl === null || quoteListType !== "ul" || quoteListDepth !== depth || quoteListEl.parentElement !== target) {
+            quoteListEl = document.createElement("ul");
+            quoteListEl.className = "wr-reading-list";
+            target.appendChild(quoteListEl);
+            quoteListType = "ul";
+            quoteListDepth = depth;
+          }
+          const li = document.createElement("li");
+          if (innerCheck) {
+            li.className = "wr-check-item";
+            const cb = document.createElement("input");
+            cb.type = "checkbox";
+            if (innerCheck[1] === "x") cb.checked = true;
+            const innerLineIdx = i;
+            cb.addEventListener("click", async () => {
+              const file = plugin.app.workspace.getActiveFile();
+              if (!file) return;
+              const data = await plugin.app.vault.read(file);
+              const fileLines = data.split("\n");
+              const blockContent = fullText.trim();
+              for (let f = 0; f < fileLines.length; f++) {
+                if (fileLines[f].match(/^```wr\s+/)) {
+                  const bodyLines = [];
+                  let k = f + 1;
+                  while (k < fileLines.length && fileLines[k].trim() !== "```") {
+                    bodyLines.push(fileLines[k]);
+                    k++;
+                  }
+                  if (bodyLines.join("\n").trim() === blockContent) {
+                    await toggleCheckbox(plugin.app, file, f + 1 + innerLineIdx);
+                    return;
+                  }
+                }
+              }
+            });
+            li.appendChild(cb);
+            if (innerCheck[1] === "x" && plugin.settings.checkStrikethrough) {
+              const span = document.createElement("span");
+              span.className = "wr-check-done";
+              span.appendChild(document.createTextNode(innerCheck[2]));
+              li.appendChild(span);
+            } else {
+              li.appendChild(document.createTextNode(innerCheck[2]));
+            }
+          } else if (innerList) {
+            li.appendChild(document.createTextNode(innerList[1]));
+          }
+          quoteListEl.appendChild(li);
+        } else if (innerOl) {
+          if (quoteListEl === null || quoteListType !== "ol" || quoteListDepth !== depth || quoteListEl.parentElement !== target) {
+            quoteListEl = document.createElement("ol");
+            quoteListEl.className = "wr-reading-list";
+            target.appendChild(quoteListEl);
+            quoteListType = "ol";
+            quoteListDepth = depth;
+          }
+          const li = document.createElement("li");
+          li.appendChild(document.createTextNode(innerOl[1]));
+          quoteListEl.appendChild(li);
+        } else {
+          quoteListEl = null;
+          quoteListType = null;
+          if (target.childNodes.length > 0 && ((_a = target.lastChild) == null ? void 0 : _a.nodeName) !== "OL" && ((_b = target.lastChild) == null ? void 0 : _b.nodeName) !== "UL" && ((_c = target.lastChild) == null ? void 0 : _c.nodeName) !== "BLOCKQUOTE") {
+            target.appendChild(document.createElement("br"));
+          }
+          target.appendChild(document.createTextNode(body));
+        }
+      } else if (checkMatch || listMatch) {
+        quoteStack = [];
+        quoteListEl = null;
+        quoteListType = null;
+        if (currentListType !== "ul") {
+          if (currentListEl) fragments.push(currentListEl);
+          flushPlain();
+          currentListEl = document.createElement("ul");
+          currentListEl.className = "wr-reading-list";
+          currentListType = "ul";
+        }
+        const li = document.createElement("li");
+        if (checkMatch) {
+          li.className = "wr-check-item";
+          const cb = document.createElement("input");
+          cb.type = "checkbox";
+          if (checkMatch[1] === "x") cb.checked = true;
+          const lineIdx = i;
+          cb.addEventListener("click", async () => {
+            const file = plugin.app.workspace.getActiveFile();
+            if (!file) return;
+            const data = await plugin.app.vault.read(file);
+            const fileLines = data.split("\n");
+            const blockContent = fullText.trim();
+            for (let f = 0; f < fileLines.length; f++) {
+              if (fileLines[f].match(/^```wr\s+/)) {
+                const bodyLines = [];
+                let k = f + 1;
+                while (k < fileLines.length && fileLines[k].trim() !== "```") {
+                  bodyLines.push(fileLines[k]);
+                  k++;
+                }
+                if (bodyLines.join("\n").trim() === blockContent) {
+                  await toggleCheckbox(plugin.app, file, f + 1 + lineIdx);
+                  return;
+                }
+              }
+            }
+          });
+          li.appendChild(cb);
+          if (checkMatch[1] === "x" && plugin.settings.checkStrikethrough) {
+            const span = document.createElement("span");
+            span.className = "wr-check-done";
+            span.appendChild(document.createTextNode(checkMatch[2]));
+            li.appendChild(span);
+          } else {
+            li.appendChild(document.createTextNode(checkMatch[2]));
+          }
+        } else if (listMatch) {
+          li.appendChild(document.createTextNode(listMatch[1]));
+        }
+        currentListEl.appendChild(li);
+      } else if (olMatch) {
+        quoteStack = [];
+        quoteListEl = null;
+        quoteListType = null;
+        if (currentListType !== "ol") {
+          if (currentListEl) fragments.push(currentListEl);
+          flushPlain();
+          currentListEl = document.createElement("ol");
+          currentListEl.className = "wr-reading-list";
+          currentListType = "ol";
+        }
+        const li = document.createElement("li");
+        li.appendChild(document.createTextNode(olMatch[1]));
+        currentListEl.appendChild(li);
+      } else {
+        quoteStack = [];
+        quoteListEl = null;
+        quoteListType = null;
+        if (currentListEl) {
+          fragments.push(currentListEl);
+          currentListEl = null;
+          currentListType = null;
+        }
+        plainLines.push(line);
+      }
+    }
+  }
+  if (currentListEl) fragments.push(currentListEl);
+  flushPlain();
+  code.setAttribute("data-wr-original", fullText);
+  while (fragments.length > 0 && fragments[fragments.length - 1] === "") {
+    fragments.pop();
+  }
+  code.classList.add("wr-code-hidden");
+  let hasContent = false;
+  for (const frag of fragments) {
+    if (typeof frag === "string") {
+      if (frag.trim() === "" && hasContent) {
+        const spacer = document.createElement("div");
+        spacer.className = "wr-spacer";
+        block.appendChild(spacer);
+      } else if (frag.trim() !== "") {
+        const div = document.createElement("div");
+        div.className = "wr-plain-text";
+        div.textContent = frag;
+        block.appendChild(div);
+        hasContent = true;
+      }
+    } else {
+      block.appendChild(frag);
+      hasContent = true;
+    }
+  }
+}
+
+// src/editorExtension.ts
+var import_view = require("@codemirror/view");
+var import_state = require("@codemirror/state");
+var import_obsidian6 = require("obsidian");
+init_blockSegmenter();
+var ogpFetched = import_state.StateEffect.define();
+var tagRulesChanged = import_state.StateEffect.define();
+var vaultFilesChanged = import_state.StateEffect.define();
+var tagMark = import_view.Decoration.mark({ class: "wr-tag-highlight" });
+var urlMark = import_view.Decoration.mark({ class: "wr-url-highlight" });
+var olMark = import_view.Decoration.mark({ class: "wr-ol-highlight" });
+var internalLinkMark = import_view.Decoration.mark({ class: "wr-internal-link-highlight" });
+var internalLinkUnresolvedMark = import_view.Decoration.mark({
+  class: "wr-internal-link-highlight wr-internal-link-unresolved"
+});
+var inlineCodeMark = import_view.Decoration.mark({ class: "wr-inline-code-highlight" });
+var mathMark = import_view.Decoration.mark({ class: "wr-math-highlight" });
+var boldMark = import_view.Decoration.mark({ class: "wr-bold-highlight" });
+var italicMark = import_view.Decoration.mark({ class: "wr-italic-highlight" });
+var strikeMark = import_view.Decoration.mark({ class: "wr-strike-highlight" });
+var highlightMark = import_view.Decoration.mark({ class: "wr-highlight-highlight" });
+var replaceHidden = import_view.Decoration.replace({});
+var hiddenLine = import_view.Decoration.line({ class: "wr-hidden-line" });
+var lineDecoCache = /* @__PURE__ */ new Map();
+function makeLineDeco(classes) {
+  const key = classes.filter(Boolean).join(" ");
+  let deco = lineDecoCache.get(key);
+  if (!deco) {
+    deco = import_view.Decoration.line({ class: key });
+    lineDecoCache.set(key, deco);
+  }
+  return deco;
+}
+var BulletWidget = class extends import_view.WidgetType {
+  toDOM() {
+    const span = document.createElement("span");
+    span.className = "wr-lp-marker wr-lp-bullet";
+    span.textContent = "\u2022";
+    return span;
+  }
+  eq() {
+    return true;
+  }
+};
+var CheckboxWidget = class extends import_view.WidgetType {
+  constructor(checked, pos) {
+    super();
+    this.checked = checked;
+    this.pos = pos;
+  }
+  toDOM(view) {
+    const wrap = document.createElement("span");
+    wrap.className = "wr-lp-marker wr-lp-check";
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = this.checked;
+    cb.addEventListener("click", (e) => {
+      e.preventDefault();
+      const next = !this.checked;
+      cb.checked = next;
+      const newChar = next ? "x" : " ";
+      view.dispatch({ changes: { from: this.pos + 3, to: this.pos + 4, insert: newChar } });
+    });
+    wrap.appendChild(cb);
+    return wrap;
+  }
+  // 同じ位置のcheckboxはWidget差し替えではなくDOM再利用で更新する。checked状態だけ差分反映する
+  updateDOM(dom) {
+    const cb = dom.querySelector('input[type="checkbox"]');
+    if (!cb) return false;
+    if (cb.checked !== this.checked) cb.checked = this.checked;
+    return true;
+  }
+  eq(other) {
+    return this.checked === other.checked;
+  }
+  ignoreEvent() {
+    return false;
+  }
+};
+var OlMarkerWidget = class extends import_view.WidgetType {
+  constructor(label) {
+    super();
+    this.label = label;
+  }
+  toDOM() {
+    const span = document.createElement("span");
+    span.className = "wr-lp-marker wr-lp-ol";
+    span.textContent = this.label;
+    return span;
+  }
+  eq(other) {
+    return this.label === other.label;
+  }
+};
+var ObsidianLinkWidget = class extends import_view.WidgetType {
+  constructor(url, displayName, unresolved = false) {
+    super();
+    this.url = url;
+    this.displayName = displayName;
+    this.unresolved = unresolved;
+  }
+  toDOM() {
+    const link = document.createElement("a");
+    link.className = this.unresolved ? "wr-internal-link wr-internal-link-unresolved" : "wr-internal-link";
+    link.textContent = this.displayName;
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (isSafeUrl(this.url)) window.open(this.url);
+    });
+    return link;
+  }
+  eq(other) {
+    return this.url === other.url && this.unresolved === other.unresolved;
+  }
+  ignoreEvent() {
+    return false;
+  }
+};
+var MdLinkWidget = class extends import_view.WidgetType {
+  constructor(label, url) {
+    super();
+    this.label = label;
+    this.url = url;
+  }
+  toDOM() {
+    const link = document.createElement("a");
+    link.className = "wr-url-highlight";
+    link.textContent = this.label;
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (isSafeUrl(this.url)) window.open(this.url, "_blank");
+    });
+    return link;
+  }
+  eq(other) {
+    return this.url === other.url && this.label === other.label;
+  }
+  ignoreEvent() {
+    return false;
+  }
+};
+var InternalLinkWidget = class extends import_view.WidgetType {
+  constructor(fileName, app, resolved) {
+    super();
+    this.fileName = fileName;
+    this.app = app;
+    this.resolved = resolved;
+  }
+  toDOM() {
+    const link = document.createElement("a");
+    link.className = this.resolved ? "wr-internal-link" : "wr-internal-link wr-internal-link-unresolved";
+    link.textContent = this.fileName;
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.app.workspace.openLinkText(this.fileName, "", false);
+    });
+    return link;
+  }
+  eq(other) {
+    return this.fileName === other.fileName && this.resolved === other.resolved;
+  }
+  ignoreEvent() {
+    return false;
+  }
+};
+var EmbedMissingWidget = class extends import_view.WidgetType {
+  constructor(fileName) {
+    super();
+    this.fileName = fileName;
+  }
+  toDOM() {
+    const span = document.createElement("span");
+    span.className = "wr-embed-missing";
+    span.textContent = `![[${this.fileName}]]`;
+    return span;
+  }
+  eq(other) {
+    return this.fileName === other.fileName;
+  }
+  ignoreEvent() {
+    return false;
+  }
+};
+var MathWidget = class extends import_view.WidgetType {
+  constructor(tex) {
+    super();
+    this.tex = tex;
+  }
+  toDOM() {
+    const span = document.createElement("span");
+    span.className = "wr-math";
+    try {
+      const { renderMath: renderMath3, finishRenderMath: finishRenderMath3 } = require("obsidian");
+      const rendered = renderMath3(this.tex, false);
+      span.appendChild(rendered);
+      finishRenderMath3();
+    } catch (e) {
+      span.textContent = `$${this.tex}$`;
+    }
+    return span;
+  }
+  eq(other) {
+    return this.tex === other.tex;
+  }
+};
+var CodeBlockWidget = class extends import_view.WidgetType {
+  constructor(code, lang, app, plugin, ruleClass) {
+    super();
+    this.code = code;
+    this.lang = lang;
+    this.app = app;
+    this.plugin = plugin;
+    this.ruleClass = ruleClass;
+  }
+  toDOM() {
+    const container = document.createElement("div");
+    container.className = "wr-codeblock-display wr-lp-codeblock wr-codeblock-line";
+    if (this.ruleClass) container.classList.add(this.ruleClass);
+    const pre = container.createEl("pre");
+    if (this.lang) pre.className = `language-${this.lang}`;
+    const codeEl = pre.createEl("code");
+    if (this.lang) codeEl.className = `language-${this.lang}`;
+    codeEl.textContent = this.code;
+    if (this.lang) {
+      (0, import_obsidian6.loadPrism)().then((Prism) => {
+        Prism.highlightElement(codeEl);
+      }).catch(() => {
+      });
+    }
+    return container;
+  }
+  eq(other) {
+    return this.code === other.code && this.lang === other.lang && this.ruleClass === other.ruleClass;
+  }
+  ignoreEvent() {
+    return false;
+  }
+};
+var MathBlockWidget = class extends import_view.WidgetType {
+  constructor(tex, ruleClass) {
+    super();
+    this.tex = tex;
+    this.ruleClass = ruleClass;
+  }
+  toDOM() {
+    const container = document.createElement("div");
+    container.className = "wr-math-display wr-lp-mathblock wr-codeblock-line";
+    if (this.ruleClass) container.classList.add(this.ruleClass);
+    try {
+      const { renderMath: renderMath3, finishRenderMath: finishRenderMath3 } = require("obsidian");
+      const rendered = renderMath3(this.tex, true);
+      container.appendChild(rendered);
+      finishRenderMath3();
+    } catch (e) {
+      container.textContent = this.tex;
+    }
+    return container;
+  }
+  eq(other) {
+    return this.tex === other.tex && this.ruleClass === other.ruleClass;
+  }
+  ignoreEvent() {
+    return false;
+  }
+};
+var IMAGE_EXT_RE2 = /\.(png|jpg|jpeg|gif|svg|webp|bmp)$/i;
+var EmbedImageWidget = class extends import_view.WidgetType {
+  constructor(images, ruleClass) {
+    super();
+    this.images = images;
+    this.ruleClass = ruleClass;
+  }
+  toDOM() {
+    const container = document.createElement("div");
+    container.className = "wr-media-area wr-lp-media";
+    if (this.ruleClass) container.classList.add(this.ruleClass);
+    for (const { src, alt } of this.images) {
+      const img = document.createElement("img");
+      img.className = "wr-embed-img";
+      img.src = src;
+      img.alt = alt;
+      img.loading = "lazy";
+      container.appendChild(img);
+    }
+    return container;
+  }
+  eq(other) {
+    if (this.ruleClass !== other.ruleClass) return false;
+    if (this.images.length !== other.images.length) return false;
+    return this.images.every((img, i) => img.src === other.images[i].src);
+  }
+  ignoreEvent() {
+    return true;
+  }
+};
+var InlineEmbedImageWidget = class extends import_view.WidgetType {
+  constructor(src, alt) {
+    super();
+    this.src = src;
+    this.alt = alt;
+  }
+  toDOM() {
+    const wrapper = document.createElement("div");
+    wrapper.className = "wr-lp-inline-img-wrapper";
+    const img = document.createElement("img");
+    img.className = "wr-embed-img wr-lp-inline-img";
+    img.src = this.src;
+    img.alt = this.alt;
+    img.loading = "lazy";
+    wrapper.appendChild(img);
+    return wrapper;
+  }
+  eq(other) {
+    return this.src === other.src && this.alt === other.alt;
+  }
+  ignoreEvent() {
+    return true;
+  }
+};
+var UrlPreviewWidget = class extends import_view.WidgetType {
+  constructor(parsedUrls, ogpCache, ruleClass, resolveImagePath) {
+    super();
+    this.parsedUrls = parsedUrls;
+    this.ogpCache = ogpCache;
+    this.ruleClass = ruleClass;
+    this.resolveImagePath = resolveImagePath;
+    this.cachedSnapshot = parsedUrls.map(
+      (pu) => {
+        const d = ogpCache.get(pu.url);
+        return !!(d && (d.title || d.description));
+      }
+    );
+  }
+  eq(other) {
+    if (this.ruleClass !== other.ruleClass) return false;
+    if (this.parsedUrls.length !== other.parsedUrls.length) return false;
+    for (let i = 0; i < this.parsedUrls.length; i++) {
+      if (this.parsedUrls[i].url !== other.parsedUrls[i].url) return false;
+      if (this.cachedSnapshot[i] !== other.cachedSnapshot[i]) return false;
+    }
+    return true;
+  }
+  toDOM() {
+    const container = document.createElement("div");
+    container.className = "wr-media-area wr-lp-media";
+    if (this.ruleClass) container.classList.add(this.ruleClass);
+    for (const pu of this.parsedUrls) {
+      if (pu.type === "image") {
+        renderImagePreview(container, pu.url, this.resolveImagePath);
+      } else {
+        const cached = this.ogpCache.get(pu.url);
+        if (cached && (cached.title || cached.description)) {
+          if (pu.type === "twitter") {
+            renderTwitterCard(container, cached);
+          } else {
+            renderOGPCard(container, cached);
+          }
+        }
+      }
+    }
+    return container;
+  }
+  ignoreEvent() {
+    return false;
+  }
+};
+var QuoteBlockWidget = class extends import_view.WidgetType {
+  constructor(fileName, blockId, parsedUrls, app, currentFilePath, ruleClass, timestampFormat, ogpCache, resolveImagePath, resolveQuoteRuleClass, resolveQuoteRuleAccent) {
+    super();
+    this.fileName = fileName;
+    this.blockId = blockId;
+    this.parsedUrls = parsedUrls;
+    this.app = app;
+    this.currentFilePath = currentFilePath;
+    this.ruleClass = ruleClass;
+    this.timestampFormat = timestampFormat;
+    this.ogpCache = ogpCache;
+    this.resolveImagePath = resolveImagePath;
+    this.resolveQuoteRuleClass = resolveQuoteRuleClass;
+    this.resolveQuoteRuleAccent = resolveQuoteRuleAccent;
+    this.cachedSnapshot = parsedUrls.map((pu) => {
+      const d = ogpCache.get(pu.url);
+      return !!(d && (d.title || d.description));
+    });
+  }
+  eq(other) {
+    if (this.fileName !== other.fileName) return false;
+    if (this.blockId !== other.blockId) return false;
+    if (this.ruleClass !== other.ruleClass) return false;
+    if (this.timestampFormat !== other.timestampFormat) return false;
+    if (this.parsedUrls.length !== other.parsedUrls.length) return false;
+    for (let i = 0; i < this.parsedUrls.length; i++) {
+      if (this.parsedUrls[i].url !== other.parsedUrls[i].url) return false;
+      if (this.cachedSnapshot[i] !== other.cachedSnapshot[i]) return false;
+    }
+    return true;
+  }
+  toDOM() {
+    const container = document.createElement("div");
+    container.className = "wr-quote-block";
+    if (this.ruleClass) container.classList.add(this.ruleClass);
+    if (this.parsedUrls.length > 0) {
+      const mediaArea = document.createElement("div");
+      mediaArea.className = "wr-media-area wr-lp-media";
+      if (this.ruleClass) mediaArea.classList.add(this.ruleClass);
+      let hasContent = false;
+      for (const pu of this.parsedUrls) {
+        if (pu.type === "image") {
+          renderImagePreview(mediaArea, pu.url, this.resolveImagePath);
+          hasContent = true;
+        } else {
+          const cached = this.ogpCache.get(pu.url);
+          if (cached && (cached.title || cached.description)) {
+            if (pu.type === "twitter") {
+              renderTwitterCard(mediaArea, cached);
+            } else {
+              renderOGPCard(mediaArea, cached);
+            }
+            hasContent = true;
+          }
+        }
+      }
+      if (hasContent) container.appendChild(mediaArea);
+    }
+    const slot = document.createElement("span");
+    slot.className = "wr-quote-card-slot wr-lp-quote-card";
+    if (this.ruleClass) slot.classList.add(this.ruleClass);
+    renderQuoteCard(slot, this.fileName, this.blockId, this.app, this.currentFilePath, {
+      timestampFormat: this.timestampFormat,
+      resolveRuleClass: this.resolveQuoteRuleClass,
+      resolveRuleAccent: this.resolveQuoteRuleAccent
+    });
+    container.appendChild(slot);
+    return container;
+  }
+  // widget 内部の <a>/quote-card のクリックを CodeMirror に奪われないよう true。
+  // これがないと URL カード/画像URL クリックが空振る (引用カードは元から addEventListener なので両方助かる)
+  ignoreEvent() {
+    return true;
+  }
+};
+function findWrBlocks(view, plugin) {
+  const blocks = [];
+  const doc = view.state.doc;
+  for (let ln = 1; ln <= doc.lines; ln++) {
+    const line = doc.line(ln);
+    if (!line.text.trim().startsWith("```wr")) continue;
+    const startLn = ln;
+    let endLn = 0;
+    for (let j = startLn + 1; j <= doc.lines; j++) {
+      if (doc.line(j).text.trim() === "```") {
+        endLn = j;
+        break;
+      }
+    }
+    if (endLn === 0) continue;
+    const bodyLines = [];
+    for (let j = startLn + 1; j < endLn; j++) {
+      bodyLines.push(doc.line(j).text);
+    }
+    const innerBlocks = findBlockRanges(bodyLines);
+    const blockedDocLines = /* @__PURE__ */ new Set();
+    for (const br of innerBlocks) {
+      for (let k = br.startLine; k <= br.endLine; k++) {
+        blockedDocLines.add(startLn + 1 + k);
+      }
+    }
+    const urlTexts = [];
+    const tags = [];
+    for (let j = startLn + 1; j < endLn; j++) {
+      if (blockedDocLines.has(j)) continue;
+      const l = doc.line(j);
+      const urlRegex = /(?:https?|obsidian):\/\/[^\s<>"'\]]+/g;
+      let match;
+      while ((match = urlRegex.exec(l.text)) !== null) {
+        urlTexts.push(match[0]);
+      }
+      const tagMatches = l.text.match(/#[^\s#]+/g);
+      if (tagMatches) tags.push(...tagMatches);
+    }
+    let ruleClass = null;
+    if (plugin) {
+      const rule = plugin.findTagColorRule(tags);
+      if (rule) {
+        const idx = plugin.settings.tagColorRules.indexOf(rule);
+        if (idx >= 0) ruleClass = `wr-tag-rule-${idx}`;
+      }
+    }
+    const fenceLine = doc.line(startLn).text;
+    const blockIdMatch = fenceLine.match(/\^(wr-\d{17})/);
+    const blockId = blockIdMatch ? blockIdMatch[1] : null;
+    let hasQuoteMarker = false;
+    let quoteLineIdx = -1;
+    for (let j = startLn + 1; j < endLn; j++) {
+      if (/\[\[[^\[\]]+#\^wr-\d{17}\]\]/.test(doc.line(j).text)) {
+        hasQuoteMarker = true;
+        quoteLineIdx = j;
+        break;
+      }
+    }
+    blocks.push({ startLn, endLn, urlTexts, ruleClass, innerBlocks, blockId, hasQuoteMarker, quoteLineIdx });
+    ln = endLn;
+  }
+  return blocks;
+}
+function buildDecorations(view, ogpCache, blocks, app, plugin, checkStrikethrough) {
+  var _a;
+  const builder = new import_state.RangeSetBuilder();
+  const doc = view.state.doc;
+  const isSourceMode = !view.contentDOM.closest(".is-live-preview");
+  const cursorLineNums = /* @__PURE__ */ new Set();
+  for (const range of view.state.selection.ranges) {
+    const startLine = doc.lineAt(range.from).number;
+    const endLine = doc.lineAt(range.to).number;
+    for (let n = startLine; n <= endLine; n++) cursorLineNums.add(n);
+  }
+  const cursorInBlock = (b) => {
+    for (let n = b.startLn; n <= b.endLn; n++) {
+      if (cursorLineNums.has(n)) return true;
+    }
+    return false;
+  };
+  try {
+    for (const block of blocks) {
+      const openLine = doc.line(block.startLn);
+      builder.add(openLine.from, openLine.from, makeLineDeco(["wr-codeblock-line", block.ruleClass, block.blockId ? `wr-block-id-${block.blockId}` : null]));
+      const blockHasCursor = cursorInBlock(block);
+      const embedImages = [];
+      const innerBlockStartByDocLine = /* @__PURE__ */ new Map();
+      const innerBlockInsideDocLines = /* @__PURE__ */ new Set();
+      for (const br of block.innerBlocks) {
+        const docStart = block.startLn + 1 + br.startLine;
+        const docEnd = block.startLn + 1 + br.endLine;
+        innerBlockStartByDocLine.set(docStart, { range: br, docStart, docEnd });
+        for (let k = docStart; k <= docEnd; k++) {
+          innerBlockInsideDocLines.add(k);
+        }
+      }
+      for (let j = block.startLn + 1; j < block.endLn; j++) {
+        const l = doc.line(j);
+        const showRaw = isSourceMode || blockHasCursor;
+        const innerStart = innerBlockStartByDocLine.get(j);
+        if (showRaw && innerBlockInsideDocLines.has(j)) {
+          builder.add(l.from, l.from, makeLineDeco(["wr-codeblock-line", block.ruleClass, block.blockId ? `wr-block-id-${block.blockId}` : null]));
+          continue;
+        }
+        if (innerStart && !showRaw) {
+          const { range, docStart, docEnd } = innerStart;
+          const innerBodyLines = [];
+          const bodyStart = docStart + 1;
+          const bodyEnd = docEnd - 1;
+          for (let k = bodyStart; k <= bodyEnd; k++) {
+            innerBodyLines.push(doc.line(k).text);
+          }
+          let widgetContent;
+          if (range.kind === "mathblock" && docStart === docEnd) {
+            const lineText = doc.line(docStart).text.trim();
+            const inner = lineText.startsWith("$$") && lineText.endsWith("$$") && lineText.length >= 4 ? lineText.slice(2, -2) : lineText;
+            widgetContent = inner;
+          } else {
+            widgetContent = innerBodyLines.join("\n");
+          }
+          builder.add(l.from, l.from, makeLineDeco(["wr-codeblock-line", block.ruleClass, block.blockId ? `wr-block-id-${block.blockId}` : null]));
+          const startLine = doc.line(docStart);
+          const widget = range.kind === "codeblock" ? import_view.Decoration.replace({ widget: new CodeBlockWidget(widgetContent, range.lang || "", app, plugin, block.ruleClass) }) : import_view.Decoration.replace({ widget: new MathBlockWidget(widgetContent, block.ruleClass) });
+          builder.add(startLine.from, startLine.to, widget);
+          for (let k = docStart + 1; k <= docEnd; k++) {
+            const kl = doc.line(k);
+            builder.add(kl.from, kl.from, hiddenLine);
+            if (kl.to > kl.from) {
+              builder.add(kl.from, kl.to, import_view.Decoration.replace({}));
+            }
+          }
+          j = docEnd;
+          continue;
+        }
+        if (innerBlockInsideDocLines.has(j)) {
+          continue;
+        }
+        const quotePrefixMatch = l.text.match(/^(?:>\s?)+/);
+        const quotePrefix = quotePrefixMatch ? quotePrefixMatch[0].length : 0;
+        const quoteDepth = quotePrefixMatch ? (quotePrefixMatch[0].match(/>/g) || []).length : 0;
+        const innerTextAfterQuote = quoteDepth > 0 ? l.text.slice(quotePrefix) : "";
+        const quoteInnerIsList = quoteDepth > 0 && /^(?:- \[[ x]\] |- |\d+\.\s?)/.test(innerTextAfterQuote);
+        const isQuoteLine = quoteDepth > 0;
+        const hasObsidianUrl = !showRaw && /obsidian:\/\//.test(l.text);
+        const isEmbedOnlyLine = (() => {
+          if (showRaw) return false;
+          if (block.hasQuoteMarker) return false;
+          const trimmed = l.text.trim();
+          if (!/^!\[\[[^\]]+\]\]$/.test(trimmed)) return false;
+          const innerName = trimmed.slice(3, -2);
+          if (!IMAGE_EXT_RE2.test(innerName)) return false;
+          return app.metadataCache.getFirstLinkpathDest(innerName, "") !== null;
+        })();
+        const isQuoteMarkerOnlyLine = (() => {
+          if (showRaw) return false;
+          if (!block.hasQuoteMarker) return false;
+          return /^\s*\[\[[^\[\]]+#\^wr-\d{17}\]\]\s*$/.test(l.text);
+        })();
+        if (isEmbedOnlyLine || isQuoteMarkerOnlyLine) {
+          builder.add(l.from, l.from, hiddenLine);
+        } else if ((isQuoteLine || quoteInnerIsList) && !showRaw) {
+          const depthClass = `wr-blockquote-depth-${Math.min(quoteDepth, 5)}`;
+          builder.add(l.from, l.from, makeLineDeco(["wr-codeblock-line", "wr-blockquote-line", depthClass, block.ruleClass, block.blockId ? `wr-block-id-${block.blockId}` : null]));
+        } else if (hasObsidianUrl) {
+          builder.add(l.from, l.from, makeLineDeco(["wr-codeblock-line", "wr-obsidian-url-line", block.ruleClass, block.blockId ? `wr-block-id-${block.blockId}` : null]));
+        } else {
+          builder.add(l.from, l.from, makeLineDeco(["wr-codeblock-line", block.ruleClass, block.blockId ? `wr-block-id-${block.blockId}` : null]));
+        }
+        const entries = [];
+        const codeRanges = [];
+        const checkMatch = l.text.match(/^- \[([ x])\] /);
+        const listMatch = !checkMatch && l.text.match(/^- /);
+        if (isQuoteLine) {
+          if (showRaw) {
+            entries.push({ from: l.from, to: l.from + quotePrefix, deco: import_view.Decoration.mark({ class: "wr-quote-highlight" }) });
+          } else {
+            entries.push({ from: l.from, to: l.from + quotePrefix, deco: replaceHidden });
+            if (l.to > l.from + quotePrefix) {
+              entries.push({ from: l.from + quotePrefix, to: l.to, deco: import_view.Decoration.mark({ class: "wr-blockquote-wrap" }) });
+            }
+          }
+          if (quoteInnerIsList) {
+            const innerCheck = innerTextAfterQuote.match(/^- \[([ x])\] /);
+            const innerList = !innerCheck && innerTextAfterQuote.match(/^- /);
+            const innerOl = !innerCheck && !innerList && innerTextAfterQuote.match(/^(\d+\.)\s?/);
+            if (innerCheck) {
+              const isChecked = innerCheck[1] === "x";
+              if (showRaw) {
+                const mark = isChecked ? import_view.Decoration.mark({ class: "wr-check-checked" }) : import_view.Decoration.mark({ class: "wr-check-unchecked" });
+                entries.push({ from: l.from + quotePrefix, to: l.from + quotePrefix + innerCheck[0].length, deco: mark });
+              } else {
+                entries.push({
+                  from: l.from + quotePrefix,
+                  to: l.from + quotePrefix + innerCheck[0].length,
+                  deco: import_view.Decoration.replace({ widget: new CheckboxWidget(isChecked, l.from + quotePrefix) })
+                });
+              }
+              if (isChecked && checkStrikethrough && l.to > l.from + quotePrefix + innerCheck[0].length) {
+                entries.push({ from: l.from + quotePrefix + innerCheck[0].length, to: l.to, deco: import_view.Decoration.mark({ class: "wr-check-done" }) });
+              }
+            } else if (innerList) {
+              if (showRaw) {
+                entries.push({ from: l.from + quotePrefix, to: l.from + quotePrefix + 2, deco: import_view.Decoration.mark({ class: "wr-list-highlight" }) });
+              } else {
+                entries.push({
+                  from: l.from + quotePrefix,
+                  to: l.from + quotePrefix + 2,
+                  deco: import_view.Decoration.replace({ widget: new BulletWidget() })
+                });
+              }
+            } else if (innerOl) {
+              if (showRaw) {
+                entries.push({ from: l.from + quotePrefix, to: l.from + quotePrefix + innerOl[0].length, deco: olMark });
+              } else {
+                entries.push({
+                  from: l.from + quotePrefix,
+                  to: l.from + quotePrefix + innerOl[0].length,
+                  deco: import_view.Decoration.replace({ widget: new OlMarkerWidget(innerOl[1]) })
+                });
+              }
+            }
+          }
+        } else if (checkMatch) {
+          const isChecked = checkMatch[1] === "x";
+          if (showRaw) {
+            const mark = isChecked ? import_view.Decoration.mark({ class: "wr-check-checked" }) : import_view.Decoration.mark({ class: "wr-check-unchecked" });
+            entries.push({ from: l.from, to: l.from + checkMatch[0].length, deco: mark });
+          } else {
+            entries.push({
+              from: l.from,
+              to: l.from + checkMatch[0].length,
+              deco: import_view.Decoration.replace({ widget: new CheckboxWidget(isChecked, l.from) })
+            });
+          }
+          if (isChecked && checkStrikethrough && l.to > l.from + checkMatch[0].length) {
+            entries.push({ from: l.from + checkMatch[0].length, to: l.to, deco: import_view.Decoration.mark({ class: "wr-check-done" }) });
+          }
+        } else if (listMatch) {
+          if (showRaw) {
+            entries.push({ from: l.from, to: l.from + 2, deco: import_view.Decoration.mark({ class: "wr-list-highlight" }) });
+          } else {
+            entries.push({
+              from: l.from,
+              to: l.from + 2,
+              deco: import_view.Decoration.replace({ widget: new BulletWidget() })
+            });
+          }
+        } else {
+          const olMatchResult = l.text.match(/^(\d+\.)\s?/);
+          if (olMatchResult) {
+            if (showRaw) {
+              entries.push({ from: l.from, to: l.from + olMatchResult[0].length, deco: olMark });
+            } else {
+              entries.push({
+                from: l.from,
+                to: l.from + olMatchResult[0].length,
+                deco: import_view.Decoration.replace({ widget: new OlMarkerWidget(olMatchResult[1]) })
+              });
+            }
+          }
+        }
+        let match;
+        const tagRegex = /#[^\s#]+/g;
+        while ((match = tagRegex.exec(l.text)) !== null) {
+          entries.push({ from: l.from + match.index, to: l.from + match.index + match[0].length, deco: tagMark });
+        }
+        const mdLinkRanges = [];
+        const mdLinkRegex = /\[([^\[\]\n]+)\]\(((?:https?|obsidian):\/\/[^\s)]+)\)/g;
+        while ((match = mdLinkRegex.exec(l.text)) !== null) {
+          const from = l.from + match.index;
+          const to = from + match[0].length;
+          const label = match[1];
+          const url = match[2];
+          if (!isSafeUrl(url)) continue;
+          mdLinkRanges.push({ from, to });
+          if (showRaw) {
+            entries.push({ from, to, deco: urlMark });
+          } else {
+            entries.push({
+              from,
+              to,
+              deco: import_view.Decoration.replace({ widget: new MdLinkWidget(label, url) })
+            });
+          }
+        }
+        const insideMdLink = (f, t) => mdLinkRanges.some((r) => f >= r.from && t <= r.to);
+        const urlRegex = /(?:https?|obsidian):\/\/[^\s<>"'\]]+/g;
+        while ((match = urlRegex.exec(l.text)) !== null) {
+          const from = l.from + match.index;
+          const to = from + match[0].length;
+          if (insideMdLink(from, to)) continue;
+          if (match[0].startsWith("obsidian://") && !showRaw) {
+            let fileName = null;
+            try {
+              const params = new URL(match[0]).searchParams;
+              const filePath = params.get("file");
+              if (filePath) {
+                const decoded = decodeURIComponent(filePath);
+                fileName = decoded.split("/").pop() || decoded;
+              }
+            } catch (e) {
+            }
+            const looksLikeImage = !!fileName && IMAGE_EXT_RE2.test(fileName);
+            const resolved = fileName ? app.metadataCache.getFirstLinkpathDest(fileName, "") : null;
+            const isImageEmbed = looksLikeImage && resolved !== null;
+            const isUnresolvedImage = looksLikeImage && resolved === null;
+            if (isImageEmbed) {
+              entries.push({ from, to, deco: replaceHidden });
+            } else {
+              entries.push({
+                from,
+                to,
+                deco: import_view.Decoration.replace({ widget: new ObsidianLinkWidget(match[0], fileName || match[0], isUnresolvedImage) })
+              });
+            }
+          } else {
+            entries.push({ from, to, deco: urlMark });
+          }
+        }
+        const linkRegex = /!?\[\[[^\]]+\]\]/g;
+        while ((match = linkRegex.exec(l.text)) !== null) {
+          const from = l.from + match.index;
+          const to = from + match[0].length;
+          const isEmbed = match[0].startsWith("!");
+          const innerName = isEmbed ? match[0].slice(3, -2) : match[0].slice(2, -2);
+          const resolved = app.metadataCache.getFirstLinkpathDest(innerName, "") !== null;
+          if (!showRaw) {
+            if (isEmbed && IMAGE_EXT_RE2.test(innerName)) {
+              const file = app.metadataCache.getFirstLinkpathDest(innerName, "");
+              if (file) {
+                const src = app.vault.getResourcePath(file);
+                if (block.hasQuoteMarker) {
+                  entries.push({
+                    from,
+                    to,
+                    deco: import_view.Decoration.replace({ widget: new InlineEmbedImageWidget(src, innerName) })
+                  });
+                } else {
+                  entries.push({ from, to, deco: replaceHidden });
+                  embedImages.push({ src, alt: innerName });
+                }
+                continue;
+              }
+              entries.push({
+                from,
+                to,
+                deco: import_view.Decoration.replace({ widget: new EmbedMissingWidget(innerName) })
+              });
+              continue;
+            }
+            if (!isEmbed) {
+              const quoteMatch = innerName.match(QUOTE_LINK_RE);
+              if (quoteMatch) {
+                entries.push({ from, to, deco: replaceHidden });
+                continue;
+              }
+            }
+            entries.push({
+              from,
+              to,
+              deco: import_view.Decoration.replace({ widget: new InternalLinkWidget(innerName, app, resolved) })
+            });
+            continue;
+          }
+          entries.push({ from, to, deco: resolved ? internalLinkMark : internalLinkUnresolvedMark });
+        }
+        const codeRegex = /`[^`]+`/g;
+        while ((match = codeRegex.exec(l.text)) !== null) {
+          const from = l.from + match.index;
+          const to = from + match[0].length;
+          codeRanges.push({ from, to });
+          if (showRaw) {
+            entries.push({ from, to, deco: inlineCodeMark });
+          } else {
+            entries.push({ from, to: from + 1, deco: replaceHidden });
+            entries.push({ from: from + 1, to: to - 1, deco: inlineCodeMark });
+            entries.push({ from: to - 1, to, deco: replaceHidden });
+          }
+        }
+        const mathRegex = /\$([^$]+)\$/g;
+        while ((match = mathRegex.exec(l.text)) !== null) {
+          const from = l.from + match.index;
+          const to = from + match[0].length;
+          if (codeRanges.some((r) => from >= r.from && to <= r.to)) continue;
+          codeRanges.push({ from, to });
+          if (showRaw) {
+            entries.push({ from, to, deco: mathMark });
+          } else {
+            entries.push({
+              from,
+              to,
+              deco: import_view.Decoration.replace({ widget: new MathWidget(match[1]) })
+            });
+          }
+        }
+        const insideCode = (f, t) => codeRanges.some((r) => f >= r.from && t <= r.to);
+        const boldRanges = [];
+        const boldRegex = /\*\*[^*]+\*\*/g;
+        while ((match = boldRegex.exec(l.text)) !== null) {
+          const from = l.from + match.index;
+          const to = from + match[0].length;
+          if (insideCode(from, to)) continue;
+          boldRanges.push({ from, to });
+          if (showRaw) {
+            entries.push({ from, to, deco: boldMark });
+          } else {
+            entries.push({ from, to: from + 2, deco: replaceHidden });
+            entries.push({ from: from + 2, to: to - 2, deco: boldMark });
+            entries.push({ from: to - 2, to, deco: replaceHidden });
+          }
+        }
+        {
+          const chars = [...l.text];
+          for (const br of boldRanges) {
+            const start = br.from - l.from;
+            const end = br.to - l.from;
+            for (let i = start; i < end && i < chars.length; i++) chars[i] = " ";
+          }
+          const masked = chars.join("");
+          const italicRegex = /\*([^*]+)\*/g;
+          while ((match = italicRegex.exec(masked)) !== null) {
+            const from = l.from + match.index;
+            const to = from + match[0].length;
+            if (insideCode(from, to)) continue;
+            if (showRaw) {
+              entries.push({ from, to, deco: italicMark });
+            } else {
+              entries.push({ from, to: from + 1, deco: replaceHidden });
+              entries.push({ from: from + 1, to: to - 1, deco: italicMark });
+              entries.push({ from: to - 1, to, deco: replaceHidden });
+            }
+          }
+        }
+        const strikeRegex = /~~[^~]+~~/g;
+        while ((match = strikeRegex.exec(l.text)) !== null) {
+          const from = l.from + match.index;
+          const to = from + match[0].length;
+          if (insideCode(from, to)) continue;
+          if (showRaw) {
+            entries.push({ from, to, deco: strikeMark });
+          } else {
+            entries.push({ from, to: from + 2, deco: replaceHidden });
+            entries.push({ from: from + 2, to: to - 2, deco: strikeMark });
+            entries.push({ from: to - 2, to, deco: replaceHidden });
+          }
+        }
+        const highlightRegex = /==([^=]+)==/g;
+        while ((match = highlightRegex.exec(l.text)) !== null) {
+          const from = l.from + match.index;
+          const to = from + match[0].length;
+          if (insideCode(from, to)) continue;
+          if (showRaw) {
+            entries.push({ from, to, deco: highlightMark });
+          } else {
+            entries.push({ from, to: from + 2, deco: replaceHidden });
+            entries.push({ from: from + 2, to: to - 2, deco: highlightMark });
+            entries.push({ from: to - 2, to, deco: replaceHidden });
+          }
+        }
+        const isReplace = (d) => d.point === true;
+        entries.sort((a, b) => {
+          if (a.from !== b.from) return a.from - b.from;
+          const ar = isReplace(a.deco) ? 0 : 1;
+          const br = isReplace(b.deco) ? 0 : 1;
+          if (ar !== br) return ar - br;
+          return a.to - b.to;
+        });
+        for (const e of entries) {
+          builder.add(e.from, e.to, e.deco);
+        }
+      }
+      const closeLine = doc.line(block.endLn);
+      builder.add(closeLine.from, closeLine.from, makeLineDeco(["wr-codeblock-line", block.ruleClass, block.blockId ? `wr-block-id-${block.blockId}` : null]));
+      const endLine = doc.line(block.endLn);
+      if (embedImages.length > 0 && !blockHasCursor) {
+        builder.add(
+          endLine.to,
+          endLine.to,
+          import_view.Decoration.widget({
+            widget: new EmbedImageWidget(embedImages, block.ruleClass),
+            side: 1
+          })
+        );
+      }
+      const resolveImagePath = (fileName) => {
+        const file = app.metadataCache.getFirstLinkpathDest(fileName, "");
+        return file ? app.vault.getResourcePath(file) : null;
+      };
+      if (block.hasQuoteMarker && !blockHasCursor) {
+        let quoteFileName = null;
+        let quoteBlockId = null;
+        for (let j = block.startLn + 1; j < block.endLn; j++) {
+          const m = doc.line(j).text.match(/\[\[([^\[\]]+)#\^(wr-\d{17})\]\]/);
+          if (m) {
+            quoteFileName = m[1];
+            quoteBlockId = m[2];
+            break;
+          }
+        }
+        if (quoteFileName && quoteBlockId) {
+          const parsedUrls = block.urlTexts.length > 0 ? extractUrls(block.urlTexts.join(" ")).filter(
+            (pu) => pu.type === "image" || !pu.url.startsWith("obsidian://")
+          ) : [];
+          const currentPath = ((_a = app.workspace.getActiveFile()) == null ? void 0 : _a.path) || "";
+          builder.add(
+            endLine.to,
+            endLine.to,
+            import_view.Decoration.widget({
+              widget: new QuoteBlockWidget(
+                quoteFileName,
+                quoteBlockId,
+                parsedUrls,
+                app,
+                currentPath,
+                block.ruleClass,
+                plugin.settings.timestampFormat || "YYYY/MM/DD HH:mm",
+                ogpCache,
+                resolveImagePath,
+                (content) => plugin.getTagRuleClassForContent(content),
+                (ruleClass) => plugin.getRuleAccentColor(ruleClass)
+              ),
+              side: 2
+            })
+          );
+        }
+      } else if (!block.hasQuoteMarker && block.urlTexts.length > 0) {
+        const parsedUrls = extractUrls(block.urlTexts.join(" ")).filter(
+          (pu) => pu.type === "image" || !pu.url.startsWith("obsidian://")
+        );
+        if (parsedUrls.length > 0) {
+          builder.add(
+            endLine.to,
+            endLine.to,
+            import_view.Decoration.widget({
+              widget: new UrlPreviewWidget(parsedUrls, ogpCache, block.ruleClass, resolveImagePath),
+              side: 2
+            })
+          );
+        }
+      }
+    }
+  } catch (e) {
+    console.debug("Wrot: decoration skipped", e);
+  }
+  return builder.finish();
+}
+function createWrEditorExtension(ogpCache, app, plugin, getCheckStrikethrough) {
+  return import_view.ViewPlugin.fromClass(
+    class {
+      constructor(view) {
+        this.currentView = view;
+        this.blocks = findWrBlocks(view, plugin);
+        this.decorations = buildDecorations(view, ogpCache, this.blocks, app, plugin, getCheckStrikethrough());
+        requestAnimationFrame(() => this.fetchMissing());
+      }
+      update(update) {
+        this.currentView = update.view;
+        const hasOgpEffect = update.transactions.some(
+          (tr) => tr.effects.some((e) => e.is(ogpFetched))
+        );
+        const hasTagRulesEffect = update.transactions.some(
+          (tr) => tr.effects.some((e) => e.is(tagRulesChanged))
+        );
+        const hasVaultFilesEffect = update.transactions.some(
+          (tr) => tr.effects.some((e) => e.is(vaultFilesChanged))
+        );
+        if (update.docChanged || update.viewportChanged || update.selectionSet || hasOgpEffect || hasTagRulesEffect || hasVaultFilesEffect) {
+          this.blocks = findWrBlocks(update.view, plugin);
+          this.decorations = buildDecorations(update.view, ogpCache, this.blocks, app, plugin, getCheckStrikethrough());
+          if (!hasOgpEffect) {
+            this.fetchMissing();
+          }
+        }
+      }
+      fetchMissing() {
+        for (const block of this.blocks) {
+          const parsedUrls = extractUrls(block.urlTexts.join(" "));
+          for (const pu of parsedUrls) {
+            if (pu.type === "image") continue;
+            if (ogpCache.get(pu.url)) continue;
+            ogpCache.fetchOGP(pu.url).then(() => {
+              try {
+                this.currentView.dispatch({ effects: ogpFetched.of(null) });
+              } catch (e) {
+              }
+            });
+          }
+        }
+      }
+    },
+    {
+      decorations: (v) => v.decorations,
+      eventHandlers: {
+        // wr ブロック内の URL ハイライト要素をクリックしたらブラウザで開く
+        // (LV では Cmd+クリックの Obsidian 標準動作も効かないため、 シングルクリックで対応)
+        click(e) {
+          var _a;
+          const target = e.target;
+          if (!(target instanceof HTMLElement)) return false;
+          const urlEl = target.closest(".wr-url-highlight");
+          if (!urlEl) return false;
+          if (!urlEl.closest(".wr-codeblock-line, .HyperMD-codeblock")) return false;
+          const url = (_a = urlEl.textContent) == null ? void 0 : _a.trim();
+          if (!url) return false;
+          if (!isSafeUrl(url)) return false;
+          e.preventDefault();
+          e.stopPropagation();
+          window.open(url, "_blank");
+          return true;
+        }
+      }
+    }
+  );
+}
+
+// src/utils/ogpCache.ts
+var import_obsidian7 = require("obsidian");
+var TTL = 36e5;
+var OGPCache = class {
+  constructor() {
+    this.cache = /* @__PURE__ */ new Map();
+    this.pending = /* @__PURE__ */ new Map();
+    this.enabled = true;
+  }
+  get(url) {
+    const entry = this.cache.get(url);
+    if (entry && Date.now() - entry.timestamp < TTL) {
+      return entry.data;
+    }
+    return null;
+  }
+  async fetchOGP(url) {
+    if (!this.enabled) return null;
+    if (url.startsWith("obsidian://")) return null;
+    const cached = this.get(url);
+    if (cached) return cached;
+    const inflight = this.pending.get(url);
+    if (inflight) return inflight;
+    const promise = this.doFetch(url);
+    this.pending.set(url, promise);
+    try {
+      return await promise;
+    } finally {
+      this.pending.delete(url);
+    }
+  }
+  isPublicUrl(urlString) {
+    try {
+      const parsed = new URL(urlString);
+      if (!["http:", "https:"].includes(parsed.protocol)) return false;
+      const hostname = parsed.hostname.toLowerCase();
+      if (hostname === "localhost" || hostname === "[::1]") return false;
+      if (/^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|127\.|0\.)/.test(hostname)) return false;
+      if (hostname.endsWith(".local") || hostname.endsWith(".internal")) return false;
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+  async doFetch(url) {
+    if (!this.isPublicUrl(url)) return null;
+    try {
+      const resp = await (0, import_obsidian7.requestUrl)({
+        url,
+        headers: {
+          "User-Agent": "Mozilla/5.0 (compatible; ObsidianBot/1.0)",
+          Accept: "text/html"
+        }
+      });
+      const html = resp.text;
+      const data = this.parseOGP(html, url);
+      this.cache.set(url, { data, timestamp: Date.now() });
+      return data;
+    } catch (e) {
+      return null;
+    }
+  }
+  parseOGP(html, url) {
+    var _a, _b;
+    const get = (prop) => {
+      const re = new RegExp(
+        `<meta[^>]*(?:property|name)=["']og:${prop}["'][^>]*content=["']([^"']*)["']`,
+        "i"
+      );
+      const match = html.match(re);
+      if (match) return match[1];
+      const re2 = new RegExp(
+        `<meta[^>]*content=["']([^"']*)["'][^>]*(?:property|name)=["']og:${prop}["']`,
+        "i"
+      );
+      const match2 = html.match(re2);
+      return match2 == null ? void 0 : match2[1];
+    };
+    const title = get("title") || ((_b = (_a = html.match(/<title[^>]*>([^<]*)<\/title>/i)) == null ? void 0 : _a[1]) == null ? void 0 : _b.trim());
+    return {
+      title,
+      description: get("description"),
+      image: get("image"),
+      siteName: get("site_name"),
+      url
+    };
+  }
+  clear() {
+    this.cache.clear();
+  }
+};
+
+// src/main.ts
+var ATTACHMENT_EXT_RE = /^(png|jpe?g|gif|webp|svg|bmp)$/i;
+var WrotPlugin = class extends import_obsidian8.Plugin {
+  constructor() {
+    super(...arguments);
+    // WrotView 内のチェックボックストグル等の自前書き込み直後は、postProcessor 側の
+    // refreshQuoteCardsForFile (引用カード一斉再描画) を一時的に抑止してチラつきを防ぐ
+    this.quoteRefreshSuppressedUntil = 0;
+    this.bgStyleEl = null;
+    this.tagRuleStyleEl = null;
+    this.fontStyleEl = null;
+  }
+  async onload() {
+    await this.loadSettings();
+    await (0, import_obsidian8.loadMathJax)();
+    this.ogpCache = new OGPCache();
+    this.ogpCache.enabled = this.settings.enableOgpFetch;
+    this.registerView(
+      VIEW_TYPE_WROT,
+      (leaf) => new WrotView(leaf, this)
+    );
+    this.addRibbonIcon("feather", "Wrot", () => {
+      this.activateView();
+    });
+    this.addCommand({
+      id: "open-wrot",
+      name: "Open Wrot",
+      callback: () => this.activateView()
+    });
+    registerWrotPostProcessor(this);
+    this.registerEditorExtension([createWrEditorExtension(this.ogpCache, this.app, this, () => this.settings.checkStrikethrough)]);
+    this.addSettingTab(new WrotSettingTab(this.app, this));
+    this.applyFontFollow();
+    this.applyBgColor();
+    this.applyTagColorRules();
+    this.registerEvent(
+      this.app.workspace.on("css-change", () => {
+        this.applyBgColor();
+        this.applyTagColorRules();
+      })
+    );
+    const onAttachmentChange = (file) => {
+      if (!(file instanceof import_obsidian8.TFile)) return;
+      if (!ATTACHMENT_EXT_RE.test(file.extension)) return;
+      this.refreshAttachmentDecorations();
+    };
+    this.registerEvent(this.app.metadataCache.on("deleted", onAttachmentChange));
+    this.registerEvent(this.app.vault.on("create", onAttachmentChange));
+    this.registerEvent(this.app.vault.on("rename", onAttachmentChange));
+  }
+  refreshAttachmentDecorations() {
+    this.app.workspace.iterateAllLeaves((leaf) => {
+      var _a;
+      const view = leaf.view;
+      if (!(view instanceof import_obsidian8.MarkdownView)) return;
+      const previewMode = view.previewMode;
+      if (previewMode == null ? void 0 : previewMode.rerender) {
+        try {
+          previewMode.rerender(true);
+        } catch (e) {
+        }
+      }
+      const cm = (_a = view.editor) == null ? void 0 : _a.cm;
+      if (cm == null ? void 0 : cm.dispatch) {
+        try {
+          cm.dispatch({ effects: vaultFilesChanged.of(null) });
+        } catch (e) {
+        }
+      }
+    });
+  }
+  applyFontFollow() {
+    document.body.classList.toggle("wr-font-follow", this.settings.followObsidianFontSize);
+    if (this.fontStyleEl) {
+      this.fontStyleEl.remove();
+    }
+    this.fontStyleEl = document.createElement("style");
+    this.fontStyleEl.id = "wr-font-override";
+    document.head.appendChild(this.fontStyleEl);
+    if (this.settings.followObsidianFontSize) {
+      this.fontStyleEl.textContent = `/* @css */
         body {
           --wr-font-text: var(--font-text-size);
           --wr-font-ui-small: calc(var(--font-text-size) * 0.929);
           --wr-font-ui-smaller: calc(var(--font-text-size) * 0.857);
           --wr-font-date: min(var(--font-text-size), 24px);
         }
-      `:this.fontStyleEl.textContent=`
+      `;
+    } else {
+      this.fontStyleEl.textContent = `/* @css */
         body {
           --wr-font-text: 14px;
           --wr-font-ui-small: 13px;
           --wr-font-ui-smaller: 12px;
           --wr-font-date: 14px;
         }
-      `}validHex(e,t){return/^#[0-9a-fA-F]{6}$/.test(e)?e:t}applyBgColor(){let e=document.body.classList.contains("theme-dark"),t=this.validHex(e?this.settings.bgColorDark:this.settings.bgColorLight,e?V.bgColorDark:V.bgColorLight),n=this.darkenColor(t,10),o=this.validHex(e?this.settings.textColorDark:this.settings.textColorLight,e?V.textColorDark:V.textColorLight),s=this.blendColor(o,t,.45),l=this.blendColor(o,t,.6),d=this.blendColor(o,t,.3);this.bgStyleEl&&this.bgStyleEl.remove(),this.bgStyleEl=document.createElement("style"),this.bgStyleEl.id="wr-bg-override",document.head.appendChild(this.bgStyleEl),this.bgStyleEl.textContent=`
+      `;
+    }
+  }
+  validHex(hex, fallback) {
+    return /^#[0-9a-fA-F]{6}$/.test(hex) ? hex : fallback;
+  }
+  applyBgColor() {
+    const isDark = document.body.classList.contains("theme-dark");
+    const bgColor = this.validHex(
+      isDark ? this.settings.bgColorDark : this.settings.bgColorLight,
+      isDark ? DEFAULT_SETTINGS.bgColorDark : DEFAULT_SETTINGS.bgColorLight
+    );
+    const hoverColor = this.darkenColor(bgColor, 10);
+    const textColor = this.validHex(
+      isDark ? this.settings.textColorDark : this.settings.textColorLight,
+      isDark ? DEFAULT_SETTINGS.textColorDark : DEFAULT_SETTINGS.textColorLight
+    );
+    const mutedColor = this.blendColor(textColor, bgColor, 0.45);
+    const faintColor = this.blendColor(textColor, bgColor, 0.6);
+    const unresolvedLinkColor = this.blendColor(textColor, bgColor, 0.3);
+    if (this.bgStyleEl) {
+      this.bgStyleEl.remove();
+    }
+    this.bgStyleEl = document.createElement("style");
+    this.bgStyleEl.id = "wr-bg-override";
+    document.head.appendChild(this.bgStyleEl);
+    this.bgStyleEl.textContent = `/* @css */
       body {
-        --wr-bg-color: ${t};
+        --wr-bg-color: ${bgColor};
       }
       body .wr-input-area,
       body .wr-card,
@@ -101,16 +5823,16 @@ ${t}`;return he.MarkdownRenderer.render(i.app,n,e,"",i).catch(()=>{e.empty();let
       body .language-wr,
       body .wr-ogp-card,
       body .wr-codeblock-line {
-        background: ${t} !important;
-        background-color: ${t} !important;
+        background: ${bgColor} !important;
+        background-color: ${bgColor} !important;
       }
       body div.block-language-wr * {
-        background: ${t} !important;
-        background-color: ${t} !important;
+        background: ${bgColor} !important;
+        background-color: ${bgColor} !important;
       }
       body .wr-flair-bg {
-        background: ${t} !important;
-        background-color: ${t} !important;
+        background: ${bgColor} !important;
+        background-color: ${bgColor} !important;
       }
       body div.block-language-wr .wr-inline-code {
         background: rgba(0, 0, 0, 0.08) !important;
@@ -124,8 +5846,8 @@ ${t}`;return he.MarkdownRenderer.render(i.app,n,e,"",i).catch(()=>{e.empty();let
         background-color: transparent !important;
       }
       body .wr-ogp-card:hover {
-        background: ${n} !important;
-        background-color: ${n} !important;
+        background: ${hoverColor} !important;
+        background-color: ${hoverColor} !important;
       }
       body .wr-content,
       body .wr-textarea,
@@ -141,7 +5863,7 @@ ${t}`;return he.MarkdownRenderer.render(i.app,n,e,"",i).catch(()=>{e.empty();let
       body .wr-reading-list li,
       body .wr-bullet-list li,
       body .wr-ordered-list li {
-        color: ${o} !important;
+        color: ${textColor} !important;
       }
       /* \u30CD\u30B9\u30C8\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u5185\u3067Prism\u30C8\u30FC\u30AF\u30F3\u8272\u3092\u5FA9\u5143\u3059\u308B */
       body .wr-codeblock-display code[class*="language-"],
@@ -211,16 +5933,16 @@ ${t}`;return he.MarkdownRenderer.render(i.app,n,e,"",i).catch(()=>{e.empty();let
       body .wr-quote-card-slot .wr-quote-card .wr-quote-image-marker,
       body .wr-quote-card-slot .wr-quote-card .wr-quote-math-marker,
       body .wr-quote-card-slot .wr-quote-card .wr-quote-code-marker {
-        color: ${s} !important;
+        color: ${mutedColor} !important;
       }
       body .wr-quote-card-slot .wr-quote-card {
-        border-color: ${s} !important;
+        border-color: ${mutedColor} !important;
       }
       body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-blockquote {
-        border-left-color: ${s} !important;
+        border-left-color: ${mutedColor} !important;
       }
       body .wr-ogp-card {
-        border-color: ${s} !important;
+        border-color: ${mutedColor} !important;
       }
       /* LV\u5185\u306EWidget DOM\u3067\u3082\u78BA\u5B9F\u306B\u30DE\u30FC\u30AB\u30FC\u8272\u3092\u5F53\u3066\u308B\u305F\u3081\u3001\u4E0A\u8A18\u3088\u308A\u9AD8\u3044\u7279\u7570\u5EA6\u3067\u518D\u5BA3\u8A00 */
       body .cm-line .wr-lp-marker:not(#x):not(#y):not(#z),
@@ -236,21 +5958,21 @@ ${t}`;return he.MarkdownRenderer.render(i.app,n,e,"",i).catch(()=>{e.empty();let
       body .cm-line .wr-ogp-desc:not(#x):not(#y):not(#z),
       body .cm-line .wr-ogp-site:not(#x):not(#y):not(#z),
       body .cm-line .wr-ogp-loading:not(#x):not(#y):not(#z) {
-        color: ${s} !important;
+        color: ${mutedColor} !important;
       }
       /* \u30C1\u30A7\u30C3\u30AF\u30DC\u30C3\u30AF\u30B9(input)\u306E\u67A0\u7DDA\u306F\u30B5\u30D6\u30AB\u30E9\u30FC\u3001\u30C1\u30A7\u30C3\u30AF\u6E08\u307F\u5857\u308A\u3064\u3076\u3057\u306F\u30C6\u30FC\u30DE\u306E\u30A2\u30AF\u30BB\u30F3\u30C8\u30AB\u30E9\u30FC */
       body .wr-check-item input[type="checkbox"],
       body .wr-bullet-list .wr-check-item input[type="checkbox"],
       body .wr-reading-list .wr-check-item input[type="checkbox"],
       body .wr-lp-check input[type="checkbox"] {
-        --checkbox-border-color: ${s};
-        --checkbox-border-color-hover: ${s};
+        --checkbox-border-color: ${mutedColor};
+        --checkbox-border-color-hover: ${mutedColor};
         --checkbox-color: var(--text-accent);
         --checkbox-color-hover: var(--text-accent);
         accent-color: var(--text-accent);
       }
       body .wr-textarea::placeholder {
-        color: ${l} !important;
+        color: ${faintColor} !important;
       }
       body .wr-toolbar-btn.wr-toolbar-active {
         color: var(--text-accent) !important;
@@ -263,17 +5985,17 @@ ${t}`;return he.MarkdownRenderer.render(i.app,n,e,"",i).catch(()=>{e.empty();let
       }
       body .wr-blockquote-wrap,
       body .wr-check-done {
-        color: ${s} !important;
+        color: ${mutedColor} !important;
       }
       body .wr-blockquote,
       body .wr-blockquote-wrap {
-        border-left-color: ${s} !important;
+        border-left-color: ${mutedColor} !important;
       }
       body .wr-bullet-list > li:not(.wr-check-item)::before,
       body .wr-ordered-list > li::before,
       body ul.wr-reading-list > li:not(.wr-check-item)::before,
       body ol.wr-reading-list > li::before {
-        color: ${s} !important;
+        color: ${mutedColor} !important;
       }
       body .wr-tag,
       body .wr-reading-tag,
@@ -291,27 +6013,29 @@ ${t}`;return he.MarkdownRenderer.render(i.app,n,e,"",i).catch(()=>{e.empty();let
       body .cm-line.wr-codeblock-line .wr-internal-link.wr-internal-link-unresolved,
       body div.block-language-wr a.wr-internal-link.wr-internal-link-unresolved,
       body .wr-internal-link.wr-internal-link-unresolved {
-        color: ${d} !important;
+        color: ${unresolvedLinkColor} !important;
       }
       body .wr-submit-btn.wr-submit-active {
         color: var(--text-on-accent) !important;
       }
-      body .wr-copy-btn .svg-icon {
-        stroke: ${s} !important;
+      body .wr-copy-btn .svg-icon,
+      body .wr-menu-btn .svg-icon,
+      body .wr-pin-indicator .svg-icon {
+        stroke: ${mutedColor} !important;
       }
       body .wr-menu {
-        background: ${t} !important;
-        background-color: ${t} !important;
-        border-color: ${n} !important;
+        background: ${bgColor} !important;
+        background-color: ${bgColor} !important;
+        border-color: ${hoverColor} !important;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
       }
       body .wr-menu .menu-item {
-        color: ${o} !important;
-        background-color: ${t} !important;
+        color: ${textColor} !important;
+        background-color: ${bgColor} !important;
       }
       body .wr-menu .menu-item .menu-item-icon .svg-icon {
-        color: ${s} !important;
-        stroke: ${s} !important;
+        color: ${mutedColor} !important;
+        stroke: ${mutedColor} !important;
       }
       .is-mobile body .wr-menu .menu-item:not(.is-label):not(.is-disabled):hover,
       .is-mobile body .wr-menu .menu-item:not(.is-label):not(.is-disabled):active,
@@ -319,327 +6043,558 @@ ${t}`;return he.MarkdownRenderer.render(i.app,n,e,"",i).catch(()=>{e.empty();let
       body .wr-menu .menu-item:not(.is-disabled).selected,
       body .wr-menu .menu-item:not(.is-disabled).is-selected,
       body .wr-menu .menu-item:not(.is-disabled):active {
-        background-color: ${n} !important;
+        background-color: ${hoverColor} !important;
       }
       body .wr-menu .menu-separator {
-        border-color: ${n} !important;
+        border-color: ${hoverColor} !important;
         background: transparent !important;
         background-color: transparent !important;
       }
       body .wr-menu .menu-item.is-disabled {
-        color: ${l} !important;
+        color: ${faintColor} !important;
       }
       body .wr-thumbnail-remove {
-        background: ${this.blendColor(o,t,.7)} !important;
-        background-color: ${this.blendColor(o,t,.7)} !important;
-        color: ${t} !important;
+        background: ${this.blendColor(textColor, bgColor, 0.7)} !important;
+        background-color: ${this.blendColor(textColor, bgColor, 0.7)} !important;
+        color: ${bgColor} !important;
       }
       body .wr-thumbnail-remove .svg-icon {
-        color: ${t} !important;
-        stroke: ${t} !important;
+        color: ${bgColor} !important;
+        stroke: ${bgColor} !important;
       }
       body .wr-thumbnail-remove:hover {
-        background: ${this.blendColor(o,t,.5)} !important;
-        background-color: ${this.blendColor(o,t,.5)} !important;
+        background: ${this.blendColor(textColor, bgColor, 0.5)} !important;
+        background-color: ${this.blendColor(textColor, bgColor, 0.5)} !important;
       }
-    `}findTagColorRule(e){if(!this.settings.tagColorRulesEnabled)return null;let t=this.settings.tagColorRules;if(!t||t.length===0||!e||e.length===0)return null;for(let n of e){let o=n.replace(/^#/,"").toLowerCase().trim();if(o)for(let s of t){let l=s.tag.replace(/^#/,"").toLowerCase().trim();if(l&&l===o)return s}}return null}getTagRuleClassForContent(e){if(!this.settings.tagColorRulesEnabled)return null;let t=e.match(/#[^\s#]+/g);if(!t)return null;let n=this.findTagColorRule(t);if(!n)return null;let o=this.settings.tagColorRules.indexOf(n);return o<0?null:`wr-tag-rule-${o}`}getRuleAccentColor(e){var l;let t=e.match(/^wr-tag-rule-(\d+)$/);if(!t)return null;let n=parseInt(t[1],10),o=(l=this.settings.tagColorRules)==null?void 0:l[n];if(!o)return null;let s=/^#[0-9a-fA-F]{6}$/;return o.accentColor&&s.test(o.accentColor)?o.accentColor:null}applyTagColorRules(){if(this.tagRuleStyleEl&&(this.tagRuleStyleEl.remove(),this.tagRuleStyleEl=null),!this.settings.tagColorRulesEnabled)return;let e=this.settings.tagColorRules||[];if(e.length===0)return;let t=/^#[0-9a-fA-F]{6}$/,n=[];e.forEach((o,s)=>{if(!t.test(o.bgColor)||!t.test(o.textColor))return;let l=o.bgColor,d=o.textColor,c=o.accentColor&&t.test(o.accentColor)?o.accentColor:null,u=this.darkenColor(l,10),f=this.blendColor(d,l,.45),g=!!(o.subColor&&t.test(o.subColor)),v=g?o.subColor:f,L=o.subColorScope,T=h=>g?L&&L[h]===!1?f:v:f,w=T("buttons"),m=T("quote"),C=T("list"),b=T("ogp"),r=`wr-tag-rule-${s}`;n.push(`
-      /* Rule ${s}: \u80CC\u666F */
-      body .wr-card.${r},
-      body div.block-language-wr.${r},
-      body pre.${r},
-      body .cm-line.wr-codeblock-line.${r},
-      body .wr-lp-codeblock.${r},
-      body .wr-lp-mathblock.${r},
-      body .wr-flair-bg.${r} {
-        background: ${l} !important;
-        background-color: ${l} !important;
+    `;
+  }
+  findTagColorRule(memoTags) {
+    if (!this.settings.tagColorRulesEnabled) return null;
+    const rules = this.settings.tagColorRules;
+    if (!rules || rules.length === 0 || !memoTags || memoTags.length === 0) return null;
+    for (const raw of memoTags) {
+      const tag = raw.replace(/^#/, "").toLowerCase().trim();
+      if (!tag) continue;
+      for (const rule of rules) {
+        const ruleTag = rule.tag.replace(/^#/, "").toLowerCase().trim();
+        if (!ruleTag) continue;
+        if (ruleTag === tag) return rule;
+      }
+    }
+    return null;
+  }
+  getTagRuleClassForContent(content) {
+    if (!this.settings.tagColorRulesEnabled) return null;
+    const tags = content.match(/#[^\s#]+/g);
+    if (!tags) return null;
+    const rule = this.findTagColorRule(tags);
+    if (!rule) return null;
+    const idx = this.settings.tagColorRules.indexOf(rule);
+    if (idx < 0) return null;
+    return `wr-tag-rule-${idx}`;
+  }
+  getRuleAccentColor(ruleClass) {
+    var _a;
+    const m = ruleClass.match(/^wr-tag-rule-(\d+)$/);
+    if (!m) return null;
+    const idx = parseInt(m[1], 10);
+    const rule = (_a = this.settings.tagColorRules) == null ? void 0 : _a[idx];
+    if (!rule) return null;
+    const hexRe = /^#[0-9a-fA-F]{6}$/;
+    if (rule.accentColor && hexRe.test(rule.accentColor)) return rule.accentColor;
+    return null;
+  }
+  applyTagColorRules() {
+    if (this.tagRuleStyleEl) {
+      this.tagRuleStyleEl.remove();
+      this.tagRuleStyleEl = null;
+    }
+    if (!this.settings.tagColorRulesEnabled) return;
+    const rules = this.settings.tagColorRules || [];
+    if (rules.length === 0) return;
+    const hexRe = /^#[0-9a-fA-F]{6}$/;
+    const parts = [];
+    rules.forEach((rule, i) => {
+      if (!hexRe.test(rule.bgColor) || !hexRe.test(rule.textColor)) return;
+      const bg = rule.bgColor;
+      const fg = rule.textColor;
+      const accent = rule.accentColor && hexRe.test(rule.accentColor) ? rule.accentColor : null;
+      const hoverBg = this.darkenColor(bg, 10);
+      const autoMuted = this.blendColor(fg, bg, 0.45);
+      const subSet = !!(rule.subColor && hexRe.test(rule.subColor));
+      const userMuted = subSet ? rule.subColor : autoMuted;
+      const scope = rule.subColorScope;
+      const pickMuted = (key) => {
+        if (!subSet) return autoMuted;
+        if (!scope) return userMuted;
+        return scope[key] === false ? autoMuted : userMuted;
+      };
+      const mButtons = pickMuted("buttons");
+      const mQuote = pickMuted("quote");
+      const mList = pickMuted("list");
+      const mOgp = pickMuted("ogp");
+      const cls = `wr-tag-rule-${i}`;
+      parts.push(`/* @css */
+      /* Rule ${i}: \u80CC\u666F */
+      body .wr-card.${cls},
+      body div.block-language-wr.${cls},
+      body pre.${cls},
+      body .cm-line.wr-codeblock-line.${cls},
+      body .wr-lp-codeblock.${cls},
+      body .wr-lp-mathblock.${cls},
+      body .wr-flair-bg.${cls} {
+        background: ${bg} !important;
+        background-color: ${bg} !important;
       }
       /* \u5F15\u7528\u30AB\u30FC\u30C9\u306F\u5F15\u7528\u5148 bg \u3092\u906E\u65AD (\u5F15\u7528\u5143\u306E\u30EB\u30FC\u30EB\u306B\u4EFB\u305B\u308B) */
-      body .wr-card.${r} a.wr-quote-card:not([class*="wr-tag-rule-"]),
-      body div.block-language-wr.${r} a.wr-quote-card:not([class*="wr-tag-rule-"]),
-      body pre.${r} a.wr-quote-card:not([class*="wr-tag-rule-"]),
-      body .cm-line.wr-codeblock-line.${r} a.wr-quote-card:not([class*="wr-tag-rule-"]) {
+      body .wr-card.${cls} a.wr-quote-card:not([class*="wr-tag-rule-"]),
+      body div.block-language-wr.${cls} a.wr-quote-card:not([class*="wr-tag-rule-"]),
+      body pre.${cls} a.wr-quote-card:not([class*="wr-tag-rule-"]),
+      body .cm-line.wr-codeblock-line.${cls} a.wr-quote-card:not([class*="wr-tag-rule-"]) {
         background: var(--wr-bg-color, #f8f8f8) !important;
         background-color: var(--wr-bg-color, #f8f8f8) !important;
       }
-      body div.block-language-wr.${r} *:not(.wr-inline-code):not(.wr-highlight):not(.wr-quote-card):not(.wr-quote-card *):not(input[type="checkbox"]),
-      body pre.${r} *:not(.wr-inline-code):not(.wr-highlight):not(.wr-quote-card):not(.wr-quote-card *):not(input[type="checkbox"]) {
-        background: ${l} !important;
-        background-color: ${l} !important;
+      body div.block-language-wr.${cls} *:not(.wr-inline-code):not(.wr-highlight):not(.wr-quote-card):not(.wr-quote-card *):not(input[type="checkbox"]),
+      body pre.${cls} *:not(.wr-inline-code):not(.wr-highlight):not(.wr-quote-card):not(.wr-quote-card *):not(input[type="checkbox"]) {
+        background: ${bg} !important;
+        background-color: ${bg} !important;
       }
 
-      /* Rule ${s}: \u6587\u5B57\u8272\uFF08\u30BF\u30B0/\u30EA\u30F3\u30AF/URL/\u5F15\u7528\u30D6\u30ED\u30C3\u30AF/\u5F15\u7528\u30AB\u30FC\u30C9\u9664\u304F\uFF09 */
-      body .wr-card.${r} .wr-content,
-      body .wr-card.${r} .wr-content *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-blockquote):not(.wr-quote-card):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-blockquote *):not(.wr-quote-card *) {
-        color: ${d} !important;
+      /* Rule ${i}: \u6587\u5B57\u8272\uFF08\u30BF\u30B0/\u30EA\u30F3\u30AF/URL/\u5F15\u7528\u30D6\u30ED\u30C3\u30AF/\u5F15\u7528\u30AB\u30FC\u30C9\u9664\u304F\uFF09 */
+      body .wr-card.${cls} .wr-content,
+      body .wr-card.${cls} .wr-content *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-blockquote):not(.wr-quote-card):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-blockquote *):not(.wr-quote-card *) {
+        color: ${fg} !important;
       }
-      body div.block-language-wr.${r},
-      body div.block-language-wr.${r} *:not(.wr-reading-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-url):not(.wr-blockquote):not(.wr-quote-card):not(input[type="checkbox"]):not(.wr-reading-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-url *):not(.wr-blockquote *):not(.wr-quote-card *),
-      body pre.${r},
-      body pre.${r} *:not(.wr-reading-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-url):not(.wr-blockquote):not(.wr-quote-card):not(input[type="checkbox"]):not(.wr-reading-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-url *):not(.wr-blockquote *):not(.wr-quote-card *) {
-        color: ${d} !important;
+      body div.block-language-wr.${cls},
+      body div.block-language-wr.${cls} *:not(.wr-reading-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-url):not(.wr-blockquote):not(.wr-quote-card):not(input[type="checkbox"]):not(.wr-reading-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-url *):not(.wr-blockquote *):not(.wr-quote-card *),
+      body pre.${cls},
+      body pre.${cls} *:not(.wr-reading-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-url):not(.wr-blockquote):not(.wr-quote-card):not(input[type="checkbox"]):not(.wr-reading-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-url *):not(.wr-blockquote *):not(.wr-quote-card *) {
+        color: ${fg} !important;
       }
-      body .cm-line.wr-codeblock-line.${r},
-      body .cm-line.wr-codeblock-line.${r} *:not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-url-highlight):not(.wr-lp-marker):not(.wr-list-highlight):not(.wr-ol-highlight):not(.wr-quote-highlight):not(.wr-blockquote-wrap):not(.wr-check-unchecked):not(.wr-check-checked):not(.wr-check-done):not(.wr-quote-card):not(input[type="checkbox"]):not(.wr-tag-highlight *):not(.wr-internal-link-highlight *):not(.wr-url-highlight *):not(.wr-blockquote-wrap *):not(.wr-quote-card *) {
-        color: ${d} !important;
+      body .cm-line.wr-codeblock-line.${cls},
+      body .cm-line.wr-codeblock-line.${cls} *:not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-url-highlight):not(.wr-lp-marker):not(.wr-list-highlight):not(.wr-ol-highlight):not(.wr-quote-highlight):not(.wr-blockquote-wrap):not(.wr-check-unchecked):not(.wr-check-checked):not(.wr-check-done):not(.wr-quote-card):not(input[type="checkbox"]):not(.wr-tag-highlight *):not(.wr-internal-link-highlight *):not(.wr-url-highlight *):not(.wr-blockquote-wrap *):not(.wr-quote-card *) {
+        color: ${fg} !important;
       }
 
-      /* Rule ${s}: \u30B5\u30D6\u8981\u7D20 - \u30BF\u30A4\u30E0\u30B9\u30BF\u30F3\u30D7\u30FB\u30E1\u30CB\u30E5\u30FC\u30FB\u30D4\u30F3 */
-      body .wr-card.${r} .wr-timestamp,
-      body .wr-card.${r} .wr-copy-btn,
-      body .wr-card.${r} .wr-copy-btn .svg-icon,
-      body .wr-card.${r} .wr-menu-btn,
-      body .wr-card.${r} .wr-menu-btn .svg-icon,
-      body .wr-card.${r} .wr-pin-indicator,
-      body .wr-card.${r} .wr-pin-indicator .svg-icon {
-        color: ${w} !important;
+      /* Rule ${i}: \u30B5\u30D6\u8981\u7D20 - \u30BF\u30A4\u30E0\u30B9\u30BF\u30F3\u30D7\u30FB\u30E1\u30CB\u30E5\u30FC\u30FB\u30D4\u30F3 */
+      body .wr-card.${cls} .wr-timestamp,
+      body .wr-card.${cls} .wr-copy-btn,
+      body .wr-card.${cls} .wr-copy-btn .svg-icon,
+      body .wr-card.${cls} .wr-menu-btn,
+      body .wr-card.${cls} .wr-menu-btn .svg-icon,
+      body .wr-card.${cls} .wr-pin-indicator,
+      body .wr-card.${cls} .wr-pin-indicator .svg-icon {
+        color: ${mButtons} !important;
       }
-      /* Rule ${s}: \u30B5\u30D6\u8981\u7D20 - \u5F15\u7528 */
-      body .wr-card.${r} .wr-blockquote,
-      body .wr-card.${r} .wr-blockquote-wrap,
-      body .wr-card.${r} .wr-quote-highlight,
-      body div.block-language-wr.${r} .wr-blockquote,
-      body pre.${r} .wr-blockquote,
-      body .cm-line.wr-codeblock-line.${r}.wr-blockquote-line,
-      body .cm-line.wr-codeblock-line.${r} .wr-blockquote-wrap {
-        color: ${m} !important;
+      /* Rule ${i}: \u30B5\u30D6\u8981\u7D20 - \u5F15\u7528 */
+      body .wr-card.${cls} .wr-blockquote,
+      body .wr-card.${cls} .wr-blockquote-wrap,
+      body .wr-card.${cls} .wr-quote-highlight,
+      body div.block-language-wr.${cls} .wr-blockquote,
+      body pre.${cls} .wr-blockquote,
+      body .cm-line.wr-codeblock-line.${cls}.wr-blockquote-line,
+      body .cm-line.wr-codeblock-line.${cls} .wr-blockquote-wrap {
+        color: ${mQuote} !important;
       }
-      /* Rule ${s}: \u30B5\u30D6\u8981\u7D20 - \u30EA\u30B9\u30C8\u30FB\u30C1\u30A7\u30C3\u30AF\u30DC\u30C3\u30AF\u30B9 */
-      body .wr-card.${r} .wr-bullet-list > li:not(.wr-check-item)::before,
-      body .wr-card.${r} .wr-ordered-list > li::before,
-      body .wr-card.${r} .wr-check-done,
-      body .wr-card.${r} .wr-check-unchecked,
-      body .wr-card.${r} .wr-check-checked,
-      body .wr-card.${r} .wr-list-highlight,
-      body .wr-card.${r} .wr-ol-highlight,
-      body div.block-language-wr.${r} ul.wr-reading-list > li:not(.wr-check-item)::before,
-      body div.block-language-wr.${r} ol.wr-reading-list > li::before,
-      body pre.${r} ul.wr-reading-list > li:not(.wr-check-item)::before,
-      body pre.${r} ol.wr-reading-list > li::before,
-      body .cm-line.wr-codeblock-line.${r} .wr-list-highlight,
-      body .cm-line.wr-codeblock-line.${r} .wr-check-unchecked,
-      body .cm-line.wr-codeblock-line.${r} .wr-check-checked,
-      body .cm-line.wr-codeblock-line.${r} .wr-check-done,
-      body .cm-line.wr-codeblock-line.${r} .wr-ol-highlight,
-      body .cm-line.wr-codeblock-line.${r} .wr-lp-marker {
-        color: ${C} !important;
+      /* Rule ${i}: \u30B5\u30D6\u8981\u7D20 - \u30EA\u30B9\u30C8\u30FB\u30C1\u30A7\u30C3\u30AF\u30DC\u30C3\u30AF\u30B9 */
+      body .wr-card.${cls} .wr-bullet-list > li:not(.wr-check-item)::before,
+      body .wr-card.${cls} .wr-ordered-list > li::before,
+      body .wr-card.${cls} .wr-check-done,
+      body .wr-card.${cls} .wr-check-unchecked,
+      body .wr-card.${cls} .wr-check-checked,
+      body .wr-card.${cls} .wr-list-highlight,
+      body .wr-card.${cls} .wr-ol-highlight,
+      body div.block-language-wr.${cls} ul.wr-reading-list > li:not(.wr-check-item)::before,
+      body div.block-language-wr.${cls} ol.wr-reading-list > li::before,
+      body pre.${cls} ul.wr-reading-list > li:not(.wr-check-item)::before,
+      body pre.${cls} ol.wr-reading-list > li::before,
+      body .cm-line.wr-codeblock-line.${cls} .wr-list-highlight,
+      body .cm-line.wr-codeblock-line.${cls} .wr-check-unchecked,
+      body .cm-line.wr-codeblock-line.${cls} .wr-check-checked,
+      body .cm-line.wr-codeblock-line.${cls} .wr-check-done,
+      body .cm-line.wr-codeblock-line.${cls} .wr-ol-highlight,
+      body .cm-line.wr-codeblock-line.${cls} .wr-lp-marker {
+        color: ${mList} !important;
       }
       /* LV\u5185\u306EWidget DOM\u3067\u3082\u30BF\u30B0\u30EB\u30FC\u30EB\u306E\u30B5\u30D6\u30AB\u30E9\u30FC\u304C\u52DD\u3064\u3088\u3046\u306B\u3001ID\u30BB\u30EC\u30AF\u30BF\u76F8\u5F53\u306E\u7279\u7570\u5EA6\u3067\u518D\u5BA3\u8A00 */
-      body .cm-line.${r} .wr-lp-marker:not(#x):not(#y):not(#z),
-      body .cm-line.${r} .wr-list-highlight:not(#x):not(#y):not(#z),
-      body .cm-line.${r} .wr-check-unchecked:not(#x):not(#y):not(#z),
-      body .cm-line.${r} .wr-check-checked:not(#x):not(#y):not(#z),
-      body .cm-line.${r} .wr-check-done:not(#x):not(#y):not(#z),
-      body .cm-line.${r} .wr-ol-highlight:not(#x):not(#y):not(#z) {
-        color: ${C} !important;
+      body .cm-line.${cls} .wr-lp-marker:not(#x):not(#y):not(#z),
+      body .cm-line.${cls} .wr-list-highlight:not(#x):not(#y):not(#z),
+      body .cm-line.${cls} .wr-check-unchecked:not(#x):not(#y):not(#z),
+      body .cm-line.${cls} .wr-check-checked:not(#x):not(#y):not(#z),
+      body .cm-line.${cls} .wr-check-done:not(#x):not(#y):not(#z),
+      body .cm-line.${cls} .wr-ol-highlight:not(#x):not(#y):not(#z) {
+        color: ${mList} !important;
       }
       /* LV\u5185\u306EWidget DOM\u3067\u3082\u5F15\u7528\u306E\u672C\u6587\u30FB\u7E26\u7DDA\u304C\u30BF\u30B0\u30EB\u30FC\u30EB\u306Equote\u8272\u306B\u306A\u308B\u3088\u3046\u3001ID\u30BB\u30EC\u30AF\u30BF\u76F8\u5F53\u306E\u7279\u7570\u5EA6\u3067\u518D\u5BA3\u8A00 */
-      body .cm-line.${r}.wr-blockquote-line:not(#x):not(#y):not(#z),
-      body .cm-line.${r} .wr-blockquote-wrap:not(#x):not(#y):not(#z),
-      body .cm-line.${r} .wr-blockquote-wrap:not(#x):not(#y):not(#z) *,
-      body .cm-line.${r} .wr-quote-highlight:not(#x):not(#y):not(#z) {
-        color: ${m} !important;
+      body .cm-line.${cls}.wr-blockquote-line:not(#x):not(#y):not(#z),
+      body .cm-line.${cls} .wr-blockquote-wrap:not(#x):not(#y):not(#z),
+      body .cm-line.${cls} .wr-blockquote-wrap:not(#x):not(#y):not(#z) *,
+      body .cm-line.${cls} .wr-quote-highlight:not(#x):not(#y):not(#z) {
+        color: ${mQuote} !important;
       }
       /* \u30C1\u30A7\u30C3\u30AF\u30DC\u30C3\u30AF\u30B9(input)\u306E\u67A0\u7DDA\u306F\u30B5\u30D6\u30AB\u30E9\u30FC\u3001\u30C1\u30A7\u30C3\u30AF\u6E08\u307F\u5857\u308A\u3064\u3076\u3057\u306F\u30A2\u30AF\u30BB\u30F3\u30C8\u30AB\u30E9\u30FC */
-      body .wr-card.${r} .wr-check-item input[type="checkbox"],
-      body div.block-language-wr.${r} .wr-check-item input[type="checkbox"],
-      body pre.${r} .wr-check-item input[type="checkbox"],
-      body .cm-line.wr-codeblock-line.${r} .wr-lp-check input[type="checkbox"] {
-        --checkbox-border-color: ${C};
-        --checkbox-border-color-hover: ${C};
-        --checkbox-color: ${c!=null?c:"var(--text-accent)"};
-        --checkbox-color-hover: ${c!=null?c:"var(--text-accent)"};
-        accent-color: ${c!=null?c:"var(--text-accent)"};
+      body .wr-card.${cls} .wr-check-item input[type="checkbox"],
+      body div.block-language-wr.${cls} .wr-check-item input[type="checkbox"],
+      body pre.${cls} .wr-check-item input[type="checkbox"],
+      body .cm-line.wr-codeblock-line.${cls} .wr-lp-check input[type="checkbox"] {
+        --checkbox-border-color: ${mList};
+        --checkbox-border-color-hover: ${mList};
+        --checkbox-color: ${accent != null ? accent : "var(--text-accent)"};
+        --checkbox-color-hover: ${accent != null ? accent : "var(--text-accent)"};
+        accent-color: ${accent != null ? accent : "var(--text-accent)"};
       }
-      body .wr-card.${r} .wr-blockquote *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-tag *):not(.wr-reading-url *),
-      body div.block-language-wr.${r} .wr-blockquote *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-tag *):not(.wr-reading-url *),
-      body pre.${r} .wr-blockquote *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-tag *):not(.wr-reading-url *) {
-        color: ${m} !important;
+      body .wr-card.${cls} .wr-blockquote *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-tag *):not(.wr-reading-url *),
+      body div.block-language-wr.${cls} .wr-blockquote *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-tag *):not(.wr-reading-url *),
+      body pre.${cls} .wr-blockquote *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-tag *):not(.wr-reading-url *) {
+        color: ${mQuote} !important;
       }
       /* 492\u884C\u306A\u3069\u306E\u6587\u5B57\u8272\u5F53\u3066\u306B\u7279\u7570\u5EA6\u3067\u8CA0\u3051\u308B\u74B0\u5883\u5411\u3051\u306B\u3001 ID\u76F8\u5F53\u306E\u7279\u7570\u5EA6\u3067\u518D\u5BA3\u8A00 */
-      body .wr-card.${r} .wr-blockquote:not(#x):not(#y):not(#z),
-      body .wr-card.${r} .wr-blockquote:not(#x):not(#y):not(#z) *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url),
-      body div.block-language-wr.${r} .wr-blockquote:not(#x):not(#y):not(#z),
-      body div.block-language-wr.${r} .wr-blockquote:not(#x):not(#y):not(#z) *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url),
-      body pre.${r} .wr-blockquote:not(#x):not(#y):not(#z),
-      body pre.${r} .wr-blockquote:not(#x):not(#y):not(#z) *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url) {
-        color: ${m} !important;
+      body .wr-card.${cls} .wr-blockquote:not(#x):not(#y):not(#z),
+      body .wr-card.${cls} .wr-blockquote:not(#x):not(#y):not(#z) *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url),
+      body div.block-language-wr.${cls} .wr-blockquote:not(#x):not(#y):not(#z),
+      body div.block-language-wr.${cls} .wr-blockquote:not(#x):not(#y):not(#z) *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url),
+      body pre.${cls} .wr-blockquote:not(#x):not(#y):not(#z),
+      body pre.${cls} .wr-blockquote:not(#x):not(#y):not(#z) *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url) {
+        color: ${mQuote} !important;
       }
-      body .cm-line.wr-codeblock-line.${r} .wr-tag-highlight .wr-blockquote-wrap,
-      body .cm-line.wr-codeblock-line.${r} .wr-internal-link-highlight .wr-blockquote-wrap,
-      body .cm-line.wr-codeblock-line.${r} .wr-url-highlight .wr-blockquote-wrap,
-      body .cm-line.wr-codeblock-line.${r} .wr-math-highlight .wr-blockquote-wrap,
-      body .cm-line.wr-codeblock-line.${r} .wr-internal-link .wr-blockquote-wrap,
-      body .cm-line.wr-codeblock-line.${r} .wr-url .wr-blockquote-wrap {
-        color: ${c!=null?c:"var(--text-accent)"} !important;
+      body .cm-line.wr-codeblock-line.${cls} .wr-tag-highlight .wr-blockquote-wrap,
+      body .cm-line.wr-codeblock-line.${cls} .wr-internal-link-highlight .wr-blockquote-wrap,
+      body .cm-line.wr-codeblock-line.${cls} .wr-url-highlight .wr-blockquote-wrap,
+      body .cm-line.wr-codeblock-line.${cls} .wr-math-highlight .wr-blockquote-wrap,
+      body .cm-line.wr-codeblock-line.${cls} .wr-internal-link .wr-blockquote-wrap,
+      body .cm-line.wr-codeblock-line.${cls} .wr-url .wr-blockquote-wrap {
+        color: ${accent != null ? accent : "var(--text-accent)"} !important;
       }
-      body .wr-card.${r} .wr-blockquote,
-      body .wr-card.${r} .wr-blockquote-wrap,
-      body div.block-language-wr.${r} .wr-blockquote,
-      body pre.${r} .wr-blockquote {
-        border-left-color: ${m} !important;
+      body .wr-card.${cls} .wr-blockquote,
+      body .wr-card.${cls} .wr-blockquote-wrap,
+      body div.block-language-wr.${cls} .wr-blockquote,
+      body pre.${cls} .wr-blockquote {
+        border-left-color: ${mQuote} !important;
       }
-      /* Rule ${s}: \u5F15\u7528\u30AB\u30FC\u30C9\u81EA\u8EAB\u306B\u30EB\u30FC\u30EB\u30AF\u30E9\u30B9\u304C\u4ED8\u3044\u305F = \u5F15\u7528\u5143\u306E\u30EB\u30FC\u30EB */
+      /* Rule ${i}: \u5F15\u7528\u30AB\u30FC\u30C9\u81EA\u8EAB\u306B\u30EB\u30FC\u30EB\u30AF\u30E9\u30B9\u304C\u4ED8\u3044\u305F = \u5F15\u7528\u5143\u306E\u30EB\u30FC\u30EB */
       /* \u67A0\u7DDA\u8272\u306F\u5F15\u7528\u5148(=\u8868\u793A\u3059\u308B\u5074)\u306E\u898B\u305F\u76EE\u306B\u5408\u308F\u305B\u308B\u305F\u3081\u3001\u3053\u3053\u3067\u306F\u4E0A\u66F8\u304D\u3057\u306A\u3044 */
-      body .wr-quote-card-slot a.wr-quote-card.${r} {
-        background: ${l} !important;
-        background-color: ${l} !important;
+      body .wr-quote-card-slot a.wr-quote-card.${cls} {
+        background: ${bg} !important;
+        background-color: ${bg} !important;
       }
-      body .wr-quote-card-slot a.wr-quote-card.${r}:hover {
-        background: ${u} !important;
-        background-color: ${u} !important;
+      body .wr-quote-card-slot a.wr-quote-card.${cls}:hover {
+        background: ${hoverBg} !important;
+        background-color: ${hoverBg} !important;
       }
       /* \u3053\u306E\u30EB\u30FC\u30EB\u30AF\u30E9\u30B9\u304C\u7956\u5148\u30AB\u30FC\u30C9\u306B\u4ED8\u3044\u3066\u3044\u308B\u5834\u5408\u3001\u914D\u4E0B\u306E\u5F15\u7528\u30AB\u30FC\u30C9\u306E\u67A0\u7DDA\u3082\u81EA\u5206\u306E\u30B5\u30D6\u30AB\u30E9\u30FC\u306B\u63C3\u3048\u308B */
-      body .wr-card.${r} .wr-quote-card-slot a.wr-quote-card,
-      body div.block-language-wr.${r} .wr-quote-card-slot a.wr-quote-card,
-      body pre.${r} .wr-quote-card-slot a.wr-quote-card,
-      body .cm-line.wr-codeblock-line.${r} .wr-quote-card-slot a.wr-quote-card {
-        border-color: ${m} !important;
+      body .wr-card.${cls} .wr-quote-card-slot a.wr-quote-card,
+      body div.block-language-wr.${cls} .wr-quote-card-slot a.wr-quote-card,
+      body pre.${cls} .wr-quote-card-slot a.wr-quote-card,
+      body .cm-line.wr-codeblock-line.${cls} .wr-quote-card-slot a.wr-quote-card {
+        border-color: ${mQuote} !important;
       }
-      body .wr-quote-card-slot a.wr-quote-card.${r} .wr-quote-card-body,
-      body .wr-quote-card-slot a.wr-quote-card.${r} .wr-quote-card-body *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-nested-quote-marker):not(.wr-blockquote):not(.wr-quote-image-marker):not(.wr-quote-math-marker):not(.wr-quote-code-marker):not(input[type="checkbox"]):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-quote-image-marker *):not(.wr-quote-math-marker *):not(.wr-quote-code-marker *),
-      body .wr-quote-card-slot a.wr-quote-card.${r} .wr-quote-card-meta,
-      body .wr-quote-card-slot a.wr-quote-card.${r} .wr-quote-card-body .wr-blockquote,
-      body .wr-quote-card-slot a.wr-quote-card.${r} .wr-quote-card-body .wr-blockquote * {
-        color: ${m} !important;
+      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body,
+      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-nested-quote-marker):not(.wr-blockquote):not(.wr-quote-image-marker):not(.wr-quote-math-marker):not(.wr-quote-code-marker):not(input[type="checkbox"]):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-quote-image-marker *):not(.wr-quote-math-marker *):not(.wr-quote-code-marker *),
+      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-meta,
+      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-blockquote,
+      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-blockquote * {
+        color: ${mQuote} !important;
       }
       /* \u30D9\u30FC\u30B9\u306E\u5F15\u7528\u30AB\u30FC\u30C9\u672C\u6587 mutedColor \u30EB\u30FC\u30EB\u306B\u7279\u7570\u5EA6\u8CA0\u3051\u3059\u308B\u74B0\u5883\u5411\u3051\u306B\u3001ID\u76F8\u5F53\u306E\u7279\u7570\u5EA6\u3067\u518D\u5BA3\u8A00 */
-      body .wr-quote-card-slot a.wr-quote-card.${r}:not(#x):not(#y):not(#z) .wr-quote-card-body .wr-blockquote,
-      body .wr-quote-card-slot a.wr-quote-card.${r}:not(#x):not(#y):not(#z) .wr-quote-card-body .wr-blockquote * {
-        color: ${m} !important;
+      body .wr-quote-card-slot a.wr-quote-card.${cls}:not(#x):not(#y):not(#z) .wr-quote-card-body .wr-blockquote,
+      body .wr-quote-card-slot a.wr-quote-card.${cls}:not(#x):not(#y):not(#z) .wr-quote-card-body .wr-blockquote * {
+        color: ${mQuote} !important;
       }
       /* \u30DE\u30FC\u30AB\u30FC\u306F\u6A19\u6E96 muted \u30EB\u30FC\u30EB\u306E :not() \u5217\u306B specificity \u8CA0\u3051\u3059\u308B\u305F\u3081\u540C\u5217\u3067\u63C3\u3048\u308B */
-      body .wr-quote-card-slot a.wr-quote-card.${r} .wr-quote-card-body .wr-quote-image-marker:not(.wr-tag):not(.wr-url):not(.wr-internal-link):not(.wr-nested-quote-marker):not(.wr-tag *):not(.wr-url *):not(.wr-internal-link *),
-      body .wr-quote-card-slot a.wr-quote-card.${r} .wr-quote-card-body .wr-quote-math-marker:not(.wr-tag):not(.wr-url):not(.wr-internal-link):not(.wr-nested-quote-marker):not(.wr-tag *):not(.wr-url *):not(.wr-internal-link *),
-      body .wr-quote-card-slot a.wr-quote-card.${r} .wr-quote-card-body .wr-quote-code-marker:not(.wr-tag):not(.wr-url):not(.wr-internal-link):not(.wr-nested-quote-marker):not(.wr-tag *):not(.wr-url *):not(.wr-internal-link *) {
-        color: ${m} !important;
+      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-quote-image-marker:not(.wr-tag):not(.wr-url):not(.wr-internal-link):not(.wr-nested-quote-marker):not(.wr-tag *):not(.wr-url *):not(.wr-internal-link *),
+      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-quote-math-marker:not(.wr-tag):not(.wr-url):not(.wr-internal-link):not(.wr-nested-quote-marker):not(.wr-tag *):not(.wr-url *):not(.wr-internal-link *),
+      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-quote-code-marker:not(.wr-tag):not(.wr-url):not(.wr-internal-link):not(.wr-nested-quote-marker):not(.wr-tag *):not(.wr-url *):not(.wr-internal-link *) {
+        color: ${mQuote} !important;
       }
-      body .wr-quote-card-slot a.wr-quote-card.${r} .wr-quote-card-body .wr-blockquote {
-        border-left-color: ${m} !important;
+      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-blockquote {
+        border-left-color: ${mQuote} !important;
       }
-      body .wr-quote-card-slot a.wr-quote-card.${r} .wr-quote-card-body .wr-tag,
-      body .wr-quote-card-slot a.wr-quote-card.${r} .wr-quote-card-body .wr-internal-link,
-      body .wr-quote-card-slot a.wr-quote-card.${r} .wr-quote-card-body .wr-url,
-      body .wr-quote-card-slot a.wr-quote-card.${r} .wr-quote-card-body .wr-nested-quote-marker {
-        color: ${c!=null?c:"var(--text-accent)"} !important;
+      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-tag,
+      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-internal-link,
+      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-url,
+      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-nested-quote-marker {
+        color: ${accent != null ? accent : "var(--text-accent)"} !important;
       }
-      body .wr-card.${r} .wr-quote-card-body .wr-nested-quote-marker,
-      body div.block-language-wr.${r} .wr-quote-card-body .wr-nested-quote-marker,
-      body pre.${r} .wr-quote-card-body .wr-nested-quote-marker,
-      body .cm-line.wr-codeblock-line.${r} .wr-quote-card-body .wr-nested-quote-marker {
-        color: ${c!=null?c:"var(--text-accent)"} !important;
+      body .wr-card.${cls} .wr-quote-card-body .wr-nested-quote-marker,
+      body div.block-language-wr.${cls} .wr-quote-card-body .wr-nested-quote-marker,
+      body pre.${cls} .wr-quote-card-body .wr-nested-quote-marker,
+      body .cm-line.wr-codeblock-line.${cls} .wr-quote-card-body .wr-nested-quote-marker {
+        color: ${accent != null ? accent : "var(--text-accent)"} !important;
       }
-      body .cm-line.wr-codeblock-line.wr-blockquote-line.${r}::before {
-        background-color: ${m} !important;
+      body .cm-line.wr-codeblock-line.wr-blockquote-line.${cls}::before {
+        background-color: ${mQuote} !important;
       }
-      body .cm-line.wr-codeblock-line.wr-blockquote-depth-2.${r}::before {
-        box-shadow: 18px 0 0 0 ${m} !important;
+      body .cm-line.wr-codeblock-line.wr-blockquote-depth-2.${cls}::before {
+        box-shadow: 18px 0 0 0 ${mQuote} !important;
       }
-      body .cm-line.wr-codeblock-line.wr-blockquote-depth-3.${r}::before {
+      body .cm-line.wr-codeblock-line.wr-blockquote-depth-3.${cls}::before {
         box-shadow:
-          18px 0 0 0 ${m},
-          36px 0 0 0 ${m} !important;
+          18px 0 0 0 ${mQuote},
+          36px 0 0 0 ${mQuote} !important;
       }
-      body .cm-line.wr-codeblock-line.wr-blockquote-depth-4.${r}::before {
+      body .cm-line.wr-codeblock-line.wr-blockquote-depth-4.${cls}::before {
         box-shadow:
-          18px 0 0 0 ${m},
-          36px 0 0 0 ${m},
-          54px 0 0 0 ${m} !important;
+          18px 0 0 0 ${mQuote},
+          36px 0 0 0 ${mQuote},
+          54px 0 0 0 ${mQuote} !important;
       }
-      body .cm-line.wr-codeblock-line.wr-blockquote-depth-5.${r}::before {
+      body .cm-line.wr-codeblock-line.wr-blockquote-depth-5.${cls}::before {
         box-shadow:
-          18px 0 0 0 ${m},
-          36px 0 0 0 ${m},
-          54px 0 0 0 ${m},
-          72px 0 0 0 ${m} !important;
+          18px 0 0 0 ${mQuote},
+          36px 0 0 0 ${mQuote},
+          54px 0 0 0 ${mQuote},
+          72px 0 0 0 ${mQuote} !important;
       }
-      body .wr-card.${r} .wr-copy-btn .svg-icon,
-      body .wr-card.${r} .wr-menu-btn .svg-icon,
-      body .wr-card.${r} .wr-pin-indicator .svg-icon {
-        stroke: ${w} !important;
+      body .wr-card.${cls} .wr-copy-btn .svg-icon,
+      body .wr-card.${cls} .wr-menu-btn .svg-icon,
+      body .wr-card.${cls} .wr-pin-indicator .svg-icon {
+        stroke: ${mButtons} !important;
       }
-      body .wr-card.${r} .wr-copy-btn.wr-copy-done .svg-icon {
-        color: ${c!=null?c:"var(--text-accent)"} !important;
-        stroke: ${c!=null?c:"var(--text-accent)"} !important;
+      body .wr-card.${cls} .wr-copy-btn.wr-copy-done .svg-icon {
+        color: ${accent != null ? accent : "var(--text-accent)"} !important;
+        stroke: ${accent != null ? accent : "var(--text-accent)"} !important;
       }
-      ${c?`
-      /* Rule ${s}: \u30A2\u30AF\u30BB\u30F3\u30C8\u8272 */
-      body .wr-card.${r} .wr-tag,
-      body .wr-card.${r} .wr-internal-link,
-      body .wr-card.${r} .wr-url,
-      body div.block-language-wr.${r} .wr-reading-tag,
-      body div.block-language-wr.${r} .wr-internal-link,
-      body div.block-language-wr.${r} .wr-reading-url,
-      body div.block-language-wr.${r} a,
-      body pre.${r} .wr-reading-tag,
-      body pre.${r} .wr-internal-link,
-      body pre.${r} .wr-reading-url,
-      body .cm-line.wr-codeblock-line.${r} .wr-tag-highlight,
-      body .cm-line.wr-codeblock-line.${r} .wr-internal-link-highlight,
-      body .cm-line.wr-codeblock-line.${r} .wr-url-highlight,
-      body .cm-line.wr-codeblock-line.${r} .wr-math-highlight,
-      body .cm-line.wr-codeblock-line.${r} .wr-internal-link,
-      body .cm-line.wr-codeblock-line.${r} .wr-url {
-        color: ${c} !important;
+      ${accent ? `
+      /* Rule ${i}: \u30A2\u30AF\u30BB\u30F3\u30C8\u8272 */
+      body .wr-card.${cls} .wr-tag,
+      body .wr-card.${cls} .wr-internal-link,
+      body .wr-card.${cls} .wr-url,
+      body div.block-language-wr.${cls} .wr-reading-tag,
+      body div.block-language-wr.${cls} .wr-internal-link,
+      body div.block-language-wr.${cls} .wr-reading-url,
+      body div.block-language-wr.${cls} a,
+      body pre.${cls} .wr-reading-tag,
+      body pre.${cls} .wr-internal-link,
+      body pre.${cls} .wr-reading-url,
+      body .cm-line.wr-codeblock-line.${cls} .wr-tag-highlight,
+      body .cm-line.wr-codeblock-line.${cls} .wr-internal-link-highlight,
+      body .cm-line.wr-codeblock-line.${cls} .wr-url-highlight,
+      body .cm-line.wr-codeblock-line.${cls} .wr-math-highlight,
+      body .cm-line.wr-codeblock-line.${cls} .wr-internal-link,
+      body .cm-line.wr-codeblock-line.${cls} .wr-url {
+        color: ${accent} !important;
       }
-      body .wr-card.${r} .wr-menu-btn.wr-toolbar-active .svg-icon {
-        color: ${c} !important;
-        stroke: ${c} !important;
+      body .wr-card.${cls} .wr-menu-btn.wr-toolbar-active .svg-icon {
+        color: ${accent} !important;
+        stroke: ${accent} !important;
       }
-      `:""}
+      ` : ""}
 
-      /* Rule ${s}: OGP/Twitter\u30AB\u30FC\u30C9 */
-      body .wr-card.${r} .wr-ogp-card,
-      body div.block-language-wr.${r} .wr-ogp-card,
-      body pre.${r} .wr-ogp-card,
-      body .wr-lp-media.${r} .wr-ogp-card {
-        background: ${l} !important;
-        background-color: ${l} !important;
-        border-color: ${b} !important;
+      /* Rule ${i}: OGP/Twitter\u30AB\u30FC\u30C9 */
+      body .wr-card.${cls} .wr-ogp-card,
+      body div.block-language-wr.${cls} .wr-ogp-card,
+      body pre.${cls} .wr-ogp-card,
+      body .wr-lp-media.${cls} .wr-ogp-card {
+        background: ${bg} !important;
+        background-color: ${bg} !important;
+        border-color: ${mOgp} !important;
       }
-      body .wr-card.${r} .wr-ogp-card:hover,
-      body div.block-language-wr.${r} .wr-ogp-card:hover,
-      body pre.${r} .wr-ogp-card:hover,
-      body .wr-lp-media.${r} .wr-ogp-card:hover {
-        background: ${u} !important;
-        background-color: ${u} !important;
+      body .wr-card.${cls} .wr-ogp-card:hover,
+      body div.block-language-wr.${cls} .wr-ogp-card:hover,
+      body pre.${cls} .wr-ogp-card:hover,
+      body .wr-lp-media.${cls} .wr-ogp-card:hover {
+        background: ${hoverBg} !important;
+        background-color: ${hoverBg} !important;
       }
-      body .wr-card.${r} .wr-ogp-title,
-      body .wr-card.${r} .wr-ogp-desc,
-      body .wr-card.${r} .wr-ogp-site,
-      body .wr-card.${r} .wr-ogp-loading,
-      body div.block-language-wr.${r} .wr-ogp-title,
-      body div.block-language-wr.${r} .wr-ogp-desc,
-      body div.block-language-wr.${r} .wr-ogp-site,
-      body div.block-language-wr.${r} .wr-ogp-loading,
-      body pre.${r} .wr-ogp-title,
-      body pre.${r} .wr-ogp-desc,
-      body pre.${r} .wr-ogp-site,
-      body pre.${r} .wr-ogp-loading,
-      body .wr-lp-media.${r} .wr-ogp-title,
-      body .wr-lp-media.${r} .wr-ogp-desc,
-      body .wr-lp-media.${r} .wr-ogp-site,
-      body .wr-lp-media.${r} .wr-ogp-loading {
-        color: ${b} !important;
+      body .wr-card.${cls} .wr-ogp-title,
+      body .wr-card.${cls} .wr-ogp-desc,
+      body .wr-card.${cls} .wr-ogp-site,
+      body .wr-card.${cls} .wr-ogp-loading,
+      body div.block-language-wr.${cls} .wr-ogp-title,
+      body div.block-language-wr.${cls} .wr-ogp-desc,
+      body div.block-language-wr.${cls} .wr-ogp-site,
+      body div.block-language-wr.${cls} .wr-ogp-loading,
+      body pre.${cls} .wr-ogp-title,
+      body pre.${cls} .wr-ogp-desc,
+      body pre.${cls} .wr-ogp-site,
+      body pre.${cls} .wr-ogp-loading,
+      body .wr-lp-media.${cls} .wr-ogp-title,
+      body .wr-lp-media.${cls} .wr-ogp-desc,
+      body .wr-lp-media.${cls} .wr-ogp-site,
+      body .wr-lp-media.${cls} .wr-ogp-loading {
+        color: ${mOgp} !important;
       }
       /* \u89AA\u8981\u7D20\u306E\u6587\u5B57\u8272\u5F53\u3066\u306B\u7279\u7570\u5EA6\u8CA0\u3051\u3059\u308B\u74B0\u5883\u5411\u3051\u306B\u3001 ID\u76F8\u5F53\u306E\u7279\u7570\u5EA6\u3067\u518D\u5BA3\u8A00 */
-      body .wr-card.${r} .wr-ogp-title:not(#x):not(#y):not(#z),
-      body .wr-card.${r} .wr-ogp-desc:not(#x):not(#y):not(#z),
-      body .wr-card.${r} .wr-ogp-site:not(#x):not(#y):not(#z),
-      body .wr-card.${r} .wr-ogp-loading:not(#x):not(#y):not(#z),
-      body div.block-language-wr.${r} .wr-ogp-title:not(#x):not(#y):not(#z),
-      body div.block-language-wr.${r} .wr-ogp-desc:not(#x):not(#y):not(#z),
-      body div.block-language-wr.${r} .wr-ogp-site:not(#x):not(#y):not(#z),
-      body div.block-language-wr.${r} .wr-ogp-loading:not(#x):not(#y):not(#z),
-      body pre.${r} .wr-ogp-title:not(#x):not(#y):not(#z),
-      body pre.${r} .wr-ogp-desc:not(#x):not(#y):not(#z),
-      body pre.${r} .wr-ogp-site:not(#x):not(#y):not(#z),
-      body pre.${r} .wr-ogp-loading:not(#x):not(#y):not(#z),
-      body .wr-lp-media.${r} .wr-ogp-title:not(#x):not(#y):not(#z),
-      body .wr-lp-media.${r} .wr-ogp-desc:not(#x):not(#y):not(#z),
-      body .wr-lp-media.${r} .wr-ogp-site:not(#x):not(#y):not(#z),
-      body .wr-lp-media.${r} .wr-ogp-loading:not(#x):not(#y):not(#z) {
-        color: ${b} !important;
+      body .wr-card.${cls} .wr-ogp-title:not(#x):not(#y):not(#z),
+      body .wr-card.${cls} .wr-ogp-desc:not(#x):not(#y):not(#z),
+      body .wr-card.${cls} .wr-ogp-site:not(#x):not(#y):not(#z),
+      body .wr-card.${cls} .wr-ogp-loading:not(#x):not(#y):not(#z),
+      body div.block-language-wr.${cls} .wr-ogp-title:not(#x):not(#y):not(#z),
+      body div.block-language-wr.${cls} .wr-ogp-desc:not(#x):not(#y):not(#z),
+      body div.block-language-wr.${cls} .wr-ogp-site:not(#x):not(#y):not(#z),
+      body div.block-language-wr.${cls} .wr-ogp-loading:not(#x):not(#y):not(#z),
+      body pre.${cls} .wr-ogp-title:not(#x):not(#y):not(#z),
+      body pre.${cls} .wr-ogp-desc:not(#x):not(#y):not(#z),
+      body pre.${cls} .wr-ogp-site:not(#x):not(#y):not(#z),
+      body pre.${cls} .wr-ogp-loading:not(#x):not(#y):not(#z),
+      body .wr-lp-media.${cls} .wr-ogp-title:not(#x):not(#y):not(#z),
+      body .wr-lp-media.${cls} .wr-ogp-desc:not(#x):not(#y):not(#z),
+      body .wr-lp-media.${cls} .wr-ogp-site:not(#x):not(#y):not(#z),
+      body .wr-lp-media.${cls} .wr-ogp-loading:not(#x):not(#y):not(#z) {
+        color: ${mOgp} !important;
       }
-      `)}),n.length!==0&&(this.tagRuleStyleEl=document.createElement("style"),this.tagRuleStyleEl.id="wr-tag-rule-override",this.tagRuleStyleEl.textContent=n.join(`
-`),document.head.appendChild(this.tagRuleStyleEl))}refreshReadingViews(){document.querySelectorAll('.wr-card[class*="wr-tag-rule-"], div.block-language-wr[class*="wr-tag-rule-"], pre[class*="wr-tag-rule-"], .cm-line[class*="wr-tag-rule-"], .code-block-flair[class*="wr-tag-rule-"], .copy-code-button[class*="wr-tag-rule-"], .wr-flair-bg[class*="wr-tag-rule-"]').forEach(t=>{let n=Array.from(t.classList);for(let o of n)/^wr-tag-rule-\d+$/.test(o)&&t.classList.remove(o)}),this.settings.tagColorRulesEnabled&&document.querySelectorAll('code.language-wr, .block-language-wr code, pre > code[class*="language-wr"]').forEach(t=>{let n=t.closest(".block-language-wr")||t.closest("pre");if(!(n instanceof HTMLElement))return;let o=[n],s=n.parentElement;s&&s.querySelectorAll(".code-block-flair, .copy-code-button").forEach(g=>{g instanceof HTMLElement&&o.push(g)}),n.querySelectorAll(".code-block-flair, .copy-code-button").forEach(g=>{g instanceof HTMLElement&&o.push(g)});let d=(t.getAttribute("data-wr-original")||t.textContent||"").match(/#[^\s#]+/g)||[],c=this.findTagColorRule(d);if(!c)return;let u=this.settings.tagColorRules.indexOf(c);if(u<0)return;let f=`wr-tag-rule-${u}`;for(let g of o)g.classList.add(f)})}refreshAllWrDecorations(){this.refreshViews(),this.refreshReadingViews(),this.app.workspace.iterateAllLeaves(e=>{var o;let t=e.view;if(!(t instanceof pe.MarkdownView))return;let n=(o=t.editor)==null?void 0:o.cm;if(n!=null&&n.dispatch)try{n.dispatch({effects:Vt.of(null)})}catch(s){}})}blendColor(e,t,n){let o=parseInt(e.slice(1,3),16),s=parseInt(e.slice(3,5),16),l=parseInt(e.slice(5,7),16),d=parseInt(t.slice(1,3),16),c=parseInt(t.slice(3,5),16),u=parseInt(t.slice(5,7),16),f=Math.round(o+(d-o)*n),g=Math.round(s+(c-s)*n),v=Math.round(l+(u-l)*n);return`#${f.toString(16).padStart(2,"0")}${g.toString(16).padStart(2,"0")}${v.toString(16).padStart(2,"0")}`}darkenColor(e,t){let n=Math.max(0,parseInt(e.slice(1,3),16)-t),o=Math.max(0,parseInt(e.slice(3,5),16)-t),s=Math.max(0,parseInt(e.slice(5,7),16)-t);return`#${n.toString(16).padStart(2,"0")}${o.toString(16).padStart(2,"0")}${s.toString(16).padStart(2,"0")}`}refreshViews(){let e=this.app.workspace.getLeavesOfType(ge);for(let t of e)t.view.refresh()}updateSubmitLabel(){let e=this.app.workspace.getLeavesOfType(ge);for(let t of e){let n=t.view;n.submitLabelEl&&(n.submitLabelEl.textContent=`${this.settings.submitLabel} `)}}updateSubmitIcon(){let e=this.app.workspace.getLeavesOfType(ge);for(let t of e){let n=t.view;n.submitIconEl&&(n.submitIconEl.empty(),this.settings.submitIcon&&(0,pe.setIcon)(n.submitIconEl,this.settings.submitIcon))}}updateInputPlaceholder(){let e=this.app.workspace.getLeavesOfType(ge);for(let t of e){let n=t.view;n.textarea&&n.textarea.setAttribute("placeholder",this.settings.inputPlaceholder)}}onunload(){var e,t,n;(e=this.bgStyleEl)==null||e.remove(),this.bgStyleEl=null,(t=this.tagRuleStyleEl)==null||t.remove(),this.tagRuleStyleEl=null,(n=this.fontStyleEl)==null||n.remove(),this.fontStyleEl=null,document.body.classList.remove("wr-font-follow")}async activateView(){let{workspace:e}=this.app,t=e.getLeavesOfType(ge);if(t.length>0){e.revealLeaf(t[0]);return}let n;switch(this.settings.viewPlacement){case"left":n=e.getLeftLeaf(!1);break;case"right":n=e.getRightLeaf(!1);break;default:n=e.getLeaf("tab");break}await n.setViewState({type:ge,active:!0}),e.revealLeaf(n)}async loadSettings(){this.settings=Object.assign({},V,await this.loadData())}async saveSettings(){await this.saveData(this.settings),this.ogpCache&&(this.ogpCache.enabled=this.settings.enableOgpFetch)}};
+      `);
+    });
+    if (parts.length === 0) return;
+    this.tagRuleStyleEl = document.createElement("style");
+    this.tagRuleStyleEl.id = "wr-tag-rule-override";
+    this.tagRuleStyleEl.textContent = parts.join("");
+    document.head.appendChild(this.tagRuleStyleEl);
+  }
+  refreshReadingViews() {
+    const sweepSelector = '.wr-card[class*="wr-tag-rule-"], div.block-language-wr[class*="wr-tag-rule-"], pre[class*="wr-tag-rule-"], .cm-line[class*="wr-tag-rule-"], .code-block-flair[class*="wr-tag-rule-"], .copy-code-button[class*="wr-tag-rule-"], .wr-flair-bg[class*="wr-tag-rule-"]';
+    document.querySelectorAll(sweepSelector).forEach((el2) => {
+      const existing = Array.from(el2.classList);
+      for (const cls of existing) {
+        if (/^wr-tag-rule-\d+$/.test(cls)) el2.classList.remove(cls);
+      }
+    });
+    if (!this.settings.tagColorRulesEnabled) return;
+    document.querySelectorAll('code.language-wr, .block-language-wr code, pre > code[class*="language-wr"]').forEach((code) => {
+      const block = code.closest(".block-language-wr") || code.closest("pre");
+      if (!(block instanceof HTMLElement)) return;
+      const targets = [block];
+      const container = block.parentElement;
+      if (container) {
+        container.querySelectorAll(".code-block-flair, .copy-code-button").forEach((el2) => {
+          if (el2 instanceof HTMLElement) targets.push(el2);
+        });
+      }
+      block.querySelectorAll(".code-block-flair, .copy-code-button").forEach((el2) => {
+        if (el2 instanceof HTMLElement) targets.push(el2);
+      });
+      const rawText = code.getAttribute("data-wr-original") || code.textContent || "";
+      const blockTags = rawText.match(/#[^\s#]+/g) || [];
+      const rule = this.findTagColorRule(blockTags);
+      if (!rule) return;
+      const idx = this.settings.tagColorRules.indexOf(rule);
+      if (idx < 0) return;
+      const cls = `wr-tag-rule-${idx}`;
+      for (const t of targets) t.classList.add(cls);
+    });
+  }
+  refreshAllWrDecorations() {
+    this.refreshViews();
+    this.refreshReadingViews();
+    this.app.workspace.iterateAllLeaves((leaf) => {
+      var _a;
+      const view = leaf.view;
+      if (!(view instanceof import_obsidian8.MarkdownView)) return;
+      const cm = (_a = view.editor) == null ? void 0 : _a.cm;
+      if (cm == null ? void 0 : cm.dispatch) {
+        try {
+          cm.dispatch({ effects: tagRulesChanged.of(null) });
+        } catch (e) {
+        }
+      }
+    });
+  }
+  blendColor(fg, bg, ratio) {
+    const fR = parseInt(fg.slice(1, 3), 16);
+    const fG = parseInt(fg.slice(3, 5), 16);
+    const fB = parseInt(fg.slice(5, 7), 16);
+    const bR = parseInt(bg.slice(1, 3), 16);
+    const bG = parseInt(bg.slice(3, 5), 16);
+    const bB = parseInt(bg.slice(5, 7), 16);
+    const r = Math.round(fR + (bR - fR) * ratio);
+    const g = Math.round(fG + (bG - fG) * ratio);
+    const b = Math.round(fB + (bB - fB) * ratio);
+    return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+  }
+  darkenColor(hex, amount) {
+    const r = Math.max(0, parseInt(hex.slice(1, 3), 16) - amount);
+    const g = Math.max(0, parseInt(hex.slice(3, 5), 16) - amount);
+    const b = Math.max(0, parseInt(hex.slice(5, 7), 16) - amount);
+    return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+  }
+  refreshViews() {
+    const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_WROT);
+    for (const leaf of leaves) {
+      leaf.view.refresh();
+    }
+  }
+  updateSubmitLabel() {
+    const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_WROT);
+    for (const leaf of leaves) {
+      const view = leaf.view;
+      if (view.submitLabelEl) {
+        view.submitLabelEl.textContent = `${this.settings.submitLabel} `;
+      }
+    }
+  }
+  updateSubmitIcon() {
+    const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_WROT);
+    for (const leaf of leaves) {
+      const view = leaf.view;
+      if (view.submitIconEl) {
+        view.submitIconEl.empty();
+        if (this.settings.submitIcon) {
+          (0, import_obsidian8.setIcon)(view.submitIconEl, this.settings.submitIcon);
+        }
+      }
+    }
+  }
+  updateInputPlaceholder() {
+    const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_WROT);
+    for (const leaf of leaves) {
+      const view = leaf.view;
+      if (view.textarea) {
+        view.textarea.setAttribute("placeholder", this.settings.inputPlaceholder);
+      }
+    }
+  }
+  onunload() {
+    var _a, _b, _c;
+    (_a = this.bgStyleEl) == null ? void 0 : _a.remove();
+    this.bgStyleEl = null;
+    (_b = this.tagRuleStyleEl) == null ? void 0 : _b.remove();
+    this.tagRuleStyleEl = null;
+    (_c = this.fontStyleEl) == null ? void 0 : _c.remove();
+    this.fontStyleEl = null;
+    document.body.classList.remove("wr-font-follow");
+  }
+  async activateView() {
+    const { workspace } = this.app;
+    const existing = workspace.getLeavesOfType(VIEW_TYPE_WROT);
+    if (existing.length > 0) {
+      workspace.revealLeaf(existing[0]);
+      return;
+    }
+    let leaf;
+    switch (this.settings.viewPlacement) {
+      case "left":
+        leaf = workspace.getLeftLeaf(false);
+        break;
+      case "right":
+        leaf = workspace.getRightLeaf(false);
+        break;
+      case "main":
+      default:
+        leaf = workspace.getLeaf("tab");
+        break;
+    }
+    await leaf.setViewState({ type: VIEW_TYPE_WROT, active: true });
+    workspace.revealLeaf(leaf);
+  }
+  async loadSettings() {
+    var _a;
+    const raw = (_a = await this.loadData()) != null ? _a : {};
+    let dirty = false;
+    for (const key of ["autoLinkEnabled", "autoLinkExcludeList"]) {
+      if (key in raw) {
+        delete raw[key];
+        dirty = true;
+      }
+    }
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, raw);
+    if (dirty) {
+      await this.saveData(this.settings);
+    }
+  }
+  async saveSettings() {
+    await this.saveData(this.settings);
+    if (this.ogpCache) {
+      this.ogpCache.enabled = this.settings.enableOgpFetch;
+    }
+  }
+};

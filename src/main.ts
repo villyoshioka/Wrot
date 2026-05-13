@@ -98,7 +98,7 @@ export default class WrotPlugin extends Plugin {
 
     if (this.settings.followObsidianFontSize) {
       // 14:13:12 の比率を保つため --font-text-size を基準にスケールする
-      this.fontStyleEl.textContent = `
+      this.fontStyleEl.textContent = `/* @css */
         body {
           --wr-font-text: var(--font-text-size);
           --wr-font-ui-small: calc(var(--font-text-size) * 0.929);
@@ -107,7 +107,7 @@ export default class WrotPlugin extends Plugin {
         }
       `;
     } else {
-      this.fontStyleEl.textContent = `
+      this.fontStyleEl.textContent = `/* @css */
         body {
           --wr-font-text: 14px;
           --wr-font-ui-small: 13px;
@@ -145,7 +145,7 @@ export default class WrotPlugin extends Plugin {
     this.bgStyleEl.id = "wr-bg-override";
     document.head.appendChild(this.bgStyleEl);
 
-    this.bgStyleEl.textContent = `
+    this.bgStyleEl.textContent = `/* @css */
       body {
         --wr-bg-color: ${bgColor};
       }
@@ -350,7 +350,9 @@ export default class WrotPlugin extends Plugin {
       body .wr-submit-btn.wr-submit-active {
         color: var(--text-on-accent) !important;
       }
-      body .wr-copy-btn .svg-icon {
+      body .wr-copy-btn .svg-icon,
+      body .wr-menu-btn .svg-icon,
+      body .wr-pin-indicator .svg-icon {
         stroke: ${mutedColor} !important;
       }
       body .wr-menu {
@@ -469,7 +471,7 @@ export default class WrotPlugin extends Plugin {
       const mOgp = pickMuted("ogp");
       const cls = `wr-tag-rule-${i}`;
 
-      parts.push(`
+      parts.push(`/* @css */
       /* Rule ${i}: 背景 */
       body .wr-card.${cls},
       body div.block-language-wr.${cls},
@@ -775,7 +777,7 @@ export default class WrotPlugin extends Plugin {
 
     this.tagRuleStyleEl = document.createElement("style");
     this.tagRuleStyleEl.id = "wr-tag-rule-override";
-    this.tagRuleStyleEl.textContent = parts.join("\n");
+    this.tagRuleStyleEl.textContent = parts.join("");
     document.head.appendChild(this.tagRuleStyleEl);
   }
 
@@ -938,7 +940,18 @@ export default class WrotPlugin extends Plugin {
   }
 
   async loadSettings(): Promise<void> {
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+    const raw = (await this.loadData()) ?? {};
+    let dirty = false;
+    for (const key of ["autoLinkEnabled", "autoLinkExcludeList"]) {
+      if (key in raw) {
+        delete (raw as Record<string, unknown>)[key];
+        dirty = true;
+      }
+    }
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, raw);
+    if (dirty) {
+      await this.saveData(this.settings);
+    }
   }
 
   async saveSettings(): Promise<void> {

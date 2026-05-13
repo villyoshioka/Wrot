@@ -4,7 +4,7 @@ import { parseMemos, Memo } from "../utils/memoParser";
 import { appendMemo, toggleCheckbox } from "../utils/memoWriter";
 import { getOrCreateDailyNote, getDailyNoteFile } from "../utils/dailyNote";
 import { renderTextWithTagsAndUrls, renderUrlPreviews } from "../utils/urlRenderer";
-import { renderQuoteCard } from "../utils/quoteCard";
+import { renderQuoteCard, flashJumpTarget } from "../utils/quoteCard";
 import { ensureBlockIdOnFence } from "../utils/memoWriter";
 import { isImageFile, saveImageToVault, buildEmbedLink } from "../utils/imageAttachment";
 import type WrotPlugin from "../main";
@@ -845,6 +845,27 @@ export class WrotView extends ItemView {
     await this.refresh();
   }
 
+  private async jumpToDailyNoteBlock(memo: Memo, filePath: string): Promise<void> {
+    const file = this.app.vault.getAbstractFileByPath(filePath);
+    if (!(file instanceof TFile)) {
+      new Notice("元のノートが見つかりません");
+      await this.cleanupOrphanPins();
+      await this.refresh();
+      return;
+    }
+
+    await this.openOrFocusFile(file);
+
+    const blockId = `wr-${memo.time.replace(/[-:.TZ+]/g, "").slice(0, 17)}`;
+    await this.app.workspace.openLinkText(
+      `${file.basename}#^${blockId}`,
+      file.path,
+      false
+    );
+
+    flashJumpTarget(blockId, this.app, (rc) => this.plugin.getRuleAccentColor(rc));
+  }
+
   private renderMemoCard(memo: Memo, options: { pinned: boolean; filePath: string }): void {
     const card = this.listContainer.createDiv({ cls: "wr-card" });
     if (options.pinned) card.classList.add("wr-card-pinned");
@@ -956,6 +977,11 @@ export class WrotView extends ItemView {
           })
         );
         if (pinned) {
+          menu.addItem((item) =>
+            item.setTitle("元のノートへジャンプ").setIcon("reply").onClick(async () => {
+              await this.jumpToDailyNoteBlock(memo, options.filePath);
+            })
+          );
           menu.addItem((item) =>
             item.setTitle("ピンを外す").setIcon("pin-off").onClick(async () => {
               await this.removePin(memo);
