@@ -185,6 +185,12 @@
   pointer-events: none;
 }
 
+/* IME未確定中: アクセントは保ったままトーンだけ落としてクリックを抑止 */
+.wr-toolbar-btn.wr-toolbar-ime-muted {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
 .wr-toolbar-btn .svg-icon {
   width: 18px;
   height: 18px;
@@ -699,9 +705,23 @@ pre > .wr-blockquote {
 
 
 /* Keep copy button clickable above Wrot's list/quote elements (do not
-   touch position/opacity so Obsidian's hover-to-show behavior stays intact) */
-.block-language-wr .copy-code-button {
-  z-index: 10 !important;
+   touch position/opacity so Obsidian's hover-to-show behavior stays intact).
+   RV(Reading View) では .copy-code-button が pre.language-wr の直下に置かれ、
+   .block-language-wr の中ではないので両方の親パターンをカバーする。
+   ID 相当の特異度で他ルールに z-index:auto で戻されないよう確実に勝つ */
+body pre.language-wr .copy-code-button:not(#x):not(#y):not(#z),
+body .block-language-wr .copy-code-button:not(#x):not(#y):not(#z) {
+  z-index: 100 !important;
+}
+
+/* タグルール時に .copy-code-button.wr-flair-bg にカード背景色が当たるが、
+   それが内部 SVG にも乗ってアイコンを潰すケースがある。SVG だけは確実に透明にする */
+pre.language-wr .copy-code-button svg,
+pre.language-wr .copy-code-button svg *,
+.block-language-wr .copy-code-button svg,
+.block-language-wr .copy-code-button svg * {
+  background: transparent !important;
+  background-color: transparent !important;
 }
 
 .wr-spacer {
@@ -1008,8 +1028,8 @@ div.block-language-wr {
   display: block !important;
 }
 
-div.block-language-wr *:not(.wr-inline-code-highlight),
-.wr-flair-bg {
+div.block-language-wr *:not(.wr-inline-code-highlight):not(svg):not(svg *),
+.wr-flair-bg:not(svg):not(svg *) {
   background: var(--wr-bg-color, #f8f8f8) !important;
   background-color: var(--wr-bg-color, #f8f8f8) !important;
 }
@@ -1542,8 +1562,12 @@ body:not(.wr-font-follow).is-mobile .wr-timestamp {
 .wr-quote-card-body {
   font-size: 0.9em;
   color: var(--text-muted);
-  overflow: hidden;
-  max-height: calc(0.9em * 1.5 * 3);
+  /* 行数の絞り込みは JS 側 (renderPreviewLines の PREVIEW_MAX_LINES = 3) で
+     論理行ベースに済ませている。 CSS 側で -webkit-line-clamp を効かせると
+     視覚行 (折り返し後) で切る挙動になり、モバイルなど幅狭環境で実質 1〜2
+     論理行しか見えなくなる + 「...」がブラウザ標準のインタラクティブ展開
+     トリガーになる副作用も起きる。 視覚クリップは撤去し、論理 3 行を
+     折り返し込みで自然に伸ばす。 */
   line-height: 1.5;
   margin-bottom: 4px;
   letter-spacing: normal;

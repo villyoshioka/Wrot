@@ -4,7 +4,7 @@ import { parseMemos, Memo } from "../utils/memoParser";
 import { appendMemo, toggleCheckbox } from "../utils/memoWriter";
 import { getOrCreateDailyNote, getDailyNoteFile } from "../utils/dailyNote";
 import { renderTextWithTagsAndUrls, renderUrlPreviews } from "../utils/urlRenderer";
-import { renderQuoteCard, flashJumpTarget } from "../utils/quoteCard";
+import { renderQuoteCard } from "../utils/quoteCard";
 import { ensureBlockIdOnFence } from "../utils/memoWriter";
 import { isImageFile, saveImageToVault, buildEmbedLink } from "../utils/imageAttachment";
 import type WrotPlugin from "../main";
@@ -66,6 +66,15 @@ export class WrotView extends ItemView {
   private ignoreNextModify = false;
   private ignoreModifyUntil = 0;
   private activeFormatMode: "bold" | "italic" | null = null;
+  // IME入力中は太字/斜体ボタンを薄くしてクリックを抑止する。
+  // iOS WebKit では IME 未確定中に textarea 外をタップしても装飾ボタン側に
+  // pointer/click イベントが届かないため、ボタン側でのガードは効かない。
+  // 代わりに「textarea の blur 直後に来た input は強制確定起因」とみなして
+  // 解錠を抑止する。blur からごく短時間だけ抑止フラグを立てる。
+  private imeLocked = false;
+  private imeComposing = false;
+  private imeValueAtStart = "";
+  private imeSuppressUntil = 0;
   private refreshing = false;
   private toolbarResizeObserver: ResizeObserver | null = null;
   private currentMenu: Menu | null = null;
@@ -192,8 +201,9 @@ export class WrotView extends ItemView {
     await this.refresh();
   }
 
-  // 既に開かれているタブがあればそこへフォーカスし、なければ新規タブで開く
-  private async openOrFocusFile(file: TFile): Promise<void> {
+  // 既に開かれているタブがあればそこへフォーカスし、なければ新規タブで開く。
+  // 既存タブのビューモードは保持し、新規タブは Obsidian のデフォルト挙動に従う。
+  private async openOrFocusFile(file: TFile): Promise<WorkspaceLeaf> {
     let existingLeaf: WorkspaceLeaf | null = null;
     this.app.workspace.iterateAllLeaves((leaf) => {
       if (existingLeaf) return;
@@ -205,11 +215,12 @@ export class WrotView extends ItemView {
     if (existingLeaf) {
       this.app.workspace.revealLeaf(existingLeaf);
       this.app.workspace.setActiveLeaf(existingLeaf, { focus: true });
-      return;
+      return existingLeaf;
     }
     const leaf = this.app.workspace.getLeaf("tab");
     await leaf.openFile(file);
     this.app.workspace.setActiveLeaf(leaf, { focus: true });
+    return leaf;
   }
 
   private buildDateNav(container: HTMLElement): void {
@@ -398,11 +409,17 @@ export class WrotView extends ItemView {
     const updateFormatBtns = () => {
       const insideBold = this.isInsideMarker("**");
       const insideItalic = this.isInsideMarker("*");
-      boldBtn.toggleClass("wr-toolbar-active", this.activeFormatMode === "bold" || insideBold);
-      italicBtn.toggleClass("wr-toolbar-active", this.activeFormatMode === "italic" || insideItalic);
+      const boldActive = this.activeFormatMode === "bold" || insideBold;
+      const italicActive = this.activeFormatMode === "italic" || insideItalic;
+      boldBtn.toggleClass("wr-toolbar-active", boldActive);
+      italicBtn.toggleClass("wr-toolbar-active", italicActive);
       // 排他: 予告モード中 or 選択が既に他方装飾済みなら他方ボタンを無効化
       boldBtn.toggleClass("wr-toolbar-disabled", this.activeFormatMode === "italic" || insideItalic);
       italicBtn.toggleClass("wr-toolbar-disabled", this.activeFormatMode === "bold" || insideBold);
+      // IME入力中で、かつそのボタンが active のときだけミュート。
+      // 装飾予告中(または選択が装飾内)に IME 入力を始めて、うっかり押す事故を防ぐ。
+      boldBtn.toggleClass("wr-toolbar-ime-muted", this.imeLocked && boldActive);
+      italicBtn.toggleClass("wr-toolbar-ime-muted", this.imeLocked && italicActive);
     };
     const validateActiveFormatMode = () => {
       if (this.activeFormatMode === null) return;
@@ -424,6 +441,8 @@ export class WrotView extends ItemView {
     };
 
     boldBtn.addEventListener("click", () => {
+      // IME中はボタンが active な時だけ無効化 (updateFormatBtns と条件を揃える)
+      if (this.imeLocked && (this.activeFormatMode === "bold" || this.isInsideMarker("**"))) return;
       if (this.activeFormatMode === "italic" || this.isInsideMarker("*")) return;
       const ta = this.textarea;
       if (ta.selectionStart !== ta.selectionEnd) {
@@ -452,6 +471,8 @@ export class WrotView extends ItemView {
       updateFormatBtns();
     });
     italicBtn.addEventListener("click", () => {
+      // IME中はボタンが active な時だけ無効化 (updateFormatBtns と条件を揃える)
+      if (this.imeLocked && (this.activeFormatMode === "italic" || this.isInsideMarker("*"))) return;
       if (this.activeFormatMode === "bold" || this.isInsideMarker("**")) return;
       const ta = this.textarea;
       if (ta.selectionStart !== ta.selectionEnd) {
@@ -558,6 +579,53 @@ export class WrotView extends ItemView {
     this.textarea.addEventListener("focus", updateActive);
     // IME確定・ペースト等の値変更を拾う(updateActiveは冪等なので二重発火OK)
     this.textarea.addEventListener("input", updateActive);
+    // IME入力が始まったらロック。確定判定は compositionend ではなく、
+    // 「IME が終わった後の input で value が伸びた」ことを確認した時のみ。
+    // (compositionend はボタンタップで誘発されることがあり信用できないため、
+    //  本物の確定だけが残す痕跡=textareaへの確定文字挿入を見る)
+    this.textarea.addEventListener("compositionstart", () => {
+      this.imeLocked = true;
+      this.imeComposing = true;
+      this.imeValueAtStart = this.textarea.value;
+      updateFormatBtns();
+    });
+    this.textarea.addEventListener("compositionend", () => {
+      this.imeComposing = false;
+      // PCでは確定後の input が valueLen を変えずに来ない/同値で来るため、
+      // compositionend 時点で value 伸長を確認できれば解錠する。
+      // blur 直後の強制確定はここに来る前に imeSuppressUntil で抑止されている。
+      if (!this.imeLocked) return;
+      if (Date.now() < this.imeSuppressUntil) return;
+      if (this.textarea.value.length > this.imeValueAtStart.length) {
+        this.imeLocked = false;
+        updateFormatBtns();
+      }
+    });
+    // iOSでは IME中に外をタップすると blur→input(縮小)→input(復元)→compositionend
+    // の順で強制確定が走る。blur 直後の input は強制確定起因とみなして解錠抑止する。
+    this.textarea.addEventListener("blur", () => {
+      if (this.imeLocked) this.imeSuppressUntil = Date.now() + 400;
+    });
+    this.textarea.addEventListener("input", () => {
+      if (!this.imeLocked) return;
+      // 強制確定起因の input は解錠の根拠にしない
+      if (Date.now() < this.imeSuppressUntil) return;
+      const len = this.textarea.value.length;
+      const baseLen = this.imeValueAtStart.length;
+      if (this.imeComposing) {
+        // IME未確定中: 未確定文字を全部消して開始時点と同じ長さに戻ったら解錠
+        if (len <= baseLen) {
+          this.imeLocked = false;
+          updateFormatBtns();
+        }
+        return;
+      }
+      // IME終了後: 確定文字が実際に入っていれば解錠
+      if (len > baseLen) {
+        this.imeLocked = false;
+        updateFormatBtns();
+      }
+    });
 
     // ツールバーの折り返し検出。offsetTopはpadding変更の影響を受けないためResizeObserverでループしない
     const updateToolbarWrapped = () => {
@@ -845,27 +913,6 @@ export class WrotView extends ItemView {
     await this.refresh();
   }
 
-  private async jumpToDailyNoteBlock(memo: Memo, filePath: string): Promise<void> {
-    const file = this.app.vault.getAbstractFileByPath(filePath);
-    if (!(file instanceof TFile)) {
-      new Notice("元のノートが見つかりません");
-      await this.cleanupOrphanPins();
-      await this.refresh();
-      return;
-    }
-
-    await this.openOrFocusFile(file);
-
-    const blockId = `wr-${memo.time.replace(/[-:.TZ+]/g, "").slice(0, 17)}`;
-    await this.app.workspace.openLinkText(
-      `${file.basename}#^${blockId}`,
-      file.path,
-      false
-    );
-
-    flashJumpTarget(blockId, this.app, (rc) => this.plugin.getRuleAccentColor(rc));
-  }
-
   private renderMemoCard(memo: Memo, options: { pinned: boolean; filePath: string }): void {
     const card = this.listContainer.createDiv({ cls: "wr-card" });
     if (options.pinned) card.classList.add("wr-card-pinned");
@@ -890,10 +937,8 @@ export class WrotView extends ItemView {
         const file = getDailyNoteFile(this.app, this.currentDate);
         if (!file) return;
         const fileLine = memo.lineStart + 1 + lineIndex;
-        // 連発・遅延発火する modify イベントを 500ms 抑止して、カード全体の再描画によるチラつきを防ぐ
+        // 連発・遅延発火する modify イベントを抑止して、カード全体の再描画によるチラつきを防ぐ
         this.ignoreModifyUntil = Date.now() + 500;
-        // 同タイミングで postProcessor 側の引用カード一斉再描画も抑止する
-        this.plugin.quoteRefreshSuppressedUntil = Date.now() + 500;
         await toggleCheckbox(this.app, file, fileLine);
       },
       onInternalLinkClick: (linkName) => {
@@ -978,11 +1023,6 @@ export class WrotView extends ItemView {
         );
         if (pinned) {
           menu.addItem((item) =>
-            item.setTitle("元のノートへジャンプ").setIcon("reply").onClick(async () => {
-              await this.jumpToDailyNoteBlock(memo, options.filePath);
-            })
-          );
-          menu.addItem((item) =>
             item.setTitle("ピンを外す").setIcon("pin-off").onClick(async () => {
               await this.removePin(memo);
             })
@@ -1057,8 +1097,6 @@ export class WrotView extends ItemView {
     const srcFile = this.app.vault.getAbstractFileByPath(srcFilePath);
     if (!(srcFile instanceof TFile)) return;
     this.ignoreNextModify = true;
-    // 引用元ファイルへの blockId 追加が他カードの一斉再描画を引き起こすのを抑止
-    this.plugin.quoteRefreshSuppressedUntil = Date.now() + 500;
     await ensureBlockIdOnFence(this.app, srcFile, memo.time, blockId);
     const fileBaseName = srcFile.basename;
     const marker = `[[${fileBaseName}#^${blockId}]]`;

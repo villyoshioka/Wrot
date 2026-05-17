@@ -37,7 +37,7 @@ export function refreshQuoteCardsForFile(
 ): void {
   const baseName = file.basename;
   const cards = document.querySelectorAll<HTMLElement>(
-    `a.wr-quote-card[data-quote-file="${CSS.escape(baseName)}"]`
+    `.wr-quote-card[data-quote-file="${CSS.escape(baseName)}"]`
   );
   cards.forEach((card) => {
     const slot = card.parentElement;
@@ -317,42 +317,128 @@ export function flashJumpTarget(
   app: App,
   resolveRuleAccent?: (ruleClass: string) => string | null
 ): void {
-  // openLinkText の遷移完了は別ファイル open でも遅いため、複数回試行
-  const tryAt = [80, 250, 500, 900];
-  let applied = false;
-  for (const ms of tryAt) {
-    setTimeout(() => {
-      if (applied) return;
-      const targets = collectFlashTargets(blockId, app);
-      if (targets.length === 0) return;
-      applied = true;
-      // Wrot タイムライン外の要素 (Markdown ビュー側) を中央へスクロール
-      const docTarget = targets.find((el) => !el.classList.contains("wr-card"));
-      if (docTarget) {
-        docTarget.scrollIntoView({ block: "center", behavior: "smooth" });
+  // 流れ: 対象要素出現を待つ → 見つかったらスクロール → スクロール完了後に点滅
+  // 中断: ユーザー操作があったらスクロールも点滅も両方やめる
+  const searchAt = [80, 250, 500, 900, 1500, 2200];
+  const scrollSettleDelay = 200;
+  const flashDuration = 1600;
+  let canceled = false;
+  let scrolled = false;
+  const pendingTimeouts = new Set<number>();
+  const flashed = new WeakSet<HTMLElement>();
+
+  const removeInterruptListeners = () => {
+    document.removeEventListener("keydown", cancel, true);
+    document.removeEventListener("mousedown", cancel, true);
+    document.removeEventListener("wheel", cancel, true);
+    document.removeEventListener("touchstart", cancel, true);
+  };
+  const cancel = () => {
+    if (canceled) return;
+    canceled = true;
+    for (const id of pendingTimeouts) clearTimeout(id);
+    pendingTimeouts.clear();
+    // 走り出してる点滅クラスも即時除去
+    const targets = collectFlashTargets(blockId, app);
+    for (const el of targets) {
+      el.classList.remove("wr-quote-jump-flash");
+      el.style.removeProperty("--wr-flash-color");
+    }
+    removeInterruptListeners();
+  };
+  // スマホでは click を生んだタップの touchend 直後にも touchstart の
+  // 余韻イベントが発火することがある（特に iOS）。同じシーケンス内で
+  // リスナー登録すると自分のタップで cancel が誘発されてジャンプが空振りする。
+  // 次フレームに送ってシーケンスをまたいでから購読開始する。
+  requestAnimationFrame(() => {
+    if (canceled) return;
+    document.addEventListener("keydown", cancel, true);
+    document.addEventListener("mousedown", cancel, true);
+    document.addEventListener("wheel", cancel, true);
+    document.addEventListener("touchstart", cancel, true);
+  });
+
+  const schedule = (fn: () => void, ms: number) => {
+    const id = window.setTimeout(() => {
+      pendingTimeouts.delete(id);
+      if (canceled) return;
+      fn();
+    }, ms);
+    pendingTimeouts.add(id);
+  };
+
+  const flashAll = () => {
+    if (canceled) return;
+    const targets = collectFlashTargets(blockId, app);
+    for (const el of targets) {
+      if (flashed.has(el)) continue;
+      flashed.add(el);
+      el.classList.remove("wr-quote-jump-flash");
+      void el.offsetWidth;
+      // 元投稿のタグルールに accent があれば そのカラーで光らせる
+      const ruleClass = Array.from(el.classList).find((c) => /^wr-tag-rule-\d+$/.test(c));
+      const accent = ruleClass && resolveRuleAccent ? resolveRuleAccent(ruleClass) : null;
+      if (accent) {
+        const r = parseInt(accent.slice(1, 3), 16);
+        const g = parseInt(accent.slice(3, 5), 16);
+        const b = parseInt(accent.slice(5, 7), 16);
+        el.style.setProperty("--wr-flash-color", `rgba(${r}, ${g}, ${b}, 0.22)`);
+      } else {
+        el.style.removeProperty("--wr-flash-color");
       }
-      for (const el of targets) {
+      el.classList.add("wr-quote-jump-flash");
+      schedule(() => {
         el.classList.remove("wr-quote-jump-flash");
-        void el.offsetWidth;
-        // 元投稿のタグルールに accent があれば そのカラーで光らせる
-        const ruleClass = Array.from(el.classList).find((c) => /^wr-tag-rule-\d+$/.test(c));
-        const accent = ruleClass && resolveRuleAccent ? resolveRuleAccent(ruleClass) : null;
-        if (accent) {
-          const r = parseInt(accent.slice(1, 3), 16);
-          const g = parseInt(accent.slice(3, 5), 16);
-          const b = parseInt(accent.slice(5, 7), 16);
-          el.style.setProperty("--wr-flash-color", `rgba(${r}, ${g}, ${b}, 0.22)`);
-        } else {
-          el.style.removeProperty("--wr-flash-color");
-        }
-        el.classList.add("wr-quote-jump-flash");
-        setTimeout(() => {
-          el.classList.remove("wr-quote-jump-flash");
-          el.style.removeProperty("--wr-flash-color");
-        }, 1600);
-      }
+        el.style.removeProperty("--wr-flash-color");
+      }, flashDuration);
+    }
+  };
+
+  // スクロールは applyScroll / openLinkText に任せる。flashJumpTarget は
+  // 対象要素が DOM に現れるのを待って、現れたら点滅させる役割に専念する。
+  const tryFlash = (): boolean => {
+    if (canceled || scrolled) return false;
+    const targets = collectFlashTargets(blockId, app);
+    if (targets.length === 0) return false;
+    scrolled = true;
+    schedule(flashAll, scrollSettleDelay);
+    return true;
+  };
+
+  for (const ms of searchAt) {
+    schedule(() => {
+      if (scrolled) return;
+      tryFlash();
     }, ms);
   }
+  // 最後の試行後、検知リスナーだけクリーンアップ（点滅自体は止めない）
+  const cleanupId = window.setTimeout(() => {
+    pendingTimeouts.delete(cleanupId);
+    removeInterruptListeners();
+  }, searchAt[searchAt.length - 1] + scrollSettleDelay + flashDuration + 200);
+  pendingTimeouts.add(cleanupId);
+}
+
+// 現在アクティブな MarkdownView のコンテナ要素を返す。
+// 同じファイルが LV/RV で並行して開かれている場合の、対象要素の絞り込みに使う。
+function getActiveViewContainer(app: App): HTMLElement | null {
+  const obs = require("obsidian") as typeof import("obsidian");
+  const view = app.workspace.getActiveViewOfType(obs.MarkdownView);
+  return view?.containerEl ?? null;
+}
+
+// 対象要素を含む最も近いスクロール可能祖先を画面中央に来るようスクロールする。
+// scrollIntoView だと Obsidian の RV 内部スクロール処理に上書きされて効かない
+// ケースがあるため、自前で scrollTop を計算してセットする。
+function scrollElementIntoCenter(el: HTMLElement): void {
+  // ブラウザ標準 scrollIntoView を呼ぶ。
+  // モバイル（特に iOS）では「下までスクロールし切った状態」からの
+  // scrollIntoView がスクロール慣性処理と競合して反映されないことがあるため、
+  // 同じ呼び出しを次フレームでも繰り返して確実に画面位置を更新する。
+  el.scrollIntoView({ block: "center", behavior: "auto" });
+  requestAnimationFrame(() => {
+    el.scrollIntoView({ block: "center", behavior: "auto" });
+  });
 }
 
 // LV/RV/タイムライン全てから wr-block-id-{blockId} 付き要素を収集。
@@ -404,8 +490,12 @@ export function renderQuoteCard(
   const timestampFormat = options?.timestampFormat;
   const resolveRuleClass = options?.resolveRuleClass;
   const resolveRuleAccent = options?.resolveRuleAccent;
-  const card = slot.createEl("a", { cls: "wr-quote-card" });
-  card.setAttr("href", `${fileName}#^${blockId}`);
+  // <a href> だと Obsidian の内部リンク処理が mousedown/mouseup を奪い、
+  // クリックイベントが届かないことがある（特に <a> 要素本体をクリックした時）。
+  // <div> + role="link" で代替し、自前の click ハンドラに任せる。
+  const card = slot.createEl("div", { cls: "wr-quote-card" });
+  card.setAttr("role", "link");
+  card.setAttr("tabindex", "0");
   card.dataset.quoteFile = fileName;
   card.dataset.quoteBlock = blockId;
   card.dataset.quoteContext = currentFilePath;
@@ -419,6 +509,53 @@ export function renderQuoteCard(
     return;
   }
 
+  // メモが非同期で揃う前にユーザーがクリックすると、ハンドラ未登録のまま
+  // <a href> のデフォルト遷移が走って中途半端な状態になり、ホバー残り＋
+  // 2回押し問題を生む。メモ準備フラグを使った eager ハンドラで先に防ぐ。
+  let memoReady: Memo | null = null;
+  card.addEventListener("click", async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!memoReady) return;
+    const obs = require("obsidian") as typeof import("obsidian");
+    const activeView = app.workspace.getActiveViewOfType(obs.MarkdownView);
+    const activeFilePath = activeView?.file?.path;
+    const isSameFile = !!activeFilePath && activeFilePath === file.path;
+    // 同ファイル / 別ファイル / Wrotビュー（タイムライン）からのジャンプを統一処理：
+    // 1. 必要なら openLinkText でファイルを開いてビューをアクティブ化
+    // 2. アクティブ化された MarkdownView の applyScroll で対象行を中央寄せでスクロール
+    //    (openLinkText だけだと「もう開いてる」判定で動かないケースがあるため)
+    let targetView: import("obsidian").MarkdownView | null = activeView;
+    if (!isSameFile) {
+      // 別ファイル or activeView 無し
+      const recent = app.workspace.getMostRecentLeaf();
+      const useRecent = !activeView && recent && recent.view instanceof obs.MarkdownView;
+      if (useRecent && recent) {
+        app.workspace.setActiveLeaf(recent, { focus: true });
+      }
+      // recent も無い場合は新規 leaf
+      const openInNew = !activeView && !useRecent;
+      await app.workspace.openLinkText(`${fileName}#^${blockId}`, currentFilePath, openInNew);
+      targetView = app.workspace.getActiveViewOfType(obs.MarkdownView);
+    }
+    if (targetView) {
+      // applyScroll は指定行を画面上端に持ってくる仕様なので、画面の高さから
+      // 中央までの行数を引いて「対象が画面中央に来る」位置にする。
+      const targetLine = memoReady.lineStart;
+      const viewportH = targetView.contentEl.clientHeight;
+      // 行高は環境依存なので雑に見積もって中央寄せ。
+      const approxLineHeight = 28;
+      const halfLines = Math.max(0, Math.floor(viewportH / approxLineHeight / 2));
+      const scrollLine = Math.max(0, targetLine - halfLines);
+      const mode = (targetView as any).currentMode;
+      if (mode && typeof mode.applyScroll === "function") {
+        mode.applyScroll(scrollLine);
+      }
+    }
+    // Obsidian がスクロール+実体化を済ませた後で点滅させる
+    flashJumpTarget(blockId, app, resolveRuleAccent);
+  });
+
   const setupClick = (memo: Memo) => {
     fillCardBody(card, bodyEl, metaEl, memo, app, timestampFormat);
     // 引用元のタグルールクラスを引用カード自身に当てる (引用先の親投稿のルールとは独立)
@@ -430,28 +567,7 @@ export function renderQuoteCard(
       const cls = resolveRuleClass(memo.content);
       if (cls) card.classList.add(cls);
     }
-    card.addEventListener("click", async (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const obs = require("obsidian") as typeof import("obsidian");
-      const activeView = app.workspace.getActiveViewOfType(obs.MarkdownView);
-      if (activeView) {
-        // 現在の leaf が Markdown ビューならそのままそこで開く（RV/LV の状態維持）
-        await app.workspace.openLinkText(`${fileName}#^${blockId}`, currentFilePath, false);
-      } else {
-        // Wrot ビューなどから来た場合、最後に使った Markdown leaf を再利用してビュー状態を維持する
-        const recent = app.workspace.getMostRecentLeaf();
-        if (recent && recent.view instanceof obs.MarkdownView) {
-          app.workspace.setActiveLeaf(recent, { focus: true });
-          await app.workspace.openLinkText(`${fileName}#^${blockId}`, currentFilePath, false);
-        } else {
-          // 過去の Markdown leaf も無いなら新規で開く
-          await app.workspace.openLinkText(`${fileName}#^${blockId}`, currentFilePath, true);
-        }
-      }
-      // 飛んだ後、対象のフェンス行を見つけて点滅させる
-      flashJumpTarget(blockId, app, resolveRuleAccent);
-    });
+    memoReady = memo;
   };
 
   if (localMemos) {

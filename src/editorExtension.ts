@@ -6,7 +6,7 @@ import {
   ViewUpdate,
   WidgetType,
 } from "@codemirror/view";
-import { RangeSetBuilder, StateEffect } from "@codemirror/state";
+import { RangeSetBuilder, StateEffect, StateField } from "@codemirror/state";
 import type { App } from "obsidian";
 import { loadPrism } from "obsidian";
 import type WrotPlugin from "./main";
@@ -15,6 +15,30 @@ import { findBlockRanges, type BlockRange } from "./utils/blockSegmenter";
 const ogpFetched = StateEffect.define<null>();
 export const tagRulesChanged = StateEffect.define<null>();
 export const vaultFilesChanged = StateEffect.define<null>();
+
+// ViewPlugin からは block decoration を出せないため、隠したい行範囲を
+// StateField 側に渡して block:true の replace で実際に高さを 0 にする。
+const setHiddenRanges = StateEffect.define<{ from: number; to: number }[]>();
+
+const hiddenBlockReplace = Decoration.replace({ block: true });
+
+const hiddenLineStateField = StateField.define<DecorationSet>({
+  create: () => Decoration.none,
+  update(deco, tr) {
+    deco = deco.map(tr.changes);
+    for (const e of tr.effects) {
+      if (e.is(setHiddenRanges)) {
+        const builder = new RangeSetBuilder<Decoration>();
+        for (const r of e.value) {
+          if (r.to > r.from) builder.add(r.from, r.to, hiddenBlockReplace);
+        }
+        deco = builder.finish();
+      }
+    }
+    return deco;
+  },
+  provide: (f) => EditorView.decorations.from(f),
+});
 import {
   extractUrls,
   renderImagePreview,
@@ -42,7 +66,6 @@ const italicMark = Decoration.mark({ class: "wr-italic-highlight" });
 const strikeMark = Decoration.mark({ class: "wr-strike-highlight" });
 const highlightMark = Decoration.mark({ class: "wr-highlight-highlight" });
 const replaceHidden = Decoration.replace({});
-const hiddenLine = Decoration.line({ class: "wr-hidden-line" });
 
 const lineDecoCache = new Map<string, Decoration>();
 function makeLineDeco(classes: (string | null | undefined)[]): Decoration {
@@ -551,8 +574,9 @@ function buildDecorations(
   app: App,
   plugin: WrotPlugin,
   checkStrikethrough: boolean
-): DecorationSet {
+): { decorations: DecorationSet; hiddenRanges: { from: number; to: number }[] } {
   const builder = new RangeSetBuilder<Decoration>();
+  const hiddenRanges: { from: number; to: number }[] = [];
   const doc = view.state.doc;
 
   // ソースモードでは置換装飾を行わず、生のmarkdownをすべて表示する
@@ -636,13 +660,11 @@ function buildDecorations(
             : Decoration.replace({ widget: new MathBlockWidget(widgetContent, block.ruleClass) });
           builder.add(startLine.from, startLine.to, widget);
 
-          // 残りの行は内容を空に置換し、hiddenLine で行自体を非表示にする
-          for (let k = docStart + 1; k <= docEnd; k++) {
-            const kl = doc.line(k);
-            builder.add(kl.from, kl.from, hiddenLine);
-            if (kl.to > kl.from) {
-              builder.add(kl.from, kl.to, Decoration.replace({}));
-            }
+          // 残りの行は block:true replace で CodeMirror の行高モデルごと潰す
+          if (docEnd > docStart) {
+            const tailStart = doc.line(docStart + 1).from;
+            const tailEnd = doc.line(docEnd).to;
+            hiddenRanges.push({ from: tailStart, to: tailEnd });
           }
 
           j = docEnd;
@@ -677,7 +699,9 @@ function buildDecorations(
           return /^\s*\[\[[^\[\]]+#\^wr-\d{17}\]\]\s*$/.test(l.text);
         })();
         if (isEmbedOnlyLine || isQuoteMarkerOnlyLine) {
-          builder.add(l.from, l.from, hiddenLine);
+          if (l.to > l.from) {
+            hiddenRanges.push({ from: l.from, to: l.to });
+          }
         } else if ((isQuoteLine || quoteInnerIsList) && !showRaw) {
           const depthClass = `wr-blockquote-depth-${Math.min(quoteDepth, 5)}`;
           builder.add(l.from, l.from, makeLineDeco(["wr-codeblock-line", "wr-blockquote-line", depthClass, block.ruleClass, block.blockId ? `wr-block-id-${block.blockId}` : null]));
@@ -1108,12 +1132,12 @@ function buildDecorations(
     console.debug("Wrot: decoration skipped", e);
   }
 
-  return builder.finish();
+  return { decorations: builder.finish(), hiddenRanges };
 }
 
 
 export function createWrEditorExtension(ogpCache: OGPCache, app: App, plugin: WrotPlugin, getCheckStrikethrough: () => boolean) {
-  return ViewPlugin.fromClass(
+  const viewPlugin = ViewPlugin.fromClass(
     class {
       decorations: DecorationSet;
       private blocks: WrBlock[];
@@ -1122,9 +1146,16 @@ export function createWrEditorExtension(ogpCache: OGPCache, app: App, plugin: Wr
       constructor(view: EditorView) {
         this.currentView = view;
         this.blocks = findWrBlocks(view, plugin);
-        this.decorations = buildDecorations(view, ogpCache, this.blocks, app, plugin, getCheckStrikethrough());
-        // CodeMirror初期化後にフェッチを開始
-        requestAnimationFrame(() => this.fetchMissing());
+        const built = buildDecorations(view, ogpCache, this.blocks, app, plugin, getCheckStrikethrough());
+        this.decorations = built.decorations;
+        // 初回の hidden range 反映は次フレームで dispatch (constructor 内 dispatch は不可)
+        const initialRanges = built.hiddenRanges;
+        requestAnimationFrame(() => {
+          try {
+            this.currentView.dispatch({ effects: setHiddenRanges.of(initialRanges) });
+          } catch {}
+          this.fetchMissing();
+        });
       }
 
       update(update: ViewUpdate) {
@@ -1140,8 +1171,28 @@ export function createWrEditorExtension(ogpCache: OGPCache, app: App, plugin: Wr
         );
 
         if (update.docChanged || update.viewportChanged || update.selectionSet || hasOgpEffect || hasTagRulesEffect || hasVaultFilesEffect) {
-          this.blocks = findWrBlocks(update.view, plugin);
-          this.decorations = buildDecorations(update.view, ogpCache, this.blocks, app, plugin, getCheckStrikethrough());
+          // カーソル移動だけの update では doc 内のブロック構造は変わらないため、
+          // キャッシュ済み blocks を再利用して全行スキャンを回避する。
+          // decoration 自体は cursorInBlock 判定が変わるので再構築する。
+          const structureMayChange =
+            update.docChanged ||
+            update.viewportChanged ||
+            hasOgpEffect ||
+            hasTagRulesEffect ||
+            hasVaultFilesEffect;
+          if (structureMayChange) {
+            this.blocks = findWrBlocks(update.view, plugin);
+          }
+          const built = buildDecorations(update.view, ogpCache, this.blocks, app, plugin, getCheckStrikethrough());
+          this.decorations = built.decorations;
+          // hidden range の更新は同じトランザクションサイクル内では dispatch できないため、
+          // 次フレームに送る
+          const pendingRanges = built.hiddenRanges;
+          requestAnimationFrame(() => {
+            try {
+              this.currentView.dispatch({ effects: setHiddenRanges.of(pendingRanges) });
+            } catch {}
+          });
           if (!hasOgpEffect) {
             this.fetchMissing();
           }
@@ -1187,4 +1238,5 @@ export function createWrEditorExtension(ogpCache: OGPCache, app: App, plugin: Wr
       },
     }
   );
+  return [hiddenLineStateField, viewPlugin];
 }

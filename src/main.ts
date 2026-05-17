@@ -11,9 +11,6 @@ const ATTACHMENT_EXT_RE = /^(png|jpe?g|gif|webp|svg|bmp)$/i;
 export default class WrotPlugin extends Plugin {
   settings!: WrotSettings;
   ogpCache!: OGPCache;
-  // WrotView 内のチェックボックストグル等の自前書き込み直後は、postProcessor 側の
-  // refreshQuoteCardsForFile (引用カード一斉再描画) を一時的に抑止してチラつきを防ぐ
-  quoteRefreshSuppressedUntil = 0;
   private bgStyleEl: HTMLStyleElement | null = null;
   private tagRuleStyleEl: HTMLStyleElement | null = null;
   private fontStyleEl: HTMLStyleElement | null = null;
@@ -187,11 +184,11 @@ export default class WrotPlugin extends Plugin {
       body .wr-today-btn,
       body .wr-inline-code,
       body .wr-plain-text,
-      body div.block-language-wr *:not(.wr-embed-missing):not(.wr-internal-link-unresolved):not(.wr-internal-link):not(.wr-tag):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-quote-card):not(.wr-quote-card *):not(.wr-codeblock-display):not(.wr-codeblock-display *),
+      body div.block-language-wr *:not(.wr-embed-missing):not(.wr-internal-link-unresolved):not(.wr-internal-link):not(.wr-tag):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-quote-card-slot):not(.wr-quote-card-slot *):not(.wr-codeblock-display):not(.wr-codeblock-display *),
       body .wr-codeblock-line,
-      body .wr-codeblock-line *:not(.wr-embed-missing):not(.wr-internal-link-unresolved):not(.wr-internal-link):not(.wr-tag):not(.wr-url):not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-url-highlight):not(.wr-quote-card):not(.wr-quote-card *):not(.wr-codeblock-display):not(.wr-codeblock-display *),
+      body .wr-codeblock-line *:not(.wr-embed-missing):not(.wr-internal-link-unresolved):not(.wr-internal-link):not(.wr-tag):not(.wr-url):not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-url-highlight):not(.wr-quote-card-slot):not(.wr-quote-card-slot *):not(.wr-codeblock-display):not(.wr-codeblock-display *),
       body .cm-line.wr-codeblock-line,
-      body .cm-line.wr-codeblock-line *:not(.wr-embed-missing):not(.wr-internal-link-unresolved):not(.wr-internal-link):not(.wr-tag):not(.wr-url):not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-url-highlight):not(.wr-quote-card):not(.wr-quote-card *):not(.wr-codeblock-display):not(.wr-codeblock-display *):not(.wr-lp-marker),
+      body .cm-line.wr-codeblock-line *:not(.wr-embed-missing):not(.wr-internal-link-unresolved):not(.wr-internal-link):not(.wr-tag):not(.wr-url):not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-url-highlight):not(.wr-quote-card-slot):not(.wr-quote-card-slot *):not(.wr-codeblock-display):not(.wr-codeblock-display *):not(.wr-lp-marker),
       body .wr-reading-list li,
       body .wr-bullet-list li,
       body .wr-ordered-list li {
@@ -285,7 +282,7 @@ export default class WrotPlugin extends Plugin {
       body .cm-line .wr-quote-highlight:not(#x):not(#y):not(#z),
       body .cm-line.wr-blockquote-line:not(#x):not(#y):not(#z),
       body .cm-line .wr-blockquote-wrap:not(#x):not(#y):not(#z),
-      body .cm-line .wr-blockquote-wrap:not(#x):not(#y):not(#z) *,
+      body .cm-line .wr-blockquote-wrap:not(#x):not(#y):not(#z) *:not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-url-highlight):not(.wr-math-highlight):not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url),
       body .cm-line .wr-ogp-title:not(#x):not(#y):not(#z),
       body .cm-line .wr-ogp-desc:not(#x):not(#y):not(#z),
       body .cm-line .wr-ogp-site:not(#x):not(#y):not(#z),
@@ -469,6 +466,9 @@ export default class WrotPlugin extends Plugin {
       const mQuote = pickMuted("quote");
       const mList = pickMuted("list");
       const mOgp = pickMuted("ogp");
+      // 未解決リンク・未解決埋め込みの色。 ベース (line 138) は textColor/bgColor の
+      // blend で計算してるので、 タグルールごとも同じロジックで rule の fg/bg から計算する。
+      const mUnresolved = this.blendColor(fg, bg, 0.3);
       const cls = `wr-tag-rule-${i}`;
 
       parts.push(`/* @css */
@@ -484,51 +484,58 @@ export default class WrotPlugin extends Plugin {
         background-color: ${bg} !important;
       }
       /* 引用カードは引用先 bg を遮断 (引用元のルールに任せる) */
-      body .wr-card.${cls} a.wr-quote-card:not([class*="wr-tag-rule-"]),
-      body div.block-language-wr.${cls} a.wr-quote-card:not([class*="wr-tag-rule-"]),
-      body pre.${cls} a.wr-quote-card:not([class*="wr-tag-rule-"]),
-      body .cm-line.wr-codeblock-line.${cls} a.wr-quote-card:not([class*="wr-tag-rule-"]) {
+      body .wr-card.${cls} .wr-quote-card:not([class*="wr-tag-rule-"]),
+      body div.block-language-wr.${cls} .wr-quote-card:not([class*="wr-tag-rule-"]),
+      body pre.${cls} .wr-quote-card:not([class*="wr-tag-rule-"]),
+      body .cm-line.wr-codeblock-line.${cls} .wr-quote-card:not([class*="wr-tag-rule-"]) {
         background: var(--wr-bg-color, #f8f8f8) !important;
         background-color: var(--wr-bg-color, #f8f8f8) !important;
       }
-      body div.block-language-wr.${cls} *:not(.wr-inline-code):not(.wr-highlight):not(.wr-quote-card):not(.wr-quote-card *):not(input[type="checkbox"]),
-      body pre.${cls} *:not(.wr-inline-code):not(.wr-highlight):not(.wr-quote-card):not(.wr-quote-card *):not(input[type="checkbox"]) {
+      body div.block-language-wr.${cls} *:not(.wr-inline-code):not(.wr-highlight):not(.wr-quote-card-slot):not(.wr-quote-card-slot *):not(input[type="checkbox"]),
+      body pre.${cls} *:not(.wr-inline-code):not(.wr-highlight):not(.wr-quote-card-slot):not(.wr-quote-card-slot *):not(input[type="checkbox"]) {
         background: ${bg} !important;
         background-color: ${bg} !important;
       }
 
-      /* Rule ${i}: 文字色（タグ/リンク/URL/引用ブロック/引用カード除く） */
+      /* Rule ${i}: 文字色（タグ/リンク/URL/引用ブロック/引用カード除く）。
+         引用カード以下は slot 単位で除外し、外枠＝引用先 / 中身＝引用元 の境界線を
+         祖先カラーが越えて子孫に降りないようにする。 */
       body .wr-card.${cls} .wr-content,
-      body .wr-card.${cls} .wr-content *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-blockquote):not(.wr-quote-card):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-blockquote *):not(.wr-quote-card *) {
+      body .wr-card.${cls} .wr-content *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-blockquote):not(.wr-quote-card-slot):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-blockquote *):not(.wr-quote-card-slot *) {
         color: ${fg} !important;
       }
       body div.block-language-wr.${cls},
-      body div.block-language-wr.${cls} *:not(.wr-reading-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-url):not(.wr-blockquote):not(.wr-quote-card):not(input[type="checkbox"]):not(.wr-reading-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-url *):not(.wr-blockquote *):not(.wr-quote-card *),
+      body div.block-language-wr.${cls} *:not(.wr-reading-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-url):not(.wr-blockquote):not(.wr-quote-card-slot):not(input[type="checkbox"]):not(.copy-code-button):not(.copy-code-button *):not(.wr-reading-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-url *):not(.wr-blockquote *):not(.wr-quote-card-slot *),
       body pre.${cls},
-      body pre.${cls} *:not(.wr-reading-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-url):not(.wr-blockquote):not(.wr-quote-card):not(input[type="checkbox"]):not(.wr-reading-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-url *):not(.wr-blockquote *):not(.wr-quote-card *) {
+      body pre.${cls} *:not(.wr-reading-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-url):not(.wr-blockquote):not(.wr-quote-card-slot):not(input[type="checkbox"]):not(.copy-code-button):not(.copy-code-button *):not(.wr-reading-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-url *):not(.wr-blockquote *):not(.wr-quote-card-slot *) {
         color: ${fg} !important;
       }
       body .cm-line.wr-codeblock-line.${cls},
-      body .cm-line.wr-codeblock-line.${cls} *:not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-url-highlight):not(.wr-lp-marker):not(.wr-list-highlight):not(.wr-ol-highlight):not(.wr-quote-highlight):not(.wr-blockquote-wrap):not(.wr-check-unchecked):not(.wr-check-checked):not(.wr-check-done):not(.wr-quote-card):not(input[type="checkbox"]):not(.wr-tag-highlight *):not(.wr-internal-link-highlight *):not(.wr-url-highlight *):not(.wr-blockquote-wrap *):not(.wr-quote-card *) {
+      body .cm-line.wr-codeblock-line.${cls} *:not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-internal-link):not(.wr-url-highlight):not(.wr-lp-marker):not(.wr-list-highlight):not(.wr-ol-highlight):not(.wr-quote-highlight):not(.wr-blockquote-wrap):not(.wr-check-unchecked):not(.wr-check-checked):not(.wr-check-done):not(.wr-quote-card-slot):not(.wr-embed-missing):not(input[type="checkbox"]):not(.wr-tag-highlight *):not(.wr-internal-link-highlight *):not(.wr-url-highlight *):not(.wr-blockquote-wrap *):not(.wr-quote-card-slot *) {
         color: ${fg} !important;
       }
 
-      /* Rule ${i}: サブ要素 - タイムスタンプ・メニュー・ピン */
+      /* Rule ${i}: サブ要素 - タイムスタンプ・メニュー・ピン・コピー */
       body .wr-card.${cls} .wr-timestamp,
       body .wr-card.${cls} .wr-copy-btn,
       body .wr-card.${cls} .wr-copy-btn .svg-icon,
       body .wr-card.${cls} .wr-menu-btn,
       body .wr-card.${cls} .wr-menu-btn .svg-icon,
       body .wr-card.${cls} .wr-pin-indicator,
-      body .wr-card.${cls} .wr-pin-indicator .svg-icon {
+      body .wr-card.${cls} .wr-pin-indicator .svg-icon,
+      body pre.${cls} .copy-code-button,
+      body pre.${cls} .copy-code-button .svg-icon,
+      body div.block-language-wr.${cls} .copy-code-button,
+      body div.block-language-wr.${cls} .copy-code-button .svg-icon {
         color: ${mButtons} !important;
       }
-      /* Rule ${i}: サブ要素 - 引用 */
-      body .wr-card.${cls} .wr-blockquote,
-      body .wr-card.${cls} .wr-blockquote-wrap,
+      /* Rule ${i}: サブ要素 - 引用 (引用カード内のブロック引用は除外。
+         カードの中身は「引用元」扱いなので外側=引用先の mQuote を巻き込ませない) */
+      body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote),
+      body .wr-card.${cls} .wr-blockquote-wrap:not(.wr-quote-card-slot .wr-blockquote-wrap),
       body .wr-card.${cls} .wr-quote-highlight,
-      body div.block-language-wr.${cls} .wr-blockquote,
-      body pre.${cls} .wr-blockquote,
+      body div.block-language-wr.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote),
+      body pre.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote),
       body .cm-line.wr-codeblock-line.${cls}.wr-blockquote-line,
       body .cm-line.wr-codeblock-line.${cls} .wr-blockquote-wrap {
         color: ${mQuote} !important;
@@ -580,18 +587,20 @@ export default class WrotPlugin extends Plugin {
         --checkbox-color-hover: ${accent ?? "var(--text-accent)"};
         accent-color: ${accent ?? "var(--text-accent)"};
       }
-      body .wr-card.${cls} .wr-blockquote *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-tag *):not(.wr-reading-url *),
-      body div.block-language-wr.${cls} .wr-blockquote *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-tag *):not(.wr-reading-url *),
-      body pre.${cls} .wr-blockquote *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-tag *):not(.wr-reading-url *) {
+      /* 引用カード内のブロック引用は「カードの中身=引用元」のサブカラーで塗るため、
+         祖先=引用先の mQuote で塗るルールから除外する (slot 配下は対象外)。 */
+      body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-tag *):not(.wr-reading-url *),
+      body div.block-language-wr.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-tag *):not(.wr-reading-url *),
+      body pre.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-tag *):not(.wr-reading-url *) {
         color: ${mQuote} !important;
       }
-      /* 492行などの文字色当てに特異度で負ける環境向けに、 ID相当の特異度で再宣言 */
-      body .wr-card.${cls} .wr-blockquote:not(#x):not(#y):not(#z),
-      body .wr-card.${cls} .wr-blockquote:not(#x):not(#y):not(#z) *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url),
-      body div.block-language-wr.${cls} .wr-blockquote:not(#x):not(#y):not(#z),
-      body div.block-language-wr.${cls} .wr-blockquote:not(#x):not(#y):not(#z) *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url),
-      body pre.${cls} .wr-blockquote:not(#x):not(#y):not(#z),
-      body pre.${cls} .wr-blockquote:not(#x):not(#y):not(#z) *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url) {
+      /* 492行などの文字色当てに特異度で負ける環境向けに、 ID相当の特異度で再宣言 (引用カード内は除外) */
+      body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote):not(#x):not(#y):not(#z),
+      body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote):not(#x):not(#y):not(#z) *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url),
+      body div.block-language-wr.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote):not(#x):not(#y):not(#z),
+      body div.block-language-wr.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote):not(#x):not(#y):not(#z) *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url),
+      body pre.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote):not(#x):not(#y):not(#z),
+      body pre.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote):not(#x):not(#y):not(#z) *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url) {
         color: ${mQuote} !important;
       }
       body .cm-line.wr-codeblock-line.${cls} .wr-tag-highlight .wr-blockquote-wrap,
@@ -602,60 +611,89 @@ export default class WrotPlugin extends Plugin {
       body .cm-line.wr-codeblock-line.${cls} .wr-url .wr-blockquote-wrap {
         color: ${accent ?? "var(--text-accent)"} !important;
       }
-      body .wr-card.${cls} .wr-blockquote,
-      body .wr-card.${cls} .wr-blockquote-wrap,
-      body div.block-language-wr.${cls} .wr-blockquote,
-      body pre.${cls} .wr-blockquote {
+      /* Rule ${i}: ブロック引用内のリンク・タグは「その場のアクセント」で塗る。
+         引用カードと同じく「引用コンテキスト = アクセントで強調」する統一原則。
+         ブロック引用は元先関係を持たないため、その場（このルール）のアクセントを使う。
+         引用カード内のブロック引用は「カードの中身=引用元」扱いのため、ここでは除外する。 */
+      body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-tag,
+      body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-internal-link,
+      body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-url,
+      body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-reading-tag,
+      body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-reading-url,
+      body div.block-language-wr.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-tag,
+      body div.block-language-wr.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-internal-link,
+      body div.block-language-wr.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-url,
+      body div.block-language-wr.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-reading-tag,
+      body div.block-language-wr.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-reading-url,
+      body pre.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-tag,
+      body pre.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-internal-link,
+      body pre.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-url,
+      body pre.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-reading-tag,
+      body pre.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-reading-url {
+        color: ${accent ?? "var(--text-accent)"} !important;
+      }
+      /* 枠線色も同様、引用カード内のブロック引用は除外 (カードの中身=引用元扱い) */
+      body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote),
+      body .wr-card.${cls} .wr-blockquote-wrap:not(.wr-quote-card-slot .wr-blockquote-wrap),
+      body div.block-language-wr.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote),
+      body pre.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) {
         border-left-color: ${mQuote} !important;
       }
       /* Rule ${i}: 引用カード自身にルールクラスが付いた = 引用元のルール */
       /* 枠線色は引用先(=表示する側)の見た目に合わせるため、ここでは上書きしない */
-      body .wr-quote-card-slot a.wr-quote-card.${cls} {
+      body .wr-quote-card-slot .wr-quote-card.${cls} {
         background: ${bg} !important;
         background-color: ${bg} !important;
       }
-      body .wr-quote-card-slot a.wr-quote-card.${cls}:hover {
+      body .wr-quote-card-slot .wr-quote-card.${cls}:hover {
         background: ${hoverBg} !important;
         background-color: ${hoverBg} !important;
       }
       /* このルールクラスが祖先カードに付いている場合、配下の引用カードの枠線も自分のサブカラーに揃える */
-      body .wr-card.${cls} .wr-quote-card-slot a.wr-quote-card,
-      body div.block-language-wr.${cls} .wr-quote-card-slot a.wr-quote-card,
-      body pre.${cls} .wr-quote-card-slot a.wr-quote-card,
-      body .cm-line.wr-codeblock-line.${cls} .wr-quote-card-slot a.wr-quote-card {
+      body .wr-card.${cls} .wr-quote-card-slot .wr-quote-card,
+      body div.block-language-wr.${cls} .wr-quote-card-slot .wr-quote-card,
+      body pre.${cls} .wr-quote-card-slot .wr-quote-card,
+      body .cm-line.wr-codeblock-line.${cls} .wr-quote-card-slot .wr-quote-card {
         border-color: ${mQuote} !important;
       }
-      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body,
-      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-nested-quote-marker):not(.wr-blockquote):not(.wr-quote-image-marker):not(.wr-quote-math-marker):not(.wr-quote-code-marker):not(input[type="checkbox"]):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-quote-image-marker *):not(.wr-quote-math-marker *):not(.wr-quote-code-marker *),
-      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-meta,
-      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-blockquote,
-      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-blockquote * {
+      body .wr-quote-card-slot .wr-quote-card.${cls} .wr-quote-card-body,
+      body .wr-quote-card-slot .wr-quote-card.${cls} .wr-quote-card-body *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-nested-quote-marker):not(.wr-blockquote):not(.wr-quote-image-marker):not(.wr-quote-math-marker):not(.wr-quote-code-marker):not(input[type="checkbox"]):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-quote-image-marker *):not(.wr-quote-math-marker *):not(.wr-quote-code-marker *),
+      body .wr-quote-card-slot .wr-quote-card.${cls} .wr-quote-card-meta,
+      body .wr-quote-card-slot .wr-quote-card.${cls} .wr-quote-card-body .wr-blockquote,
+      body .wr-quote-card-slot .wr-quote-card.${cls} .wr-quote-card-body .wr-blockquote * {
         color: ${mQuote} !important;
       }
       /* ベースの引用カード本文 mutedColor ルールに特異度負けする環境向けに、ID相当の特異度で再宣言 */
-      body .wr-quote-card-slot a.wr-quote-card.${cls}:not(#x):not(#y):not(#z) .wr-quote-card-body .wr-blockquote,
-      body .wr-quote-card-slot a.wr-quote-card.${cls}:not(#x):not(#y):not(#z) .wr-quote-card-body .wr-blockquote * {
+      body .wr-quote-card-slot .wr-quote-card.${cls}:not(#x):not(#y):not(#z) .wr-quote-card-body .wr-blockquote,
+      body .wr-quote-card-slot .wr-quote-card.${cls}:not(#x):not(#y):not(#z) .wr-quote-card-body .wr-blockquote * {
         color: ${mQuote} !important;
       }
       /* マーカーは標準 muted ルールの :not() 列に specificity 負けするため同列で揃える */
-      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-quote-image-marker:not(.wr-tag):not(.wr-url):not(.wr-internal-link):not(.wr-nested-quote-marker):not(.wr-tag *):not(.wr-url *):not(.wr-internal-link *),
-      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-quote-math-marker:not(.wr-tag):not(.wr-url):not(.wr-internal-link):not(.wr-nested-quote-marker):not(.wr-tag *):not(.wr-url *):not(.wr-internal-link *),
-      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-quote-code-marker:not(.wr-tag):not(.wr-url):not(.wr-internal-link):not(.wr-nested-quote-marker):not(.wr-tag *):not(.wr-url *):not(.wr-internal-link *) {
+      body .wr-quote-card-slot .wr-quote-card.${cls} .wr-quote-card-body .wr-quote-image-marker:not(.wr-tag):not(.wr-url):not(.wr-internal-link):not(.wr-nested-quote-marker):not(.wr-tag *):not(.wr-url *):not(.wr-internal-link *),
+      body .wr-quote-card-slot .wr-quote-card.${cls} .wr-quote-card-body .wr-quote-math-marker:not(.wr-tag):not(.wr-url):not(.wr-internal-link):not(.wr-nested-quote-marker):not(.wr-tag *):not(.wr-url *):not(.wr-internal-link *),
+      body .wr-quote-card-slot .wr-quote-card.${cls} .wr-quote-card-body .wr-quote-code-marker:not(.wr-tag):not(.wr-url):not(.wr-internal-link):not(.wr-nested-quote-marker):not(.wr-tag *):not(.wr-url *):not(.wr-internal-link *) {
         color: ${mQuote} !important;
       }
-      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-blockquote {
+      body .wr-quote-card-slot .wr-quote-card.${cls} .wr-quote-card-body .wr-blockquote {
         border-left-color: ${mQuote} !important;
       }
-      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-tag,
-      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-internal-link,
-      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-url,
-      body .wr-quote-card-slot a.wr-quote-card.${cls} .wr-quote-card-body .wr-nested-quote-marker {
-        color: ${accent ?? "var(--text-accent)"} !important;
+      /* 引用カード内チェックボックス(独自スパン): カード本体と色揃え */
+      body .wr-quote-card-slot .wr-quote-card.${cls} .wr-quote-card-check {
+        border-color: ${mQuote} !important;
       }
-      body .wr-card.${cls} .wr-quote-card-body .wr-nested-quote-marker,
-      body div.block-language-wr.${cls} .wr-quote-card-body .wr-nested-quote-marker,
-      body pre.${cls} .wr-quote-card-body .wr-nested-quote-marker,
-      body .cm-line.wr-codeblock-line.${cls} .wr-quote-card-body .wr-nested-quote-marker {
+      body .wr-quote-card-slot .wr-quote-card.${cls} .wr-quote-card-check-done {
+        background-color: ${mQuote} !important;
+        border-color: ${mQuote} !important;
+      }
+      /* 引用カード内のリンク・タグ・省略QT（ネスト引用マーカー）の色は
+         「引用元 (カードの中身＝元ネタ) のアクセント」で塗る。
+         引用カード自身に setupClick で付与される wr-tag-rule-* は引用元の
+         ルールクラスなので、 .wr-quote-card.${cls} を起点にすれば1系統で
+         3ビュー (タイムライン/RV/LV) を一括カバーできる。 */
+      body .wr-quote-card-slot .wr-quote-card.${cls} .wr-quote-card-body .wr-tag,
+      body .wr-quote-card-slot .wr-quote-card.${cls} .wr-quote-card-body .wr-internal-link,
+      body .wr-quote-card-slot .wr-quote-card.${cls} .wr-quote-card-body .wr-url,
+      body .wr-quote-card-slot .wr-quote-card.${cls} .wr-quote-card-body .wr-nested-quote-marker {
         color: ${accent ?? "var(--text-accent)"} !important;
       }
       body .cm-line.wr-codeblock-line.wr-blockquote-line.${cls}::before {
@@ -692,23 +730,25 @@ export default class WrotPlugin extends Plugin {
         stroke: ${accent ?? "var(--text-accent)"} !important;
       }
       ${accent ? `
-      /* Rule ${i}: アクセント色 */
-      body .wr-card.${cls} .wr-tag,
-      body .wr-card.${cls} .wr-internal-link,
-      body .wr-card.${cls} .wr-url,
-      body div.block-language-wr.${cls} .wr-reading-tag,
-      body div.block-language-wr.${cls} .wr-internal-link,
-      body div.block-language-wr.${cls} .wr-reading-url,
-      body div.block-language-wr.${cls} a,
-      body pre.${cls} .wr-reading-tag,
-      body pre.${cls} .wr-internal-link,
-      body pre.${cls} .wr-reading-url,
-      body .cm-line.wr-codeblock-line.${cls} .wr-tag-highlight,
-      body .cm-line.wr-codeblock-line.${cls} .wr-internal-link-highlight,
-      body .cm-line.wr-codeblock-line.${cls} .wr-url-highlight,
-      body .cm-line.wr-codeblock-line.${cls} .wr-math-highlight,
-      body .cm-line.wr-codeblock-line.${cls} .wr-internal-link,
-      body .cm-line.wr-codeblock-line.${cls} .wr-url {
+      /* Rule ${i}: アクセント色（引用カード以下は slot 単位で除外。
+         引用カード内のリンク・タグは「引用元のアクセント」で別途塗るため、
+         ここで引用先のアクセントを巻き込まない） */
+      body .wr-card.${cls} .wr-tag:not(.wr-quote-card-slot *),
+      body .wr-card.${cls} .wr-internal-link:not(.wr-quote-card-slot *),
+      body .wr-card.${cls} .wr-url:not(.wr-quote-card-slot *),
+      body div.block-language-wr.${cls} .wr-reading-tag:not(.wr-quote-card-slot *),
+      body div.block-language-wr.${cls} .wr-internal-link:not(.wr-quote-card-slot *),
+      body div.block-language-wr.${cls} .wr-reading-url:not(.wr-quote-card-slot *),
+      body div.block-language-wr.${cls} a:not(.wr-quote-card-slot):not(.wr-quote-card-slot *),
+      body pre.${cls} .wr-reading-tag:not(.wr-quote-card-slot *),
+      body pre.${cls} .wr-internal-link:not(.wr-quote-card-slot *),
+      body pre.${cls} .wr-reading-url:not(.wr-quote-card-slot *),
+      body .cm-line.wr-codeblock-line.${cls} .wr-tag-highlight:not(.wr-quote-card-slot *),
+      body .cm-line.wr-codeblock-line.${cls} .wr-internal-link-highlight:not(.wr-quote-card-slot *),
+      body .cm-line.wr-codeblock-line.${cls} .wr-url-highlight:not(.wr-quote-card-slot *),
+      body .cm-line.wr-codeblock-line.${cls} .wr-math-highlight:not(.wr-quote-card-slot *),
+      body .cm-line.wr-codeblock-line.${cls} .wr-internal-link:not(.wr-quote-card-slot *),
+      body .cm-line.wr-codeblock-line.${cls} .wr-url:not(.wr-quote-card-slot *) {
         color: ${accent} !important;
       }
       body .wr-card.${cls} .wr-menu-btn.wr-toolbar-active .svg-icon {
@@ -716,6 +756,22 @@ export default class WrotPlugin extends Plugin {
         stroke: ${accent} !important;
       }
       ` : ""}
+
+      /* Rule ${i}: 未解決の内部リンク・埋め込み (アクセント注入より specificity が
+         同等以上になるよう .wr-internal-link-unresolved / .wr-embed-missing をクラスに
+         追加することで勝ち、 タグルールのトーンに馴染んだ薄色で表示する) */
+      body .wr-card.${cls} .wr-internal-link.wr-internal-link-unresolved:not(.wr-quote-card-slot *),
+      body .wr-card.${cls} .wr-embed-missing:not(.wr-quote-card-slot *),
+      body div.block-language-wr.${cls} .wr-internal-link.wr-internal-link-unresolved:not(.wr-quote-card-slot *),
+      body div.block-language-wr.${cls} a.wr-internal-link.wr-internal-link-unresolved:not(.wr-quote-card-slot *),
+      body div.block-language-wr.${cls} .wr-embed-missing:not(.wr-quote-card-slot *),
+      body pre.${cls} .wr-internal-link.wr-internal-link-unresolved:not(.wr-quote-card-slot *),
+      body pre.${cls} .wr-embed-missing:not(.wr-quote-card-slot *),
+      body .cm-line.wr-codeblock-line.${cls} .wr-internal-link.wr-internal-link-unresolved:not(.wr-quote-card-slot *),
+      body .cm-line.wr-codeblock-line.${cls} .wr-internal-link-highlight.wr-internal-link-unresolved:not(.wr-quote-card-slot *),
+      body .cm-line.wr-codeblock-line.${cls} .wr-embed-missing:not(.wr-quote-card-slot *) {
+        color: ${mUnresolved} !important;
+      }
 
       /* Rule ${i}: OGP/Twitterカード */
       body .wr-card.${cls} .wr-ogp-card,

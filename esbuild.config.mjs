@@ -6,10 +6,13 @@ import path from "path";
 const prod = process.argv[2] === "production";
 
 function minifyCss(css) {
+  // + や - はセレクタ結合子としても使われるが、 calc(a + b) などの値式でも
+  // 使われる。値式での前後の空白を潰すと calc が無効化されてルール全体が
+  // 破棄されるため、 + - はここでは詰めない。
   return css
     .replace(/\/\*[\s\S]*?\*\//g, "")
     .replace(/\s+/g, " ")
-    .replace(/\s*([{};:,>+~])\s*/g, "$1")
+    .replace(/\s*([{};:,>~])\s*/g, "$1")
     .replace(/;}/g, "}")
     .trim();
 }
@@ -159,7 +162,7 @@ const baseBuildOptions = {
 };
 
 if (prod) {
-  // 圧縮版（リリースアセット用）
+  // 完全圧縮版（リリースアセット用）: JS圧縮 + 動的CSS(@cssマーカー)も圧縮
   await esbuild.build({
     ...baseBuildOptions,
     outfile: "dist/main.js",
@@ -167,20 +170,22 @@ if (prod) {
     sourcemap: false,
     plugins: [cssEvalPlugin],
   });
-  // 未圧縮版（リポジトリ追跡用・デバッグ参照用）
+  // 半圧縮版（リポジトリ追跡用）: JSは圧縮するが、動的CSSのテンプレートリテラルは
+  // 元の改行・空白のまま残す。差分追跡・デバッグ時に CSS が読めるようにする。
   await esbuild.build({
     ...baseBuildOptions,
     outfile: "main.js",
-    minify: false,
+    minify: true,
     sourcemap: false,
   });
   buildStyles();
   process.exit(0);
 } else {
+  // watch モード: リポジトリ版と同じ半圧縮
   const context = await esbuild.context({
     ...baseBuildOptions,
     outfile: "main.js",
-    minify: false,
+    minify: true,
     sourcemap: "inline",
   });
   await context.watch();

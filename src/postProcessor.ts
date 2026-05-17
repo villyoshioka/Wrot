@@ -28,8 +28,6 @@ export function registerWrotPostProcessor(plugin: WrotPlugin): void {
     plugin.app.vault.on("modify", (file) => {
       if (!(file instanceof TFile)) return;
       invalidateMemoCache(file.path);
-      // WrotView 側のチェックボックストグルなどの自前書き込み直後は再描画を抑止してチラつきを防ぐ
-      if (Date.now() < plugin.quoteRefreshSuppressedUntil) return;
       refreshQuoteCardsForFile(
         plugin.app,
         file,
@@ -99,14 +97,23 @@ async function applyBlockIdClasses(el: HTMLElement, plugin: WrotPlugin, sourcePa
   } catch {
     return;
   }
-  codeEls.forEach((code) => {
-    const codeEl = code as HTMLElement;
-    const block = codeEl.closest(".block-language-wr") || codeEl.closest("pre");
+  // ノート上のフェンスと memos を「上から下の出現順」で 1対1 ペアリングする。
+  // 本文一致で memo を探すアプローチは「同本文の別投稿」が複数あると
+  // 全部同じ memo に紐づいてしまうため使わない。
+  // memos は parseMemos で reverse 済み（新しい順）なので lineStart 昇順に並べ直す。
+  const sortedMemos = [...memos].sort((a, b) => a.lineStart - b.lineStart);
+  // ノート全体の wr フェンスを DOM 出現順で取得
+  const doc = (codeEls[0] as HTMLElement).ownerDocument || document;
+  const allCodeEls = Array.from(
+    doc.querySelectorAll(
+      'code.language-wr, .block-language-wr code, pre > code[class*="language-wr"]'
+    )
+  ) as HTMLElement[];
+  allCodeEls.forEach((code, i) => {
+    const block = code.closest(".block-language-wr") || code.closest("pre");
     if (!(block instanceof HTMLElement)) return;
     if (Array.from(block.classList).some((c) => c.startsWith("wr-block-id-wr-"))) return;
-    const codeText = (codeEl.getAttribute("data-wr-original") || codeEl.textContent || "").trim();
-    if (!codeText) return;
-    const memo = memos.find((m) => m.content.trim() === codeText);
+    const memo = sortedMemos[i];
     if (!memo) return;
     const T = memo.time.replace(/[-:.TZ+]/g, "").slice(0, 17);
     block.classList.add(`wr-block-id-wr-${T}`);
