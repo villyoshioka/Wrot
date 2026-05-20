@@ -1,5 +1,13 @@
 # Release Notes
 
+## 2.0.1 - 2026-05-20
+
+### Improvements
+
+- Refined the toolbar CSS.
+
+---
+
 ## 2.0.0 - 2026-05-20
 
 ### Important Changes

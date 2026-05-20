@@ -144,8 +144,7 @@
 }
 
 .wr-input-toolbar.wr-toolbar-wrapped {
-  row-gap: 4px;
-  column-gap: 8px;
+  gap: 4px 8px;
 }
 
 
@@ -1319,8 +1318,7 @@ pre.language-wr > .wr-media-area:has(> .wr-media-link),
 }
 
 .is-mobile .wr-input-toolbar.wr-toolbar-wrapped {
-  row-gap: 4px;
-  column-gap: 8px;
+  gap: 4px 8px;
 }
 
 .is-mobile .wr-toolbar-btn {
