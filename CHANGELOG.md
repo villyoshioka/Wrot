@@ -1,416 +1,436 @@
-# リリースノート
+# Release Notes
+
+## 2.0.0 - 2026-05-20
+
+### Important Changes
+
+- Registered as an Obsidian Community Plugin. You can now search for and install `Wrot` from the Community Plugins screen.
+
+### Updates
+
+- Updated dependencies.
+
+### New Features
+
+- Added multi-language support. In addition to Japanese, the app now supports **9 languages across 10 locales**: English (US / UK), Korean, Spanish, Portuguese, French, German, Italian, Russian. It automatically follows Obsidian's language settings and falls back to English for unsupported languages. When the language is changed, the post button text, input field placeholder, and header date format will automatically update to the default values of the new language.
+
+### Improvements
+
+- Renamed "Quote" in the post's three-dot menu to "Quote Post." This makes it easier to distinguish from the "Quote" (Markdown blockquote) in the formatting menu.
+
+---
 
 ## 1.14.0 - 2026-05-17
 
-### 更新
+### Updates
 
-- 依存関係を更新しました。
+- Updated dependencies.
 
-### 廃止
+### Deprecated
 
-- ピン留め投稿の3点メニューに追加していた「元のノートへジャンプ」機能を廃止しました。修正が困難な重大な不具合の原因となっていたため取り下げました。
+- Removed the "Jump to Original Note" feature that was previously added to the three-dot menu for pinned posts. It was retracted because it caused critical bugs that were difficult to fix.
 
-### バグ修正
+### Bug Fixes
 
-- IME未確定の状態で装飾（太字・斜体）を閉じた直後に改行すると、カーソルが見えなくなることがある不具合を修正しました。
-- リーディングビューでタグルール適用カードのコピーボタンが正しく表示されない不具合を修正しました。
-- タイムライン上でチェックボックスを操作した際、引用カードの表示が追従しないことがある不具合を修正しました。
-- 引用カードからのジャンプが正常に動作しないことがある不具合を修正しました。
-- ブロック引用の表示が崩れることがある不具合を修正しました。
-- 一部見づらい配色を調整しました。
+- Fixed an issue where the cursor could become invisible when creating a new line immediately after closing formatting (bold/italic) while the IME was in an unconfirmed state.
+- Fixed a bug where the copy button on cards with tag color rules was not displaying correctly in Reading View.
+- Fixed an issue where the display of quote cards would sometimes not follow checkbox operations on the timeline.
+- Fixed an issue where jumping from a quote card would occasionally not work correctly.
+- Fixed a bug where the display of blockquotes could become distorted.
+- Adjusted some color schemes that were difficult to see.
 
 ---
 
 ## 1.13.1 - 2026-05-13
 
-### バグ修正
+### Bug Fixes
 
-- ライブビューのとき、「元のノートへジャンプ」が正しく動作しない問題を修正しました。
+- Fixed an issue where "Jump to Original Note" did not work correctly in Live Preview.
 
 ---
 
 ## 1.13.0 - 2026-05-13
 
-### 更新
+### Updates
 
-- 依存関係を更新しました。
+- Updated dependencies.
 
-### 機能追加
+### New Features
 
-- ピン留め投稿の3点メニューに「元のノートへジャンプ」を追加しました。該当のデイリーノートを開き、対象ブロックの位置までスクロールします。
+- Added "Jump to Original Note" to the three-dot menu of pinned posts. It opens the corresponding Daily Note and scrolls to the specific block.
 
-### 改善
+### Improvements
 
-- プラグイン本体を軽量化しました。
-- 引用カードクリック時にも、ジャンプ先のブロックが画面中央へスクロールするようになりました。
-- 3点メニューボタンおよびピン留めインジケーターのアイコン色が、テキストカラー設定に連動するようになりました。
-- 過去に使用されなくなった設定項目を自動で整理するようにしました。
+- Reduced the file size of the plugin.
+- Clicking on a quote card now also scrolls the target block to the center of the screen.
+- The icons for the three-dot menu button and the pinning indicator now sync with the text color settings.
+- Obsolete setting items are now automatically cleaned up.
 
 ---
 
 ## 1.12.1 - 2026-05-11
 
-### バグ修正
+### Bug Fixes
 
-- 日付ラベルをクリックしてもデイリーノートが開かれないことがある不具合を修正しました。
+- Fixed a bug where clicking a date label would occasionally fail to open the Daily Note.
 
 ---
 
 ## 1.12.0 - 2026-05-11
 
-### 機能追加
+### New Features
 
-- タグ別カラールールの「サブカラー」に適用範囲の設定を追加しました。4つのグループ単位でON/OFFを切り替えられます。
+- Added scope settings for "Sub Colors" in Tag-Specific Color Rules. You can now toggle them ON/OFF for four different group units.
 
-### 改善
+### Improvements
 
-- 配色の調整を行いました。
-- チェックボックス操作時のちらつきを軽減しました。
+- Adjusted the color scheme.
+- Reduced flickering when interacting with checkboxes.
 
 ---
 
 ## 1.11.0 - 2026-05-10
 
-### 更新
+### Updates
 
-- 依存関係を更新しました。
+- Updated dependencies.
 
-### 機能追加
+### New Features
 
-- 投稿からの引用に対応しました。投稿のコピーメニューから「引用」を選ぶと、編集中の投稿に引用元の内容を表示するカードとして挿入できます。引用カードをクリックすると元投稿に移動できます。  
-  また、引用元と引用先でそれぞれ別のタグ別カラールールを適用でき、互いに干渉せず独立した配色で表示されます。
-- タグ別カラールールに「サブカラー」設定を追加しました。タイムスタンプや引用ブロックの縦棒など、本文以外のサブ要素の色を個別に指定できます。
+- Supported quoting from posts. By selecting "Quote" from the post's copy menu, you can insert a card into the current post that displays the content of the source. Clicking the quote card takes you to the original post.
+  Additionally, separate tag color rules can be applied to the source and the quote, allowing them to be displayed with independent color schemes without interfering with each other.
+- Added "Sub Color" settings to Tag-Specific Color Rules. You can now individually specify colors for sub-elements such as timestamps and blockquote vertical lines.
 
-### 改善
+### Improvements
 
-- ブロック引用 (`>`) の入れ子表現を改善しました。
-- 各ビューの余白を調整しました。
-- 内部構造を整理しました。
+- Improved the nested representation of blockquotes (`>`).
+- Adjusted the margins for each view.
+- Organized the internal structure.
 
-### バグ修正
+### Bug Fixes
 
-- モバイルで投稿フォーマットメニューの無効化された項目をタップしたときに、白い背景が表示されてしまう不具合を修正しました。
+- Fixed an issue on mobile where a white background would appear when tapping a disabled item in the post format menu.
 
 ---
 
 ## 1.10.2 - 2026-05-05
 
-### 改善
+### Improvements
 
-- 画像追加ボタンの点灯表示について、ダイアログを閉じた際のレスポンスを改善しました。
-- タグ別カラールールのロックアイコンを鍵穴付きデザインに変更しました。
+- Improved the response of the "Add Image" button's light-up display when closing the dialog.
+- Changed the lock icon in Tag-Specific Color Rules to a design with a keyhole.
 
 ---
 
 ## 1.10.1 - 2026-05-04
 
-### 更新
+### Updates
 
-- 依存関係を更新しました。
+- Updated dependencies.
 
-### 改善
+### Improvements
 
-- 画像追加ボタンも、押下時にアクセントカラーで点灯するようにしました。
-- 内部構造を変更しました。
+- The "Add Image" button now also lights up with the accent color when pressed.
+- Modified the internal structure.
 
 ---
 
 ## 1.10.0 - 2026-05-03
 
-### 機能追加
+### New Features
 
-- 日付ナビに表示する日付のフォーマットを設定でカスタマイズできるようにしました。タイムスタンプ表示形式の上に「ヘッダー日付表示形式」を追加しています。
+- Added a setting to customize the date format displayed in the date navigation. A "Header Date Format" has been added above the timestamp format.
 
-### 改善
+### Improvements
 
-- 太字・斜体ボタンのボタン動作と選択時の動作を改善しました。
-- 内部構造を変更しました。
+- Improved the behavior of the bold and italic buttons both when clicking and when selecting text.
+- Modified the internal structure.
 
 ---
 
 ## 1.9.1 - 2026-05-02
 
-### 改善
+### Improvements
 
-- モバイル版で設定画面のドロップダウン項目のレイアウトを調整しました。
-- 背景色のデフォルト値を、Obsidian 標準テーマと馴染みやすい色に変更しました。新規インストール時または背景色のリセット時にのみ反映されます。
+- Adjusted the layout of dropdown items in the settings screen for the mobile version.
+- Changed the default background color to one that blends better with Obsidian's standard themes. This only applies to new installations or when resetting the background color.
 
 ---
 
 ## 1.9.0 - 2026-05-02
 
-### 改善
+### Improvements
 
-- Obsidian のウィークリー / マンスリーノート運用に対応しました。Obsidian の「デイリーノート」設定で日付書式を `GGGG年WW週`（ウィークリー）や `YYYY年MM月`（マンスリー）などに変更すると、同じ週 / 月内のメモが同じノートに集約されます。
-- 日付ラベルを再度タップしたとき、新しいタブを開かず既存のタブにフォーカスするようにしました。
+- Supported Obsidian's Weekly and Monthly note workflows. If you change the date format in Obsidian's "Daily Notes" settings to something like `GGGG-[W]WW` (Weekly) or `YYYY-MM` (Monthly), memos within the same week or month will be consolidated into the same note.
+- Tapping a date label again will now focus on the existing tab instead of opening a new one.
 
 ---
 
 ## 1.8.2 - 2026-05-01
 
-### 改善
+### Improvements
 
-- 「タグ別に色を変える」の各ルールにロック機構を追加し、誤操作を防げるようにしました。ロックアイコンのタップで解除・再ロックを切り替えられ、設定画面を開き直すたびにロック状態に戻ります。
+- Added a locking mechanism to each rule in "Change colors by tag" to prevent accidental changes. You can toggle the lock by tapping the lock icon; it will return to a locked state every time you reopen the settings screen.
 
 ---
 
 ## 1.8.1 - 2026-04-30
 
-### 改善
+### Improvements
 
-- チェックボックスのチェックマーク位置を調整しました。
-- 設定画面のカテゴリ名「その他の設定」を「表示設定」に変更しました。
+- Adjusted the position of the checkbox checkmark.
+- Renamed the "Other Settings" category in the settings screen to "Display Settings."
 
 ---
 
 ## 1.8.0 - 2026-04-30
 
-### 機能追加
+### New Features
 
-- 投稿フォームに画像添付機能を追加しました。ツールバーの画像追加ボタン（クリップアイコンの左隣）からファイル選択ダイアログを開けるほか、投稿フォームへのクリップボードペースト（Cmd+V）と画像ファイルのドラッグ&ドロップにも対応しています。
+- Added an image attachment feature to the post form. You can open a file selection dialog via the image button (next to the paperclip icon) in the toolbar. It also supports pasting from the clipboard (Cmd+V) and dragging and dropping image files into the form.
 
-### 改善
+### Improvements
 
-- `obsidian://` URL で参照している画像ファイルが削除された場合も、未解決リンクとして表示されるようになりました。
+- Image files referenced via `obsidian://` URLs will now display as unresolved links if the file is deleted.
 
-### 注意事項
+### Notes
 
-- 画像添付は1メモにつき1枚までです。
-- ファイル選択ダイアログでは PNG / GIF / JPEG のみ選択できます。ペーストとドラッグ&ドロップでは WebP・SVG・BMP なども受け付けます。
-- 画像ファイル名は `Pasted Image YYYYMMDDHHmmss.<拡張子>` の形式で保存されます。
-- 各OSのファイラー（Finder / エクスプローラー など）でファイルをコピー（⌘C / Ctrl+C）して貼り付ける操作には対応していません。ファイラーから画像を追加するには、画像追加ボタンまたはドラッグ&ドロップを使用してください。
+- Only one image can be attached per memo.
+- Only PNG, GIF, and JPEG can be selected in the file selection dialog. Pasting and drag-and-drop also accept WebP, SVG, BMP, etc.
+- Image files are saved in the format `Pasted Image YYYYMMDDHHmmss.<extension>`.
+- Copying and pasting files directly from the OS file manager (Finder / Explorer, etc.) is not supported. To add images from a file manager, use the "Add Image" button or drag and drop.
 
 ---
 
 ## 1.7.0 - 2026-04-27
 
-### 機能追加
+### New Features
 
-- `obsidian://` URL（例: `obsidian://open?vault=MyVault&file=photo.png`）で画像ファイルを指定したとき、`![[]]` の埋め込みと同じ見た目で画像プレビューが表示されるようになりました。詳しくは [LINKS.md](LINKS.md) を参照してください。
+- When an image file is specified via an `obsidian://` URL (e.g., `obsidian://open?vault=MyVault&file=photo.png`), an image preview will be displayed with the same look as an `![[]]` embed. See [docs/en/links-and-embeds.md](docs/en/links-and-embeds.md) for details.
 
-### 改善
+### Improvements
 
-- 「Obsidianのフォントサイズに追従」がONのときの表示バランスを改善しました。Wrot本来の文字サイズ比率（本文・UI小・UI極小）を保ったままObsidianの本文サイズに追従します。
-- 設定画面の文面を再調整しました。
+- Improved the visual balance when "Follow Obsidian Font Size" is ON. It now follows Obsidian's body text size while maintaining Wrot's original font size ratios (Body, UI Small, UI Extra Small).
+- Readjusted the wording in the settings screen.
 
 ---
 
 ## 1.6.1 - 2026-04-25
 
-### 改善
+### Improvements
 
-- 「Obsidianのフォントサイズに追従」がONの状態で、各メモの3点ボタンとピンアイコンもフォントサイズに追従するようになりました。
-- 設定画面の文言を調整しました。
+- When "Follow Obsidian Font Size" is ON, the three-dot buttons and pin icons for each memo now also follow the font size.
+- Adjusted the wording in the settings screen.
 
 ---
 
 ## 1.6.0 - 2026-04-24
 
-### 機能追加
+### New Features
 
-- メモのピン留め機能を追加しました。日付を問わずタイムラインの先頭に固定でき、ピン留め中のメモにはカード右下にピンアイコンが付きます。
-- 設定画面に「ピン留めの上限」項目を追加しました。1件 / 3件 / 5件から選択できます。デフォルトは3件です。
+- Added a memo pinning feature. You can now pin memos to the top of the timeline regardless of the date. Pinned memos display a pin icon in the bottom right of the card.
+- Added a "Pin Limit" item to the settings screen. You can choose from 1, 3, or 5. The default is 3.
 
-### 改善
+### Improvements
 
-- 各メモのタイムスタンプ横のコピーボタンを3点メニューに置き換えました。メニューから「コピー」「ピン留め」「ピンを外す」の操作ができます。
-- 3点メニューを開いている間は、発動したボタンがアクセントカラーで光るようにしました。どのメニューが今開いているかわかりやすくなります。
+- Replaced the copy button next to the timestamp on each memo with a three-dot menu. You can perform "Copy," "Pin," and "Unpin" actions from the menu.
+- The active button now glows with the accent color while the three-dot menu is open. This makes it easier to see which menu is currently active.
 
-### 注意事項
+### Notes
 
-- ピン留めしたメモをObsidian本体でデイリーノートから削除した場合、ピン留めも自動的に外れます。
-- ピン留めの上限を小さい値に変更した場合、超過分は新しくピン留めしたものから順に残り、古いものが外れます。
+- If a pinned memo is deleted from the Daily Note within Obsidian, it will automatically be unpinned.
+- If the pin limit is changed to a smaller value, the most recently pinned items will remain, and older ones will be unpinned to fit the limit.
 
 ---
 
 ## 1.5.0 - 2026-04-23
 
-### 機能追加
+### New Features
 
-- コードブロック（`~~~` 記法）に対応しました。シンタックスハイライト付きで表示されます。
-- 数式ブロック（`$$...$$`）に対応しました。
-- 投稿フォームの3点メニューの「コード」「数式」ボタンが、テキスト未選択時はブロック版を挿入するようになりました。テキスト選択時は従来どおりインライン版になります。
+- Supported code blocks (`~~~` syntax). They are displayed with syntax highlighting.
+- Supported math blocks (`$$...$$`).
+- The "Code" and "Math" buttons in the post form's three-dot menu now insert the block version when no text is selected. When text is selected, they insert the inline version as before.
 
-### 注意事項
+### Notes
 
-- タグ色ルール適用中のメモでは、コードブロックのシンタックスハイライトは無効になります。ハイライトを有効にしたいコードを書く場合は、タグを付けないか、ルールに登録していないタグを使ってください。
-- メモ本文内にコードブロックを書く場合、外側の ` ```wr ` フェンスと衝突しないよう ` ``` ` ではなく `~~~` で囲んでください。
+- Syntax highlighting for code blocks is disabled for memos with tag color rules applied. If you want to write code with highlighting, please do not use tags or use tags not registered in the rules.
+- When writing a code block inside a memo, use `~~~` instead of ` ``` ` to avoid conflict with the outer ` ```wr ` fence.
 
 ---
 
 ## 1.4.5 - 2026-04-18
 
-### バグ修正
+### Bug Fixes
 
-- フォント追従OFFの状態でも、モバイルで投稿本文・入力欄・日付・ボタン類などタイムライン全体の文字サイズが従来より大きく表示されていた問題を修正しました。v1.4.4 でタイムスタンプのみ対応していましたが、今回全要素を従来のサイズに戻しました。
+- Fixed an issue where the font size for the entire timeline (post body, input fields, dates, buttons, etc.) was larger than before on mobile even when font size following was OFF. While v1.4.4 addressed this only for timestamps, all elements have now been returned to their original size.
 
 ---
 
 ## 1.4.4 - 2026-04-18
 
-### バグ修正
+### Bug Fixes
 
-- モバイルでタイムラインのタイムスタンプ文字サイズが、フォント追従OFFの状態でも従来より大きく表示されていた問題を修正しました。
+- Fixed an issue where the timestamp font size on the mobile timeline was larger than before even when font size following was OFF.
 
 ---
 
 ## 1.4.3 - 2026-04-18
 
-### 機能追加
+### New Features
 
-- 基本設定に「Obsidianのフォントサイズに追従」トグルを追加しました。ONにするとWrotの文字サイズがObsidianの外観設定に連動します。デフォルトはOFFで、従来の見た目のままです。
+- Added a "Follow Obsidian Font Size" toggle to the Basic Settings. When turned ON, Wrot's font size will link to Obsidian's appearance settings. The default is OFF, maintaining the original look.
 
-### 改善
+### Improvements
 
-- タグ別カード色ルールを新規追加する際、現在のテーマ（ライト/ダーク）に合わせた背景色・文字色が初期値として表示されるようになりました。
+- When adding a new tag-specific card color rule, the default background and text colors will now match your current theme (Light/Dark).
 
 ---
 
 ## 1.4.2 - 2026-04-16
 
-### バグ修正
+### Bug Fixes
 
-- タイムラインのコピーボタンで、コピーに成功した時のチェックマークの色が、タグ別カード色ルールのアクセントカラーにならない不具合を修正しました。
+- Fixed a bug where the checkmark color for a successful copy (via the timeline copy button) did not use the accent color defined in the tag-specific card color rules.
 
 ---
 
 ## 1.4.1 - 2026-04-15
 
-### 機能追加
+### New Features
 
-- タグ別カード色ルールにアクセントカラーを追加しました。ルールに該当する投稿カードのタグ・内部リンク・URL・数式ハイライト・コピー完了アイコンの色を、ルールごとに上書きできます。背景色との相性でデフォルトのアクセントカラーが見づらい場合に調整してください。未設定時は従来どおりテーマのアクセントカラーを使います。
+- Added accent colors to Tag-Specific Card Color Rules. You can now override the color of tags, internal links, URLs, math highlighting, and copy-complete icons for each rule. Adjust this if the default accent color is hard to see against the background color. If left unset, the theme's accent color is used as before.
 
-### 改善
+### Improvements
 
-- 設定画面に「基本設定」「その他の設定」の見出しを追加し、関連項目をまとめました。
-- 設定画面を微調整しました。
-- 投稿フォームを微調整しました。
+- Added "Basic Settings" and "Display Settings" headings to the settings screen to organize related items.
+- Fine-tuned the settings screen.
+- Fine-tuned the post form.
 
 ---
 
 ## 1.4.0 - 2026-04-14
 
-### 機能追加
+### New Features
 
-- タグ別カード色ルールを追加しました。設定画面でタグ名と背景色・文字色を登録すると、そのタグを含む投稿カードの色が変わります。Wrot サイドバー / Reading View / Live Preview のすべてで反映され、複数ルールに該当する場合は本文で先に書かれたタグの色が適用されます。OGP / Twitter カードの色もルールに追従します。
-- ツールバーの3点メニューから Wrot の設定画面を直接開けるようにしました。投稿を書きながら色設定を調整しやすくなります。
+- Added Tag-Specific Card Color Rules. By registering a tag name with a background and text color in the settings, the color of posts containing that tag will change. This is reflected in the Wrot sidebar, Reading View, and Live Preview. If a post matches multiple rules, the color of the first tag mentioned in the body will be applied. OGP and Twitter cards also follow these rules.
+- You can now open Wrot's settings screen directly from the toolbar's three-dot menu. This makes it easier to adjust color settings while writing posts.
 
-### 改善
+### Improvements
 
-- 狭いサイドバーや iPad ピン留め時にツールバーのボタンが溢れないよう、自動で折り返すようにしました。
-- モバイルのタイムライン表示で、投稿カードの幅を Obsidian のサイドバー幅に合わせて調整しました。
+- Toolbar buttons now automatically wrap to prevent overflowing in narrow sidebars or when pinned on iPad.
+- Adjusted the post card width in the mobile timeline view to match Obsidian's sidebar width.
 
 ---
 
 ## 1.3.2 - 2026-04-14
 
-### 改善
+### Improvements
 
-- 投稿ボタンのアイコンと入力欄の空欄メッセージを、設定で空欄にすると非表示にできるようになりました。
-- モバイル表示でタイムライン最下部の余白を広げ、下部UIと重なりにくくしました。
+- The post button icon and the input field placeholder can now be hidden by leaving them blank in the settings.
+- Increased the margin at the bottom of the timeline in mobile view to prevent overlap with the bottom UI.
 
 ---
 
 ## 1.3.1 - 2026-04-13
 
-### 更新
+### Updates
 
-- 依存関係を更新しました。
+- Updated dependencies.
 
 ---
 
 ## 1.3.0 - 2026-04-13
 
-### 機能追加
+### New Features
 
-- ツールバーの3点メニューに「リンク」を追加しました。選択したテキストを `[テキスト](URL)` 形式のリンクに変換し、URL入力位置にカーソルが移動します。
-- 入力欄の空欄メッセージを設定画面から変更できるようにしました。
+- Added "Link" to the toolbar's three-dot menu. It converts selected text into the `[text](URL)` format and moves the cursor to the URL input position.
+- The input field placeholder can now be customized from the settings screen.
 
-### 改善
+### Improvements
 
-- 設定画面の色設定を並び替えました。
+- Reordered the color settings in the settings screen.
 
-### バグ修正
+### Bug Fixes
 
-- 太字または斜体モードを押したあとにマーカー（`**` / `*`）を削除しても、ツールバーボタンの選択状態が解除されない不具合を修正しました。
+- Fixed a bug where the toolbar button remained in a selected state even after deleting the markers (`**` / `*`) in bold or italic mode.
 
 ---
 
 ## 1.2.0 - 2026-04-12
 
-### 機能追加
+### New Features
 
-- 投稿ボタンのアイコンを設定画面から変更できるようにしました。
+- The post button icon can now be changed from the settings screen.
 
-### 改善
+### Improvements
 
-- iPadでの表示を最適化しました。固定サイドバー・非固定サイドバーの両方でレイアウトが正しく表示されます。
+- Optimized the display for iPad. The layout now renders correctly in both fixed and non-fixed sidebars.
 
 ---
 
 ## 1.1.1 - 2026-04-11
 
-### 改善
+### Improvements
 
-- プラグイン一覧に表示される開発者名と説明文を見直しました。
+- Revised the developer name and description displayed in the plugin list.
 
 ---
 
 ## 1.1.0 - 2026-04-11
 
-### 機能追加
+### New Features
 
-- ツールバーの埋め込みボタンで、選択範囲を `![[選択テキスト]]` の形にワンタップで変換できるようにしました。既に `![[...]]` / `[[...]]` になっている選択範囲を再度タップすると解除されます。
-- 内部リンク・埋め込みリンク（`[[X]]` / `![[X]]`）でリンク先のノートが存在しない場合に、未解決リンクとして表示するようにしました。ノートを新規作成・削除した際にも自動で表示が更新されます。
+- Added an embed button to the toolbar that converts the selection into `![[selected text]]` with a single tap. Tapping again on a selection that is already `![[...]]` or `[[...]]` will remove the formatting.
+- Internal links and embed links (`[[X]]` / `![[X]]`) now display as unresolved links if the target note does not exist. The display updates automatically when notes are created or deleted.
 
-### バグ修正
+### Bug Fixes
 
-- リーディングビューのコードブロックで、コピーボタンがホバーしていなくても常に表示されてしまう不具合を修正しました。
-- ライブプレビューでコードブロック右端のコピーボタン（wr）の背景が塗りつぶされ、メモ末尾の文字が見えなくなる不具合を修正しました。
+- Fixed an issue in Reading View where the copy button for code blocks was always visible even without hovering.
+- Fixed a bug in Live Preview where the background of the code block copy button (wr) was filled, making text at the end of the memo invisible.
 
 ---
 
 ## 1.0.3 - 2026-04-10
 
-### バグ修正
+### Bug Fixes
 
-- モバイルで日付ナビゲーションボタン（前日/次日/今日）をタップした後に背景ハイライトが残ってしまう不具合を修正しました。
+- Fixed a bug on mobile where the background highlight remained after tapping date navigation buttons (Previous / Next / Today).
 
 ---
 
 ## 1.0.2 - 2026-04-10
 
-### 改善
+### Improvements
 
-- 日付ラベルをクリックした際のフィードバックを追加しました。
+- Added feedback when clicking a date label.
 
 ---
 
 ## 1.0.1 - 2026-04-09
 
-### バグ修正
+### Bug Fixes
 
-- ライブプレビューでタグ・リンク・URL・数式にアクセントカラーが反映されない不具合を修正しました。
-- Cmd+Enter（macOS）/ Ctrl+Enter（Windows/Linux）でメモを投稿できない不具合を修正しました。
+- Fixed a bug where the accent color was not reflected in tags, links, URLs, and math in Live Preview.
+- Fixed an issue where memos could not be posted using Cmd+Enter (macOS) or Ctrl+Enter (Windows/Linux).
 
 ---
 
 ## 1.0.0 - 2026-04-09
 
-初回公開バージョンです。
+Initial release.
 
-### 機能一覧
+### Feature List
 
-- **タイムラインビュー**: サイドバーにメモ一覧をカード形式で表示します。
-- **テキスト書式**: 太字、斜体、取り消し線、ハイライト、インラインコードに対応しました。
-- **インライン数式**: $...$ 記法でLaTeX数式をレンダリングします。
-- **リスト**: 箇条書き、番号付きリスト、チェックリストに対応しました。
-- **引用**: ブロック引用（> ）に対応しました。
-- **タグ**: #タグ でメモを分類、クリックで検索できます。
-- **リンク/埋め込み**: 内部リンク（![[]]）、外部URL、obsidian:// URLに対応しました。
-- **URLプレビュー**: OGPカード、Twitter/X埋め込み、画像プレビューを表示します。
-- **ライブプレビュー対応**: エディタ上で書式のリッチ表示、マーカー非表示に対応しました。
-- **リーディングビュー対応**: 閲覧モードでもリッチ表示されます。
-- **カスタマイズ**: 背景色・文字色をライト/ダークモード別に設定できます。
-- **チェック済み取り消し線**: チェックボックスON時の取り消し線表示を設定でON/OFFできます。
-- **BRAT対応**: BRAT経由でのインストールに対応しました。
+- **Timeline View**: Displays a list of memos in card format in the sidebar.
+- **Text Formatting**: Supports bold, italic, strikethrough, highlight, and inline code.
+- **Inline Math**: Renders LaTeX formulas using $...$ syntax.
+- **Lists**: Supports bulleted lists, numbered lists, and checklists.
+- **Quotes**: Supports blockquotes (> ).
+- **Tags**: Categorize memos with #tags and click to search.
+- **Links/Embeds**: Supports internal links (![[]]), external URLs, and obsidian:// URLs.
+- **URL Previews**: Displays OGP cards, Twitter/X embeds, and image previews.
+- **Live Preview Support**: Rich formatting and hidden markers in the editor.
+- **Reading View Support**: Rich display is also available in viewing mode.
+- **Customization**: Background and text colors can be set separately for light and dark modes.
+- **Checked Strikethrough**: Toggle strikethrough for completed checkboxes ON/OFF in settings.
+- **BRAT Support**: Supports installation via BRAT.

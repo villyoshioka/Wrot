@@ -1,7 +1,7 @@
 {
   "name": "wrot",
-  "version": "1.14.0",
-  "description": "Daily memo tool with timeline UI for Obsidian",
+  "version": "2.0.0",
+  "description": "A daily memo tool with a timeline UI.",
   "type": "module",
   "scripts": {
     "dev": "node esbuild.config.mjs",
@@ -11,7 +11,7 @@
     "@codemirror/language": "^6.12.3",
     "@codemirror/state": "6.5.0",
     "@codemirror/view": "6.38.6",
-    "@types/node": "^25.8.0",
+    "@types/node": "^25.9.1",
     "esbuild": "^0.28.0",
     "obsidian": "latest",
     "tslib": "^2.7.0",

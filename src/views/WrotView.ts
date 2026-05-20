@@ -9,6 +9,7 @@ import { ensureBlockIdOnFence } from "../utils/memoWriter";
 import { isImageFile, saveImageToVault, buildEmbedLink } from "../utils/imageAttachment";
 import type WrotPlugin from "../main";
 import type { PinEntry } from "../settings";
+import { t } from "../i18n";
 
 declare const moment: typeof import("moment");
 
@@ -251,7 +252,7 @@ export class WrotView extends ItemView {
       this.refresh();
     });
 
-    const todayBtn = nav.createEl("button", { cls: "wr-today-btn", text: "\u4eca\u65e5" });
+    const todayBtn = nav.createEl("button", { cls: "wr-today-btn", text: t("view.dateNav.today") });
     todayBtn.addEventListener("click", () => {
       this.currentDate = moment();
       this.anchoredToToday = true;
@@ -519,7 +520,7 @@ export class WrotView extends ItemView {
       const ta = this.textarea;
       const hasSelection = ta.selectionStart !== ta.selectionEnd;
       this.openMenu(formatBtn, (menu) => {
-        menu.addItem((item) => item.setTitle("コード").setIcon("code").onClick(() => {
+        menu.addItem((item) => item.setTitle(t("view.formatMenu.code")).setIcon("code").onClick(() => {
           const t = this.textarea;
           if (t.selectionStart !== t.selectionEnd) {
             this.wrapSelection("`", "`");
@@ -527,7 +528,7 @@ export class WrotView extends ItemView {
             this.insertCodeBlock();
           }
         }));
-        menu.addItem((item) => item.setTitle("数式").setIcon("sigma").onClick(() => {
+        menu.addItem((item) => item.setTitle(t("view.formatMenu.math")).setIcon("sigma").onClick(() => {
           const t = this.textarea;
           if (t.selectionStart !== t.selectionEnd) {
             this.wrapSelection("$", "$");
@@ -535,23 +536,23 @@ export class WrotView extends ItemView {
             this.insertMathBlock();
           }
         }));
-        menu.addItem((item) => item.setTitle("引用").setIcon("quote").onClick(() => this.toggleBlockPrefix("> ")));
+        menu.addItem((item) => item.setTitle(t("view.formatMenu.quote")).setIcon("quote").onClick(() => this.toggleBlockPrefix("> ")));
         menu.addSeparator();
         menu.addItem((item) => {
-          item.setTitle("リンク").setIcon("link").onClick(() => this.insertMarkdownLink());
+          item.setTitle(t("view.formatMenu.link")).setIcon("link").onClick(() => this.insertMarkdownLink());
           if (!hasSelection) item.setDisabled(true);
         });
         menu.addItem((item) => {
-          item.setTitle("取り消し線").setIcon("strikethrough").onClick(() => this.wrapSelection("~~", "~~"));
+          item.setTitle(t("view.formatMenu.strikethrough")).setIcon("strikethrough").onClick(() => this.wrapSelection("~~", "~~"));
           if (!hasSelection) item.setDisabled(true);
         });
         menu.addItem((item) => {
-          item.setTitle("ハイライト").setIcon("highlighter").onClick(() => this.wrapSelection("==", "=="));
+          item.setTitle(t("view.formatMenu.highlight")).setIcon("highlighter").onClick(() => this.wrapSelection("==", "=="));
           if (!hasSelection) item.setDisabled(true);
         });
         menu.addSeparator();
         menu.addItem((item) => {
-          item.setTitle("設定").setIcon("settings").onClick(() => {
+          item.setTitle(t("view.formatMenu.settings")).setIcon("settings").onClick(() => {
             const settingApi = (this.app as any).setting;
             if (settingApi?.open && settingApi?.openTabById) {
               settingApi.open();
@@ -710,7 +711,7 @@ export class WrotView extends ItemView {
     img.src = this.pendingImageUrl;
     const removeBtn = wrap.createEl("button", { cls: "wr-thumbnail-remove" });
     setIcon(removeBtn, "x");
-    removeBtn.setAttr("aria-label", "画像を削除");
+    removeBtn.setAttr("aria-label", t("view.image.removeAria"));
     removeBtn.addEventListener("mousedown", (e) => e.preventDefault());
     removeBtn.addEventListener("click", () => this.clearPendingImage());
   }
@@ -764,7 +765,7 @@ export class WrotView extends ItemView {
       this.textarea.dispatchEvent(new Event("input"));
       await this.refresh();
     } catch (e) {
-      new Notice(`\u30e1\u30e2\u306e\u4fdd\u5b58\u306b\u5931\u6557\u3057\u307e\u3057\u305f: ${e}`);
+      new Notice(t("view.notice.saveFailed", { error: String(e) }));
     }
   }
 
@@ -776,7 +777,7 @@ export class WrotView extends ItemView {
     try {
       const isToday = this.currentDate.isSame(moment(), "day");
       const dateText = this.currentDate.format(this.plugin.settings.headerDateFormat);
-      this.dateLabel.setText(isToday ? `${dateText}\uff08\u4eca\u65e5\uff09` : dateText);
+      this.dateLabel.setText(isToday ? `${dateText}${t("view.dateNav.todaySuffix")}` : dateText);
 
       this.listContainer.empty();
 
@@ -796,7 +797,7 @@ export class WrotView extends ItemView {
         if (pinnedResolved.length === 0) {
           this.listContainer.createDiv({
             cls: "wr-empty",
-            text: "\u30e1\u30e2\u306f\u3042\u308a\u307e\u305b\u3093",
+            text: t("view.empty.noMemos"),
           });
         }
         return;
@@ -809,7 +810,7 @@ export class WrotView extends ItemView {
         if (pinnedResolved.length === 0) {
           this.listContainer.createDiv({
             cls: "wr-empty",
-            text: "\u30e1\u30e2\u306f\u3042\u308a\u307e\u305b\u3093",
+            text: t("view.empty.noMemos"),
           });
         }
         return;
@@ -1012,24 +1013,24 @@ export class WrotView extends ItemView {
       const limitReached = !pinned && this.plugin.settings.pins.length >= pinLimit;
       this.openMenu(menuBtn, (menu) => {
         menu.addItem((item) =>
-          item.setTitle("コピー").setIcon("copy").onClick(async () => {
+          item.setTitle(t("view.postMenu.copy")).setIcon("copy").onClick(async () => {
             await navigator.clipboard.writeText(memo.content);
           })
         );
         menu.addItem((item) =>
-          item.setTitle("引用").setIcon("quote").onClick(() => {
+          item.setTitle(t("view.postMenu.quotePost")).setIcon("quote").onClick(() => {
             this.insertQuoteToForm(memo, options.filePath);
           })
         );
         if (pinned) {
           menu.addItem((item) =>
-            item.setTitle("ピンを外す").setIcon("pin-off").onClick(async () => {
+            item.setTitle(t("view.postMenu.unpin")).setIcon("pin-off").onClick(async () => {
               await this.removePin(memo);
             })
           );
         } else {
           menu.addItem((item) => {
-            item.setTitle("ピン留め").setIcon("pin").onClick(async () => {
+            item.setTitle(t("view.postMenu.pin")).setIcon("pin").onClick(async () => {
               if (limitReached) return;
               await this.addPin(memo, options.filePath);
             });
@@ -1038,7 +1039,7 @@ export class WrotView extends ItemView {
           if (limitReached) {
             menu.addItem((item) => {
               item
-                .setTitle(`ピン留めは${pinLimit}件までです。`)
+                .setTitle(t("view.postMenu.pinLimitHint", { limit: pinLimit }))
                 .setDisabled(true);
               const itemDom = (item as any).dom as HTMLElement | undefined;
               itemDom?.classList.add("wr-menu-hint", "is-label");
@@ -1393,7 +1394,7 @@ export class WrotView extends ItemView {
     if (searchPlugin?.instance) {
       searchPlugin.instance.openGlobalSearch(`"${tag.replace(/"/g, '\\"')}"`);
     } else {
-      new Notice("\u691c\u7d22\u30d7\u30e9\u30b0\u30a4\u30f3\u304c\u898b\u3064\u304b\u308a\u307e\u305b\u3093");
+      new Notice(t("view.notice.searchPluginNotFound"));
     }
   }
 

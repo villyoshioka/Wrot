@@ -5,6 +5,7 @@ import { WrotView } from "./views/WrotView";
 import { registerWrotPostProcessor } from "./postProcessor";
 import { createWrEditorExtension, tagRulesChanged, vaultFilesChanged } from "./editorExtension";
 import { OGPCache } from "./utils/ogpCache";
+import { initI18n, t, getActiveLocale } from "./i18n";
 
 const ATTACHMENT_EXT_RE = /^(png|jpe?g|gif|webp|svg|bmp)$/i;
 
@@ -16,6 +17,7 @@ export default class WrotPlugin extends Plugin {
   private fontStyleEl: HTMLStyleElement | null = null;
 
   async onload(): Promise<void> {
+    initI18n();
     await this.loadSettings();
     await loadMathJax();
     this.ogpCache = new OGPCache();
@@ -1004,7 +1006,32 @@ export default class WrotPlugin extends Plugin {
         dirty = true;
       }
     }
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, raw);
+    // 新規インストール時のみ、言語依存デフォルトを採用する。
+    // 既存ユーザーは保存済みの値が raw に入っているので、Object.assign で raw 側が勝つ。
+    const localizedDefaults: WrotSettings = {
+      ...DEFAULT_SETTINGS,
+      headerDateFormat: t("defaults.headerDateFormat"),
+      submitLabel: t("defaults.submitLabel"),
+      inputPlaceholder: t("defaults.inputPlaceholder"),
+    };
+    this.settings = Object.assign({}, localizedDefaults, raw);
+
+    // 起動時に Obsidian の言語が前回と変わっていたら、テキスト系3項目を現在言語のデフォルトに上書きする。
+    // 言語体系が変わるとカスタム値そのものの意味が成立しなくなるため、問答無用でリセットする方針。
+    // lastLocale 未記録（i18n 導入前から使っているユーザーの初回）は記録だけ行い、リセットは走らせない。
+    const currentLocale = getActiveLocale();
+    const previousLocale = (raw as { lastLocale?: string }).lastLocale;
+    if (previousLocale !== undefined && previousLocale !== currentLocale) {
+      this.settings.headerDateFormat = t("defaults.headerDateFormat");
+      this.settings.submitLabel = t("defaults.submitLabel");
+      this.settings.inputPlaceholder = t("defaults.inputPlaceholder");
+      dirty = true;
+    }
+    if (previousLocale !== currentLocale) {
+      this.settings.lastLocale = currentLocale;
+      dirty = true;
+    }
+
     if (dirty) {
       await this.saveData(this.settings);
     }

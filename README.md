@@ -1,130 +1,142 @@
 # Wrot
 
-**Obsidian で、つぶやくように日々を記録するプラグイン。**
+**English** ・ [日本語](docs/ja/README.md)
+
+**An Obsidian plugin for micro-journaling your day, one "tweet" at a time.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow)](https://opensource.org/licenses/MIT)
 [![release](https://img.shields.io/github/v/release/villyoshioka/Wrot)](https://github.com/villyoshioka/Wrot/releases/latest)
-[![downloads](https://img.shields.io/github/downloads/villyoshioka/Wrot/total)](https://github.com/villyoshioka/Wrot/releases)
 
-> **注意**: **このプラグインについて、コードは公開していますが、サポートは行っていません。**
-
----
-
-## Wrot って？
-
-Write + Jot = **Wrot**。「書く」と「さっとメモする」を合わせた、Obsidian 用の小さなつぶやきプラグインです。  
-SNS のような気軽さで書けて、誰にも見られず、勝手に整理もされない。愚痴も独り言もメモも、自由に置いておけるあなただけの空間です。  
-書いたものはそのままデイリーノートに残るので、Obsidian の検索・リンク・振り返りとも自然に噛み合い、Obsidian そのものが少し手に馴染むようになります。
+> **Note**: **While the source code is public, I do not offer individual support for this plugin.**
 
 ---
 
-## Wrot ができること
+## What is Wrot?
 
-- **リッチな UI** — ツールバー付きの投稿エディタで書式・リスト・リンク・引用まで。投稿はまるで SNS のタイムラインのように並び、書くのも読み返すのも気持ちよく。
-- **ピン留めで埋もれさせない** — 忘れたくないメモはピン留めしておくと、日付を問わずタイムラインの先頭に表示されます。日々の買い物リストや進行中のタスク、大事なことを視界から消さずに済みます。
-- **タグで絞り込める** — `#タグ` をクリックすると、そのタグを含むメモを Obsidian の検索からそのまま辿れます。
-- **タグで色を付けられる** — よく使うタグに好きな背景色と文字色を割り当てると、そのタグを含む投稿が自動で色付きで表示されます。カテゴリ・気分・優先度など、自分だけのルールで一覧がグッと見やすくなります。
-- **リンクと URL プレビュー** — 内部リンク（![[]]）や外部URLはもちろん、OGPカードや画像プレビューでリンク先の中身がひと目でわかります。詳しくは [画像・リンク・埋め込みの使い方](LINKS.md) を参照してください。
-- **画像をぺっと貼れる** — スクリーンショットや画像ファイルを、貼り付け・ドラッグ&ドロップ・ボタンから簡単に添付できます。投稿前にサムネイルでプレビューできるので、貼り間違えたらサムネ右上の×ボタンで取り消せます。
-- **自分好みに** — 背景色・文字色、投稿ボタンのテキストやアイコンまで、自分だけのメモ空間に仕立てられます。
+Write + Jot = **Wrot**. It’s a lightweight micro-journaling plugin for Obsidian designed for quick thoughts and daily reflections.
+Wrot offers the casual ease of social media, but in a private space that's for your eyes only—no algorithms, no external organization. Whether it’s a quick vent, a random thought, or a simple memo, it’s your space to keep whatever you want.
+Everything you write is saved directly into your Daily Notes. This means it works seamlessly with Obsidian’s search, linking, and review features, making the app feel like a more natural extension of your daily life.
 
 ---
 
-## メモの保存先は？
+## Features
 
-メモはすべて、Obsidian の「デイリーノート」設定に従ったノートの中に ` ```wr ` コードブロックとして保存されます。特別なデータベースや外部サービスは使いません。あなたの Vault の中だけで完結します。
-
-編集したいときや削除したいときは、そのノートを直接開くだけ。データはいつでもあなたの手の中にあります。
-
-Obsidian の「デイリーノート」設定で日付書式を週次（例: `GGGG年WW週`）や月次（例: `YYYY年MM月`）などに変更すれば、ウィークリー / マンスリー運用としても使えます。
-
-> **注意事項**: Wrot を使うには、Obsidian のコアプラグイン「デイリーノート」を有効にしてください。
-
----
-
-## 対応プラットフォーム
-
-[Obsidian](https://obsidian.md/) がサポートするすべてのプラットフォームに対応しています。
-
-- macOS
-- iOS / iPadOS
-- Windows（動作未確認）
-- Linux（動作未確認）
-- Android（動作未確認）
+- **Rich UI** — A post editor with a dedicated toolbar for formatting, lists, links, and quotes. The timeline view makes writing and revisiting your notes feel intuitive and satisfying. See [Formatting Guide](./docs/en/formatting-guide.md) for more details.
+- **Pin Important Notes** — Keep essential memos at the top of your timeline regardless of the date. Perfect for shopping lists, active tasks, or reminders you don't want to lose track of.
+- **Tag Filtering** — Simply click a `#tag` to instantly view all related notes via Obsidian's built-in search.
+- **Color-Coded Tags** — Assign custom background and text colors to your most-used tags. Posts will automatically highlight based on your rules, making it easy to categorize by mood, priority, or project at a glance.
+- **Links & URL Previews** — Supports internal links (![[]]), external URLs, and OGP cards. Get a quick look at link content with image previews. See [Using Images, Links, and Embeds](./docs/en/links-and-embeds.md) for more details.
+- **Seamless Image Uploads** — Quickly attach screenshots or image files via paste, drag-and-drop, or the upload button. Preview thumbnails before you post, and easily remove any mistakes with a single click.
+- **Fully Customizable** — Tailor your workspace by adjusting background/text colors and even customizing the post button’s text and icon.
 
 ---
 
-## 使いかたの 3 ステップ
+## Where is my data stored?
 
-1. **プラグインを入れる** — [BRAT 経由のインストール](#brat-経由のインストール)、または[手動インストール](#手動インストール)から選んでください。
-2. **サイドバーを開く** — 羽アイコンをクリック、またはコマンドパレットから「Open Wrot」。タイムラインが現れます。
-3. **つぶやく** — テキストを入力して投稿ボタン（または Ctrl/Cmd+Enter）。それだけで、今日のメモが残ります。
+Every note is stored as a ` ```wr ` code block directly within your Obsidian **Daily Notes**. There are no hidden databases or external services involved; everything stays locally within your Vault.
 
-### BRAT 経由のインストール
+Since your data is stored in plain text, you can edit or delete entries simply by opening the note. You are always in full control of your data.
 
-[BRAT](https://github.com/TfTHacker/obsidian42-brat) は、コミュニティプラグインに登録されていないプラグインをインストール・自動更新するためのツールです。
+By adjusting the date format in Obsidian's "Daily Notes" settings (e.g., `GGGG-[W]WW` for weekly or `YYYY-MM` for monthly), you can easily adapt Wrot for weekly or monthly logging.
 
-1. Obsidian の「設定 → コミュニティプラグイン → コミュニティプラグインを閲覧」から `BRAT`（Obsidian42 - BRAT）を検索してインストールし、有効化します。
-2. 「設定 → BRAT → Add Beta plugin」を開きます。
-3. リポジトリ欄に `villyoshioka/Wrot` を入力して `Add Plugin` を押します。
-4. 「設定 → コミュニティプラグイン」で Wrot を有効化します。
-
-> **注意**: BRAT の画面は英語のままです。うまくいかない場合は下の[手動インストール](#手動インストール)を試してください。
-
-### 手動インストール
-
-1. [Releases](https://github.com/villyoshioka/Wrot/releases) から最新リリースの `main.js`、`manifest.json`、`styles.css` をダウンロード
-2. Vault のフォルダを開き、`.obsidian/plugins/wrot/` に 3 つのファイルを配置（`.obsidian/plugins/` や `wrot/` フォルダがない場合は、自分で作成してください）
-3. Obsidian の設定 → コミュニティプラグインで Wrot を有効化（一覧に出てこない場合は、コミュニティプラグイン画面右上の更新アイコンを押してから再確認）
-
-> **補足**: `.obsidian` フォルダはOSによって隠しフォルダ扱いになっています。macOS の Finder では `Cmd + Shift + .`、Windows のエクスプローラーでは「表示 → 隠しファイル」で表示できます。
+> **Requirement**: Wrot requires the Obsidian core plugin **"Daily Notes"** to be enabled.
 
 ---
 
-## 設定
+## Requirements
 
-Wrot は細かく調整できます。ここでは大まかなものだけ:
-
-- **ビューの配置** — 左/右サイドバー、またはメインエリア
-- **見た目** — ライト/ダーク別の背景色・文字色
-- **タグ別のカラールール** — タグごとに背景色と文字色を設定して、一覧をカテゴリ別に色分け
-- **ピン留めの上限** — タイムライン先頭に固定できるメモの数を 1 / 3 / 5 件から選択
-- **投稿ボタン** — テキストとアイコンをカスタマイズ
-- **タイムスタンプ形式** — 表示フォーマットを指定(例: `YYYY/MM/DD HH:mm:ss`)
-- **URL プレビュー** — リンク先の OGP カード表示の ON/OFF
-- **その他** — 投稿フォームが空のときのメッセージ、チェック済み項目の取り消し線など
-
-詳細は Obsidian の設定画面から確認してください。
+- **Minimum Obsidian version**: 1.5.0
+- Works on all platforms supported by [Obsidian](https://obsidian.md/):
+  - macOS
+  - iOS / iPadOS
+  - Windows (Untested)
+  - Linux (Untested)
+  - Android (Untested)
 
 ---
 
-## プライバシーについて
+## Supported Languages
 
-Wrot はあなたの手元だけで動きます。あなたのデータを勝手に集めたり、こっそり追跡したりすることは一切ありません。
+Wrot supports **9 languages across 10 locales**. It automatically syncs with your Obsidian language settings and defaults to English for unsupported languages.
 
-※ URL プレビューを有効にしている場合のみ、リンク先の OGP カード表示のためにそのリンク先へアクセスします。
-
----
-
-## ライセンスについて
-
-Wrot は [MIT ライセンス](LICENSE) で公開されています。
-
----
-
-## 謝辞
-
-Wrot は、以下のプロジェクトからインスピレーションを受けて生まれました。開発者の皆さんに深く感謝いたします。
-
-- [Obsidian Memos](https://github.com/Quorafind/Obsidian-Memos)（現: [Thino](https://github.com/Quorafind/Obsidian-Thino)）by Quorafind
-- [Mobile First Daily Interface (MFDI)](https://github.com/tadashi-aikawa/mobile-first-daily-interface) by tadashi-aikawa
-
-これらのプロジェクトへの敬意と、似た役割のプラグインが競合しないよう、Wrot はコミュニティプラグインには登録していません。
+| Language | Locale |
+| --- | --- |
+| Japanese | `ja` |
+| English (US) | `en` |
+| English (UK) | `en-GB` |
+| Korean | `ko` |
+| Spanish | `es` |
+| Portuguese | `pt` |
+| French | `fr` |
+| German | `de` |
+| Italian | `it` |
+| Russian | `ru` |
 
 ---
 
-## 開発について
+## Get Started in 3 Steps
 
-このプラグインは、開発者が設計と品質を見ながら、AI（Anthropic 社の Claude）の手も借りて開発しています。詳細は [AI 利用ポリシー](AI_POLICY.md) にまとめています。
+1. **Install the Plugin** — Via the [Obsidian Community Store](#from-the-obsidian-community-store) or [Manual Installation](#manual-installation).
+2. **Open the Sidebar** — Click the feather icon or use the Command Palette to "Open Wrot" to bring up your timeline.
+3. **Start Writing** — Type your thoughts and hit the post button (or Ctrl/Cmd+Enter). That’s it—your daily log has begun.
 
-**開発**: Vill Yoshioka([@villyoshioka](https://github.com/villyoshioka))
+### From the Obsidian Community Store
+
+1. Go to Obsidian **Settings → Community Plugins → Browse**.
+2. Search for `Wrot` and click **Install**.
+3. Once installed, click **Enable**.
+
+### Manual Installation
+
+1. Download `main.js`, `manifest.json`, and `styles.css` from the latest [Releases](https://github.com/villyoshioka/Wrot/releases).
+2. Open your Vault folder and place these files in `.obsidian/plugins/wrot/` (Create the folders if they don't exist).
+3. Enable Wrot in Obsidian **Settings → Community Plugins** (If it doesn't appear, click the refresh icon).
+
+> **Pro Tip**: The `.obsidian` folder is hidden by default. On macOS Finder, press `Cmd + Shift + .` to reveal it. On Windows, enable "Hidden items" in the File Explorer view settings.
+
+---
+
+## Settings
+
+Wrot is highly customizable. Key settings include:
+
+- **View Placement** — Choose between the left/right sidebar or the main editor area.
+- **Themes** — Custom background and text colors for both Light and Dark modes.
+- **Tag Styling** — Set specific colors for tags to categorize your timeline visually.
+- **Pin Limits** — Choose to pin 1, 3, or 5 notes to the top.
+- **Button Customization** — Change the post button’s label and icon.
+- **Time Formats** — Customize how timestamps appear (e.g., `YYYY/MM/DD HH:mm:ss`).
+- **URL Previews** — Toggle OGP card previews on or off.
+
+---
+
+## Privacy
+
+Wrot operates entirely locally. Your data is never collected, shared, or tracked.
+
+*External network requests are only made when URL Previews are enabled, specifically to fetch OGP data for the links you post.*
+
+---
+
+## License
+
+Wrot is licensed under the [MIT License](./LICENSE).
+
+---
+
+## Acknowledgments
+
+Wrot was inspired by the following projects. A huge thank you to their developers:
+
+- [Obsidian Memos](https://github.com/Quorafind/Obsidian-Memos) (Now: [Thino](https://github.com/Quorafind/Obsidian-Thino)) by [Quorafind](https://github.com/Quorafind)
+- [Mobile First Daily Interface (MFDI)](https://github.com/tadashi-aikawa/mobile-first-daily-interface) by [tadashi-aikawa](https://github.com/tadashi-aikawa)
+
+Special thanks to [catnose](https://x.com/catnose99) (Kioku LLC) for [Nani](https://nani.now/en), which helped refine the multilingual support for this plugin.
+
+---
+
+## Development
+
+This plugin is developed by the author with the assistance of AI (Anthropic's Claude) to ensure high-quality design and functionality. For more details, see the [AI Usage Policy](./AI_POLICY.md).
+
+**Developed by**: Vill Yoshioka ([@villyoshioka](https://github.com/villyoshioka))

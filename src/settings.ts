@@ -1,5 +1,6 @@
 import { App, ColorComponent, PluginSettingTab, Setting, TextComponent, setIcon } from "obsidian";
 import type WrotPlugin from "./main";
+import { t } from "./i18n";
 
 export interface SubColorScope {
   buttons?: boolean;
@@ -42,6 +43,9 @@ export interface WrotSettings {
   followObsidianFontSize: boolean;
   pins: PinEntry[];
   pinLimit: PinLimit;
+  // 起動時に Obsidian の言語が変わったかを検知するための「前回保存時のロケール」記録。
+  // 未設定（既存ユーザーで初出のとき）は loadSettings で現在ロケールを採用するだけで、リセットは走らせない。
+  lastLocale?: string;
 }
 
 export const DEFAULT_SETTINGS: WrotSettings = {
@@ -154,16 +158,16 @@ export class WrotSettingTab extends PluginSettingTab {
       this.narrowObserver.observe(containerEl);
     }
 
-    new Setting(containerEl).setName("基本設定").setHeading();
+    new Setting(containerEl).setName(t("settings.section.basic")).setHeading();
 
     new Setting(containerEl)
-      .setName("表示位置")
-      .setDesc("Wrotパネルの表示位置を選びます。")
+      .setName(t("settings.item.viewPlacement.name"))
+      .setDesc(t("settings.item.viewPlacement.desc"))
       .addDropdown((dropdown) =>
         dropdown
-          .addOption("left", "左サイドバー")
-          .addOption("right", "右サイドバー")
-          .addOption("main", "メインエリア")
+          .addOption("left", t("settings.option.viewPlacement.left"))
+          .addOption("right", t("settings.option.viewPlacement.right"))
+          .addOption("main", t("settings.option.viewPlacement.main"))
           .setValue(this.plugin.settings.viewPlacement)
           .onChange(async (value) => {
             this.plugin.settings.viewPlacement = value as WrotSettings["viewPlacement"];
@@ -172,8 +176,8 @@ export class WrotSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Obsidianのフォントサイズに追従")
-      .setDesc("Obsidianの外観設定にWrotの文字サイズを合わせます。")
+      .setName(t("settings.item.followFontSize.name"))
+      .setDesc(t("settings.item.followFontSize.desc"))
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.followObsidianFontSize)
@@ -186,32 +190,34 @@ export class WrotSettingTab extends PluginSettingTab {
 
     let headerDateText: TextComponent;
     new Setting(containerEl)
-      .setName("ヘッダー日付表示形式")
-      .setDesc("日付ナビに表示する日付のフォーマットを指定します。（YYYY, MM, DD などが使えます）空欄で初期値に戻ります。")
+      .setName(t("settings.item.headerDateFormat.name"))
+      .setDesc(t("settings.item.headerDateFormat.desc"))
       .addText((text) => {
         headerDateText = text;
+        const localizedDefault = t("defaults.headerDateFormat");
         text
-          .setPlaceholder(DEFAULT_SETTINGS.headerDateFormat)
+          .setPlaceholder(localizedDefault)
           .setValue(this.plugin.settings.headerDateFormat)
           .onChange(async (value) => {
-            this.plugin.settings.headerDateFormat = value || DEFAULT_SETTINGS.headerDateFormat;
+            this.plugin.settings.headerDateFormat = value || localizedDefault;
             await this.plugin.saveSettings();
             this.plugin.refreshViews();
           });
       })
       .addExtraButton((btn) =>
-        btn.setIcon("reset").setTooltip("初期値に戻す").onClick(async () => {
-          this.plugin.settings.headerDateFormat = DEFAULT_SETTINGS.headerDateFormat;
+        btn.setIcon("reset").setTooltip(t("settings.tooltip.resetDefault")).onClick(async () => {
+          const localizedDefault = t("defaults.headerDateFormat");
+          this.plugin.settings.headerDateFormat = localizedDefault;
           await this.plugin.saveSettings();
           this.plugin.refreshViews();
-          headerDateText.setValue(DEFAULT_SETTINGS.headerDateFormat);
+          headerDateText.setValue(localizedDefault);
         })
       );
 
     let tsText: TextComponent;
     new Setting(containerEl)
-      .setName("タイムスタンプ表示形式")
-      .setDesc("投稿の日時フォーマットを指定します。（YYYY, MM, DD, HH, mm, ss が使えます）")
+      .setName(t("settings.item.timestampFormat.name"))
+      .setDesc(t("settings.item.timestampFormat.desc"))
       .addText((text) => {
         tsText = text;
         text
@@ -224,7 +230,7 @@ export class WrotSettingTab extends PluginSettingTab {
           });
       })
       .addExtraButton((btn) =>
-        btn.setIcon("reset").setTooltip("初期値に戻す").onClick(async () => {
+        btn.setIcon("reset").setTooltip(t("settings.tooltip.resetDefault")).onClick(async () => {
           this.plugin.settings.timestampFormat = DEFAULT_SETTINGS.timestampFormat;
           await this.plugin.saveSettings();
           this.plugin.refreshViews();
@@ -234,8 +240,8 @@ export class WrotSettingTab extends PluginSettingTab {
 
     let lightPicker: ColorComponent;
     new Setting(containerEl)
-      .setName("背景色（ライトモード）")
-      .setDesc("ライトテーマでの投稿・投稿フォームの背景色を設定します。")
+      .setName(t("settings.item.bgColorLight.name"))
+      .setDesc(t("settings.item.bgColorLight.desc"))
       .setClass("wr-reverse-controls")
       .addColorPicker((picker) => {
         lightPicker = picker;
@@ -248,7 +254,7 @@ export class WrotSettingTab extends PluginSettingTab {
           });
       })
       .addExtraButton((btn) =>
-        btn.setIcon("reset").setTooltip("初期値に戻す").onClick(async () => {
+        btn.setIcon("reset").setTooltip(t("settings.tooltip.resetDefault")).onClick(async () => {
           this.plugin.settings.bgColorLight = DEFAULT_SETTINGS.bgColorLight;
           await this.plugin.saveSettings();
           this.plugin.applyBgColor();
@@ -258,8 +264,8 @@ export class WrotSettingTab extends PluginSettingTab {
 
     let textLightPicker: ColorComponent;
     new Setting(containerEl)
-      .setName("文字色（ライトモード）")
-      .setDesc("ライトテーマでのテキスト・アイコンの色を設定します。")
+      .setName(t("settings.item.textColorLight.name"))
+      .setDesc(t("settings.item.textColorLight.desc"))
       .setClass("wr-reverse-controls")
       .addColorPicker((picker) => {
         textLightPicker = picker;
@@ -272,7 +278,7 @@ export class WrotSettingTab extends PluginSettingTab {
           });
       })
       .addExtraButton((btn) =>
-        btn.setIcon("reset").setTooltip("初期値に戻す").onClick(async () => {
+        btn.setIcon("reset").setTooltip(t("settings.tooltip.resetDefault")).onClick(async () => {
           this.plugin.settings.textColorLight = DEFAULT_SETTINGS.textColorLight;
           await this.plugin.saveSettings();
           this.plugin.applyBgColor();
@@ -282,8 +288,8 @@ export class WrotSettingTab extends PluginSettingTab {
 
     let darkPicker: ColorComponent;
     new Setting(containerEl)
-      .setName("背景色（ダークモード）")
-      .setDesc("ダークテーマでの投稿・投稿フォームの背景色を設定します。")
+      .setName(t("settings.item.bgColorDark.name"))
+      .setDesc(t("settings.item.bgColorDark.desc"))
       .setClass("wr-reverse-controls")
       .addColorPicker((picker) => {
         darkPicker = picker;
@@ -296,7 +302,7 @@ export class WrotSettingTab extends PluginSettingTab {
           });
       })
       .addExtraButton((btn) =>
-        btn.setIcon("reset").setTooltip("初期値に戻す").onClick(async () => {
+        btn.setIcon("reset").setTooltip(t("settings.tooltip.resetDefault")).onClick(async () => {
           this.plugin.settings.bgColorDark = DEFAULT_SETTINGS.bgColorDark;
           await this.plugin.saveSettings();
           this.plugin.applyBgColor();
@@ -306,8 +312,8 @@ export class WrotSettingTab extends PluginSettingTab {
 
     let textDarkPicker: ColorComponent;
     new Setting(containerEl)
-      .setName("文字色（ダークモード）")
-      .setDesc("ダークテーマでのテキスト・アイコンの色を設定します。")
+      .setName(t("settings.item.textColorDark.name"))
+      .setDesc(t("settings.item.textColorDark.desc"))
       .setClass("wr-reverse-controls")
       .addColorPicker((picker) => {
         textDarkPicker = picker;
@@ -320,7 +326,7 @@ export class WrotSettingTab extends PluginSettingTab {
           });
       })
       .addExtraButton((btn) =>
-        btn.setIcon("reset").setTooltip("初期値に戻す").onClick(async () => {
+        btn.setIcon("reset").setTooltip(t("settings.tooltip.resetDefault")).onClick(async () => {
           this.plugin.settings.textColorDark = DEFAULT_SETTINGS.textColorDark;
           await this.plugin.saveSettings();
           this.plugin.applyBgColor();
@@ -328,40 +334,54 @@ export class WrotSettingTab extends PluginSettingTab {
         })
       );
 
-    new Setting(containerEl).setName("表示設定").setHeading();
+    new Setting(containerEl).setName(t("settings.section.display")).setHeading();
 
     let submitText: TextComponent;
     new Setting(containerEl)
-      .setName("投稿ボタンのテキスト")
-      .setDesc("投稿ボタンに表示するテキストを変更できます。")
+      .setName(t("settings.item.submitLabel.name"))
+      .setDesc(t("settings.item.submitLabel.desc"))
       .addText((text) => {
         submitText = text;
+        const localizedDefault = t("defaults.submitLabel");
         text
-          .setPlaceholder("投稿")
+          .setPlaceholder(localizedDefault)
           .setValue(this.plugin.settings.submitLabel)
           .onChange(async (value) => {
-            this.plugin.settings.submitLabel = value || DEFAULT_SETTINGS.submitLabel;
+            this.plugin.settings.submitLabel = value || localizedDefault;
             await this.plugin.saveSettings();
             this.plugin.updateSubmitLabel();
           });
       })
       .addExtraButton((btn) =>
-        btn.setIcon("reset").setTooltip("初期値に戻す").onClick(async () => {
-          this.plugin.settings.submitLabel = DEFAULT_SETTINGS.submitLabel;
+        btn.setIcon("reset").setTooltip(t("settings.tooltip.resetDefault")).onClick(async () => {
+          const localizedDefault = t("defaults.submitLabel");
+          this.plugin.settings.submitLabel = localizedDefault;
           await this.plugin.saveSettings();
-          submitText.setValue(DEFAULT_SETTINGS.submitLabel);
+          submitText.setValue(localizedDefault);
           this.plugin.updateSubmitLabel();
         })
       );
 
     let iconText: TextComponent;
     const iconSetting = new Setting(containerEl)
-      .setName("投稿ボタンのアイコン");
+      .setName(t("settings.item.submitIcon.name"));
     const descEl = iconSetting.descEl;
-    descEl.appendText("投稿ボタンのアイコンを変更できます。アイコン名は ");
-    const link = descEl.createEl("a", { text: "こちら", href: "https://lucide.dev/icons/" });
-    link.setAttr("target", "_blank");
-    descEl.appendText(" からコピーしてください。空欄にするとアイコンを非表示にできます。");
+    // 「{linkOpen}こちら{linkClose}」を中央のアンカー要素に置き換えて挿入する
+    const descTemplate = t("settings.item.submitIcon.desc");
+    const linkOpenIdx = descTemplate.indexOf("{linkOpen}");
+    const linkCloseIdx = descTemplate.indexOf("{linkClose}");
+    if (linkOpenIdx >= 0 && linkCloseIdx > linkOpenIdx) {
+      const prefix = descTemplate.slice(0, linkOpenIdx);
+      const linkText = descTemplate.slice(linkOpenIdx + "{linkOpen}".length, linkCloseIdx);
+      const suffix = descTemplate.slice(linkCloseIdx + "{linkClose}".length);
+      descEl.appendText(prefix);
+      const link = descEl.createEl("a", { text: linkText, href: t("settings.item.submitIcon.lucideUrl") });
+      link.setAttr("target", "_blank");
+      descEl.appendText(suffix);
+    } else {
+      // プレースホルダが含まれない辞書のときは素のテキストとして表示
+      descEl.appendText(descTemplate);
+    }
     iconSetting
       .addText((text) => {
         iconText = text;
@@ -375,7 +395,7 @@ export class WrotSettingTab extends PluginSettingTab {
           });
       })
       .addExtraButton((btn) =>
-        btn.setIcon("reset").setTooltip("初期値に戻す").onClick(async () => {
+        btn.setIcon("reset").setTooltip(t("settings.tooltip.resetDefault")).onClick(async () => {
           this.plugin.settings.submitIcon = DEFAULT_SETTINGS.submitIcon;
           await this.plugin.saveSettings();
           iconText.setValue(DEFAULT_SETTINGS.submitIcon);
@@ -385,12 +405,13 @@ export class WrotSettingTab extends PluginSettingTab {
 
     let placeholderText: TextComponent;
     new Setting(containerEl)
-      .setName("投稿フォームの空欄メッセージ")
-      .setDesc("投稿フォームが空の時に表示されるテキストを変更できます。空欄にすると非表示になります。")
+      .setName(t("settings.item.inputPlaceholder.name"))
+      .setDesc(t("settings.item.inputPlaceholder.desc"))
       .addText((text) => {
         placeholderText = text;
+        const localizedDefault = t("defaults.inputPlaceholder");
         text
-          .setPlaceholder(DEFAULT_SETTINGS.inputPlaceholder)
+          .setPlaceholder(localizedDefault)
           .setValue(this.plugin.settings.inputPlaceholder)
           .onChange(async (value) => {
             this.plugin.settings.inputPlaceholder = value;
@@ -399,22 +420,23 @@ export class WrotSettingTab extends PluginSettingTab {
           });
       })
       .addExtraButton((btn) =>
-        btn.setIcon("reset").setTooltip("初期値に戻す").onClick(async () => {
-          this.plugin.settings.inputPlaceholder = DEFAULT_SETTINGS.inputPlaceholder;
+        btn.setIcon("reset").setTooltip(t("settings.tooltip.resetDefault")).onClick(async () => {
+          const localizedDefault = t("defaults.inputPlaceholder");
+          this.plugin.settings.inputPlaceholder = localizedDefault;
           await this.plugin.saveSettings();
-          placeholderText.setValue(DEFAULT_SETTINGS.inputPlaceholder);
+          placeholderText.setValue(localizedDefault);
           this.plugin.updateInputPlaceholder();
         })
       );
 
     new Setting(containerEl)
-      .setName("ピン留めの上限")
-      .setDesc("タイムラインに固定できるメモの最大件数を設定します。")
+      .setName(t("settings.item.pinLimit.name"))
+      .setDesc(t("settings.item.pinLimit.desc"))
       .addDropdown((dropdown) =>
         dropdown
-          .addOption("1", "1 件")
-          .addOption("3", "3 件")
-          .addOption("5", "5 件")
+          .addOption("1", t("settings.option.pinLimit.1"))
+          .addOption("3", t("settings.option.pinLimit.3"))
+          .addOption("5", t("settings.option.pinLimit.5"))
           .setValue(String(this.plugin.settings.pinLimit))
           .onChange(async (value) => {
             const limit = Number(value) as PinLimit;
@@ -428,8 +450,8 @@ export class WrotSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("URLプレビュー")
-      .setDesc("メモ内のURLからOGP情報を自動取得して表示します。オフにすると外部通信を行いません。")
+      .setName(t("settings.item.ogp.name"))
+      .setDesc(t("settings.item.ogp.desc"))
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.enableOgpFetch)
@@ -440,8 +462,8 @@ export class WrotSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("チェック済みの取り消し線")
-      .setDesc("チェックボックスがONの項目に取り消し線を表示します。")
+      .setName(t("settings.item.checkStrikethrough.name"))
+      .setDesc(t("settings.item.checkStrikethrough.desc"))
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.checkStrikethrough)
@@ -453,10 +475,8 @@ export class WrotSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("タグ別に色を変える")
-      .setDesc(
-        "指定タグを含む投稿の背景色と文字色を変更します。複数ルールに該当する場合は本文で先に出たタグが優先されます。"
-      )
+      .setName(t("settings.item.tagColorRules.name"))
+      .setDesc(t("settings.item.tagColorRules.desc"))
       .addToggle((toggle) =>
         toggle.setValue(this.plugin.settings.tagColorRulesEnabled).onChange(async (v) => {
           this.plugin.settings.tagColorRulesEnabled = v;
@@ -543,7 +563,7 @@ export class WrotSettingTab extends PluginSettingTab {
         const isUnlocked = (): boolean => this.unlockedRules.has(ruleKey);
 
         const labelSetting = new Setting(groupEl)
-          .setName(`ルール ${ruleNumber}`)
+          .setName(t("settings.tagRule.label", { n: ruleNumber }))
           .setClass("wr-tag-rule-label-setting");
 
         // ルールラベル右の鍵アイコン。タップでロック/アンロックを切り替え（メモリ上のみ）
@@ -552,7 +572,7 @@ export class WrotSettingTab extends PluginSettingTab {
           lockBtnEl = btn.extraSettingsEl;
           btn
             .setIcon(isUnlocked() ? "lock-keyhole-open" : "lock-keyhole")
-            .setTooltip(isUnlocked() ? "ロックする" : "編集するにはロックを解除")
+            .setTooltip(isUnlocked() ? t("settings.tooltip.lock") : t("settings.tooltip.unlock"))
             .onClick(() => {
               if (isUnlocked()) {
                 this.unlockedRules.delete(ruleKey);
@@ -569,7 +589,7 @@ export class WrotSettingTab extends PluginSettingTab {
             trailingBtnEl = btn.extraSettingsEl;
             btn
               .setIcon(trailing.kind === "delete" ? "trash-2" : "reset")
-              .setTooltip(trailing.kind === "delete" ? "このルールを削除" : "初期値に戻す")
+              .setTooltip(trailing.kind === "delete" ? t("settings.tooltip.deleteRule") : t("settings.tooltip.resetDefault"))
               .onClick(async () => {
                 if (!isUnlocked()) return;
                 await trailing.handler();
@@ -579,12 +599,12 @@ export class WrotSettingTab extends PluginSettingTab {
 
         let tagInputEl: HTMLInputElement | null = null;
         new Setting(groupEl)
-          .setName("タグ")
-          .setDesc("色を変えたいタグ名を入力します。（# は省略できます）")
+          .setName(t("settings.tagRule.tag.name"))
+          .setDesc(t("settings.tagRule.tag.desc"))
           .addText((text) => {
             tagInputEl = text.inputEl;
             text
-              .setPlaceholder("タグ名")
+              .setPlaceholder(t("settings.tagRule.tag.placeholder"))
               .setValue(initial.tag)
               .onChange(async (v) => {
                 await onTagChange(v.replace(/^#/, "").trim());
@@ -593,8 +613,8 @@ export class WrotSettingTab extends PluginSettingTab {
 
         let bgPickerEl: HTMLInputElement | null = null;
         new Setting(groupEl)
-          .setName("背景色")
-          .setDesc("このタグを含む投稿の背景色を設定します。")
+          .setName(t("settings.tagRule.bg.name"))
+          .setDesc(t("settings.tagRule.bg.desc"))
           .setClass("wr-reverse-controls")
           .addColorPicker((picker) => {
             bgPickerEl = (picker as unknown as { colorPickerEl: HTMLInputElement }).colorPickerEl;
@@ -605,8 +625,8 @@ export class WrotSettingTab extends PluginSettingTab {
 
         let fgPickerEl: HTMLInputElement | null = null;
         new Setting(groupEl)
-          .setName("文字色")
-          .setDesc("このタグを含む投稿の本文文字色を設定します。（タグ・リンク・URLはアクセントカラー側で設定します）")
+          .setName(t("settings.tagRule.fg.name"))
+          .setDesc(t("settings.tagRule.fg.desc"))
           .setClass("wr-reverse-controls")
           .addColorPicker((picker) => {
             fgPickerEl = (picker as unknown as { colorPickerEl: HTMLInputElement }).colorPickerEl;
@@ -619,8 +639,8 @@ export class WrotSettingTab extends PluginSettingTab {
         let accentPickerEl: HTMLInputElement | null = null;
         let accentResetBtnEl: HTMLElement | null = null;
         new Setting(groupEl)
-          .setName("アクセントカラー")
-          .setDesc("タグ・リンク・URL・コピー完了アイコンなどアクセントカラーが使われる要素の色を設定します。未設定時はテーマのアクセントカラーを使います。")
+          .setName(t("settings.tagRule.accent.name"))
+          .setDesc(t("settings.tagRule.accent.desc"))
           .setClass("wr-reverse-controls")
           .addColorPicker((picker) => {
             accentPicker = picker;
@@ -635,7 +655,7 @@ export class WrotSettingTab extends PluginSettingTab {
           })
           .addExtraButton((btn) => {
             accentResetBtnEl = btn.extraSettingsEl;
-            btn.setIcon("reset").setTooltip("初期値に戻す").onClick(async () => {
+            btn.setIcon("reset").setTooltip(t("settings.tooltip.resetDefault")).onClick(async () => {
               if (!isUnlocked()) return;
               await onAccentChange(undefined);
               accentPicker.setValue(getDefaultAccent());
@@ -647,8 +667,8 @@ export class WrotSettingTab extends PluginSettingTab {
         let subResetBtnEl: HTMLElement | null = null;
         let suppressSubChange = false;
         new Setting(groupEl)
-          .setName("サブカラー")
-          .setDesc("タイムスタンプ・アイコン・リストマーカー・引用線・チェックボックスなどサブ要素の色をまとめて設定します。未設定時は背景色と文字色から自動算出します。")
+          .setName(t("settings.tagRule.sub.name"))
+          .setDesc(t("settings.tagRule.sub.desc"))
           .setClass("wr-reverse-controls")
           .addColorPicker((picker) => {
             subPicker = picker;
@@ -668,7 +688,7 @@ export class WrotSettingTab extends PluginSettingTab {
           })
           .addExtraButton((btn) => {
             subResetBtnEl = btn.extraSettingsEl;
-            btn.setIcon("reset").setTooltip("初期値に戻す").onClick(async () => {
+            btn.setIcon("reset").setTooltip(t("settings.tooltip.resetDefault")).onClick(async () => {
               if (!isUnlocked()) return;
               await onSubChange(undefined);
               suppressSubChange = true;
@@ -697,10 +717,10 @@ export class WrotSettingTab extends PluginSettingTab {
           };
 
           const groups: Array<[keyof SubColorScope, string, string]> = [
-            ["buttons", "タイムスタンプ・メニュー・ピンにサブカラーを適用", "オフのときは自動設定された色になります。"],
-            ["quote", "引用にサブカラーを適用", "オフのときは自動設定された色になります。"],
-            ["list", "リスト・チェックボックスにサブカラーを適用", "オフのときは自動設定された色になります。"],
-            ["ogp", "OGPカードにサブカラーを適用", "オフのときは自動設定された色になります。"],
+            ["buttons", t("settings.tagRule.scope.buttons.name"), t("settings.tagRule.scope.buttons.desc")],
+            ["quote", t("settings.tagRule.scope.quote.name"), t("settings.tagRule.scope.quote.desc")],
+            ["list", t("settings.tagRule.scope.list.name"), t("settings.tagRule.scope.list.desc")],
+            ["ogp", t("settings.tagRule.scope.ogp.name"), t("settings.tagRule.scope.ogp.desc")],
           ];
 
           for (const [key, name, desc] of groups) {
@@ -745,7 +765,7 @@ export class WrotSettingTab extends PluginSettingTab {
             setIcon(lockBtnEl, unlocked ? "lock-keyhole-open" : "lock-keyhole");
             lockBtnEl.setAttr(
               "aria-label",
-              unlocked ? "ロックする" : "編集するにはロックを解除"
+              unlocked ? t("settings.tooltip.lock") : t("settings.tooltip.unlock")
             );
           }
         };
@@ -901,7 +921,7 @@ export class WrotSettingTab extends PluginSettingTab {
       addBtnContainer.empty();
       new Setting(addBtnContainer).addButton((btn) =>
         btn
-          .setButtonText("ルールを追加")
+          .setButtonText(t("settings.tagRule.button.add"))
           .setCta()
           .onClick(async () => {
             const newIndex = this.plugin.settings.tagColorRules.length;
