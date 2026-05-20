@@ -326,6 +326,21 @@ export function flashJumpTarget(
   let scrolled = false;
   const pendingTimeouts = new Set<number>();
   const flashed = new WeakSet<HTMLElement>();
+  // URL カード (OGP) / 数式 (MathJax) のように遅延描画される子を含む対象は
+  // ジャンプ直後の中央寄せ後にサイズが膨らみ目的位置がズレる。
+  // 対象要素のサイズ変化を観測して、変化のたびに中央寄せをやり直す。
+  let resizeObserver: ResizeObserver | null = null;
+  let resizeSettleTimeout: number | null = null;
+  const stopResizeWatch = () => {
+    if (resizeObserver) {
+      resizeObserver.disconnect();
+      resizeObserver = null;
+    }
+    if (resizeSettleTimeout !== null) {
+      clearTimeout(resizeSettleTimeout);
+      resizeSettleTimeout = null;
+    }
+  };
 
   const removeInterruptListeners = () => {
     document.removeEventListener("keydown", cancel, true);
@@ -338,6 +353,7 @@ export function flashJumpTarget(
     canceled = true;
     for (const id of pendingTimeouts) clearTimeout(id);
     pendingTimeouts.clear();
+    stopResizeWatch();
     // 走り出してる点滅クラスも即時除去
     const targets = collectFlashTargets(blockId, app);
     for (const el of targets) {
@@ -394,13 +410,54 @@ export function flashJumpTarget(
     }
   };
 
-  // スクロールは applyScroll / openLinkText に任せる。flashJumpTarget は
-  // 対象要素が DOM に現れるのを待って、現れたら点滅させる役割に専念する。
+  // applyScroll / openLinkText のスクロールは「行数換算」のため、画像/数式など
+  // 行高が大きく変動するブロックがあると目的位置が大きくズレることがある。
+  // 対象要素が DOM に現れたら、ここで実 DOM 座標で改めて中央寄せに微調整する。
+  // その後、スクロールが落ち着いてから点滅させる。
   const tryFlash = (): boolean => {
     if (canceled || scrolled) return false;
     const targets = collectFlashTargets(blockId, app);
     if (targets.length === 0) return false;
     scrolled = true;
+    // 代表として先頭ターゲットを中央寄せ。同一 blockId の点滅対象は LV/RV/タイムライン
+    // を横断しうるが、ジャンプ位置は「アクティブビュー内の対象」基準にしたいので、
+    // アクティブビューに含まれる要素を優先的に選ぶ
+    const activeContainer = getActiveViewContainer(app);
+    const preferred = activeContainer
+      ? targets.find((el) => activeContainer.contains(el)) ?? targets[0]
+      : targets[0];
+    scrollElementIntoCenter(preferred);
+    // OGP カードや数式 (MathJax) の遅延描画でサイズが膨らむと、初回中央寄せ後に
+    // 目的位置がズレる。ResizeObserver で対象のサイズ変化を観測し、変化のたびに
+    // 一定時間後に再度中央寄せをやり直す。一定時間サイズ変化が止まったら監視終了。
+    if (typeof ResizeObserver !== "undefined") {
+      stopResizeWatch();
+      let firstObservation = true;
+      resizeObserver = new ResizeObserver(() => {
+        // observe() 直後の初回コールバックは現状サイズ通知なので無視する
+        if (firstObservation) {
+          firstObservation = false;
+          return;
+        }
+        if (canceled) return;
+        if (resizeSettleTimeout !== null) {
+          clearTimeout(resizeSettleTimeout);
+        }
+        resizeSettleTimeout = window.setTimeout(() => {
+          resizeSettleTimeout = null;
+          if (canceled) return;
+          scrollElementIntoCenter(preferred);
+        }, 80);
+      });
+      resizeObserver.observe(preferred);
+      // 描画安定までの上限。遅延描画が永遠に発火し続ける状況を避けるため
+      // searchAt の最後＋少しの猶予で確実に監視を切る
+      const stopId = window.setTimeout(() => {
+        pendingTimeouts.delete(stopId);
+        stopResizeWatch();
+      }, searchAt[searchAt.length - 1] + 800);
+      pendingTimeouts.add(stopId);
+    }
     schedule(flashAll, scrollSettleDelay);
     return true;
   };
@@ -427,18 +484,44 @@ function getActiveViewContainer(app: App): HTMLElement | null {
   return view?.containerEl ?? null;
 }
 
-// 対象要素を含む最も近いスクロール可能祖先を画面中央に来るようスクロールする。
-// scrollIntoView だと Obsidian の RV 内部スクロール処理に上書きされて効かない
-// ケースがあるため、自前で scrollTop を計算してセットする。
+// 対象要素を「対象が属する単一のスクロールコンテナ内で中央に来る」位置までスクロールする。
+// scrollIntoView は要素を含む全スクロール可能祖先を巻き込んでスクロールするため、
+// 特に RV では外側コンテナまで動いてビュー全体が先頭に戻ってしまう症状が出る。
+// 対象に最も近いスクロール可能祖先を1つだけ特定し、その scrollTop を直接調整する。
+function findNearestScrollableAncestor(el: HTMLElement): HTMLElement | null {
+  let cur: HTMLElement | null = el.parentElement;
+  while (cur) {
+    const style = getComputedStyle(cur);
+    const overflowY = style.overflowY;
+    const scrollable =
+      (overflowY === "auto" || overflowY === "scroll" || overflowY === "overlay") &&
+      cur.scrollHeight > cur.clientHeight;
+    if (scrollable) return cur;
+    cur = cur.parentElement;
+  }
+  return null;
+}
+
 function scrollElementIntoCenter(el: HTMLElement): void {
-  // ブラウザ標準 scrollIntoView を呼ぶ。
-  // モバイル（特に iOS）では「下までスクロールし切った状態」からの
-  // scrollIntoView がスクロール慣性処理と競合して反映されないことがあるため、
-  // 同じ呼び出しを次フレームでも繰り返して確実に画面位置を更新する。
-  el.scrollIntoView({ block: "center", behavior: "auto" });
-  requestAnimationFrame(() => {
+  const scroller = findNearestScrollableAncestor(el);
+  if (!scroller) {
+    // 例外: スクロール可能祖先が見つからないときだけ scrollIntoView にフォールバック
     el.scrollIntoView({ block: "center", behavior: "auto" });
-  });
+    return;
+  }
+  const apply = () => {
+    const scrollerRect = scroller.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    // 対象要素の中心が scroller の中央に来るように scrollTop を調整
+    const offsetWithinScroller = elRect.top - scrollerRect.top + scroller.scrollTop;
+    const desiredTop = offsetWithinScroller - (scroller.clientHeight - elRect.height) / 2;
+    const maxTop = scroller.scrollHeight - scroller.clientHeight;
+    scroller.scrollTop = Math.max(0, Math.min(desiredTop, maxTop));
+  };
+  apply();
+  // モバイル（特に iOS）では1度の代入だと慣性処理に上書きされる場合があるため、
+  // 次フレームでもう一度同じ計算で書き直して確実に反映させる
+  requestAnimationFrame(apply);
 }
 
 // LV/RV/タイムライン全てから wr-block-id-{blockId} 付き要素を収集。
@@ -539,17 +622,15 @@ export function renderQuoteCard(
       targetView = app.workspace.getActiveViewOfType(obs.MarkdownView);
     }
     if (targetView) {
-      // applyScroll は指定行を画面上端に持ってくる仕様なので、画面の高さから
-      // 中央までの行数を引いて「対象が画面中央に来る」位置にする。
+      // applyScroll は指定行を画面上端付近に運ぶ。中央寄せは flashJumpTarget の中で
+      // 対象要素の実 DOM 座標を使って改めて行うため、ここではざっくり目的行まで運ぶだけ。
+      // 旧実装は viewportH ÷ approxLineHeight ÷ 2 で「画面半分の行数」を引いて中央化していたが、
+      // contentEl.clientHeight が「中身全体の高さ」を返すケースがあり halfLines が targetLine を
+      // 上回ると scrollLine が 0 に丸められて先頭に飛ぶ症状が出ていた。
       const targetLine = memoReady.lineStart;
-      const viewportH = targetView.contentEl.clientHeight;
-      // 行高は環境依存なので雑に見積もって中央寄せ。
-      const approxLineHeight = 28;
-      const halfLines = Math.max(0, Math.floor(viewportH / approxLineHeight / 2));
-      const scrollLine = Math.max(0, targetLine - halfLines);
       const mode = (targetView as any).currentMode;
       if (mode && typeof mode.applyScroll === "function") {
-        mode.applyScroll(scrollLine);
+        mode.applyScroll(targetLine);
       }
     }
     // Obsidian がスクロール+実体化を済ませた後で点滅させる

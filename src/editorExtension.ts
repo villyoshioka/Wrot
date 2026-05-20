@@ -292,7 +292,8 @@ class EmbedImageWidget extends WidgetType {
   ) { super(); }
   toDOM(): HTMLElement {
     const container = document.createElement("div");
-    container.className = "wr-media-area wr-lp-media";
+    // CSS `:has()` 警告回避: 子に必ず wr-embed-img を持つので状態クラスを直接付与
+    container.className = "wr-media-area wr-lp-media wr-has-img";
     if (this.ruleClass) container.classList.add(this.ruleClass);
     for (const { src, alt } of this.images) {
       const img = document.createElement("img");

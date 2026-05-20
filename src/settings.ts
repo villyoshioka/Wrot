@@ -73,6 +73,8 @@ const SETTINGS_NARROW_THRESHOLD_PX = 600;
 export class WrotSettingTab extends PluginSettingTab {
   plugin: WrotPlugin;
   private narrowObserver: ResizeObserver | null = null;
+  // .setting-item の追加/削除を検知して状態クラスを再走査するための監視
+  private settingItemObserver: MutationObserver | null = null;
   // メモリ上のみ。設定タブを開き直すたびに全ルールがロック状態に戻る
   private unlockedRules: Set<number> = new Set();
   // display()内部からの再構築でロック状態を保持したい場合にtrueにする
@@ -88,7 +90,23 @@ export class WrotSettingTab extends PluginSettingTab {
       this.narrowObserver.disconnect();
       this.narrowObserver = null;
     }
+    if (this.settingItemObserver) {
+      this.settingItemObserver.disconnect();
+      this.settingItemObserver = null;
+    }
     super.hide();
+  }
+
+  // CSS `:has()` 警告回避用: 各 .setting-item に「テキスト入力 / セレクトを含むか」の
+  // 状態クラスを付与する。CSS 側は `:has(...)` の代わりに通常のクラスセレクタで判定する。
+  private applySettingItemStateClasses(containerEl: HTMLElement): void {
+    const items = containerEl.querySelectorAll<HTMLElement>(".setting-item");
+    items.forEach((item) => {
+      const hasTextInput = !!item.querySelector('.setting-item-control input[type="text"]');
+      const hasSelect = !!item.querySelector(".setting-item-control select");
+      item.toggleClass("wr-setting-has-text-input", hasTextInput);
+      item.toggleClass("wr-setting-has-select", hasSelect);
+    });
   }
 
   // Obsidianのバージョン/プラットフォーム差を吸収するためスクロール対象候補を網羅的に収集する
@@ -146,9 +164,14 @@ export class WrotSettingTab extends PluginSettingTab {
       this.narrowObserver.disconnect();
       this.narrowObserver = null;
     }
+    if (this.settingItemObserver) {
+      this.settingItemObserver.disconnect();
+      this.settingItemObserver = null;
+    }
     const updateNarrow = () => {
       const narrow = containerEl.clientWidth > 0 && containerEl.clientWidth < SETTINGS_NARROW_THRESHOLD_PX;
       containerEl.toggleClass("wr-settings-narrow", narrow);
+      this.applySettingItemStateClasses(containerEl);
     };
     requestAnimationFrame(updateNarrow);
     if (typeof ResizeObserver !== "undefined") {
@@ -156,6 +179,13 @@ export class WrotSettingTab extends PluginSettingTab {
         requestAnimationFrame(updateNarrow);
       });
       this.narrowObserver.observe(containerEl);
+    }
+    // タグルール add/remove などの部分更新時にも .setting-item の状態クラスを追従させる
+    if (typeof MutationObserver !== "undefined") {
+      this.settingItemObserver = new MutationObserver(() => {
+        this.applySettingItemStateClasses(containerEl);
+      });
+      this.settingItemObserver.observe(containerEl, { childList: true, subtree: true });
     }
 
     new Setting(containerEl).setName(t("settings.section.basic")).setHeading();
