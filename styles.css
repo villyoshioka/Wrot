@@ -542,12 +542,43 @@ code.language-wr span.wr-inline-code {
   font-size: 0.85em !important;
 }
 
+/*
+ * LV (CodeMirror) のインラインコード `xxx` は、 CodeMirror がカーソル位置によって
+ * 1 span (カーソル外: バッククォート隠し+中身) または 3 span (カーソル内: 左バッククォート
+ * / 中身 / 右バッククォート) を生成する。 3 span 時の継ぎ目を完全に潰すのは
+ * 半透明背景 + サブピクセル境界の組み合わせで CSS では難しいため、 角丸は常に持たせず
+ * フラットな真四角の帯として表示する。
+ */
 .wr-inline-code-highlight {
   background: rgba(var(--mono-rgb-100), 0.08) !important;
   background-color: rgba(var(--mono-rgb-100), 0.08) !important;
-  border-radius: 4px;
+  border-radius: 0;
+  /* 中央の span (中身担当) は左右に padding を持たせて、 隣接する外側 span との
+   * 「padding と padding が直接隣接する」 状態にする。 半透明背景の重ね合わせで
+   * 継ぎ目が濃く見える問題を避けるため、 負 margin で重ねるアプローチは取らない。 */
   padding: 1px 4px;
   font-family: var(--font-monospace) !important;
+  /* 3 つの span の縦位置と高さを揃える。 */
+  vertical-align: baseline;
+  line-height: inherit;
+  box-sizing: border-box;
+}
+
+/* LV の wr ブロック内インラインコードは、 カーソル位置によって CodeMirror が
+ * 生成する DOM 構造が変わる (カーソル外: 1 span / カーソル内: 3 span)。
+ * 3 span 状態で角丸を持たせるとサブピクセル境界 + 半透明背景の重ね合わせで
+ * 継ぎ目が分離して見える問題があり、 これを完全に潰すのは CSS では困難だった。
+ * 角丸を諦めて常に真四角の帯で表示することで、 カーソル状態に関わらず
+ * 視覚的に一貫した 「フラットな背景の帯」 として見えるようにする。 */
+
+/* カーソル内 (=同じ .cm-hmd-codeblock 内に複数の wr-inline-code-highlight がある) 時、
+ * 両端の バッククォート span は .cm-hmd-codeblock の直接の子になる。
+ * 中央 span との接合部で padding 二重 を避けるため、 内側 padding を 0 にする。 */
+.cm-hmd-codeblock > .wr-inline-code-highlight:first-child {
+  padding-right: 0;
+}
+.cm-hmd-codeblock > .wr-inline-code-highlight:last-child:not(:first-child) {
+  padding-left: 0;
 }
 
 /* Reading View: hidden code element (kept for copy button) */
