@@ -539,6 +539,8 @@ export function renderImagePreview(
   img.loading = "lazy";
   wrapper.appendChild(img);
   container.appendChild(wrapper);
+  // CSS `:has()` 警告回避: 親 container に状態クラスを付与し、CSS 側は通常セレクタで判定する
+  container.classList.add("wr-has-link");
 }
 
 export function renderOGPCard(

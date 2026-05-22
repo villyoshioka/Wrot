@@ -311,12 +311,259 @@ function markDead(card: HTMLElement, bodyEl: HTMLElement, metaEl: HTMLElement): 
   metaEl.textContent = "";
 }
 
+// RV 専用のジャンプ後処理。LV のように「時刻リストで対象を探しに行く」のではなく、
+// MutationObserver で「対象 DOM が現れた事実」をトリガーにして中央寄せ＋点滅する。
+// RV では行番号と画面位置の対応関係が壊れているため、時計ベースのポーリングだと
+// 「光らない・画面の縁ギリで止まる」揺らぎが構造的に発生していた問題への対策。
+function flashJumpTargetReadingView(
+  blockId: string,
+  app: App,
+  resolveRuleAccent?: (ruleClass: string) => string | null,
+  targetView?: import("obsidian").MarkdownView | null
+): void {
+  // 異常系フェイルセーフ。正常系の上限ではなく「来ない場合に永遠に観測し続けない」ための保険。
+  const overallTimeoutMs = 10000;
+  // ResizeObserver の収束判定。サイズ変化が止まってから一定時間経ったら確定とみなす。
+  const resizeSettleMs = 200;
+  // 中央寄せ完了から点滅開始までの間（スクロールが視覚的に落ち着くまで）。
+  const scrollSettleDelay = 120;
+  const flashDuration = 1600;
+
+  let canceled = false;
+  let centeredOnce = false;
+  const pendingTimeouts = new Set<number>();
+  const flashed = new WeakSet<HTMLElement>();
+  let mutationObserver: MutationObserver | null = null;
+  let resizeObserver: ResizeObserver | null = null;
+  let resizeSettleTimeout: number | null = null;
+  let currentTarget: HTMLElement | null = null;
+
+  const stopMutationWatch = () => {
+    if (mutationObserver) {
+      mutationObserver.disconnect();
+      mutationObserver = null;
+    }
+  };
+  const stopResizeWatch = () => {
+    if (resizeObserver) {
+      resizeObserver.disconnect();
+      resizeObserver = null;
+    }
+    if (resizeSettleTimeout !== null) {
+      clearTimeout(resizeSettleTimeout);
+      resizeSettleTimeout = null;
+    }
+  };
+
+  let interruptListenersAttached = false;
+  const removeInterruptListeners = () => {
+    if (!interruptListenersAttached) return;
+    document.removeEventListener("keydown", cancel, true);
+    document.removeEventListener("mousedown", cancel, true);
+    document.removeEventListener("wheel", cancel, true);
+    document.removeEventListener("touchstart", cancel, true);
+    interruptListenersAttached = false;
+  };
+  const cancel = () => {
+    if (canceled) return;
+    canceled = true;
+    for (const id of pendingTimeouts) clearTimeout(id);
+    pendingTimeouts.clear();
+    stopMutationWatch();
+    stopResizeWatch();
+    // 走り出してる点滅クラスも即時除去
+    const targets = collectFlashTargets(blockId, app);
+    for (const el of targets) {
+      el.classList.remove("wr-quote-jump-flash");
+      el.style.removeProperty("--wr-flash-color");
+    }
+    removeInterruptListeners();
+  };
+  // ユーザー操作による中断リスナーの登録は「中央寄せが始まったあと」まで遅延する。
+  // 理由: 対象がまだ DOM に来ていない（仮想スクロールで未マウントなど）状態で
+  // タップ余韻の touchstart や iOS の遅延 mousedown を拾うと、観測自体が死んで
+  // 「正しい位置には飛ぶのに光らない」症状になる。中央寄せまで来てしまえば
+  // ユーザーには「ちゃんと辿り着いた」体感があるので、その後のキャンセルは意味が出る。
+  const attachInterruptListenersOnce = () => {
+    if (interruptListenersAttached) return;
+    interruptListenersAttached = true;
+    document.addEventListener("keydown", cancel, true);
+    document.addEventListener("mousedown", cancel, true);
+    document.addEventListener("wheel", cancel, true);
+    document.addEventListener("touchstart", cancel, true);
+  };
+
+  const schedule = (fn: () => void, ms: number) => {
+    const id = window.setTimeout(() => {
+      pendingTimeouts.delete(id);
+      if (canceled) return;
+      fn();
+    }, ms);
+    pendingTimeouts.add(id);
+  };
+
+  const flashAll = () => {
+    if (canceled) return;
+    const targets = collectFlashTargets(blockId, app);
+    for (const el of targets) {
+      if (flashed.has(el)) continue;
+      flashed.add(el);
+      el.classList.remove("wr-quote-jump-flash");
+      void el.offsetWidth;
+      const ruleClass = Array.from(el.classList).find((c) => /^wr-tag-rule-\d+$/.test(c));
+      const accent = ruleClass && resolveRuleAccent ? resolveRuleAccent(ruleClass) : null;
+      if (accent) {
+        const r = parseInt(accent.slice(1, 3), 16);
+        const g = parseInt(accent.slice(3, 5), 16);
+        const b = parseInt(accent.slice(5, 7), 16);
+        el.style.setProperty("--wr-flash-color", `rgba(${r}, ${g}, ${b}, 0.22)`);
+      } else {
+        el.style.removeProperty("--wr-flash-color");
+      }
+      el.classList.add("wr-quote-jump-flash");
+      schedule(() => {
+        el.classList.remove("wr-quote-jump-flash");
+        el.style.removeProperty("--wr-flash-color");
+      }, flashDuration);
+    }
+  };
+
+  // 対象が現れた瞬間に呼ばれる確定処理。中央寄せ → 遅延描画の収束を待って点滅。
+  const onTargetAppeared = (target: HTMLElement) => {
+    if (canceled || centeredOnce) return;
+    centeredOnce = true;
+    currentTarget = target;
+    // ここで初めて中断リスナーを購読開始する。これより前は touchstart 余韻などで
+    // 自爆 cancel しないようにするため、何も購読しない。
+    attachInterruptListenersOnce();
+    // ここでまず一度中央寄せ。OGP/数式の遅延描画は ResizeObserver で追っかける。
+    scrollElementIntoCenter(target);
+    // サイズ変化を観測。変化が来るたびに収束タイマーをリセット、止まったら最終調整＋点滅。
+    let firstObservation = true;
+    let flashed_once = false;
+    const finalizeIfQuiet = () => {
+      if (canceled) return;
+      if (currentTarget) scrollElementIntoCenter(currentTarget);
+      if (!flashed_once) {
+        flashed_once = true;
+        schedule(flashAll, scrollSettleDelay);
+      }
+    };
+    if (typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver(() => {
+        if (firstObservation) {
+          firstObservation = false;
+          return;
+        }
+        if (canceled) return;
+        if (resizeSettleTimeout !== null) clearTimeout(resizeSettleTimeout);
+        resizeSettleTimeout = window.setTimeout(() => {
+          resizeSettleTimeout = null;
+          if (canceled) return;
+          if (currentTarget) scrollElementIntoCenter(currentTarget);
+          if (!flashed_once) {
+            flashed_once = true;
+            schedule(flashAll, scrollSettleDelay);
+          }
+        }, resizeSettleMs);
+      });
+      resizeObserver.observe(target);
+    }
+    // 初回サイズ変化が一切来ない（=既に静止）ケースでも点滅させるため、
+    // 短い猶予を置いて点滅をキックする。サイズ変化が先に来たらそちらが先に走る。
+    schedule(finalizeIfQuiet, resizeSettleMs);
+  };
+
+  // RV パスでは、ジャンプ先 RV の「実際に画面に表示されている」要素を選ぶ。
+  // Obsidian は同一ノートの LV コンテナと RV コンテナを両方 DOM に持つことがあり
+  // (モード切替時に両方残る)、単純な「アクティブビュー containerEl 配下」絞り込みでは
+  // 非表示の LV 側要素を掴んでしまい、スクロールも点滅も画面に出ない症状になる。
+  // 判定基準:
+  //   1. 祖先に .markdown-reading-view があり、かつ .markdown-source-view が無いこと
+  //   2. offsetParent !== null (display:none やそれに準じた非表示状態でないこと)
+  const pickVisibleReadingViewTarget = (): HTMLElement | null => {
+    const all = collectFlashTargets(blockId, app);
+    if (all.length === 0) return null;
+    const visibleRV = all.filter((el) => {
+      if (el.offsetParent === null) return false;
+      let cur: HTMLElement | null = el;
+      let foundRV = false;
+      let foundLV = false;
+      while (cur) {
+        if (cur.classList.contains("markdown-reading-view")) foundRV = true;
+        if (cur.classList.contains("markdown-source-view")) foundLV = true;
+        cur = cur.parentElement;
+      }
+      return foundRV && !foundLV;
+    });
+    if (visibleRV.length > 0) return visibleRV[0];
+    // 見える RV 側要素が見つからない場合は null を返す。
+    // 「LV 側の非表示要素」や「offsetParent が null の要素」を掴んでも
+    // 中央寄せ・点滅が画面に出ないため、観測継続（MutationObserver の待機）を選ぶ。
+    return null;
+  };
+
+  // 既に対象が現れている場合は即時で処理。観測は不要。
+  const initialPreferred = pickVisibleReadingViewTarget();
+  if (initialPreferred) {
+    onTargetAppeared(initialPreferred);
+  } else {
+    // まだ現れていない → MutationObserver で出現を待ち受ける。
+    // 観測範囲は document 全体（RV のコンテナがどこに生えるか保証しにくいため）。
+    // 出現判定は wr-block-id-{blockId} クラスを持つ要素の追加で行う。
+    const pickPreferred = pickVisibleReadingViewTarget;
+    mutationObserver = new MutationObserver(() => {
+      if (canceled || centeredOnce) {
+        stopMutationWatch();
+        return;
+      }
+      const preferred = pickPreferred();
+      if (preferred) {
+        stopMutationWatch();
+        onTargetAppeared(preferred);
+      }
+    });
+    mutationObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+  }
+
+  // 異常系フェイルセーフ。対象が10秒経っても来なければ観測を畳む。
+  // RV の仮想スクロール仕様上、画面外に深く埋もれたブロックは Obsidian 自身がマウントしない
+  // ため、ここまで来てしまうケースは Obsidian の構造的制約として受容する（プラグイン側で
+  // 強制マウントするとスクロール位置のガタつきが発生し、ジャンプ体感を損なうため）。
+  const overallId = window.setTimeout(() => {
+    pendingTimeouts.delete(overallId);
+    stopMutationWatch();
+    stopResizeWatch();
+    removeInterruptListeners();
+  }, overallTimeoutMs);
+  pendingTimeouts.add(overallId);
+}
+
 // 元投稿に飛んだ後、対象の投稿ブロック全体を緩く点滅させる
 export function flashJumpTarget(
   blockId: string,
   app: App,
-  resolveRuleAccent?: (ruleClass: string) => string | null
+  resolveRuleAccent?: (ruleClass: string) => string | null,
+  // ジャンプ先のビュー。呼び出し側（クリックハンドラ）で確定したものを渡す。
+  // 「アクティブビュー」での判定だと、押した起点が Wrot タイムラインや別ノートだったときに
+  // ジャンプ先と無関係なビューを見て LV/RV 判定が揺らぐ。
+  targetView?: import("obsidian").MarkdownView | null
 ): void {
+  // RV では「行番号」と画面位置の対応関係が壊れる（画像/数式/OGP で行高が膨らむ）ため、
+  // LV と同じ時刻ベースのポーリングでは「光らない・縁ギリで止まる」揺らぎが出る。
+  // RV のときだけ「DOM 出現を観測する」方式に分岐させる。LV のパスは触らない。
+  const isReadingView = targetView?.getMode?.() === "preview";
+  if (isReadingView) {
+    flashJumpTargetReadingView(blockId, app, resolveRuleAccent, targetView);
+    return;
+  }
+
+  // 以下、LV (Live Preview / source mode) 用の既存ロジック。手は入れない。
   // 流れ: 対象要素出現を待つ → 見つかったらスクロール → スクロール完了後に点滅
   // 中断: ユーザー操作があったらスクロールも点滅も両方やめる
   const searchAt = [80, 250, 500, 900, 1500, 2200];
@@ -326,6 +573,21 @@ export function flashJumpTarget(
   let scrolled = false;
   const pendingTimeouts = new Set<number>();
   const flashed = new WeakSet<HTMLElement>();
+  // URL カード (OGP) / 数式 (MathJax) のように遅延描画される子を含む対象は
+  // ジャンプ直後の中央寄せ後にサイズが膨らみ目的位置がズレる。
+  // 対象要素のサイズ変化を観測して、変化のたびに中央寄せをやり直す。
+  let resizeObserver: ResizeObserver | null = null;
+  let resizeSettleTimeout: number | null = null;
+  const stopResizeWatch = () => {
+    if (resizeObserver) {
+      resizeObserver.disconnect();
+      resizeObserver = null;
+    }
+    if (resizeSettleTimeout !== null) {
+      clearTimeout(resizeSettleTimeout);
+      resizeSettleTimeout = null;
+    }
+  };
 
   const removeInterruptListeners = () => {
     document.removeEventListener("keydown", cancel, true);
@@ -338,6 +600,7 @@ export function flashJumpTarget(
     canceled = true;
     for (const id of pendingTimeouts) clearTimeout(id);
     pendingTimeouts.clear();
+    stopResizeWatch();
     // 走り出してる点滅クラスも即時除去
     const targets = collectFlashTargets(blockId, app);
     for (const el of targets) {
@@ -394,13 +657,54 @@ export function flashJumpTarget(
     }
   };
 
-  // スクロールは applyScroll / openLinkText に任せる。flashJumpTarget は
-  // 対象要素が DOM に現れるのを待って、現れたら点滅させる役割に専念する。
+  // applyScroll / openLinkText のスクロールは「行数換算」のため、画像/数式など
+  // 行高が大きく変動するブロックがあると目的位置が大きくズレることがある。
+  // 対象要素が DOM に現れたら、ここで実 DOM 座標で改めて中央寄せに微調整する。
+  // その後、スクロールが落ち着いてから点滅させる。
   const tryFlash = (): boolean => {
     if (canceled || scrolled) return false;
     const targets = collectFlashTargets(blockId, app);
     if (targets.length === 0) return false;
     scrolled = true;
+    // 代表として先頭ターゲットを中央寄せ。同一 blockId の点滅対象は LV/RV/タイムライン
+    // を横断しうるが、ジャンプ位置は「アクティブビュー内の対象」基準にしたいので、
+    // アクティブビューに含まれる要素を優先的に選ぶ
+    const activeContainer = getActiveViewContainer(app);
+    const preferred = activeContainer
+      ? targets.find((el) => activeContainer.contains(el)) ?? targets[0]
+      : targets[0];
+    scrollElementIntoCenter(preferred);
+    // OGP カードや数式 (MathJax) の遅延描画でサイズが膨らむと、初回中央寄せ後に
+    // 目的位置がズレる。ResizeObserver で対象のサイズ変化を観測し、変化のたびに
+    // 一定時間後に再度中央寄せをやり直す。一定時間サイズ変化が止まったら監視終了。
+    if (typeof ResizeObserver !== "undefined") {
+      stopResizeWatch();
+      let firstObservation = true;
+      resizeObserver = new ResizeObserver(() => {
+        // observe() 直後の初回コールバックは現状サイズ通知なので無視する
+        if (firstObservation) {
+          firstObservation = false;
+          return;
+        }
+        if (canceled) return;
+        if (resizeSettleTimeout !== null) {
+          clearTimeout(resizeSettleTimeout);
+        }
+        resizeSettleTimeout = window.setTimeout(() => {
+          resizeSettleTimeout = null;
+          if (canceled) return;
+          scrollElementIntoCenter(preferred);
+        }, 80);
+      });
+      resizeObserver.observe(preferred);
+      // 描画安定までの上限。遅延描画が永遠に発火し続ける状況を避けるため
+      // searchAt の最後＋少しの猶予で確実に監視を切る
+      const stopId = window.setTimeout(() => {
+        pendingTimeouts.delete(stopId);
+        stopResizeWatch();
+      }, searchAt[searchAt.length - 1] + 800);
+      pendingTimeouts.add(stopId);
+    }
     schedule(flashAll, scrollSettleDelay);
     return true;
   };
@@ -427,18 +731,44 @@ function getActiveViewContainer(app: App): HTMLElement | null {
   return view?.containerEl ?? null;
 }
 
-// 対象要素を含む最も近いスクロール可能祖先を画面中央に来るようスクロールする。
-// scrollIntoView だと Obsidian の RV 内部スクロール処理に上書きされて効かない
-// ケースがあるため、自前で scrollTop を計算してセットする。
+// 対象要素を「対象が属する単一のスクロールコンテナ内で中央に来る」位置までスクロールする。
+// scrollIntoView は要素を含む全スクロール可能祖先を巻き込んでスクロールするため、
+// 特に RV では外側コンテナまで動いてビュー全体が先頭に戻ってしまう症状が出る。
+// 対象に最も近いスクロール可能祖先を1つだけ特定し、その scrollTop を直接調整する。
+function findNearestScrollableAncestor(el: HTMLElement): HTMLElement | null {
+  let cur: HTMLElement | null = el.parentElement;
+  while (cur) {
+    const style = getComputedStyle(cur);
+    const overflowY = style.overflowY;
+    const scrollable =
+      (overflowY === "auto" || overflowY === "scroll" || overflowY === "overlay") &&
+      cur.scrollHeight > cur.clientHeight;
+    if (scrollable) return cur;
+    cur = cur.parentElement;
+  }
+  return null;
+}
+
 function scrollElementIntoCenter(el: HTMLElement): void {
-  // ブラウザ標準 scrollIntoView を呼ぶ。
-  // モバイル（特に iOS）では「下までスクロールし切った状態」からの
-  // scrollIntoView がスクロール慣性処理と競合して反映されないことがあるため、
-  // 同じ呼び出しを次フレームでも繰り返して確実に画面位置を更新する。
-  el.scrollIntoView({ block: "center", behavior: "auto" });
-  requestAnimationFrame(() => {
+  const scroller = findNearestScrollableAncestor(el);
+  if (!scroller) {
+    // 例外: スクロール可能祖先が見つからないときだけ scrollIntoView にフォールバック
     el.scrollIntoView({ block: "center", behavior: "auto" });
-  });
+    return;
+  }
+  const apply = () => {
+    const scrollerRect = scroller.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    // 対象要素の中心が scroller の中央に来るように scrollTop を調整
+    const offsetWithinScroller = elRect.top - scrollerRect.top + scroller.scrollTop;
+    const desiredTop = offsetWithinScroller - (scroller.clientHeight - elRect.height) / 2;
+    const maxTop = scroller.scrollHeight - scroller.clientHeight;
+    scroller.scrollTop = Math.max(0, Math.min(desiredTop, maxTop));
+  };
+  apply();
+  // モバイル（特に iOS）では1度の代入だと慣性処理に上書きされる場合があるため、
+  // 次フレームでもう一度同じ計算で書き直して確実に反映させる
+  requestAnimationFrame(apply);
 }
 
 // LV/RV/タイムライン全てから wr-block-id-{blockId} 付き要素を収集。
@@ -539,21 +869,20 @@ export function renderQuoteCard(
       targetView = app.workspace.getActiveViewOfType(obs.MarkdownView);
     }
     if (targetView) {
-      // applyScroll は指定行を画面上端に持ってくる仕様なので、画面の高さから
-      // 中央までの行数を引いて「対象が画面中央に来る」位置にする。
+      // applyScroll は指定行を画面上端付近に運ぶ。中央寄せは flashJumpTarget の中で
+      // 対象要素の実 DOM 座標を使って改めて行うため、ここではざっくり目的行まで運ぶだけ。
+      // 旧実装は viewportH ÷ approxLineHeight ÷ 2 で「画面半分の行数」を引いて中央化していたが、
+      // contentEl.clientHeight が「中身全体の高さ」を返すケースがあり halfLines が targetLine を
+      // 上回ると scrollLine が 0 に丸められて先頭に飛ぶ症状が出ていた。
       const targetLine = memoReady.lineStart;
-      const viewportH = targetView.contentEl.clientHeight;
-      // 行高は環境依存なので雑に見積もって中央寄せ。
-      const approxLineHeight = 28;
-      const halfLines = Math.max(0, Math.floor(viewportH / approxLineHeight / 2));
-      const scrollLine = Math.max(0, targetLine - halfLines);
       const mode = (targetView as any).currentMode;
       if (mode && typeof mode.applyScroll === "function") {
-        mode.applyScroll(scrollLine);
+        mode.applyScroll(targetLine);
       }
     }
-    // Obsidian がスクロール+実体化を済ませた後で点滅させる
-    flashJumpTarget(blockId, app, resolveRuleAccent);
+    // Obsidian がスクロール+実体化を済ませた後で点滅させる。
+    // ジャンプ先のビューを明示的に渡すことで、LV/RV 判定が「アクティブビュー」のブレに左右されないようにする。
+    flashJumpTarget(blockId, app, resolveRuleAccent, targetView);
   });
 
   const setupClick = (memo: Memo) => {

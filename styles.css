@@ -542,12 +542,43 @@ code.language-wr span.wr-inline-code {
   font-size: 0.85em !important;
 }
 
+/*
+ * LV (CodeMirror) のインラインコード `xxx` は、 CodeMirror がカーソル位置によって
+ * 1 span (カーソル外: バッククォート隠し+中身) または 3 span (カーソル内: 左バッククォート
+ * / 中身 / 右バッククォート) を生成する。 3 span 時の継ぎ目を完全に潰すのは
+ * 半透明背景 + サブピクセル境界の組み合わせで CSS では難しいため、 角丸は常に持たせず
+ * フラットな真四角の帯として表示する。
+ */
 .wr-inline-code-highlight {
   background: rgba(var(--mono-rgb-100), 0.08) !important;
   background-color: rgba(var(--mono-rgb-100), 0.08) !important;
-  border-radius: 4px;
+  border-radius: 0;
+  /* 中央の span (中身担当) は左右に padding を持たせて、 隣接する外側 span との
+   * 「padding と padding が直接隣接する」 状態にする。 半透明背景の重ね合わせで
+   * 継ぎ目が濃く見える問題を避けるため、 負 margin で重ねるアプローチは取らない。 */
   padding: 1px 4px;
   font-family: var(--font-monospace) !important;
+  /* 3 つの span の縦位置と高さを揃える。 */
+  vertical-align: baseline;
+  line-height: inherit;
+  box-sizing: border-box;
+}
+
+/* LV の wr ブロック内インラインコードは、 カーソル位置によって CodeMirror が
+ * 生成する DOM 構造が変わる (カーソル外: 1 span / カーソル内: 3 span)。
+ * 3 span 状態で角丸を持たせるとサブピクセル境界 + 半透明背景の重ね合わせで
+ * 継ぎ目が分離して見える問題があり、 これを完全に潰すのは CSS では困難だった。
+ * 角丸を諦めて常に真四角の帯で表示することで、 カーソル状態に関わらず
+ * 視覚的に一貫した 「フラットな背景の帯」 として見えるようにする。 */
+
+/* カーソル内 (=同じ .cm-hmd-codeblock 内に複数の wr-inline-code-highlight がある) 時、
+ * 両端の バッククォート span は .cm-hmd-codeblock の直接の子になる。
+ * 中央 span との接合部で padding 二重 を避けるため、 内側 padding を 0 にする。 */
+.cm-hmd-codeblock > .wr-inline-code-highlight:first-child {
+  padding-right: 0;
+}
+.cm-hmd-codeblock > .wr-inline-code-highlight:last-child:not(:first-child) {
+  padding-left: 0;
 }
 
 /* Reading View: hidden code element (kept for copy button) */
@@ -595,10 +626,6 @@ code.wr-code-hidden {
   margin: 0.5em 0;
   overflow-x: auto;
   text-align: center;
-}
-
-.wr-math-display mjx-container {
-  margin: 0 auto;
 }
 
 /* Fenced code block (Timeline / RV / LV) */
@@ -1116,8 +1143,8 @@ div.block-language-wr pre {
 /* RV 画像URL投稿 (wr-media-link 含む) は、 通常画像 (pre 直下の wr-embed-img) と同じく
    下余白を厚めに取って「画像投稿」体験を揃える。
    RV では実装上 wr-media-area が pre.language-wr の直下にも置かれるため両方狙う */
-pre.language-wr > .wr-media-area:has(> .wr-media-link),
-.block-language-wr > .wr-media-area:has(> .wr-media-link) {
+pre.language-wr > .wr-media-area.wr-has-link,
+.block-language-wr > .wr-media-area.wr-has-link {
   padding-bottom: 28px !important;
 }
 
@@ -1240,8 +1267,8 @@ pre.language-wr > .wr-media-area:has(> .wr-media-link),
    通常画像 (wr-embed-img) でも画像URL (wr-media-link) でもユーザーには同じ「画像」体験なので
    両方同じ下余白を当てて見た目を揃える。
    URL カードのみの wr-lp-media (OGPカード等) はこの追加余白を持たない */
-.wr-lp-media:has(> .wr-embed-img),
-.wr-lp-media:has(> .wr-media-link) {
+.wr-lp-media.wr-has-img,
+.wr-lp-media.wr-has-link {
   padding-bottom: 24px !important;
 }
 
@@ -1448,7 +1475,7 @@ body:not(.wr-font-follow).is-mobile .wr-timestamp {
 }
 
 /* モバイル: テキスト入力とセレクトは縦並び維持、それ以外は横1段に揃える */
-.is-mobile .wr-settings .setting-item:not(:has(.setting-item-control input[type="text"])):not(:has(.setting-item-control select)) {
+.is-mobile .wr-settings .setting-item:not(.wr-setting-has-text-input):not(.wr-setting-has-select) {
   display: flex !important;
   flex-wrap: nowrap !important;
   flex-direction: row !important;
@@ -1456,14 +1483,14 @@ body:not(.wr-font-follow).is-mobile .wr-timestamp {
   gap: 12px;
 }
 
-.is-mobile .wr-settings .setting-item:not(:has(.setting-item-control input[type="text"])):not(:has(.setting-item-control select)) > .setting-item-info {
+.is-mobile .wr-settings .setting-item:not(.wr-setting-has-text-input):not(.wr-setting-has-select) > .setting-item-info {
   flex: 1 1 auto !important;
   min-width: 0 !important;
   width: auto !important;
   margin: 0 !important;
 }
 
-.is-mobile .wr-settings .setting-item:not(:has(.setting-item-control input[type="text"])):not(:has(.setting-item-control select)) > .setting-item-control {
+.is-mobile .wr-settings .setting-item:not(.wr-setting-has-text-input):not(.wr-setting-has-select) > .setting-item-control {
   flex: 0 0 auto !important;
   justify-content: flex-end !important;
   width: auto !important;
@@ -1487,20 +1514,20 @@ body:not(.wr-font-follow).is-mobile .wr-timestamp {
    control full-width ONLY for rows containing a text input, since those are
    the rows that get cramped. Color pickers, toggles, dropdowns, and
    delete/reset buttons stay on a single line. */
-.wr-settings.wr-settings-narrow .setting-item:has(.setting-item-control input[type="text"]) {
+.wr-settings.wr-settings-narrow .setting-item.wr-setting-has-text-input {
   display: flex !important;
   flex-direction: column !important;
   align-items: stretch !important;
   gap: 6px;
 }
 
-.wr-settings.wr-settings-narrow .setting-item:has(.setting-item-control input[type="text"]) > .setting-item-info {
+.wr-settings.wr-settings-narrow .setting-item.wr-setting-has-text-input > .setting-item-info {
   width: 100% !important;
   flex: 0 0 auto !important;
   margin: 0 !important;
 }
 
-.wr-settings.wr-settings-narrow .setting-item:has(.setting-item-control input[type="text"]) > .setting-item-control {
+.wr-settings.wr-settings-narrow .setting-item.wr-setting-has-text-input > .setting-item-control {
   width: 100% !important;
   flex: 0 0 auto !important;
   justify-content: flex-start !important;
@@ -1509,7 +1536,7 @@ body:not(.wr-font-follow).is-mobile .wr-timestamp {
 }
 
 /* Narrow-layout text inputs should fill the row. */
-.wr-settings.wr-settings-narrow .setting-item:has(.setting-item-control input[type="text"]) .setting-item-control input[type="text"] {
+.wr-settings.wr-settings-narrow .setting-item.wr-setting-has-text-input .setting-item-control input[type="text"] {
   flex: 1 1 auto;
   min-width: 0;
 }
@@ -1677,14 +1704,14 @@ body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-nested-quote-mar
 
 /* RV / タイムラインで画像URL .wr-media-link が引用カードの直前にいる場合、
    通常画像 (![[]]) からの間隔と揃えるために底上げする */
-.wr-media-area:has(> .wr-media-link) + .wr-quote-card-slot {
+.wr-media-area.wr-has-link + .wr-quote-card-slot {
   margin-top: 25px;
 }
 
 /* wr-quote-block 配下の wr-lp-media は引用カードがすぐ下にぶら下がるので、
    末尾配置時用の padding-bottom: 24px は不要。 wr-quote-block 側の margin-bottom で間隔制御 */
-.wr-quote-block > .wr-lp-media:has(> .wr-embed-img),
-.wr-quote-block > .wr-lp-media:has(> .wr-media-link) {
+.wr-quote-block > .wr-lp-media.wr-has-img,
+.wr-quote-block > .wr-lp-media.wr-has-link {
   padding-bottom: 0 !important;
 }
 

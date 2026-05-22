@@ -1,5 +1,17 @@
 # Release Notes
 
+## 2.0.2 - 2026-05-22
+
+### Bug Fixes
+
+- Stabilized the behavior of jumping from a quote card in Reading View.
+
+### Improvements
+
+- Adjusted the appearance of inline code in Live View.
+
+---
+
 ## 2.0.1 - 2026-05-20
 
 ### Improvements
