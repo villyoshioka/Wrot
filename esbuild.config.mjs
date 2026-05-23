@@ -17,11 +17,17 @@ function minifyCss(css) {
     .trim();
 }
 
+// dev/styles.css（git管理外、人間が編集する非圧縮ソース）を読み込み、
+// ルート直下の styles.css に圧縮版を書き出す。dev/styles.css が存在しない
+// 環境（CI のチェックアウト直後など）ではスキップして無変更で抜ける。
 function buildStyles() {
-  const src = fs.readFileSync("styles.css", "utf8");
+  const srcPath = path.join("dev", "styles.css");
+  if (!fs.existsSync(srcPath)) {
+    return;
+  }
+  const src = fs.readFileSync(srcPath, "utf8");
   const out = minifyCss(src);
-  fs.mkdirSync("dist", { recursive: true });
-  fs.writeFileSync(path.join("dist", "styles.css"), out);
+  fs.writeFileSync("styles.css", out);
 }
 
 // `/* @css */` マーカー付き template literal をビルド時にミニファイする esbuild プラグイン。
@@ -162,26 +168,20 @@ const baseBuildOptions = {
 };
 
 if (prod) {
-  // 完全圧縮版（リリースアセット用）: JS圧縮 + 動的CSS(@cssマーカー)も圧縮
-  await esbuild.build({
-    ...baseBuildOptions,
-    outfile: "dist/main.js",
-    minify: true,
-    sourcemap: false,
-    plugins: [cssEvalPlugin],
-  });
-  // 半圧縮版（リポジトリ追跡用）: JSは圧縮するが、動的CSSのテンプレートリテラルは
-  // 元の改行・空白のまま残す。差分追跡・デバッグ時に CSS が読めるようにする。
+  // 完全圧縮版（リリースアセット兼リポジトリ追跡用）:
+  // JS圧縮 + 動的CSS(@cssマーカー)も圧縮 → ルート直下の main.js に直接書き出す
   await esbuild.build({
     ...baseBuildOptions,
     outfile: "main.js",
     minify: true,
     sourcemap: false,
+    plugins: [cssEvalPlugin],
   });
   buildStyles();
   process.exit(0);
 } else {
-  // watch モード: リポジトリ版と同じ半圧縮
+  // watch モード（dev）: JSは圧縮、動的CSSテンプレートリテラルは元のまま残す
+  // （開発中の差分追跡・デバッグ用）
   const context = await esbuild.context({
     ...baseBuildOptions,
     outfile: "main.js",

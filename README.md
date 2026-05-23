@@ -1,6 +1,6 @@
 # Wrot
 
-**English** ・ [日本語](docs/ja/README.md)
+**English** ・ [日本語](https://github.com/villyoshioka/Wrot/blob/main/docs/ja/README.md)
 
 **An Obsidian plugin for micro-journaling your day, one "tweet" at a time.**
 
@@ -21,11 +21,11 @@ Everything you write is saved directly into your Daily Notes. This means it work
 
 ## Features
 
-- **Rich UI** — A post editor with a dedicated toolbar for formatting, lists, links, and quotes. The timeline view makes writing and revisiting your notes feel intuitive and satisfying. See [Formatting Guide](./docs/en/formatting-guide.md) for more details.
+- **Rich UI** — A post editor with a dedicated toolbar for formatting, lists, links, and quotes. The timeline view makes writing and revisiting your notes feel intuitive and satisfying. See [Formatting Guide](https://github.com/villyoshioka/Wrot/blob/main/docs/en/formatting-guide.md) for more details.
 - **Pin Important Notes** — Keep essential memos at the top of your timeline regardless of the date. Perfect for shopping lists, active tasks, or reminders you don't want to lose track of.
 - **Tag Filtering** — Simply click a `#tag` to instantly view all related notes via Obsidian's built-in search.
 - **Color-Coded Tags** — Assign custom background and text colors to your most-used tags. Posts will automatically highlight based on your rules, making it easy to categorize by mood, priority, or project at a glance.
-- **Links & URL Previews** — Supports internal links (![[]]), external URLs, and OGP cards. Get a quick look at link content with image previews. See [Using Images, Links, and Embeds](./docs/en/links-and-embeds.md) for more details.
+- **Links & URL Previews** — Supports internal links (![[]]), external URLs, and OGP cards. Get a quick look at link content with image previews. See [Using Images, Links, and Embeds](https://github.com/villyoshioka/Wrot/blob/main/docs/en/links-and-embeds.md) for more details.
 - **Seamless Image Uploads** — Quickly attach screenshots or image files via paste, drag-and-drop, or the upload button. Preview thumbnails before you post, and easily remove any mistakes with a single click.
 - **Fully Customizable** — Tailor your workspace by adjusting background/text colors and even customizing the post button’s text and icon.
 
@@ -120,7 +120,7 @@ Wrot operates entirely locally. Your data is never collected, shared, or tracked
 
 ## License
 
-Wrot is licensed under the [MIT License](./LICENSE).
+Wrot is licensed under the [MIT License](https://github.com/villyoshioka/Wrot/blob/main/LICENSE).
 
 ---
 
@@ -137,6 +137,6 @@ Special thanks to [catnose](https://x.com/catnose99) (Kioku LLC) for [Nani](http
 
 ## Development
 
-This plugin is developed by the author with the assistance of AI (Anthropic's Claude) to ensure high-quality design and functionality. For more details, see the [AI Usage Policy](./AI_POLICY.md).
+This plugin is developed by the author with the assistance of AI (Anthropic's Claude) to ensure high-quality design and functionality. For more details, see the [AI Usage Policy](https://github.com/villyoshioka/Wrot/blob/main/AI_POLICY.md).
 
 **Developed by**: Vill Yoshioka ([@villyoshioka](https://github.com/villyoshioka))

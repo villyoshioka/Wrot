@@ -1,5 +1,13 @@
 # Release Notes
 
+## 2.0.3 - 2026-05-23
+
+### Improvements
+
+- Improved internal structure.
+
+---
+
 ## 2.0.2 - 2026-05-22
 
 ### Bug Fixes
