@@ -1,5 +1,17 @@
 # Release Notes
 
+## 2.1.0 - 2026-05-24
+
+### New Features
+
+- Added Traditional Chinese support. When Obsidian's language is set to "繁體中文", the Wrot UI automatically switches to Traditional Chinese.
+
+### Improvements
+
+- Improved internal structure.
+
+---
+
 ## 2.0.3 - 2026-05-23
 
 ### Improvements

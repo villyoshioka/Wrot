@@ -14,6 +14,7 @@ function minifyCss(css) {
     .replace(/\s+/g, " ")
     .replace(/\s*([{};:,>~])\s*/g, "$1")
     .replace(/;}/g, "}")
+    .replace(/\s+!important/g, "!important")
     .trim();
 }
 

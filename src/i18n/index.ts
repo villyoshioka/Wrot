@@ -9,6 +9,7 @@ import fr from "./fr";
 import de from "./de";
 import it from "./it";
 import ru from "./ru";
+import zhTW from "./zh-TW";
 
 type LocaleCode =
   | "ja"
@@ -20,10 +21,11 @@ type LocaleCode =
   | "fr"
   | "de"
   | "it"
-  | "ru";
+  | "ru"
+  | "zh-TW";
 
 // 完全一致を試す辞書セット。en-GB 等のサブタグ付きをここに登録する
-const SUPPORTED_LOCALES: ReadonlyArray<LocaleCode> = ["ja", "en", "en-GB", "es", "ko", "pt", "fr", "de", "it", "ru"];
+const SUPPORTED_LOCALES: ReadonlyArray<LocaleCode> = ["ja", "en", "en-GB", "es", "ko", "pt", "fr", "de", "it", "ru", "zh-TW"];
 
 // 各ロケールの辞書本体。 satisfies により ja のキー構造から外れたものはビルド時に弾く
 const DICTIONARIES: Partial<Record<LocaleCode, Translations>> = {
@@ -37,6 +39,7 @@ const DICTIONARIES: Partial<Record<LocaleCode, Translations>> = {
   de,
   it,
   ru,
+  "zh-TW": zhTW,
 };
 
 const FALLBACK_LOCALE: LocaleCode = "en";

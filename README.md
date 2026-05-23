@@ -57,7 +57,7 @@ By adjusting the date format in Obsidian's "Daily Notes" settings (e.g., `GGGG-[
 
 ## Supported Languages
 
-Wrot supports **9 languages across 10 locales**. It automatically syncs with your Obsidian language settings and defaults to English for unsupported languages.
+Wrot supports **10 languages across 11 locales**. It automatically syncs with your Obsidian language settings and defaults to English for unsupported languages.
 
 | Language | Locale |
 | --- | --- |
@@ -71,6 +71,7 @@ Wrot supports **9 languages across 10 locales**. It automatically syncs with you
 | German | `de` |
 | Italian | `it` |
 | Russian | `ru` |
+| Traditional Chinese | `zh-TW` |
 
 ---
 
