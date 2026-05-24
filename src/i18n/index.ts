@@ -10,6 +10,7 @@ import de from "./de";
 import it from "./it";
 import ru from "./ru";
 import zhTW from "./zh-TW";
+import zhCN from "./zh-CN";
 
 type LocaleCode =
   | "ja"
@@ -22,10 +23,14 @@ type LocaleCode =
   | "de"
   | "it"
   | "ru"
-  | "zh-TW";
+  | "zh-TW"
+  | "zh-CN"
+  | "zh";
 
 // 完全一致を試す辞書セット。en-GB 等のサブタグ付きをここに登録する
-const SUPPORTED_LOCALES: ReadonlyArray<LocaleCode> = ["ja", "en", "en-GB", "es", "ko", "pt", "fr", "de", "it", "ru", "zh-TW"];
+// Obsidian は簡体中国語選択時に "zh" だけを返す（"zh-TW" のような明示形ではない）ため、
+// "zh" を簡体中国語のエイリアスとして "zh-CN" と並列で登録する
+const SUPPORTED_LOCALES: ReadonlyArray<LocaleCode> = ["ja", "en", "en-GB", "es", "ko", "pt", "fr", "de", "it", "ru", "zh-TW", "zh-CN", "zh"];
 
 // 各ロケールの辞書本体。 satisfies により ja のキー構造から外れたものはビルド時に弾く
 const DICTIONARIES: Partial<Record<LocaleCode, Translations>> = {
@@ -40,6 +45,8 @@ const DICTIONARIES: Partial<Record<LocaleCode, Translations>> = {
   it,
   ru,
   "zh-TW": zhTW,
+  "zh-CN": zhCN,
+  zh: zhCN,
 };
 
 const FALLBACK_LOCALE: LocaleCode = "en";

@@ -2,8 +2,6 @@
 
 **English** ・ [日本語](https://github.com/villyoshioka/Wrot/blob/main/docs/ja/README.md)
 
-**An Obsidian plugin for micro-journaling your day, one "tweet" at a time.**
-
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow)](https://opensource.org/licenses/MIT)
 [![release](https://img.shields.io/github/v/release/villyoshioka/Wrot)](https://github.com/villyoshioka/Wrot/releases/latest)
 
@@ -57,21 +55,22 @@ By adjusting the date format in Obsidian's "Daily Notes" settings (e.g., `GGGG-[
 
 ## Supported Languages
 
-Wrot supports **10 languages across 11 locales**. It automatically syncs with your Obsidian language settings and defaults to English for unsupported languages.
+Wrot supports **11 languages across 12 locales**. It automatically syncs with your Obsidian language settings and defaults to English for unsupported languages.
 
-| Language | Locale |
-| --- | --- |
-| Japanese | `ja` |
-| English (US) | `en` |
-| English (UK) | `en-GB` |
-| Korean | `ko` |
-| Spanish | `es` |
-| Portuguese | `pt` |
-| French | `fr` |
-| German | `de` |
-| Italian | `it` |
-| Russian | `ru` |
+| Language            | Locale  |
+| ------------------- | ------- |
+| Japanese            | `ja`    |
+| English (US)        | `en`    |
+| English (UK)        | `en-GB` |
+| Korean              | `ko`    |
+| Spanish             | `es`    |
+| Portuguese          | `pt`    |
+| French              | `fr`    |
+| German              | `de`    |
+| Italian             | `it`    |
+| Russian             | `ru`    |
 | Traditional Chinese | `zh-TW` |
+| Simplified Chinese  | `zh-CN` |
 
 ---
 
@@ -115,7 +114,7 @@ Wrot is highly customizable. Key settings include:
 
 Wrot operates entirely locally. Your data is never collected, shared, or tracked.
 
-*External network requests are only made when URL Previews are enabled, specifically to fetch OGP data for the links you post.*
+_External network requests are only made when URL Previews are enabled, specifically to fetch OGP data for the links you post._
 
 ---
 

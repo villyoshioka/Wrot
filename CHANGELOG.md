@@ -1,5 +1,22 @@
 # Release Notes
 
+## 2.2.0 - 2026-05-24
+
+### New Features
+
+- Added Simplified Chinese support. When Obsidian's language is set to "简体中文", the Wrot UI automatically switches to Simplified Chinese.
+
+### Bug Fixes
+
+- Fixed an issue where the right padding of memo blocks in Live View was narrower than the left padding.
+- Improved an issue where the input form was slow to render on tablets when Obsidian was started or when the Wrot panel was opened while focus was inside a Live View card.
+
+### Improvements
+
+- Improved internal structure.
+
+---
+
 ## 2.1.0 - 2026-05-24
 
 ### New Features

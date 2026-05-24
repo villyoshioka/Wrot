@@ -644,6 +644,15 @@ export class WrotView extends ItemView {
       });
       this.toolbarResizeObserver.observe(toolbar);
     }
+
+    // モバイル/Obsidian 起動直後や LV カードに focus がある状態でパネルを開くと、
+    // 投稿フォーム領域 (.wr-input-area) の初期レイアウトが Electron 側で保留され
+    // 真っ白のまま放置されることがある。 タップや数秒の待機で復帰するが体験を損ねるため、
+    // 次フレームで明示的に強制 reflow を発生させてレイアウトを確定させる。
+    requestAnimationFrame(() => {
+      inputArea.getBoundingClientRect();
+      this.textarea?.getBoundingClientRect();
+    });
   }
 
   private openImagePicker(): void {
