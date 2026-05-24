@@ -1,5 +1,13 @@
 # Release Notes
 
+## 2.2.1 - 2026-05-25
+
+### Bug Fixes
+
+- Fixed an issue where the icon of the 3-dot menu button on a memo card did not change to the accent color while the menu was open.
+
+---
+
 ## 2.2.0 - 2026-05-24
 
 ### New Features
