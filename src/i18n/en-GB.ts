@@ -60,6 +60,10 @@ const enGB = {
   "settings.item.checkStrikethrough.desc":
     "Display a strikethrough on items where the tick box is checked.",
 
+  "settings.item.showCalendarButton.name": "Show calendar button",
+  "settings.item.showCalendarButton.desc":
+    "Add a calendar icon to the navigation bar so you can jump straight to any date.",
+
   "settings.item.tagColorRules.name": "Colour by Tag",
   "settings.item.tagColorRules.desc":
     "Change the background and text colour of posts containing specific tags. If multiple rules apply, the tag appearing first in the text takes priority.",

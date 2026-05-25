@@ -61,6 +61,10 @@ const zhTW = {
   "settings.item.checkStrikethrough.desc":
     "在勾選框為 ON 的項目上顯示刪除線。",
 
+  "settings.item.showCalendarButton.name": "顯示日曆按鈕",
+  "settings.item.showCalendarButton.desc":
+    "在日期導覽列中顯示日曆按鈕，點擊即可快速跳轉至指定日期。",
+
   "settings.item.tagColorRules.name": "按標籤變更顏色",
   "settings.item.tagColorRules.desc":
     "變更包含指定標籤之貼文的背景顏色與文字顏色。若符合多個規則，將優先適用本文中先出現的標籤。",

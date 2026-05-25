@@ -59,6 +59,10 @@ const ru = {
   "settings.item.checkStrikethrough.desc":
     "Отображать зачеркивание для пунктов с отмеченными чекбоксами.",
 
+  "settings.item.showCalendarButton.name": "Кнопка календаря",
+  "settings.item.showCalendarButton.desc":
+    "Отображать кнопку календаря в панели навигации. Нажмите, чтобы быстро перейти к нужной дате.",
+
   "settings.item.tagColorRules.name": "Цветовые правила для тегов",
   "settings.item.tagColorRules.desc":
     "Изменяет цвета записей с определенными тегами. Если подходят несколько правил, приоритет отдается первому тегу в тексте.",

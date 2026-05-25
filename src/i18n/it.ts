@@ -63,6 +63,10 @@ const it = {
   "settings.item.checkStrikethrough.desc":
     "Mostra una linea barrata sugli elementi con la casella di controllo attivata.",
 
+  "settings.item.showCalendarButton.name": "Mostra pulsante calendario",
+  "settings.item.showCalendarButton.desc":
+    "Aggiunge un pulsante calendario alla barra di navigazione. Tocca per passare rapidamente a una data specifica.",
+
   "settings.item.tagColorRules.name": "Cambia colori per tag",
   "settings.item.tagColorRules.desc":
     "Cambia il colore di sfondo e del testo dei post che contengono tag specifici. Se si applicano più regole, ha la priorità il primo tag che appare nel testo.",

@@ -61,6 +61,10 @@ const en = {
   "settings.item.checkStrikethrough.desc":
     "Display a strikethrough for items with a checked checkbox.",
 
+  "settings.item.showCalendarButton.name": "Calendar Button",
+  "settings.item.showCalendarButton.desc":
+    "Adds a calendar button to the date nav, letting you jump to any date with a quick tap.",
+
   "settings.item.tagColorRules.name": "Change Color by Tag",
   "settings.item.tagColorRules.desc":
     "Change the background and text color of posts containing specific tags. If multiple rules apply, the tag that appears first in the text takes priority.",

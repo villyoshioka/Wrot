@@ -41,6 +41,7 @@ export interface WrotSettings {
   tagColorRulesEnabled: boolean;
   tagColorRules: TagColorRule[];
   followObsidianFontSize: boolean;
+  showCalendarButton: boolean;
   pins: PinEntry[];
   pinLimit: PinLimit;
   // 起動時に Obsidian の言語が変わったかを検知するための「前回保存時のロケール」記録。
@@ -64,6 +65,7 @@ export const DEFAULT_SETTINGS: WrotSettings = {
   tagColorRulesEnabled: false,
   tagColorRules: [],
   followObsidianFontSize: false,
+  showCalendarButton: true,
   pins: [],
   pinLimit: 3,
 };
@@ -501,6 +503,19 @@ export class WrotSettingTab extends PluginSettingTab {
             this.plugin.settings.checkStrikethrough = value;
             await this.plugin.saveSettings();
             this.plugin.refreshViews();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName(t("settings.item.showCalendarButton.name"))
+      .setDesc(t("settings.item.showCalendarButton.desc"))
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.showCalendarButton)
+          .onChange(async (value) => {
+            this.plugin.settings.showCalendarButton = value;
+            await this.plugin.saveSettings();
+            this.plugin.updateCalendarButton();
           })
       );
 

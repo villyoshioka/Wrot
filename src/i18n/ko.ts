@@ -61,6 +61,10 @@ const ko = {
   "settings.item.checkStrikethrough.desc":
     "체크박스가 완료된 항목에 취소선을 표시합니다.",
 
+  "settings.item.showCalendarButton.name": "캘린더 버튼 표시",
+  "settings.item.showCalendarButton.desc":
+    "날짜 네비게이션에 캘린더 버튼을 추가합니다. 버튼을 눌러 원하는 날짜로 바로 이동할 수 있습니다.",
+
   "settings.item.tagColorRules.name": "태그별 색상 규칙",
   "settings.item.tagColorRules.desc":
     "특정 태그가 포함된 게시물의 배경색과 글자색을 변경합니다. 여러 규칙이 겹치면 본문에서 먼저 등장한 태그가 우선 적용됩니다.",

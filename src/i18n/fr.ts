@@ -63,6 +63,10 @@ const fr = {
   "settings.item.checkStrikethrough.desc":
     "Applique un style barré aux éléments de liste dont la case est cochée.",
 
+  "settings.item.showCalendarButton.name": "Bouton Calendrier",
+  "settings.item.showCalendarButton.desc":
+    "Affiche un bouton calendrier dans la barre de navigation. Touchez-le pour accéder directement à n'importe quelle date.",
+
   "settings.item.tagColorRules.name": "Coloration par étiquette",
   "settings.item.tagColorRules.desc":
     "Personnalise les couleurs des publications selon leurs étiquettes. En cas de conflit, la première étiquette du texte est prioritaire.",

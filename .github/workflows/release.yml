@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Compute release name (strip leading v)
         id: relname
@@ -25,7 +25,7 @@ jobs:
           echo "name=${NAME}" >> "$GITHUB_OUTPUT"
 
       - name: Generate artifact attestations
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v4
         with:
           subject-path: |
             main.js
@@ -33,7 +33,7 @@ jobs:
             manifest.json
 
       - name: Create GitHub Release with assets
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           name: ${{ steps.relname.outputs.name }}
           body: ''

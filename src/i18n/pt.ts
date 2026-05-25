@@ -62,6 +62,10 @@ const pt = {
   "settings.item.checkStrikethrough.desc":
     "Exibe uma linha de tachado em itens com a caixa de seleção marcada.",
 
+  "settings.item.showCalendarButton.name": "Mostrar botão de calendário",
+  "settings.item.showCalendarButton.desc":
+    "Exibe um ícone de calendário na barra de navegação. Toque para selecionar e ir direto para qualquer data.",
+
   "settings.item.tagColorRules.name": "Mudar cor por tag",
   "settings.item.tagColorRules.desc":
     "Altera as cores de postagens que contêm tags específicas. Se houver múltiplas tags, a primeira que aparecer terá prioridade.",

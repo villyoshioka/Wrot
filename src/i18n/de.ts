@@ -61,6 +61,10 @@ const de = {
   "settings.item.checkStrikethrough.desc":
     "Zeigt eine Durchstreichung für Elemente an, deren Kontrollkästchen aktiviert ist.",
 
+  "settings.item.showCalendarButton.name": "Kalender-Button einblenden",
+  "settings.item.showCalendarButton.desc":
+    "Zeigt einen Button in der Datumsnavigation an, mit dem Sie per Fingertipp direkt zu einem beliebigen Datum springen können.",
+
   "settings.item.tagColorRules.name": "Farben nach Tags ändern",
   "settings.item.tagColorRules.desc":
     "Ändert die Hintergrund- und Textfarbe von Beiträgen, die bestimmte Tags enthalten. Wenn mehrere Regeln zutreffen, hat das im Text zuerst vorkommende Tag Vorrang.",

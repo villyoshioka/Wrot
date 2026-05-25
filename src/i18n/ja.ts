@@ -62,6 +62,11 @@ const ja = {
   "settings.item.checkStrikethrough.name": "チェック済みの取り消し線",
   "settings.item.checkStrikethrough.desc": "チェックボックスがONの項目に取り消し線を表示します。",
 
+  // ─── settings: カレンダーボタン ─────────────────────────────────────
+  "settings.item.showCalendarButton.name": "カレンダーボタンを表示",
+  "settings.item.showCalendarButton.desc":
+    "日付ナビにカレンダーボタンを表示します。タップで任意の日付へジャンプできます。",
+
   // ─── settings: タグ別に色を変える ───────────────────────────────────
   "settings.item.tagColorRules.name": "タグ別に色を変える",
   "settings.item.tagColorRules.desc":

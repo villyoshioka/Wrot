@@ -58,6 +58,8 @@ export class WrotView extends ItemView {
   private anchoredToToday: boolean = true;
   private listContainer!: HTMLElement;
   private dateLabel!: HTMLElement;
+  private dateNavEl!: HTMLElement;
+  private calendarBtnEl: HTMLElement | null = null;
   textarea!: HTMLTextAreaElement;
   submitLabelEl!: HTMLElement;
   submitIconEl!: HTMLElement;
@@ -67,6 +69,11 @@ export class WrotView extends ItemView {
   private ignoreNextModify = false;
   private ignoreModifyUntil = 0;
   private activeFormatMode: "bold" | "italic" | null = null;
+  // 装飾ボタン click から ta.focus() を呼ぶと、textarea にフォーカスが無かった場合に
+  // focus イベントが発火して validateActiveFormatMode が走り、せっかく立てた予告モードが
+  // 「カーソル手前に記号がない」と判定されて即座に潰される。
+  // 予告モードを立てた瞬間にこのフラグを立て、直後の focus 検証 1 回だけスキップする。
+  private skipNextFocusValidation = false;
   // IME入力中は太字/斜体ボタンを薄くしてクリックを抑止する。
   // iOS WebKit では IME 未確定中に textarea 外をタップしても装飾ボタン側に
   // pointer/click イベントが届かないため、ボタン側でのガードは効かない。
@@ -226,6 +233,7 @@ export class WrotView extends ItemView {
 
   private buildDateNav(container: HTMLElement): void {
     const nav = container.createDiv({ cls: "wr-date-nav" });
+    this.dateNavEl = nav;
 
     const prevBtn = nav.createEl("button", { cls: "wr-nav-btn" });
     setIcon(prevBtn, "chevron-left");
@@ -258,6 +266,59 @@ export class WrotView extends ItemView {
       this.anchoredToToday = true;
       this.refresh();
     });
+
+    this.updateCalendarButton();
+  }
+
+  // 設定の showCalendarButton に応じてカレンダーボタンを生成/削除する。
+  // 設定画面でトグル変更された直後にも呼べるよう独立した関数にしている。
+  updateCalendarButton(): void {
+    if (!this.dateNavEl) return;
+    if (!this.plugin.settings.showCalendarButton) {
+      this.calendarBtnEl?.remove();
+      this.calendarBtnEl = null;
+      return;
+    }
+    if (this.calendarBtnEl) return;
+    // カレンダーピッカー: 任意の日付へジャンプする OS 標準の日付選択 UI を出す。
+    // input[type=date] の見た目はプラットフォームごとに制御困難なため、
+    // 普段はボタンだけ見せておき、クリック時に input を一瞬だけ生成して
+    // click() でピッカーを開き、選択後に DOM から外す。
+    const calendarBtn = this.dateNavEl.createEl("button", { cls: "wr-nav-btn wr-calendar-btn" });
+    setIcon(calendarBtn, "calendar-1");
+    calendarBtn.setAttr("aria-label", t("view.dateNav.today"));
+    calendarBtn.addEventListener("click", () => {
+      // 一時 input をボタン内に absolute で重ねる (ピッカーはボタン位置基準で開く)。
+      // CSS クラス指定だと specificity 負け or 反映遅延でレイアウトを一瞬揺らすため、
+      // style 属性で直接当てて確実に flex 計算から除外する。
+      const input = calendarBtn.createEl("input", { cls: "wr-calendar-hidden-input", type: "date" });
+      input.style.cssText = "position:absolute;top:0;left:0;width:100%;height:100%;margin:0;padding:0;border:0;opacity:0;pointer-events:none;";
+      input.value = this.currentDate.format("YYYY-MM-DD");
+      // ピッカーが開いている間はボタンのホバー風スタイルを維持する
+      calendarBtn.toggleClass("wr-toolbar-active", true);
+      const cleanup = () => {
+        input.remove();
+        calendarBtn.toggleClass("wr-toolbar-active", false);
+      };
+      input.addEventListener("change", () => {
+        const value = input.value;
+        if (value) {
+          this.currentDate = moment(value);
+          this.anchoredToToday = false;
+          this.refresh();
+        }
+        cleanup();
+      });
+      input.addEventListener("blur", cleanup);
+      input.focus();
+      const anyInput = input as HTMLInputElement & { showPicker?: () => void };
+      if (typeof anyInput.showPicker === "function") {
+        try { anyInput.showPicker(); } catch { input.click(); }
+      } else {
+        input.click();
+      }
+    });
+    this.calendarBtnEl = calendarBtn;
   }
 
   private buildInputArea(container: HTMLElement): void {
@@ -466,6 +527,7 @@ export class WrotView extends ItemView {
         ta.value = ta.value.slice(0, pos) + "**" + ta.value.slice(pos);
         ta.selectionStart = ta.selectionEnd = pos + 2;
         this.activeFormatMode = "bold";
+        this.skipNextFocusValidation = true;
       }
       ta.focus();
       ta.dispatchEvent(new Event("input"));
@@ -496,6 +558,7 @@ export class WrotView extends ItemView {
         ta.value = ta.value.slice(0, pos) + "*" + ta.value.slice(pos);
         ta.selectionStart = ta.selectionEnd = pos + 1;
         this.activeFormatMode = "italic";
+        this.skipNextFocusValidation = true;
       }
       ta.focus();
       ta.dispatchEvent(new Event("input"));
@@ -577,7 +640,20 @@ export class WrotView extends ItemView {
       if (document.activeElement === this.textarea) updateActive();
     });
     // フォーカス取得直後はselectionchangeが発火しないため明示同期
-    this.textarea.addEventListener("focus", updateActive);
+    this.textarea.addEventListener("focus", () => {
+      // 装飾ボタンclickで予告モードを立てた直後の ta.focus() による検証は、
+      // まだ装飾記号がカーソル手前にないため誤って予告モードを潰してしまう。
+      // フラグが立っている場合は validateActiveFormatMode をスキップする。
+      if (this.skipNextFocusValidation) {
+        this.skipNextFocusValidation = false;
+        this.updateToolbarActive(listBtn, checkBtn, olBtn);
+        this.updateEmbedBtnActive(embedBtn);
+        updateFormatBtns();
+        this.updateSubmitBtnState();
+        return;
+      }
+      updateActive();
+    });
     // IME確定・ペースト等の値変更を拾う(updateActiveは冪等なので二重発火OK)
     this.textarea.addEventListener("input", updateActive);
     // IME入力が始まったらロック。確定判定は compositionend ではなく、

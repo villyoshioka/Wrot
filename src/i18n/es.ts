@@ -62,6 +62,10 @@ const es = {
   "settings.item.checkStrikethrough.desc":
     "Muestra una línea de tachado en los elementos con la casilla de verificación marcada.",
 
+  "settings.item.showCalendarButton.name": "Mostrar el botón de calendario",
+  "settings.item.showCalendarButton.desc":
+    "Muestra un icono de calendario en la barra de navegación. Al pulsarlo, podrás saltar directamente a la fecha que elijas.",
+
   "settings.item.tagColorRules.name": "Colores personalizados por etiqueta",
   "settings.item.tagColorRules.desc":
     "Cambia el color de los posts que contienen etiquetas específicas. Si coinciden varias, se aplicará la de la primera etiqueta encontrada.",

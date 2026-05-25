@@ -1,5 +1,21 @@
 # Release Notes
 
+## 2.3.0 - 2026-05-25
+
+### New Features
+
+- Added a calendar button to the date navigation. Tap it to jump to any date. You can toggle its visibility in the settings.
+
+### Improvements
+
+- Refined the design of the date navigation.
+
+### Bug Fixes
+
+- Fixed an issue where the preview highlight on decoration buttons could fail to activate on the first tap.
+
+---
+
 ## 2.2.1 - 2026-05-25
 
 ### Bug Fixes

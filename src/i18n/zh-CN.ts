@@ -61,6 +61,10 @@ const zhCN = {
   "settings.item.checkStrikethrough.desc":
     "为已勾选复选框的项目添加删除线。",
 
+  "settings.item.showCalendarButton.name": "显示日历按钮",
+  "settings.item.showCalendarButton.desc":
+    "在日期导航栏中显示日历图标，方便你直接跳转到任何日期。",
+
   "settings.item.tagColorRules.name": "按标签自定义颜色",
   "settings.item.tagColorRules.desc":
     "根据特定标签更改记录的背景和文字颜色。若符合多个规则，优先适用正文中先出现的标签。",

@@ -183,7 +183,6 @@ export default class WrotPlugin extends Plugin {
       body .wr-content,
       body .wr-textarea,
       body .wr-date-label,
-      body .wr-today-btn,
       body .wr-inline-code,
       body .wr-plain-text,
       body div.block-language-wr *:not(.wr-embed-missing):not(.wr-internal-link-unresolved):not(.wr-internal-link):not(.wr-tag):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-quote-card-slot):not(.wr-quote-card-slot *):not(.wr-codeblock-display):not(.wr-codeblock-display *),
@@ -947,6 +946,13 @@ export default class WrotPlugin extends Plugin {
           setIcon(view.submitIconEl, this.settings.submitIcon);
         }
       }
+    }
+  }
+
+  updateCalendarButton(): void {
+    const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_WROT);
+    for (const leaf of leaves) {
+      (leaf.view as WrotView).updateCalendarButton();
     }
   }
 
