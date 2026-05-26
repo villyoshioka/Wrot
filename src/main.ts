@@ -232,6 +232,7 @@ export default class WrotPlugin extends Plugin {
       body .wr-codeblock-display .token.important,
       body .wr-codeblock-display .token.variable { color: var(--code-value) !important; }
       body .wr-nav-btn,
+      body .wr-today-btn,
       body .wr-toolbar-btn,
       body .wr-copy-btn,
       body .wr-copy-btn .svg-icon,

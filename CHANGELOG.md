@@ -1,5 +1,13 @@
 # Release Notes
 
+## 2.3.1 - 2026-05-26
+
+### Bug Fixes
+
+- Fixed an issue where the today button's color did not follow the text color setting.
+
+---
+
 ## 2.3.0 - 2026-05-25
 
 ### New Features
