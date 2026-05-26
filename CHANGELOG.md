@@ -1,5 +1,13 @@
 # Release Notes
 
+## 2.3.2 - 2026-05-27
+
+### Bug Fixes
+
+- Fixed an issue where the behavior of blockquote blocks could become incorrect under certain conditions.
+
+---
+
 ## 2.3.1 - 2026-05-26
 
 ### Bug Fixes

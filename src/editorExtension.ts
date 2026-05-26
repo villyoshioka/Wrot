@@ -1033,12 +1033,25 @@ function buildDecorations(
         // RangeSetBuilder が startSide 順序エラーで全装飾を弾くため、
         // replace を先にソートしておく
         const isReplace = (d: Decoration): boolean => (d as any).point === true;
+        // 引用行の wr-blockquote-wrap mark は引用全体（行末まで）を覆う mark。
+        // URL ハイライト等のインラインmarkと同じ範囲になったとき、後勝ち（外側）に
+        // 配置されないと <wr-url-highlight><wr-blockquote-wrap>... の入れ子になり、
+        // 子の wr-blockquote-wrap の muted color が URL のアクセント色を打ち消す。
+        // wr-blockquote-wrap は常に後勝ち（外側）に来るよう明示的に並べる。
+        const isBlockquoteWrap = (d: Decoration): boolean => {
+          const spec = (d as any).spec;
+          return spec && typeof spec.class === "string" && spec.class.includes("wr-blockquote-wrap");
+        };
         entries.sort((a, b) => {
           if (a.from !== b.from) return a.from - b.from;
           const ar = isReplace(a.deco) ? 0 : 1;
           const br = isReplace(b.deco) ? 0 : 1;
           if (ar !== br) return ar - br;
-          return a.to - b.to;
+          if (a.to !== b.to) return a.to - b.to;
+          // 同 from / 同 to / 同種別 (mark) の場合、wr-blockquote-wrap を後ろに
+          const aw = isBlockquoteWrap(a.deco) ? 1 : 0;
+          const bw = isBlockquoteWrap(b.deco) ? 1 : 0;
+          return aw - bw;
         });
         for (const e of entries) {
           builder.add(e.from, e.to, e.deco);

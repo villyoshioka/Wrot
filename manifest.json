@@ -1,7 +1,7 @@
 {
   "id": "wrot",
   "name": "Wrot",
-  "version": "2.3.1",
+  "version": "2.3.2",
   "minAppVersion": "1.5.0",
   "description": "A daily memo tool with a timeline UI.",
   "author": "Vill Yoshioka",
