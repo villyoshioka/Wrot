@@ -183,6 +183,9 @@ export default class WrotPlugin extends Plugin {
       body .wr-content,
       body .wr-textarea,
       body .wr-date-label,
+      body .wr-calendar-month-label,
+      body .wr-calendar-day:not(.wr-calendar-day-selected):not(.wr-calendar-day-today):not(.wr-calendar-day-outside),
+      body .wr-calendar-year:not(.wr-calendar-day-selected):not(.wr-calendar-day-today),
       body .wr-inline-code,
       body .wr-plain-text,
       body div.block-language-wr *:not(.wr-embed-missing):not(.wr-internal-link-unresolved):not(.wr-internal-link):not(.wr-tag):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-quote-card-slot):not(.wr-quote-card-slot *):not(.wr-codeblock-display):not(.wr-codeblock-display *),
@@ -194,6 +197,16 @@ export default class WrotPlugin extends Plugin {
       body .wr-bullet-list li,
       body .wr-ordered-list li {
         color: ${textColor} !important;
+      }
+      /* カレンダー: 曜日見出し・月送り矢印は設定文字色の薄いバリエーション、
+         前後月のマスはさらに薄い faint に乗せる
+         (当月の日・月ラベルは上の textColor ルールで濃い設定色) */
+      body .wr-calendar-weekday,
+      body .wr-calendar-nav-btn {
+        color: ${mutedColor} !important;
+      }
+      body .wr-calendar-day-outside {
+        color: ${faintColor} !important;
       }
       /* ネストコードブロック内でPrismトークン色を復元する */
       body .wr-codeblock-display code[class*="language-"],

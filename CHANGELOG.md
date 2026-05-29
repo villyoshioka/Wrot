@@ -1,5 +1,17 @@
 # Release Notes
 
+## 2.4.0 - 2026-05-29
+
+### Updates
+
+- Updated dependencies.
+
+### Improvements
+
+- Revamped the calendar so it looks and behaves the same across all environments (desktop, mobile, and tablet). Its text and background colors now follow your Wrot settings.
+
+---
+
 ## 2.3.2 - 2026-05-27
 
 ### Bug Fixes

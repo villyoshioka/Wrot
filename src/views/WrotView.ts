@@ -7,6 +7,7 @@ import { renderTextWithTagsAndUrls, renderUrlPreviews } from "../utils/urlRender
 import { renderQuoteCard } from "../utils/quoteCard";
 import { ensureBlockIdOnFence } from "../utils/memoWriter";
 import { isImageFile, saveImageToVault, buildEmbedLink } from "../utils/imageAttachment";
+import { openCalendarPopover, CalendarPopoverHandle } from "../utils/calendarPopover";
 import type WrotPlugin from "../main";
 import type { PinEntry } from "../settings";
 import { t } from "../i18n";
@@ -60,6 +61,7 @@ export class WrotView extends ItemView {
   private dateLabel!: HTMLElement;
   private dateNavEl!: HTMLElement;
   private calendarBtnEl: HTMLElement | null = null;
+  private calendarPopover: CalendarPopoverHandle | null = null;
   textarea!: HTMLTextAreaElement;
   submitLabelEl!: HTMLElement;
   submitIconEl!: HTMLElement;
@@ -143,6 +145,7 @@ export class WrotView extends ItemView {
   }
 
   async onClose(): Promise<void> {
+    this.closeCalendarPopover();
     this.unregisterFileWatcher();
     if (this.toolbarResizeObserver) {
       this.toolbarResizeObserver.disconnect();
@@ -275,50 +278,48 @@ export class WrotView extends ItemView {
   updateCalendarButton(): void {
     if (!this.dateNavEl) return;
     if (!this.plugin.settings.showCalendarButton) {
+      this.closeCalendarPopover();
       this.calendarBtnEl?.remove();
       this.calendarBtnEl = null;
       return;
     }
     if (this.calendarBtnEl) return;
-    // カレンダーピッカー: 任意の日付へジャンプする OS 標準の日付選択 UI を出す。
-    // input[type=date] の見た目はプラットフォームごとに制御困難なため、
-    // 普段はボタンだけ見せておき、クリック時に input を一瞬だけ生成して
-    // click() でピッカーを開き、選択後に DOM から外す。
+    // カレンダーピッカー: 任意の日付へジャンプする自作カレンダー UI を出す。
+    // OS 標準の input[type=date] は見た目・操作感がプラットフォームごとに
+    // バラバラなため使わず、全環境で同一の見た目になる自作ポップオーバー
+    // (calendarPopover) をボタン位置基準で開く。
     const calendarBtn = this.dateNavEl.createEl("button", { cls: "wr-nav-btn wr-calendar-btn" });
     setIcon(calendarBtn, "calendar-1");
     calendarBtn.setAttr("aria-label", t("view.dateNav.today"));
     calendarBtn.addEventListener("click", () => {
-      // 一時 input をボタン内に absolute で重ねる (ピッカーはボタン位置基準で開く)。
-      // CSS クラス指定だと specificity 負け or 反映遅延でレイアウトを一瞬揺らすため、
-      // style 属性で直接当てて確実に flex 計算から除外する。
-      const input = calendarBtn.createEl("input", { cls: "wr-calendar-hidden-input", type: "date" });
-      input.style.cssText = "position:absolute;top:0;left:0;width:100%;height:100%;margin:0;padding:0;border:0;opacity:0;pointer-events:none;";
-      input.value = this.currentDate.format("YYYY-MM-DD");
-      // ピッカーが開いている間はボタンのホバー風スタイルを維持する
+      // すでに開いていれば閉じる (トグル)。
+      if (this.calendarPopover) {
+        this.closeCalendarPopover();
+        return;
+      }
+      // ポップオーバーが開いている間はボタンのホバー風スタイルを維持する。
       calendarBtn.toggleClass("wr-toolbar-active", true);
-      const cleanup = () => {
-        input.remove();
-        calendarBtn.toggleClass("wr-toolbar-active", false);
-      };
-      input.addEventListener("change", () => {
-        const value = input.value;
-        if (value) {
-          this.currentDate = moment(value);
+      this.calendarPopover = openCalendarPopover({
+        anchor: calendarBtn,
+        container: this.contentEl,
+        initialDate: this.currentDate,
+        onSelect: (date) => {
+          this.currentDate = date;
           this.anchoredToToday = false;
           this.refresh();
-        }
-        cleanup();
+        },
+        onClose: () => {
+          this.calendarPopover = null;
+          calendarBtn.toggleClass("wr-toolbar-active", false);
+        },
       });
-      input.addEventListener("blur", cleanup);
-      input.focus();
-      const anyInput = input as HTMLInputElement & { showPicker?: () => void };
-      if (typeof anyInput.showPicker === "function") {
-        try { anyInput.showPicker(); } catch { input.click(); }
-      } else {
-        input.click();
-      }
     });
     this.calendarBtnEl = calendarBtn;
+  }
+
+  private closeCalendarPopover(): void {
+    this.calendarPopover?.close();
+    this.calendarPopover = null;
   }
 
   private buildInputArea(container: HTMLElement): void {
