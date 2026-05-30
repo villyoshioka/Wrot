@@ -124,6 +124,8 @@ const enGB = {
 
   "settings.item.submitIcon.lucideUrl": "https://lucide.dev/icons/",
 
+  "calendar.monthYearFormat": "MMMM YYYY",
+
   "defaults.headerDateFormat": "D MMMM YYYY",
   "defaults.submitLabel": "Post",
   "defaults.inputPlaceholder": "Note to self...",

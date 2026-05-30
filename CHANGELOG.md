@@ -1,5 +1,15 @@
 # Release Notes
 
+## 2.5.0 - 2026-05-30
+
+### Improvements
+
+- Optimized the month and year display to match the standard format for each language.
+- Improved tap feedback for dates and years on mobile devices.
+- Refined calendar borders and shadows for a cleaner, more natural look.
+
+---
+
 ## 2.4.0 - 2026-05-29
 
 ### Updates

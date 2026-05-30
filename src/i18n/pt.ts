@@ -128,6 +128,8 @@ const pt = {
 
   "settings.item.submitIcon.lucideUrl": "https://lucide.dev/icons/",
 
+  "calendar.monthYearFormat": "MMMM [de] YYYY",
+
   "defaults.headerDateFormat": "D [de] MMMM [de] YYYY",
   "defaults.submitLabel": "Postar",
   "defaults.inputPlaceholder": "Escreva algo aqui...",

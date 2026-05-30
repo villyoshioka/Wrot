@@ -124,6 +124,8 @@ const ru = {
 
   "settings.item.submitIcon.lucideUrl": "https://lucide.dev/icons/",
 
+  "calendar.monthYearFormat": "LLLL YYYY [г.]",
+
   "defaults.headerDateFormat": "D MMMM YYYY [г.]",
   "defaults.submitLabel": "Постить",
   "defaults.inputPlaceholder": "Ваши мысли здесь...",

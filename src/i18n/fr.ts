@@ -132,6 +132,8 @@ const fr = {
 
   "settings.item.submitIcon.lucideUrl": "https://lucide.dev/icons/",
 
+  "calendar.monthYearFormat": "MMMM YYYY",
+
   "defaults.headerDateFormat": "D MMMM YYYY",
   "defaults.submitLabel": "Poster",
   "defaults.inputPlaceholder": "À vous de jouer...",

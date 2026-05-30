@@ -131,6 +131,8 @@ const zhCN = {
 
   "settings.item.submitIcon.lucideUrl": "https://lucide.dev/icons/",
 
+  "calendar.monthYearFormat": "YYYY[年]M[月]",
+
   "defaults.headerDateFormat": "YYYY/MM/DD",
   "defaults.submitLabel": "发布",
   "defaults.inputPlaceholder": "这一刻的想法...",

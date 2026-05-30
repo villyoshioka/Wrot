@@ -1,4 +1,5 @@
 import { setIcon } from "obsidian";
+import { t } from "../i18n";
 
 declare const moment: typeof import("moment");
 
@@ -128,7 +129,7 @@ export function openCalendarPopover(
 
   // 月モード: 月日のカレンダーを描画する。
   const renderMonth = () => {
-    monthLabel.setText(viewMonth.format("MMMM YYYY"));
+    monthLabel.setText(viewMonth.format(t("calendar.monthYearFormat")));
     weekdaysRow.style.display = "";
     grid.removeClass("wr-calendar-grid-years");
     grid.empty();

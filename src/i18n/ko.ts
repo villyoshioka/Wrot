@@ -127,6 +127,8 @@ const ko = {
 
   "settings.item.submitIcon.lucideUrl": "https://lucide.dev/icons/",
 
+  "calendar.monthYearFormat": "YYYY[년] M[월]",
+
   "defaults.headerDateFormat": "YYYY년 MM월 DD일",
   "defaults.submitLabel": "게시",
   "defaults.inputPlaceholder": "새로운 내용을 게시해 보세요...",

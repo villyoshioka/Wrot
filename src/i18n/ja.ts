@@ -137,6 +137,12 @@ const ja = {
   // ─── settings: 投稿アイコン Lucide リンク URL (ロケール側で切替可) ──
   "settings.item.submitIcon.lucideUrl": "https://lucide.dev/icons/",
 
+  // ─── カレンダー: 月年ラベルの表示形式 ──────────────────────────────
+  // カレンダーポップオーバー最上部の「2026年5月」相当のラベル。moment の
+  // format トークンで記述し、ロケールごとに自然な月年の並びにする。
+  // 「年」「月」は角括弧でリテラル扱いにして moment のトークン誤解釈を防ぐ。
+  "calendar.monthYearFormat": "YYYY[年]M[月]",
+
   // ─── 言語依存のデフォルト設定値 ────────────────────────────────────
   // DEFAULT_SETTINGS の代わりに、新規インストール時にこれらを採用する
   "defaults.headerDateFormat": "YYYY年MM月DD日",
