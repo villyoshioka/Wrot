@@ -1,5 +1,13 @@
 # Release Notes
 
+## 2.5.1 - 2026-05-31
+
+### Bug Fixes
+
+- Fixed an issue where the post button could be pressed while empty.
+
+---
+
 ## 2.5.0 - 2026-05-30
 
 ### Improvements
