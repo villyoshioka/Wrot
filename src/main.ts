@@ -29,15 +29,13 @@ export default class WrotPlugin extends Plugin {
     );
 
     this.addRibbonIcon("feather", "Wrot", () => {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
       this.activateView();
     });
 
     this.addCommand({
-      // eslint-disable-next-line obsidianmd/commands/no-plugin-id-in-command-id
-      id: "open-wrot",
-      // eslint-disable-next-line obsidianmd/commands/no-plugin-name-in-command-name, obsidianmd/ui/sentence-case
-      name: "Open Wrot",
+      id: "open",
+      name: "Open",
       callback: () => this.activateView(),
     });
 
@@ -74,25 +72,19 @@ export default class WrotPlugin extends Plugin {
       const view = leaf.view;
       if (!(view instanceof MarkdownView)) return;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-      const previewMode = (view as any).previewMode;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      const previewMode = (view as { previewMode?: { rerender?: (full: boolean) => void } }).previewMode;
       if (previewMode?.rerender) {
         try {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
           previewMode.rerender(true);
-        // eslint-disable-next-line no-empty
+        // eslint-disable-next-line no-empty -- intentional no-op
         } catch {}
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-      const cm = (view.editor as any)?.cm;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      const cm = (view.editor as { cm?: { dispatch?: (tr: { effects: unknown }) => void } })?.cm;
       if (cm?.dispatch) {
         try {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
           cm.dispatch({ effects: vaultFilesChanged.of(null) });
-        // eslint-disable-next-line no-empty
+        // eslint-disable-next-line no-empty -- intentional no-op
         } catch {}
       }
     });
@@ -922,14 +914,11 @@ export default class WrotPlugin extends Plugin {
     this.app.workspace.iterateAllLeaves((leaf) => {
       const view = leaf.view;
       if (!(view instanceof MarkdownView)) return;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-      const cm = (view.editor as any)?.cm;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      const cm = (view.editor as { cm?: { dispatch?: (tr: { effects: unknown }) => void } })?.cm;
       if (cm?.dispatch) {
         try {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
           cm.dispatch({ effects: tagRulesChanged.of(null) });
-        // eslint-disable-next-line no-empty
+        // eslint-disable-next-line no-empty -- intentional no-op
         } catch {}
       }
     });
@@ -958,7 +947,7 @@ export default class WrotPlugin extends Plugin {
   refreshViews(): void {
     const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_WROT);
     for (const leaf of leaves) {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
       (leaf.view as WrotView).refresh();
     }
   }
@@ -1018,7 +1007,7 @@ export default class WrotPlugin extends Plugin {
     const existing = workspace.getLeavesOfType(VIEW_TYPE_WROT);
 
     if (existing.length > 0) {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises, obsidianmd/no-unsupported-api
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
       workspace.revealLeaf(existing[0]);
       return;
     }
@@ -1038,12 +1027,12 @@ export default class WrotPlugin extends Plugin {
     }
 
     await leaf.setViewState({ type: VIEW_TYPE_WROT, active: true });
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises, obsidianmd/no-unsupported-api
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
     workspace.revealLeaf(leaf);
   }
 
   async loadSettings(): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- value from untyped Obsidian/CodeMirror internal API
     const raw = (await this.loadData()) ?? {};
     let dirty = false;
     for (const key of ["autoLinkEnabled", "autoLinkExcludeList"]) {
@@ -1060,7 +1049,7 @@ export default class WrotPlugin extends Plugin {
       submitLabel: t("defaults.submitLabel"),
       inputPlaceholder: t("defaults.inputPlaceholder"),
     };
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- value from untyped Obsidian/CodeMirror internal API
     this.settings = Object.assign({}, localizedDefaults, raw);
 
     // calendarDayShape 未記録の場合：新規インストールは "rounded"、既存ユーザーは "circle" を維持。

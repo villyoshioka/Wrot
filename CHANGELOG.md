@@ -1,5 +1,23 @@
 # Release Notes
 
+## 2.7.0 - 2026-06-07
+
+### Important Changes
+
+- Renamed the "Open Wrot" command to "Open". If you had a hotkey assigned to it, please reassign it.
+- Raised the minimum required version to Obsidian 1.8.7.
+
+### Updates
+
+- Updated dependencies.
+
+### Improvements
+
+- Improved internal structure.
+- Balanced the left and right spacing around posts containing images in Reading View.
+
+---
+
 ## 2.6.1 - 2026-06-07
 
 ### Improvements

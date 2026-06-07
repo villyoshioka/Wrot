@@ -77,7 +77,7 @@ Wrot supports **11 languages across 12 locales**. It automatically syncs with yo
 ## Get Started in 3 Steps
 
 1. **Install the Plugin** — Via the [Obsidian Community Store](#from-the-obsidian-community-store) or [Manual Installation](#manual-installation).
-2. **Open the Sidebar** — Click the feather icon or use the Command Palette to "Open Wrot" to bring up your timeline.
+2. **Open the Sidebar** — Click the feather icon or use the Command Palette to "Open" to bring up your timeline.
 3. **Start Writing** — Type your thoughts and hit the post button (or Ctrl/Cmd+Enter). That’s it—your daily log has begun.
 
 ### From the Obsidian Community Store

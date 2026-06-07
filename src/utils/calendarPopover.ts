@@ -130,8 +130,7 @@ export function openCalendarPopover(
   // 月モード: 月日のカレンダーを描画する。
   const renderMonth = () => {
     monthLabel.setText(viewMonth.format(t("calendar.monthYearFormat")));
-    // eslint-disable-next-line obsidianmd/no-static-styles-assignment
-    weekdaysRow.style.display = "";
+    weekdaysRow.setCssStyles({ display: "" });
     grid.removeClass("wr-calendar-grid-years");
     grid.empty();
 
@@ -170,8 +169,7 @@ export function openCalendarPopover(
     // viewMonth の年がページ内に収まるよう、ページ先頭年を算出する。
     const start = cur - (((cur % YEARS_PER_PAGE) + YEARS_PER_PAGE) % YEARS_PER_PAGE);
     monthLabel.setText(`${start} – ${start + YEARS_PER_PAGE - 1}`);
-    // eslint-disable-next-line obsidianmd/no-static-styles-assignment
-    weekdaysRow.style.display = "none";
+    weekdaysRow.setCssStyles({ display: "none" });
     grid.addClass("wr-calendar-grid-years");
     grid.empty();
 

@@ -153,6 +153,10 @@ export class WrotSettingTab extends PluginSettingTab {
   }
 
   display(): void {
+    this.render();
+  }
+
+  private render(): void {
     const { containerEl } = this;
     containerEl.empty();
     containerEl.addClass("wr-settings");
@@ -254,9 +258,10 @@ export class WrotSettingTab extends PluginSettingTab {
       .setDesc(t("settings.item.timestampFormat.desc"))
       .addText((text) => {
         tsText = text;
+        // 日付フォーマットのトークン例（大文字小文字に意味があるため表記を変えない）
+        const tsFormatPlaceholder = "YYYY/MM/DD HH:mm:ss";
         text
-          // eslint-disable-next-line obsidianmd/ui/sentence-case
-          .setPlaceholder("YYYY/MM/DD HH:mm:ss")
+          .setPlaceholder(tsFormatPlaceholder)
           .setValue(this.plugin.settings.timestampFormat)
           .onChange(async (value) => {
             this.plugin.settings.timestampFormat = value || DEFAULT_SETTINGS.timestampFormat;
@@ -420,9 +425,10 @@ export class WrotSettingTab extends PluginSettingTab {
     iconSetting
       .addText((text) => {
         iconText = text;
+        // Lucide アイコンID（小文字固定のため表記を変えない）
+        const iconNamePlaceholder = "send";
         text
-          // eslint-disable-next-line obsidianmd/ui/sentence-case
-          .setPlaceholder("send")
+          .setPlaceholder(iconNamePlaceholder)
           .setValue(this.plugin.settings.submitIcon)
           .onChange(async (value) => {
             this.plugin.settings.submitIcon = value.trim();
@@ -563,8 +569,7 @@ export class WrotSettingTab extends PluginSettingTab {
           }
           // ルールブロックの表示/非表示を切り替えるため設定タブ全体を再構築
           this.skipLockReset = true;
-          // eslint-disable-next-line @typescript-eslint/no-deprecated
-          this.withScrollPreserved(() => this.display());
+          this.withScrollPreserved(() => this.render());
         })
       );
 
@@ -594,9 +599,7 @@ export class WrotSettingTab extends PluginSettingTab {
         const raw = getComputedStyle(activeDocument.body).getPropertyValue("--text-accent").trim();
         if (/^#[0-9a-fA-F]{6}$/.test(raw)) return raw;
         const probe = activeDocument.createElement("div");
-        probe.style.color = raw || "var(--text-accent)";
-        // eslint-disable-next-line obsidianmd/no-static-styles-assignment
-        probe.style.display = "none";
+        probe.setCssStyles({ color: raw || "var(--text-accent)", display: "none" });
         activeDocument.body.appendChild(probe);
         const resolved = getComputedStyle(probe).color;
         activeDocument.body.removeChild(probe);

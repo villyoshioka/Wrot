@@ -1,4 +1,4 @@
-import { TFile, MarkdownRenderer, renderMath, finishRenderMath } from "obsidian";
+import { TFile, MarkdownRenderer, renderMath, finishRenderMath, Component } from "obsidian";
 import { extractUrls, renderUrlPreviews, isSafeUrl, QUOTE_LINK_RE } from "./utils/urlRenderer";
 import { renderQuoteCard, invalidateMemoCache, refreshQuoteCardsForFile } from "./utils/quoteCard";
 import { toggleCheckbox } from "./utils/memoWriter";
@@ -104,7 +104,7 @@ async function applyBlockIdClasses(el: HTMLElement, plugin: WrotPlugin, sourcePa
   const sortedMemos = [...memos].sort((a, b) => a.lineStart - b.lineStart);
   // ノート全体の wr フェンスを DOM 出現順で取得
   const doc = (codeEls[0] as HTMLElement).ownerDocument || activeDocument;
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- assertion needed for cross-version Obsidian typings
   const allCodeEls = Array.from(
     doc.querySelectorAll(
       'code.language-wr, .block-language-wr code, pre > code[class*="language-wr"]'
@@ -204,7 +204,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
   // 引用カードマーカー [[X#^wr-T]] が含まれてる投稿は画像をインライン描画（末尾集約しない）。
   // これにより画像は元投稿の書かれた位置（=引用カードの上）に表示される
   const blockFullText = code.textContent || "";
-  // eslint-disable-next-line no-useless-escape
+  // eslint-disable-next-line no-useless-escape -- escape kept for regex readability
   const hasQuoteMarker = /\[\[[^\[\]]+#\^wr-\d{17}\]\]/.test(blockFullText);
 
   convertListLines(code, plugin);
@@ -227,7 +227,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
     if (!text.includes("#") && !text.match(/(?:https?|obsidian):\/\//) && !text.includes("[[") && !text.includes("`") && !text.includes("*") && !text.includes("~") && !text.includes("=") && !text.includes("$")) continue;
 
     const frag = activeDocument.createDocumentFragment();
-    // eslint-disable-next-line no-useless-escape
+    // eslint-disable-next-line no-useless-escape -- escape kept for regex readability
     const parts = text.split(/(\$[^$]+\$|`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*|~~[^~]+~~|==[^=]+=+|!\[\[[^\]]+\]\]|\[\[[^\]]+\]\]|\[[^\[\]\n]+\]\((?:https?|obsidian):\/\/[^\s)]+\)|#[^\s#]+|(?:https?|obsidian):\/\/[^\s<>"'\]]+)/g);
     let hasMatch = false;
 
@@ -283,7 +283,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
       }
       if (formatHandled) continue;
 
-      // eslint-disable-next-line no-useless-escape
+      // eslint-disable-next-line no-useless-escape -- escape kept for regex readability
       const mdLinkMatch = part.match(/^\[([^\[\]\n]+)\]\(((?:https?|obsidian):\/\/[^\s)]+)\)$/);
       if (mdLinkMatch) {
         const label = mdLinkMatch[1];
@@ -342,7 +342,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
           a.addEventListener("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
             plugin.app.workspace.openLinkText(fileName, "", false);
           });
           frag.appendChild(a);
@@ -368,7 +368,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
           a.addEventListener("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
             plugin.app.workspace.openLinkText(linkName, "", false);
           });
           frag.appendChild(a);
@@ -385,12 +385,12 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
         const mathEl = activeDocument.createElement("span");
         mathEl.className = "wr-math";
         try {
-          // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment, no-undef
+          // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment, no-undef -- internal Obsidian/CodeMirror API or intentional pattern
           const { renderMath, finishRenderMath } = require("obsidian");
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call -- internal Obsidian/CodeMirror API or intentional pattern
           const rendered = renderMath(mathContent, false);
           mathEl.appendChild(rendered);
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- call into untyped Obsidian/CodeMirror internal API
           finishRenderMath();
         } catch {
           mathEl.textContent = part;
@@ -408,7 +408,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
             const decoded = decodeURIComponent(filePath);
             fileName = decoded.split("/").pop() || decoded;
           }
-        // eslint-disable-next-line no-empty
+        // eslint-disable-next-line no-empty -- intentional no-op
         } catch {}
         const lowerName = fileName?.toLowerCase() || "";
         const looksLikeImage = IMAGE_EXT.test(lowerName);
@@ -495,10 +495,17 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
         const mediaEl = activeDocument.createElement("div");
         mediaEl.className = "wr-media-area";
         insertMediaNode(mediaEl);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unnecessary-type-assertion, @typescript-eslint/no-unsafe-argument
-        renderUrlPreviews(mediaEl as any, parsedUrls, plugin.ogpCache, resolveImagePath);
+        renderUrlPreviews(mediaEl, parsedUrls, plugin.ogpCache, resolveImagePath);
       }
     }
+    // CSS :has() 回避: 「引用カードを含む」「末尾が埋め込み画像/メディアエリア」のブロックに
+    // 状態クラスを直付けし、styles.css 側はこのクラスで padding-bottom を詰める
+    const lastChild = blockEl.lastElementChild;
+    const hasRichTail =
+      !!blockEl.querySelector(".wr-quote-card-slot") ||
+      !!lastChild?.classList.contains("wr-embed-img") ||
+      !!lastChild?.classList.contains("wr-media-area");
+    blockEl.classList.toggle("wr-rv-rich-tail", hasRichTail);
   }
 }
 
@@ -507,8 +514,8 @@ function renderCodeBlockFragment(segment: Extract<Segment, { kind: "codeblock" }
   blockEl.className = "wr-codeblock-display";
   const fence = "~".repeat(Math.max(3, segment.fenceTildes));
   const source = (segment.lang ? `${fence}${segment.lang}\n` : `${fence}\n`) + segment.code + `\n${fence}`;
-  // eslint-disable-next-line obsidianmd/no-plugin-as-component
-  MarkdownRenderer.render(plugin.app, source, blockEl, "", plugin).catch(() => {
+  const renderComponent = new Component();
+  MarkdownRenderer.render(plugin.app, source, blockEl, "", renderComponent).catch(() => {
     blockEl.empty();
     const pre = blockEl.createEl("pre");
     const codeEl = pre.createEl("code");
@@ -524,7 +531,7 @@ function renderMathBlockFragment(segment: Extract<Segment, { kind: "mathblock" }
   try {
     const rendered = renderMath(segment.tex, true);
     blockEl.appendChild(rendered);
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
     finishRenderMath();
   } catch {
     blockEl.textContent = segment.tex;
@@ -638,7 +645,7 @@ function convertListLines(
           cb.type = "checkbox";
           if (innerCheck[1] === "x") cb.checked = true;
           const innerLineIdx = i;
-          // eslint-disable-next-line @typescript-eslint/no-misused-promises
+          // eslint-disable-next-line @typescript-eslint/no-misused-promises -- async handler intentionally used as a callback
           cb.addEventListener("click", async () => {
             const file = plugin.app.workspace.getActiveFile();
             if (!file) return;
@@ -710,7 +717,7 @@ function convertListLines(
         cb.type = "checkbox";
         if (checkMatch[1] === "x") cb.checked = true;
         const lineIdx = i;
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises -- async handler intentionally used as a callback
         cb.addEventListener("click", async () => {
           const file = plugin.app.workspace.getActiveFile();
           if (!file) return;

@@ -76,7 +76,6 @@ function resolveLocale(raw: string | undefined | null): LocaleCode {
 export function initI18n(): void {
   let lang: string | undefined;
   try {
-    // eslint-disable-next-line obsidianmd/no-unsupported-api
     lang = getLanguage();
   } catch {
     lang = undefined;
@@ -94,7 +93,7 @@ function applyParams(text: string, params: Record<string, string | number> | und
   if (!params) return text;
   return text.replace(/\{(\w+)\}/g, (match, key) => {
     if (Object.prototype.hasOwnProperty.call(params, key)) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- member access on untyped Obsidian/CodeMirror internal API
       return String(params[key]);
     }
     return match;

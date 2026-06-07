@@ -70,7 +70,7 @@ function formatMemoTimestamp(time: string, format?: string): string {
 }
 
 // 入れ子引用マーカーは再帰展開せず "QT:" 化 (マトリョーシカ防止)
-// eslint-disable-next-line no-useless-escape
+// eslint-disable-next-line no-useless-escape -- escape kept for regex readability
 const NESTED_QUOTE_RE_INLINE = /[\s]*\[\[[^\[\]]+#\^wr-\d{17}\]\][\s]*/g;
 
 const NESTED_QUOTE_PLACEHOLDER = "QT:";
@@ -81,7 +81,7 @@ function sanitizeNestedQuotes(text: string): string {
 }
 
 // プレビュー幅を圧迫する 画像/数式/コード ブロックは アイコン+ラベル のサマリに置換
-// eslint-disable-next-line no-useless-escape
+// eslint-disable-next-line no-useless-escape -- escape kept for regex readability
 const IMAGE_EMBED_RE = /!\[\[[^\[\]]+\.(?:png|jpe?g|gif|webp|svg|bmp)\]\]/gi;
 const IMAGE_EMBED_PLACEHOLDER = "@@WR_IMAGE_EMBED@@";
 
@@ -728,7 +728,7 @@ export function flashJumpTarget(
 // 現在アクティブな MarkdownView のコンテナ要素を返す。
 // 同じファイルが LV/RV で並行して開かれている場合の、対象要素の絞り込みに使う。
 function getActiveViewContainer(app: App): HTMLElement | null {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
+  // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef -- internal Obsidian/CodeMirror API or intentional pattern
   const obs = require("obsidian") as typeof import("obsidian");
   const view = app.workspace.getActiveViewOfType(obs.MarkdownView);
   return view?.containerEl ?? null;
@@ -777,7 +777,7 @@ function scrollElementIntoCenter(el: HTMLElement): void {
 // LV/RV/タイムライン全てから wr-block-id-{blockId} 付き要素を収集。
 // モバイルでタイムラインが一時表示ドロワーの時だけ除外
 function collectFlashTargets(blockId: string, app: App): HTMLElement[] {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- assertion needed for cross-version Obsidian typings
   const all = Array.from(
     activeDocument.querySelectorAll(`.wr-block-id-${blockId}`)
   ) as HTMLElement[];
@@ -847,12 +847,12 @@ export function renderQuoteCard(
   // <a href> のデフォルト遷移が走って中途半端な状態になり、ホバー残り＋
   // 2回押し問題を生む。メモ準備フラグを使った eager ハンドラで先に防ぐ。
   let memoReady: Memo | null = null;
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises -- async handler intentionally used as a callback
   card.addEventListener("click", async (e) => {
     e.preventDefault();
     e.stopPropagation();
     if (!memoReady) return;
-    // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef -- internal Obsidian/CodeMirror API or intentional pattern
     const obs = require("obsidian") as typeof import("obsidian");
     const activeView = app.workspace.getActiveViewOfType(obs.MarkdownView);
     const activeFilePath = activeView?.file?.path;
@@ -881,11 +881,8 @@ export function renderQuoteCard(
       // contentEl.clientHeight が「中身全体の高さ」を返すケースがあり halfLines が targetLine を
       // 上回ると scrollLine が 0 に丸められて先頭に飛ぶ症状が出ていた。
       const targetLine = memoReady.lineStart;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-      const mode = (targetView as any).currentMode;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      const mode = (targetView as { currentMode?: { applyScroll?: (line: number) => void } }).currentMode;
       if (mode && typeof mode.applyScroll === "function") {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         mode.applyScroll(targetLine);
       }
     }

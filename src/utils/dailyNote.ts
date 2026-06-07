@@ -72,10 +72,10 @@ export async function getOrCreateDailyNote(
               minute: now.get("minute"),
               second: now.get("second"),
             });
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- argument from untyped Obsidian/CodeMirror internal API
             if (calc) cur.add(parseInt(delta, 10), unit);
             return customFmt
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access -- internal Obsidian/CodeMirror API or intentional pattern
               ? cur.format(customFmt.substring(1).trim())
               : cur.format(format);
           }

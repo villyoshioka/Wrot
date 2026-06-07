@@ -48,10 +48,10 @@ import {
   QUOTE_LINK_RE,
   type ParsedUrl,
 } from "./utils/urlRenderer";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- kept for API signature / future use
 import { renderQuoteCard, invalidateMemoCache } from "./utils/quoteCard";
 import type { OGPCache } from "./utils/ogpCache";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- kept for API signature / future use
 import type { OGPData } from "./utils/ogpCache";
 
 const tagMark = Decoration.mark({ class: "wr-tag-highlight" });
@@ -112,7 +112,7 @@ class CheckboxWidget extends WidgetType {
   }
   // 同じ位置のcheckboxはWidget差し替えではなくDOM再利用で更新する。checked状態だけ差分反映する
   updateDOM(dom: HTMLElement): boolean {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- assertion needed for cross-version Obsidian typings
     const cb = dom.querySelector("input[type=\"checkbox\"]") as HTMLInputElement | null;
     if (!cb) return false;
     if (cb.checked !== this.checked) cb.checked = this.checked;
@@ -188,7 +188,7 @@ class InternalLinkWidget extends WidgetType {
     link.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
       this.app.workspace.openLinkText(this.fileName, "", false);
     });
     return link;
@@ -219,12 +219,12 @@ class MathWidget extends WidgetType {
     const span = activeDocument.createElement("span");
     span.className = "wr-math";
     try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment, no-undef
+      // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment, no-undef -- internal Obsidian/CodeMirror API or intentional pattern
       const { renderMath, finishRenderMath } = require("obsidian");
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call -- internal Obsidian/CodeMirror API or intentional pattern
       const rendered = renderMath(this.tex, false);
       span.appendChild(rendered);
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- call into untyped Obsidian/CodeMirror internal API
       finishRenderMath();
     } catch {
       span.textContent = `$${this.tex}$`;
@@ -255,9 +255,7 @@ class CodeBlockWidget extends WidgetType {
 
     // Obsidian の loadPrism() で構文ハイライトを適用（Prismのトークン色は app.css で定義済み）
     if (this.lang) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      loadPrism().then((Prism: any) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      loadPrism().then((Prism: { highlightElement: (el: HTMLElement) => void }) => {
         Prism.highlightElement(codeEl);
       }).catch(() => {});
     }
@@ -277,12 +275,12 @@ class MathBlockWidget extends WidgetType {
     container.className = "wr-math-display wr-lp-mathblock wr-codeblock-line";
     if (this.ruleClass) container.classList.add(this.ruleClass);
     try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment, no-undef
+      // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment, no-undef -- internal Obsidian/CodeMirror API or intentional pattern
       const { renderMath, finishRenderMath } = require("obsidian");
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call -- internal Obsidian/CodeMirror API or intentional pattern
       const rendered = renderMath(this.tex, true);
       container.appendChild(rendered);
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- call into untyped Obsidian/CodeMirror internal API
       finishRenderMath();
     } catch {
       container.textContent = this.tex;
@@ -566,7 +564,7 @@ function findWrBlocks(view: EditorView, plugin: WrotPlugin | null): WrBlock[] {
     let hasQuoteMarker = false;
     let quoteLineIdx = -1;
     for (let j = startLn + 1; j < endLn; j++) {
-      // eslint-disable-next-line no-useless-escape
+      // eslint-disable-next-line no-useless-escape -- escape kept for regex readability
       if (/\[\[[^\[\]]+#\^wr-\d{17}\]\]/.test(doc.line(j).text)) {
         hasQuoteMarker = true;
         quoteLineIdx = j;
@@ -710,7 +708,7 @@ function buildDecorations(
         const isQuoteMarkerOnlyLine = (() => {
           if (showRaw) return false;
           if (!block.hasQuoteMarker) return false;
-          // eslint-disable-next-line no-useless-escape
+          // eslint-disable-next-line no-useless-escape -- escape kept for regex readability
           return /^\s*\[\[[^\[\]]+#\^wr-\d{17}\]\]\s*$/.test(l.text);
         })();
         if (isEmbedOnlyLine || isQuoteMarkerOnlyLine) {
@@ -832,7 +830,7 @@ function buildDecorations(
 
         // 通常URLとの重複を避けるためmarkdownリンクを先に処理
         const mdLinkRanges: { from: number; to: number }[] = [];
-        // eslint-disable-next-line no-useless-escape
+        // eslint-disable-next-line no-useless-escape -- escape kept for regex readability
         const mdLinkRegex = /\[([^\[\]\n]+)\]\(((?:https?|obsidian):\/\/[^\s)]+)\)/g;
         while ((match = mdLinkRegex.exec(l.text)) !== null) {
           const from = l.from + match.index;
@@ -869,7 +867,7 @@ function buildDecorations(
                 const decoded = decodeURIComponent(filePath);
                 fileName = decoded.split("/").pop() || decoded;
               }
-            // eslint-disable-next-line no-empty
+            // eslint-disable-next-line no-empty -- intentional no-op
             } catch {}
             const looksLikeImage = !!fileName && IMAGE_EXT_RE.test(fileName);
             const resolved = fileName ? app.metadataCache.getFirstLinkpathDest(fileName, "") : null;
@@ -1048,18 +1046,15 @@ function buildDecorations(
         // 同じ位置に Decoration.replace と Decoration.mark が並ぶと
         // RangeSetBuilder が startSide 順序エラーで全装飾を弾くため、
         // replace を先にソートしておく
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-        const isReplace = (d: Decoration): boolean => (d as any).point === true;
+        const isReplace = (d: Decoration): boolean => (d as { point?: boolean }).point === true;
         // 引用行の wr-blockquote-wrap mark は引用全体（行末まで）を覆う mark。
         // URL ハイライト等のインラインmarkと同じ範囲になったとき、後勝ち（外側）に
         // 配置されないと <wr-url-highlight><wr-blockquote-wrap>... の入れ子になり、
         // 子の wr-blockquote-wrap の muted color が URL のアクセント色を打ち消す。
         // wr-blockquote-wrap は常に後勝ち（外側）に来るよう明示的に並べる。
         const isBlockquoteWrap = (d: Decoration): boolean => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-          const spec = (d as any).spec;
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
-          return spec && typeof spec.class === "string" && spec.class.includes("wr-blockquote-wrap");
+          const spec = (d as { spec?: { class?: string } }).spec;
+          return !!spec && typeof spec.class === "string" && spec.class.includes("wr-blockquote-wrap");
         };
         entries.sort((a, b) => {
           if (a.from !== b.from) return a.from - b.from;
@@ -1107,7 +1102,7 @@ function buildDecorations(
         let quoteFileName: string | null = null;
         let quoteBlockId: string | null = null;
         for (let j = block.startLn + 1; j < block.endLn; j++) {
-          // eslint-disable-next-line no-useless-escape
+          // eslint-disable-next-line no-useless-escape -- escape kept for regex readability
           const m = doc.line(j).text.match(/\[\[([^\[\]]+)#\^(wr-\d{17})\]\]/);
           if (m) {
             quoteFileName = m[1];
@@ -1187,7 +1182,7 @@ export function createWrEditorExtension(ogpCache: OGPCache, app: App, plugin: Wr
         window.requestAnimationFrame(() => {
           try {
             this.currentView.dispatch({ effects: setHiddenRanges.of(initialRanges) });
-          // eslint-disable-next-line no-empty
+          // eslint-disable-next-line no-empty -- intentional no-op
           } catch {}
           this.fetchMissing();
         });
@@ -1226,7 +1221,7 @@ export function createWrEditorExtension(ogpCache: OGPCache, app: App, plugin: Wr
           window.requestAnimationFrame(() => {
             try {
               this.currentView.dispatch({ effects: setHiddenRanges.of(pendingRanges) });
-            // eslint-disable-next-line no-empty
+            // eslint-disable-next-line no-empty -- intentional no-op
             } catch {}
           });
           if (!hasOgpEffect) {
@@ -1241,12 +1236,12 @@ export function createWrEditorExtension(ogpCache: OGPCache, app: App, plugin: Wr
           for (const pu of parsedUrls) {
             if (pu.type === "image") continue;
             if (ogpCache.get(pu.url)) continue;
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
             ogpCache.fetchOGP(pu.url).then(() => {
               // フェッチ完了時点で最新のview参照を使う
               try {
                 this.currentView.dispatch({ effects: ogpFetched.of(null) });
-              // eslint-disable-next-line no-empty
+              // eslint-disable-next-line no-empty -- intentional no-op
               } catch {}
             });
           }
