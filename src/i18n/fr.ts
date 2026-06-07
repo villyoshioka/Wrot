@@ -4,6 +4,7 @@ import type { Translations } from "./ja";
 const fr = {
   "settings.section.basic": "Paramètres de base",
   "settings.section.display": "Paramètres d'affichage",
+  "settings.section.tagrules": "Règles par balise",
 
   "settings.item.viewPlacement.name": "Position d'affichage",
   "settings.item.viewPlacement.desc":
@@ -62,6 +63,12 @@ const fr = {
   "settings.item.checkStrikethrough.name": "Rayer les éléments cochés",
   "settings.item.checkStrikethrough.desc":
     "Applique un style barré aux éléments de liste dont la case est cochée.",
+
+  "settings.item.calendarDayShape.name": "Forme des boutons de date",
+  "settings.item.calendarDayShape.desc": "Sélectionnez la forme des boutons de date dans le calendrier.",
+  "settings.option.calendarDayShape.circle": "Cercle",
+  "settings.option.calendarDayShape.rounded": "Arrondi",
+  "settings.option.calendarDayShape.square": "Carré",
 
   "settings.item.showCalendarButton.name": "Bouton Calendrier",
   "settings.item.showCalendarButton.desc":

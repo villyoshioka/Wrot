@@ -4,6 +4,7 @@ import type { Translations } from "./ja";
 const ru = {
   "settings.section.basic": "Основные настройки",
   "settings.section.display": "Настройки отображения",
+  "settings.section.tagrules": "Настройки правил по тегам",
 
   "settings.item.viewPlacement.name": "Позиция отображения",
   "settings.item.viewPlacement.desc": "Выберите положение панели Wrot.",
@@ -58,6 +59,12 @@ const ru = {
   "settings.item.checkStrikethrough.name": "Зачеркивание выполненных пунктов",
   "settings.item.checkStrikethrough.desc":
     "Отображать зачеркивание для пунктов с отмеченными чекбоксами.",
+
+  "settings.item.calendarDayShape.name": "Форма кнопок дня",
+  "settings.item.calendarDayShape.desc": "Выберите форму кнопок дней в календаре.",
+  "settings.option.calendarDayShape.circle": "Круг",
+  "settings.option.calendarDayShape.rounded": "Скруглённый",
+  "settings.option.calendarDayShape.square": "Квадрат",
 
   "settings.item.showCalendarButton.name": "Кнопка календаря",
   "settings.item.showCalendarButton.desc":

@@ -4,6 +4,7 @@ import type { Translations } from "./ja";
 const pt = {
   "settings.section.basic": "Configurações básicas",
   "settings.section.display": "Configurações de exibição",
+  "settings.section.tagrules": "Regras por tag",
 
   "settings.item.viewPlacement.name": "Posição de exibição",
   "settings.item.viewPlacement.desc":
@@ -61,6 +62,12 @@ const pt = {
   "settings.item.checkStrikethrough.name": "Tachado em itens marcados",
   "settings.item.checkStrikethrough.desc":
     "Exibe uma linha de tachado em itens com a caixa de seleção marcada.",
+
+  "settings.item.calendarDayShape.name": "Forma dos botões de data",
+  "settings.item.calendarDayShape.desc": "Selecione a forma dos botões de data no calendário.",
+  "settings.option.calendarDayShape.circle": "Círculo",
+  "settings.option.calendarDayShape.rounded": "Arredondado",
+  "settings.option.calendarDayShape.square": "Quadrado",
 
   "settings.item.showCalendarButton.name": "Mostrar botão de calendário",
   "settings.item.showCalendarButton.desc":

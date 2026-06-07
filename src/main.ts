@@ -47,6 +47,7 @@ export default class WrotPlugin extends Plugin {
     this.applyFontFollow();
     this.applyBgColor();
     this.applyTagColorRules();
+    this.applyCalendarDayShape();
     this.registerEvent(
       this.app.workspace.on("css-change", () => {
         this.applyBgColor();
@@ -449,6 +450,12 @@ export default class WrotPlugin extends Plugin {
     const hexRe = /^#[0-9a-fA-F]{6}$/;
     if (rule.accentColor && hexRe.test(rule.accentColor)) return rule.accentColor;
     return null;
+  }
+
+  applyCalendarDayShape(): void {
+    const radiusMap = { circle: "50%", rounded: "6px", square: "0px" } as const;
+    const radius = radiusMap[this.settings.calendarDayShape ?? "circle"];
+    document.body.style.setProperty("--wr-cal-day-radius", radius);
   }
 
   applyTagColorRules(): void {
@@ -1035,6 +1042,13 @@ export default class WrotPlugin extends Plugin {
       inputPlaceholder: t("defaults.inputPlaceholder"),
     };
     this.settings = Object.assign({}, localizedDefaults, raw);
+
+    // calendarDayShape 未記録の場合：新規インストールは "rounded"、既存ユーザーは "circle" を維持。
+    // viewPlacement の有無で新規/既存を判別する（最初期からある設定キーのため）。
+    if (!("calendarDayShape" in raw)) {
+      this.settings.calendarDayShape = ("viewPlacement" in raw) ? "circle" : "rounded";
+      dirty = true;
+    }
 
     // 起動時に Obsidian の言語が前回と変わっていたら、テキスト系3項目を現在言語のデフォルトに上書きする。
     // 言語体系が変わるとカスタム値そのものの意味が成立しなくなるため、問答無用でリセットする方針。

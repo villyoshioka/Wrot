@@ -4,6 +4,7 @@ import type { Translations } from "./ja";
 const de = {
   "settings.section.basic": "Grundeinstellungen",
   "settings.section.display": "Anzeigeeinstellungen",
+  "settings.section.tagrules": "Tag-Regeleinstellungen",
 
   "settings.item.viewPlacement.name": "Anzeigeposition",
   "settings.item.viewPlacement.desc": "Wählen Sie die Anzeigeposition für das Wrot-Panel aus.",
@@ -60,6 +61,12 @@ const de = {
   "settings.item.checkStrikethrough.name": "Durchstreichen bei aktiviertem Kontrollkästchen",
   "settings.item.checkStrikethrough.desc":
     "Zeigt eine Durchstreichung für Elemente an, deren Kontrollkästchen aktiviert ist.",
+
+  "settings.item.calendarDayShape.name": "Form der Datumstasten",
+  "settings.item.calendarDayShape.desc": "Wähle die Form der Datumstasten im Kalender.",
+  "settings.option.calendarDayShape.circle": "Rund",
+  "settings.option.calendarDayShape.rounded": "Abgerundet",
+  "settings.option.calendarDayShape.square": "Eckig",
 
   "settings.item.showCalendarButton.name": "Kalender-Button einblenden",
   "settings.item.showCalendarButton.desc":

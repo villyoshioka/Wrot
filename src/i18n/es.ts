@@ -4,6 +4,7 @@ import type { Translations } from "./ja";
 const es = {
   "settings.section.basic": "Configuración básica",
   "settings.section.display": "Configuración de visualización",
+  "settings.section.tagrules": "Reglas por etiqueta",
 
   "settings.item.viewPlacement.name": "Posición de visualización",
   "settings.item.viewPlacement.desc":
@@ -61,6 +62,12 @@ const es = {
   "settings.item.checkStrikethrough.name": "Tachado en tareas completadas",
   "settings.item.checkStrikethrough.desc":
     "Muestra una línea de tachado en los elementos con la casilla de verificación marcada.",
+
+  "settings.item.calendarDayShape.name": "Forma de los botones de fecha",
+  "settings.item.calendarDayShape.desc": "Selecciona la forma de los botones de fecha en el calendario.",
+  "settings.option.calendarDayShape.circle": "Círculo",
+  "settings.option.calendarDayShape.rounded": "Redondeado",
+  "settings.option.calendarDayShape.square": "Cuadrado",
 
   "settings.item.showCalendarButton.name": "Mostrar el botón de calendario",
   "settings.item.showCalendarButton.desc":

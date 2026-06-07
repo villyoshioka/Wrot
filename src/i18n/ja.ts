@@ -3,6 +3,7 @@ const ja = {
   // ─── settings: section ─────────────────────────────────────────────
   "settings.section.basic": "基本設定",
   "settings.section.display": "表示設定",
+  "settings.section.tagrules": "タグ別ルール設定",
 
   // ─── settings: 表示位置 ────────────────────────────────────────────
   "settings.item.viewPlacement.name": "表示位置",
@@ -63,7 +64,13 @@ const ja = {
   "settings.item.checkStrikethrough.desc": "チェックボックスがONの項目に取り消し線を表示します。",
 
   // ─── settings: カレンダーボタン ─────────────────────────────────────
-  "settings.item.showCalendarButton.name": "カレンダーボタンを表示",
+  "settings.item.calendarDayShape.name": "日付ボタンの形",
+  "settings.item.calendarDayShape.desc": "カレンダーの日付ボタンの形を選びます。",
+  "settings.option.calendarDayShape.circle": "円形",
+  "settings.option.calendarDayShape.rounded": "角丸",
+  "settings.option.calendarDayShape.square": "正方形",
+
+  "settings.item.showCalendarButton.name":"カレンダーボタンを表示",
   "settings.item.showCalendarButton.desc":
     "日付ナビにカレンダーボタンを表示します。タップで任意の日付へジャンプできます。",
 

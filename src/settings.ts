@@ -42,6 +42,7 @@ export interface WrotSettings {
   tagColorRules: TagColorRule[];
   followObsidianFontSize: boolean;
   showCalendarButton: boolean;
+  calendarDayShape: "circle" | "rounded" | "square";
   pins: PinEntry[];
   pinLimit: PinLimit;
   // 起動時に Obsidian の言語が変わったかを検知するための「前回保存時のロケール」記録。
@@ -53,7 +54,7 @@ export const DEFAULT_SETTINGS: WrotSettings = {
   viewPlacement: "right",
   headerDateFormat: "YYYY年MM月DD日",
   timestampFormat: "YYYY/MM/DD HH:mm:ss",
-  bgColorLight: "#f8f8f8",
+  bgColorLight: "#efefef",
   bgColorDark: "#303030",
   textColorLight: "#454545",
   textColorDark: "#dcddde",
@@ -66,6 +67,7 @@ export const DEFAULT_SETTINGS: WrotSettings = {
   tagColorRules: [],
   followObsidianFontSize: false,
   showCalendarButton: true,
+  calendarDayShape: "rounded",
   pins: [],
   pinLimit: 3,
 };
@@ -506,6 +508,8 @@ export class WrotSettingTab extends PluginSettingTab {
           })
       );
 
+    let calendarDayShapeSetting: Setting;
+
     new Setting(containerEl)
       .setName(t("settings.item.showCalendarButton.name"))
       .setDesc(t("settings.item.showCalendarButton.desc"))
@@ -516,8 +520,28 @@ export class WrotSettingTab extends PluginSettingTab {
             this.plugin.settings.showCalendarButton = value;
             await this.plugin.saveSettings();
             this.plugin.updateCalendarButton();
+            calendarDayShapeSetting.settingEl.toggle(value);
           })
       );
+
+    calendarDayShapeSetting = new Setting(containerEl)
+      .setName(t("settings.item.calendarDayShape.name"))
+      .setDesc(t("settings.item.calendarDayShape.desc"))
+      .addDropdown((dropdown) =>
+        dropdown
+          .addOption("circle", t("settings.option.calendarDayShape.circle"))
+          .addOption("rounded", t("settings.option.calendarDayShape.rounded"))
+          .addOption("square", t("settings.option.calendarDayShape.square"))
+          .setValue(this.plugin.settings.calendarDayShape)
+          .onChange(async (value) => {
+            this.plugin.settings.calendarDayShape = value as WrotSettings["calendarDayShape"];
+            await this.plugin.saveSettings();
+            this.plugin.applyCalendarDayShape();
+          })
+      )
+    calendarDayShapeSetting.settingEl.toggle(this.plugin.settings.showCalendarButton);
+
+    new Setting(containerEl).setName(t("settings.section.tagrules")).setHeading();
 
     new Setting(containerEl)
       .setName(t("settings.item.tagColorRules.name"))

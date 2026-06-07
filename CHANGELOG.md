@@ -1,5 +1,23 @@
 # Release Notes
 
+## 2.6.0 - 2026-06-07
+
+### New Features
+
+- Added a setting to choose the shape of calendar date buttons. You can select from circle, rounded, or square to match the overall style of your theme.
+
+### Improvements
+
+- Added a new "Tag Rules" category in the settings, moving tag-related settings into their own dedicated section.
+- Adjusted the default settings for new installs to better match the default theme.
+- Adjusted the layout in Reading View so the copy button and the first line of content are properly spaced.
+
+### Bug Fixes
+
+- Fixed an issue where an unwanted border could appear around the post input field depending on the theme.
+
+---
+
 ## 2.5.1 - 2026-05-31
 
 ### Bug Fixes

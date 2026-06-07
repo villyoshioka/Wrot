@@ -4,6 +4,7 @@ import type { Translations } from "./ja";
 const it = {
   "settings.section.basic": "Impostazioni di base",
   "settings.section.display": "Impostazioni di visualizzazione",
+  "settings.section.tagrules": "Impostazioni regole tag",
 
   "settings.item.viewPlacement.name": "Posizione di visualizzazione",
   "settings.item.viewPlacement.desc":
@@ -62,6 +63,12 @@ const it = {
   "settings.item.checkStrikethrough.name": "Barrato per elementi completati",
   "settings.item.checkStrikethrough.desc":
     "Mostra una linea barrata sugli elementi con la casella di controllo attivata.",
+
+  "settings.item.calendarDayShape.name": "Forma dei pulsanti data",
+  "settings.item.calendarDayShape.desc": "Seleziona la forma dei pulsanti data nel calendario.",
+  "settings.option.calendarDayShape.circle": "Cerchio",
+  "settings.option.calendarDayShape.rounded": "Arrotondato",
+  "settings.option.calendarDayShape.square": "Quadrato",
 
   "settings.item.showCalendarButton.name": "Mostra pulsante calendario",
   "settings.item.showCalendarButton.desc":

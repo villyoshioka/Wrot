@@ -4,6 +4,7 @@ import type { Translations } from "./ja";
 const zhCN = {
   "settings.section.basic": "基本设置",
   "settings.section.display": "显示设置",
+  "settings.section.tagrules": "标签规则设置",
 
   "settings.item.viewPlacement.name": "显示位置",
   "settings.item.viewPlacement.desc": "选择 Wrot 面板的显示位置。",
@@ -60,6 +61,12 @@ const zhCN = {
   "settings.item.checkStrikethrough.name": "已完成项目显示删除线",
   "settings.item.checkStrikethrough.desc":
     "为已勾选复选框的项目添加删除线。",
+
+  "settings.item.calendarDayShape.name": "日期按钮形状",
+  "settings.item.calendarDayShape.desc": "选择日历中日期按钮的形状。",
+  "settings.option.calendarDayShape.circle": "圆形",
+  "settings.option.calendarDayShape.rounded": "圆角",
+  "settings.option.calendarDayShape.square": "方形",
 
   "settings.item.showCalendarButton.name": "显示日历按钮",
   "settings.item.showCalendarButton.desc":

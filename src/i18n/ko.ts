@@ -4,6 +4,7 @@ import type { Translations } from "./ja";
 const ko = {
   "settings.section.basic": "기본 설정",
   "settings.section.display": "표시 설정",
+  "settings.section.tagrules": "태그별 규칙 설정",
 
   "settings.item.viewPlacement.name": "표시 위치",
   "settings.item.viewPlacement.desc": "Wrot 패널의 표시 위치를 선택합니다.",
@@ -60,6 +61,12 @@ const ko = {
   "settings.item.checkStrikethrough.name": "체크된 항목 취소선",
   "settings.item.checkStrikethrough.desc":
     "체크박스가 완료된 항목에 취소선을 표시합니다.",
+
+  "settings.item.calendarDayShape.name": "날짜 버튼 모양",
+  "settings.item.calendarDayShape.desc": "달력의 날짜 버튼 모양을 선택합니다.",
+  "settings.option.calendarDayShape.circle": "원형",
+  "settings.option.calendarDayShape.rounded": "둥근 모서리",
+  "settings.option.calendarDayShape.square": "사각형",
 
   "settings.item.showCalendarButton.name": "캘린더 버튼 표시",
   "settings.item.showCalendarButton.desc":

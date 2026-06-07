@@ -4,6 +4,7 @@ import type { Translations } from "./ja";
 const zhTW = {
   "settings.section.basic": "基本設定",
   "settings.section.display": "外觀設定",
+  "settings.section.tagrules": "標籤規則設定",
 
   "settings.item.viewPlacement.name": "顯示位置",
   "settings.item.viewPlacement.desc": "選擇 Wrot 面板的顯示位置。",
@@ -60,6 +61,12 @@ const zhTW = {
   "settings.item.checkStrikethrough.name": "已勾選項目加刪除線",
   "settings.item.checkStrikethrough.desc":
     "在勾選框為 ON 的項目上顯示刪除線。",
+
+  "settings.item.calendarDayShape.name": "日期按鈕形狀",
+  "settings.item.calendarDayShape.desc": "選擇行事曆中日期按鈕的形狀。",
+  "settings.option.calendarDayShape.circle": "圓形",
+  "settings.option.calendarDayShape.rounded": "圓角",
+  "settings.option.calendarDayShape.square": "方形",
 
   "settings.item.showCalendarButton.name": "顯示日曆按鈕",
   "settings.item.showCalendarButton.desc":

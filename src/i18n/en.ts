@@ -4,6 +4,7 @@ import type { Translations } from "./ja";
 const en = {
   "settings.section.basic": "General",
   "settings.section.display": "Appearance",
+  "settings.section.tagrules": "Tag Rules",
 
   "settings.item.viewPlacement.name": "Display Position",
   "settings.item.viewPlacement.desc": "Select where to display the Wrot panel.",
@@ -60,6 +61,12 @@ const en = {
   "settings.item.checkStrikethrough.name": "Strikethrough for Checked Items",
   "settings.item.checkStrikethrough.desc":
     "Display a strikethrough for items with a checked checkbox.",
+
+  "settings.item.calendarDayShape.name": "Date Button Shape",
+  "settings.item.calendarDayShape.desc": "Select the shape of the date buttons in the calendar.",
+  "settings.option.calendarDayShape.circle": "Circle",
+  "settings.option.calendarDayShape.rounded": "Rounded",
+  "settings.option.calendarDayShape.square": "Square",
 
   "settings.item.showCalendarButton.name": "Calendar Button",
   "settings.item.showCalendarButton.desc":
