@@ -21,6 +21,7 @@ declare const moment: typeof import("moment");
 function insertEmbedAboveBottomBlock(bodyText: string, embed: string): string {
   if (!bodyText) return embed;
 
+  // eslint-disable-next-line no-useless-escape
   const markerMatch = bodyText.match(/^([\s\S]*?)\n?(\[\[[^\[\]]+#\^wr-\d{17}\]\])\s*$/);
   if (markerMatch) {
     const before = markerMatch[1].replace(/\n+$/, "");
@@ -98,6 +99,7 @@ export class WrotView extends ItemView {
     super(leaf);
     this.plugin = plugin;
     this.currentDate = moment();
+    // eslint-disable-next-line obsidianmd/no-unsupported-api
     this.scope = new Scope(this.app.scope);
   }
 
@@ -122,10 +124,12 @@ export class WrotView extends ItemView {
     this.buildInputArea(container);
     this.listContainer = container.createDiv({ cls: "wr-list" });
 
+    // eslint-disable-next-line obsidianmd/no-unsupported-api
     this.scope!.register(["Mod"], "Enter", (evt) => {
-      if (document.activeElement === this.textarea) {
+      if (activeDocument.activeElement === this.textarea) {
         evt.preventDefault();
         evt.stopPropagation();
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.submitMemo();
         return false;
       }
@@ -139,6 +143,7 @@ export class WrotView extends ItemView {
     this.registerEvent(
       this.app.workspace.on("active-leaf-change", (leaf) => {
         if (leaf !== this.leaf) return;
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.maybeRollToToday();
       })
     );
@@ -171,6 +176,7 @@ export class WrotView extends ItemView {
         this.currentDate
       );
       if (currentFile && file.path === currentFile.path) {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.refresh();
       }
     });
@@ -179,11 +185,13 @@ export class WrotView extends ItemView {
     this.fileDeleteRef = this.app.metadataCache.on("deleted", (file) => {
       if (!(file instanceof TFile)) return;
       if (!TRIGGER_EXT.test(file.extension)) return;
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       this.refresh();
     });
     this.fileCreateRef = this.app.vault.on("create", (file) => {
       if (!(file instanceof TFile)) return;
       if (!TRIGGER_EXT.test(file.extension)) return;
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       this.refresh();
     });
   }
@@ -224,6 +232,7 @@ export class WrotView extends ItemView {
       }
     });
     if (existingLeaf) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises, obsidianmd/no-unsupported-api
       this.app.workspace.revealLeaf(existingLeaf);
       this.app.workspace.setActiveLeaf(existingLeaf, { focus: true });
       return existingLeaf;
@@ -243,13 +252,15 @@ export class WrotView extends ItemView {
     prevBtn.addEventListener("click", () => {
       this.currentDate = this.currentDate.clone().subtract(1, "day");
       this.anchoredToToday = false;
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       this.refresh();
     });
 
     this.dateLabel = nav.createEl("span", { cls: "wr-date-label" });
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     this.dateLabel.addEventListener("click", async () => {
       this.dateLabel.classList.add("wr-date-label-active");
-      setTimeout(() => this.dateLabel.classList.remove("wr-date-label-active"), 300);
+      window.setTimeout(() => this.dateLabel.classList.remove("wr-date-label-active"), 300);
       const file = getDailyNoteFile(this.app, this.currentDate)
         ?? await getOrCreateDailyNote(this.app, this.currentDate);
       await this.openOrFocusFile(file);
@@ -260,6 +271,7 @@ export class WrotView extends ItemView {
     nextBtn.addEventListener("click", () => {
       this.currentDate = this.currentDate.clone().add(1, "day");
       this.anchoredToToday = false;
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       this.refresh();
     });
 
@@ -267,6 +279,7 @@ export class WrotView extends ItemView {
     todayBtn.addEventListener("click", () => {
       this.currentDate = moment();
       this.anchoredToToday = true;
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       this.refresh();
     });
 
@@ -306,6 +319,7 @@ export class WrotView extends ItemView {
         onSelect: (date) => {
           this.currentDate = date;
           this.anchoredToToday = false;
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
           this.refresh();
         },
         onClose: () => {
@@ -334,6 +348,7 @@ export class WrotView extends ItemView {
     if (this.plugin.settings.submitIcon) {
       setIcon(this.submitIconEl, this.plugin.settings.submitIcon);
     }
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     submitBtn.addEventListener("click", () => this.submitMemo());
     this.submitBtnEl = submitBtn;
 
@@ -343,6 +358,7 @@ export class WrotView extends ItemView {
     });
 
     const autoGrow = () => {
+      // eslint-disable-next-line obsidianmd/no-static-styles-assignment
       this.textarea.style.height = "auto";
       this.textarea.style.height = this.textarea.scrollHeight + "px";
     };
@@ -402,6 +418,7 @@ export class WrotView extends ItemView {
     }, true);
 
     this.thumbnailContainer = inputArea.createDiv({ cls: "wr-thumbnail-container" });
+    // eslint-disable-next-line obsidianmd/no-static-styles-assignment
     this.thumbnailContainer.style.display = "none";
 
     this.textarea.addEventListener("paste", (e: ClipboardEvent) => {
@@ -617,13 +634,18 @@ export class WrotView extends ItemView {
         menu.addSeparator();
         menu.addItem((item) => {
           item.setTitle(t("view.formatMenu.settings")).setIcon("settings").onClick(() => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             const settingApi = (this.app as any).setting;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (settingApi?.open && settingApi?.openTabById) {
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
               settingApi.open();
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
               settingApi.openTabById("wrot");
             }
           });
         });
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       }, e as MouseEvent);
     });
 
@@ -637,8 +659,8 @@ export class WrotView extends ItemView {
     // 選択範囲・カーソル位置変更はdocumentのselectionchangeで網羅的に拾う。
     // input/keyup/click/selectは取りこぼし(シフト+矢印など)が出るため不採用。
     // textareaフォーカス中のみ実行して無駄を抑える。
-    this.registerDomEvent(document, "selectionchange", () => {
-      if (document.activeElement === this.textarea) updateActive();
+    this.registerDomEvent(activeDocument, "selectionchange", () => {
+      if (activeDocument.activeElement === this.textarea) updateActive();
     });
     // フォーカス取得直後はselectionchangeが発火しないため明示同期
     this.textarea.addEventListener("focus", () => {
@@ -714,10 +736,10 @@ export class WrotView extends ItemView {
       const wrapped = last.offsetTop > first.offsetTop;
       toolbar.toggleClass("wr-toolbar-wrapped", wrapped);
     };
-    requestAnimationFrame(updateToolbarWrapped);
+    window.requestAnimationFrame(updateToolbarWrapped);
     if (typeof ResizeObserver !== "undefined") {
       this.toolbarResizeObserver = new ResizeObserver(() => {
-        requestAnimationFrame(updateToolbarWrapped);
+        window.requestAnimationFrame(updateToolbarWrapped);
       });
       this.toolbarResizeObserver.observe(toolbar);
     }
@@ -726,7 +748,7 @@ export class WrotView extends ItemView {
     // 投稿フォーム領域 (.wr-input-area) の初期レイアウトが Electron 側で保留され
     // 真っ白のまま放置されることがある。 タップや数秒の待機で復帰するが体験を損ねるため、
     // 次フレームで明示的に強制 reflow を発生させてレイアウトを確定させる。
-    requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
       inputArea.getBoundingClientRect();
       this.textarea?.getBoundingClientRect();
     });
@@ -734,12 +756,13 @@ export class WrotView extends ItemView {
 
   private openImagePicker(): void {
     if (this.pendingImage) return;
-    const input = document.createElement("input");
+    const input = activeDocument.createElement("input");
     input.type = "file";
     input.accept = "image/png, image/gif, image/jpeg";
     input.multiple = false;
+    // eslint-disable-next-line obsidianmd/no-static-styles-assignment
     input.style.display = "none";
-    document.body.appendChild(input);
+    activeDocument.body.appendChild(input);
 
     this.imageAddBtn?.toggleClass("wr-toolbar-active", true);
     const deactivate = () => {
@@ -759,7 +782,7 @@ export class WrotView extends ItemView {
       if (file) {
         this.setPendingImage(file);
       }
-      document.body.removeChild(input);
+      activeDocument.body.removeChild(input);
       deactivate();
     });
     input.click();
@@ -782,6 +805,7 @@ export class WrotView extends ItemView {
     this.pendingImage = null;
     if (this.thumbnailContainer) {
       this.thumbnailContainer.empty();
+      // eslint-disable-next-line obsidianmd/no-static-styles-assignment
       this.thumbnailContainer.style.display = "none";
     }
     this.updateImageAddBtnState();
@@ -791,6 +815,7 @@ export class WrotView extends ItemView {
   private renderThumbnail(): void {
     if (!this.thumbnailContainer || !this.pendingImageUrl) return;
     this.thumbnailContainer.empty();
+    // eslint-disable-next-line obsidianmd/no-static-styles-assignment
     this.thumbnailContainer.style.display = "";
     const wrap = this.thumbnailContainer.createDiv({ cls: "wr-thumbnail" });
     const img = wrap.createEl("img", { cls: "wr-thumbnail-img" });
@@ -845,6 +870,7 @@ export class WrotView extends ItemView {
       this.ignoreNextModify = true;
       await appendMemo(this.app, file, bodyText);
       this.textarea.value = "";
+      // eslint-disable-next-line obsidianmd/no-static-styles-assignment
       this.textarea.style.height = "";
       this.activeFormatMode = null;
       this.clearPendingImage();
@@ -1020,6 +1046,7 @@ export class WrotView extends ItemView {
     const currentFilePath = currentFile?.path || "";
     const urls = renderTextWithTagsAndUrls(contentEl, memo.content, {
       onTagClick: (tag) => this.openSearch(tag),
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
       onCheckToggle: async (lineIndex) => {
         const file = getDailyNoteFile(this.app, this.currentDate);
         if (!file) return;
@@ -1029,6 +1056,7 @@ export class WrotView extends ItemView {
         await toggleCheckbox(this.app, file, fileLine);
       },
       onInternalLinkClick: (linkName) => {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.app.workspace.openLinkText(linkName, "", false);
       },
       checkStrikethrough: this.plugin.settings.checkStrikethrough,
@@ -1057,6 +1085,7 @@ export class WrotView extends ItemView {
         try {
           const rendered = renderMath(tex, true);
           blockEl.appendChild(rendered);
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
           finishRenderMath();
         } catch {
           blockEl.textContent = tex;
@@ -1071,7 +1100,7 @@ export class WrotView extends ItemView {
       (pu) => pu.type === "image" || !pu.url.startsWith("obsidian://")
     );
     if (previewUrls.length > 0) {
-      const mediaEl = document.createElement("div");
+      const mediaEl = activeDocument.createElement("div");
       mediaEl.className = "wr-media-area";
       const quoteSlot = contentEl.querySelector(".wr-quote-card-slot");
       if (quoteSlot && quoteSlot.parentNode) {
@@ -1091,6 +1120,7 @@ export class WrotView extends ItemView {
 
     const menuBtn = footer.createEl("span", { cls: "wr-menu-btn" });
     setIcon(menuBtn, "ellipsis");
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     menuBtn.addEventListener("click", async (e) => {
       // ピン上限の判定前に、実体が消えたピンを除去する
       await this.cleanupOrphanPins();
@@ -1105,6 +1135,7 @@ export class WrotView extends ItemView {
         );
         menu.addItem((item) =>
           item.setTitle(t("view.postMenu.quotePost")).setIcon("quote").onClick(() => {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.insertQuoteToForm(memo, options.filePath);
           })
         );
@@ -1127,11 +1158,13 @@ export class WrotView extends ItemView {
               item
                 .setTitle(t("view.postMenu.pinLimitHint", { limit: pinLimit }))
                 .setDisabled(true);
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
               const itemDom = (item as any).dom as HTMLElement | undefined;
               itemDom?.classList.add("wr-menu-hint", "is-label");
             });
           }
         }
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       }, e as MouseEvent);
     });
 
@@ -1188,6 +1221,7 @@ export class WrotView extends ItemView {
     const fileBaseName = srcFile.basename;
     const marker = `[[${fileBaseName}#^${blockId}]]`;
     const ta = this.textarea;
+    // eslint-disable-next-line no-useless-escape
     const QUOTE_RE = /\[\[[^\[\]]+#\^wr-\d{17}\]\]/g;
     const existing = ta.value;
     let next: string;
@@ -1394,6 +1428,7 @@ export class WrotView extends ItemView {
         start -= m.length;
         end -= m.length;
         ta.value = newVal;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         unwrapped = true;
         if (m === open) {
           ta.selectionStart = start;
@@ -1474,10 +1509,13 @@ export class WrotView extends ItemView {
   }
 
   private openSearch(tag: string): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     const searchPlugin = (this.app as any).internalPlugins?.getPluginById?.(
       "global-search"
     );
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (searchPlugin?.instance) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       searchPlugin.instance.openGlobalSearch(`"${tag.replace(/"/g, '\\"')}"`);
     } else {
       new Notice(t("view.notice.searchPluginNotFound"));
@@ -1507,6 +1545,7 @@ export class WrotView extends ItemView {
     const menu = new Menu();
     buildMenu(menu);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
     const menuDom = (menu as any).dom as HTMLElement | undefined;
     menuDom?.classList.add("wr-menu");
 

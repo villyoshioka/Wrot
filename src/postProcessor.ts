@@ -74,8 +74,8 @@ function highlightAllWrBlocks(el: HTMLElement, plugin: WrotPlugin): void {
 }
 
 function rehighlightAllReadingViews(plugin: WrotPlugin): void {
-  setTimeout(() => {
-    document.querySelectorAll(".markdown-reading-view").forEach((view) => {
+  window.setTimeout(() => {
+    activeDocument.querySelectorAll(".markdown-reading-view").forEach((view) => {
       highlightAllWrBlocks(view as HTMLElement, plugin);
     });
   }, 100);
@@ -103,7 +103,8 @@ async function applyBlockIdClasses(el: HTMLElement, plugin: WrotPlugin, sourcePa
   // memos は parseMemos で reverse 済み（新しい順）なので lineStart 昇順に並べ直す。
   const sortedMemos = [...memos].sort((a, b) => a.lineStart - b.lineStart);
   // ノート全体の wr フェンスを DOM 出現順で取得
-  const doc = (codeEls[0] as HTMLElement).ownerDocument || document;
+  const doc = (codeEls[0] as HTMLElement).ownerDocument || activeDocument;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
   const allCodeEls = Array.from(
     doc.querySelectorAll(
       'code.language-wr, .block-language-wr code, pre > code[class*="language-wr"]'
@@ -125,11 +126,11 @@ function applyTagRuleClass(block: HTMLElement, code: HTMLElement, plugin: WrotPl
   const targets: HTMLElement[] = [block];
   if (container) {
     container.querySelectorAll(".code-block-flair, .copy-code-button").forEach((el) => {
-      if (el instanceof HTMLElement) targets.push(el);
+      if (el.instanceOf(HTMLElement)) targets.push(el);
     });
   }
   block.querySelectorAll(".code-block-flair, .copy-code-button").forEach((el) => {
-    if (el instanceof HTMLElement) targets.push(el);
+    if (el.instanceOf(HTMLElement)) targets.push(el);
   });
 
   for (const t of targets) {
@@ -175,7 +176,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
         return rule.accentColor;
       }
     }
-    return getComputedStyle(document.body).getPropertyValue("--text-accent").trim() || "#adc718";
+    return getComputedStyle(activeDocument.body).getPropertyValue("--text-accent").trim() || "#adc718";
   };
   for (const btn of copyButtons) {
     btn.addEventListener("click", () => {
@@ -188,8 +189,8 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
       };
       // Obsidianがアイコン差し替えた後にも再適用するため複数回呼ぶ
       applySvgColor();
-      setTimeout(applySvgColor, 50);
-      setTimeout(applySvgColor, 150);
+      window.setTimeout(applySvgColor, 50);
+      window.setTimeout(applySvgColor, 150);
     });
   }
 
@@ -203,6 +204,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
   // 引用カードマーカー [[X#^wr-T]] が含まれてる投稿は画像をインライン描画（末尾集約しない）。
   // これにより画像は元投稿の書かれた位置（=引用カードの上）に表示される
   const blockFullText = code.textContent || "";
+  // eslint-disable-next-line no-useless-escape
   const hasQuoteMarker = /\[\[[^\[\]]+#\^wr-\d{17}\]\]/.test(blockFullText);
 
   convertListLines(code, plugin);
@@ -216,7 +218,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
   });
 
   for (const walkTarget of walkTargets) {
-  const walker = document.createTreeWalker(walkTarget, NodeFilter.SHOW_TEXT);
+  const walker = activeDocument.createTreeWalker(walkTarget, NodeFilter.SHOW_TEXT);
 
   let textNode: Text | null;
   const nodesToReplace: { node: Text; fragments: DocumentFragment }[] = [];
@@ -224,7 +226,8 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
     const text = textNode.textContent || "";
     if (!text.includes("#") && !text.match(/(?:https?|obsidian):\/\//) && !text.includes("[[") && !text.includes("`") && !text.includes("*") && !text.includes("~") && !text.includes("=") && !text.includes("$")) continue;
 
-    const frag = document.createDocumentFragment();
+    const frag = activeDocument.createDocumentFragment();
+    // eslint-disable-next-line no-useless-escape
     const parts = text.split(/(\$[^$]+\$|`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*|~~[^~]+~~|==[^=]+=+|!\[\[[^\]]+\]\]|\[\[[^\]]+\]\]|\[[^\[\]\n]+\]\((?:https?|obsidian):\/\/[^\s)]+\)|#[^\s#]+|(?:https?|obsidian):\/\/[^\s<>"'\]]+)/g);
     let hasMatch = false;
 
@@ -235,16 +238,16 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
 
       const codeMatch = part.match(/^`([^`]+)`$/);
       if (codeMatch) {
-        const codeEl = document.createElement("span");
+        const codeEl = activeDocument.createElement("span");
         codeEl.className = "wr-inline-code";
-        const tickOpen = document.createElement("span");
+        const tickOpen = activeDocument.createElement("span");
         tickOpen.className = "wr-backtick";
         tickOpen.textContent = "`";
-        const tickClose = document.createElement("span");
+        const tickClose = activeDocument.createElement("span");
         tickClose.className = "wr-backtick";
         tickClose.textContent = "`";
         codeEl.appendChild(tickOpen);
-        codeEl.appendChild(document.createTextNode(codeMatch[1]));
+        codeEl.appendChild(activeDocument.createTextNode(codeMatch[1]));
         codeEl.appendChild(tickClose);
         frag.appendChild(codeEl);
         hasMatch = true;
@@ -261,16 +264,16 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
       for (const [re, tag, marker] of formatPatterns) {
         const m = part.match(re);
         if (m) {
-          const el = document.createElement(tag);
+          const el = activeDocument.createElement(tag);
           if (tag === "mark") el.className = "wr-highlight";
-          const mOpen = document.createElement("span");
+          const mOpen = activeDocument.createElement("span");
           mOpen.className = "wr-backtick";
           mOpen.textContent = marker;
-          const mClose = document.createElement("span");
+          const mClose = activeDocument.createElement("span");
           mClose.className = "wr-backtick";
           mClose.textContent = marker;
           el.appendChild(mOpen);
-          el.appendChild(document.createTextNode(m[1]));
+          el.appendChild(activeDocument.createTextNode(m[1]));
           el.appendChild(mClose);
           frag.appendChild(el);
           hasMatch = true;
@@ -280,12 +283,13 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
       }
       if (formatHandled) continue;
 
+      // eslint-disable-next-line no-useless-escape
       const mdLinkMatch = part.match(/^\[([^\[\]\n]+)\]\(((?:https?|obsidian):\/\/[^\s)]+)\)$/);
       if (mdLinkMatch) {
         const label = mdLinkMatch[1];
         const url = mdLinkMatch[2];
         if (isSafeUrl(url)) {
-          const span = document.createElement("span");
+          const span = activeDocument.createElement("span");
           span.className = "wr-reading-url";
           span.textContent = label;
           span.addEventListener("pointerup", (e) => {
@@ -297,7 +301,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
           if (url.startsWith("http")) tailUrls.push(url);
           hasMatch = true;
         } else {
-          frag.appendChild(document.createTextNode(part));
+          frag.appendChild(activeDocument.createTextNode(part));
         }
         continue;
       }
@@ -310,7 +314,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
         if (IMAGE_EXT.test(fileName)) {
           const file = plugin.app.metadataCache.getFirstLinkpathDest(fileName, "");
           if (file) {
-            const img = document.createElement("img");
+            const img = activeDocument.createElement("img");
             img.className = hasQuoteMarker ? "wr-embed-img wr-rv-inline-img" : "wr-embed-img";
             img.src = plugin.app.vault.getResourcePath(file);
             img.alt = fileName;
@@ -323,7 +327,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
             hasMatch = true;
             continue;
           } else {
-            const span = document.createElement("span");
+            const span = activeDocument.createElement("span");
             span.className = "wr-embed-missing";
             span.textContent = `![[${fileName}]]`;
             frag.appendChild(span);
@@ -331,13 +335,14 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
           hasMatch = true;
           continue;
         } else {
-          const a = document.createElement("a");
+          const a = activeDocument.createElement("a");
           const resolved = plugin.app.metadataCache.getFirstLinkpathDest(fileName, "") !== null;
           a.className = resolved ? "wr-internal-link" : "wr-internal-link wr-internal-link-unresolved";
           a.textContent = fileName;
           a.addEventListener("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             plugin.app.workspace.openLinkText(fileName, "", false);
           });
           frag.appendChild(a);
@@ -347,7 +352,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
         const linkName = linkMatch[1];
         const quoteMatch = linkName.match(QUOTE_LINK_RE);
         if (quoteMatch) {
-          const slot = document.createElement("span");
+          const slot = activeDocument.createElement("span");
           slot.className = "wr-quote-card-slot";
           renderQuoteCard(slot, quoteMatch[1], quoteMatch[2], plugin.app, "", {
             timestampFormat: plugin.settings.timestampFormat,
@@ -356,32 +361,36 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
           });
           frag.appendChild(slot);
         } else {
-          const a = document.createElement("a");
+          const a = activeDocument.createElement("a");
           const resolved = plugin.app.metadataCache.getFirstLinkpathDest(linkName, "") !== null;
           a.className = resolved ? "wr-internal-link" : "wr-internal-link wr-internal-link-unresolved";
           a.textContent = linkName;
           a.addEventListener("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             plugin.app.workspace.openLinkText(linkName, "", false);
           });
           frag.appendChild(a);
         }
         hasMatch = true;
       } else if (part.match(/^#[^\s#]+$/)) {
-        const span = document.createElement("span");
+        const span = activeDocument.createElement("span");
         span.className = "wr-reading-tag";
         span.textContent = part;
         frag.appendChild(span);
         hasMatch = true;
       } else if (part.match(/^\$([^$]+)\$$/)) {
         const mathContent = part.slice(1, -1);
-        const mathEl = document.createElement("span");
+        const mathEl = activeDocument.createElement("span");
         mathEl.className = "wr-math";
         try {
+          // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment, no-undef
           const { renderMath, finishRenderMath } = require("obsidian");
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
           const rendered = renderMath(mathContent, false);
           mathEl.appendChild(rendered);
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
           finishRenderMath();
         } catch {
           mathEl.textContent = part;
@@ -399,6 +408,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
             const decoded = decodeURIComponent(filePath);
             fileName = decoded.split("/").pop() || decoded;
           }
+        // eslint-disable-next-line no-empty
         } catch {}
         const lowerName = fileName?.toLowerCase() || "";
         const looksLikeImage = IMAGE_EXT.test(lowerName);
@@ -406,7 +416,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
         const isImageEmbed = looksLikeImage && resolved !== null;
         const isUnresolvedImage = looksLikeImage && resolved === null;
         if (!isImageEmbed) {
-          const link = document.createElement("a");
+          const link = activeDocument.createElement("a");
           link.className = isUnresolvedImage
             ? "wr-internal-link wr-internal-link-unresolved"
             : "wr-internal-link";
@@ -417,9 +427,9 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
             if (isSafeUrl(cleaned)) window.open(cleaned);
           });
           frag.appendChild(link);
-          if (trailing) frag.appendChild(document.createTextNode(trailing));
+          if (trailing) frag.appendChild(activeDocument.createTextNode(trailing));
         } else if (trailing) {
-          frag.appendChild(document.createTextNode(trailing));
+          frag.appendChild(activeDocument.createTextNode(trailing));
         }
         tailUrls.push(cleaned);
         hasMatch = true;
@@ -427,7 +437,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
         const cleaned = part.replace(/[.,;:!?)]+$/, "");
         const trailing = part.slice(cleaned.length);
 
-        const span = document.createElement("span");
+        const span = activeDocument.createElement("span");
         span.className = "wr-reading-url";
         span.textContent = cleaned;
         span.addEventListener("pointerup", (e) => {
@@ -438,13 +448,13 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
         frag.appendChild(span);
 
         if (trailing) {
-          frag.appendChild(document.createTextNode(trailing));
+          frag.appendChild(activeDocument.createTextNode(trailing));
         }
 
         tailUrls.push(cleaned);
         hasMatch = true;
       } else {
-        frag.appendChild(document.createTextNode(part));
+        frag.appendChild(activeDocument.createTextNode(part));
       }
     }
 
@@ -482,9 +492,10 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
         (pu) => pu.type === "image" || !pu.url.startsWith("obsidian://")
       );
       if (parsedUrls.length > 0 && !blockEl.querySelector(".wr-media-area")) {
-        const mediaEl = document.createElement("div");
+        const mediaEl = activeDocument.createElement("div");
         mediaEl.className = "wr-media-area";
         insertMediaNode(mediaEl);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unnecessary-type-assertion, @typescript-eslint/no-unsafe-argument
         renderUrlPreviews(mediaEl as any, parsedUrls, plugin.ogpCache, resolveImagePath);
       }
     }
@@ -492,10 +503,11 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
 }
 
 function renderCodeBlockFragment(segment: Extract<Segment, { kind: "codeblock" }>, plugin: WrotPlugin): HTMLElement {
-  const blockEl = document.createElement("div");
+  const blockEl = activeDocument.createElement("div");
   blockEl.className = "wr-codeblock-display";
   const fence = "~".repeat(Math.max(3, segment.fenceTildes));
   const source = (segment.lang ? `${fence}${segment.lang}\n` : `${fence}\n`) + segment.code + `\n${fence}`;
+  // eslint-disable-next-line obsidianmd/no-plugin-as-component
   MarkdownRenderer.render(plugin.app, source, blockEl, "", plugin).catch(() => {
     blockEl.empty();
     const pre = blockEl.createEl("pre");
@@ -507,11 +519,12 @@ function renderCodeBlockFragment(segment: Extract<Segment, { kind: "codeblock" }
 }
 
 function renderMathBlockFragment(segment: Extract<Segment, { kind: "mathblock" }>): HTMLElement {
-  const blockEl = document.createElement("div");
+  const blockEl = activeDocument.createElement("div");
   blockEl.className = "wr-math-display";
   try {
     const rendered = renderMath(segment.tex, true);
     blockEl.appendChild(rendered);
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     finishRenderMath();
   } catch {
     blockEl.textContent = segment.tex;
@@ -591,7 +604,7 @@ function convertListLines(
       const lastFrag = fragments[fragments.length - 1];
       const continuingQuote = quoteStack.length > 0 && lastFrag instanceof HTMLElement && lastFrag === quoteStack[0];
       if (!continuingQuote) {
-        const root = document.createElement("blockquote");
+        const root = activeDocument.createElement("blockquote");
         root.className = "wr-blockquote";
         fragments.push(root);
         quoteStack = [root];
@@ -601,7 +614,7 @@ function convertListLines(
       }
       while (quoteStack.length < depth) {
         const parent = quoteStack[quoteStack.length - 1];
-        const bq = document.createElement("blockquote");
+        const bq = activeDocument.createElement("blockquote");
         bq.className = "wr-blockquote";
         parent.appendChild(bq);
         quoteStack.push(bq);
@@ -612,19 +625,20 @@ function convertListLines(
       const innerOl = !innerCheck && !innerList && body.match(/^\d+\.\s?(.+)$/);
       if (innerCheck || innerList) {
         if (quoteListEl === null || quoteListType !== "ul" || quoteListDepth !== depth || quoteListEl.parentElement !== target) {
-          quoteListEl = document.createElement("ul");
+          quoteListEl = activeDocument.createElement("ul");
           quoteListEl.className = "wr-reading-list";
           target.appendChild(quoteListEl);
           quoteListType = "ul";
           quoteListDepth = depth;
         }
-        const li = document.createElement("li");
+        const li = activeDocument.createElement("li");
         if (innerCheck) {
           li.className = "wr-check-item";
-          const cb = document.createElement("input");
+          const cb = activeDocument.createElement("input");
           cb.type = "checkbox";
           if (innerCheck[1] === "x") cb.checked = true;
           const innerLineIdx = i;
+          // eslint-disable-next-line @typescript-eslint/no-misused-promises
           cb.addEventListener("click", async () => {
             const file = plugin.app.workspace.getActiveFile();
             if (!file) return;
@@ -648,35 +662,35 @@ function convertListLines(
           });
           li.appendChild(cb);
           if (innerCheck[1] === "x" && plugin.settings.checkStrikethrough) {
-            const span = document.createElement("span");
+            const span = activeDocument.createElement("span");
             span.className = "wr-check-done";
-            span.appendChild(document.createTextNode(innerCheck[2]));
+            span.appendChild(activeDocument.createTextNode(innerCheck[2]));
             li.appendChild(span);
           } else {
-            li.appendChild(document.createTextNode(innerCheck[2]));
+            li.appendChild(activeDocument.createTextNode(innerCheck[2]));
           }
         } else if (innerList) {
-          li.appendChild(document.createTextNode(innerList[1]));
+          li.appendChild(activeDocument.createTextNode(innerList[1]));
         }
         quoteListEl.appendChild(li);
       } else if (innerOl) {
         if (quoteListEl === null || quoteListType !== "ol" || quoteListDepth !== depth || quoteListEl.parentElement !== target) {
-          quoteListEl = document.createElement("ol");
+          quoteListEl = activeDocument.createElement("ol");
           quoteListEl.className = "wr-reading-list";
           target.appendChild(quoteListEl);
           quoteListType = "ol";
           quoteListDepth = depth;
         }
-        const li = document.createElement("li");
-        li.appendChild(document.createTextNode(innerOl[1]));
+        const li = activeDocument.createElement("li");
+        li.appendChild(activeDocument.createTextNode(innerOl[1]));
         quoteListEl.appendChild(li);
       } else {
         quoteListEl = null;
         quoteListType = null;
         if (target.childNodes.length > 0 && target.lastChild?.nodeName !== "OL" && target.lastChild?.nodeName !== "UL" && target.lastChild?.nodeName !== "BLOCKQUOTE") {
-          target.appendChild(document.createElement("br"));
+          target.appendChild(activeDocument.createElement("br"));
         }
-        target.appendChild(document.createTextNode(body));
+        target.appendChild(activeDocument.createTextNode(body));
       }
     } else if (checkMatch || listMatch) {
       quoteStack = [];
@@ -685,17 +699,18 @@ function convertListLines(
       if (currentListType !== "ul") {
         if (currentListEl) fragments.push(currentListEl);
         flushPlain();
-        currentListEl = document.createElement("ul");
+        currentListEl = activeDocument.createElement("ul");
         currentListEl.className = "wr-reading-list";
         currentListType = "ul";
       }
-      const li = document.createElement("li");
+      const li = activeDocument.createElement("li");
       if (checkMatch) {
         li.className = "wr-check-item";
-        const cb = document.createElement("input");
+        const cb = activeDocument.createElement("input");
         cb.type = "checkbox";
         if (checkMatch[1] === "x") cb.checked = true;
         const lineIdx = i;
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         cb.addEventListener("click", async () => {
           const file = plugin.app.workspace.getActiveFile();
           if (!file) return;
@@ -720,15 +735,15 @@ function convertListLines(
         });
         li.appendChild(cb);
         if (checkMatch[1] === "x" && plugin.settings.checkStrikethrough) {
-          const span = document.createElement("span");
+          const span = activeDocument.createElement("span");
           span.className = "wr-check-done";
-          span.appendChild(document.createTextNode(checkMatch[2]));
+          span.appendChild(activeDocument.createTextNode(checkMatch[2]));
           li.appendChild(span);
         } else {
-          li.appendChild(document.createTextNode(checkMatch[2]));
+          li.appendChild(activeDocument.createTextNode(checkMatch[2]));
         }
       } else if (listMatch) {
-        li.appendChild(document.createTextNode(listMatch[1]));
+        li.appendChild(activeDocument.createTextNode(listMatch[1]));
       }
       currentListEl!.appendChild(li);
     } else if (olMatch) {
@@ -738,12 +753,12 @@ function convertListLines(
       if (currentListType !== "ol") {
         if (currentListEl) fragments.push(currentListEl);
         flushPlain();
-        currentListEl = document.createElement("ol");
+        currentListEl = activeDocument.createElement("ol");
         currentListEl.className = "wr-reading-list";
         currentListType = "ol";
       }
-      const li = document.createElement("li");
-      li.appendChild(document.createTextNode(olMatch[1]));
+      const li = activeDocument.createElement("li");
+      li.appendChild(activeDocument.createTextNode(olMatch[1]));
       currentListEl!.appendChild(li);
     } else {
       quoteStack = [];
@@ -775,11 +790,11 @@ function convertListLines(
   for (const frag of fragments) {
     if (typeof frag === "string") {
       if (frag.trim() === "" && hasContent) {
-        const spacer = document.createElement("div");
+        const spacer = activeDocument.createElement("div");
         spacer.className = "wr-spacer";
         block.appendChild(spacer);
       } else if (frag.trim() !== "") {
-        const div = document.createElement("div");
+        const div = activeDocument.createElement("div");
         div.className = "wr-plain-text";
         div.textContent = frag;
         block.appendChild(div);

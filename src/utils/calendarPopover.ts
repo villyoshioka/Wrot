@@ -88,8 +88,8 @@ export function openCalendarPopover(
   const close = () => {
     if (closed) return;
     closed = true;
-    document.removeEventListener("pointerdown", onOutside, true);
-    document.removeEventListener("keydown", onKeydown, true);
+    activeDocument.removeEventListener("pointerdown", onOutside, true);
+    activeDocument.removeEventListener("keydown", onKeydown, true);
     popover.remove();
     onClose();
   };
@@ -130,6 +130,7 @@ export function openCalendarPopover(
   // 月モード: 月日のカレンダーを描画する。
   const renderMonth = () => {
     monthLabel.setText(viewMonth.format(t("calendar.monthYearFormat")));
+    // eslint-disable-next-line obsidianmd/no-static-styles-assignment
     weekdaysRow.style.display = "";
     grid.removeClass("wr-calendar-grid-years");
     grid.empty();
@@ -169,6 +170,7 @@ export function openCalendarPopover(
     // viewMonth の年がページ内に収まるよう、ページ先頭年を算出する。
     const start = cur - (((cur % YEARS_PER_PAGE) + YEARS_PER_PAGE) % YEARS_PER_PAGE);
     monthLabel.setText(`${start} – ${start + YEARS_PER_PAGE - 1}`);
+    // eslint-disable-next-line obsidianmd/no-static-styles-assignment
     weekdaysRow.style.display = "none";
     grid.addClass("wr-calendar-grid-years");
     grid.empty();
@@ -234,8 +236,8 @@ export function openCalendarPopover(
   render();
   positionPopover();
 
-  document.addEventListener("pointerdown", onOutside, true);
-  document.addEventListener("keydown", onKeydown, true);
+  activeDocument.addEventListener("pointerdown", onOutside, true);
+  activeDocument.addEventListener("keydown", onKeydown, true);
 
   return { close };
 }

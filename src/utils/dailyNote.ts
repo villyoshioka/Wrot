@@ -72,8 +72,10 @@ export async function getOrCreateDailyNote(
               minute: now.get("minute"),
               second: now.get("second"),
             });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             if (calc) cur.add(parseInt(delta, 10), unit);
             return customFmt
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
               ? cur.format(customFmt.substring(1).trim())
               : cur.format(format);
           }

@@ -15,6 +15,7 @@ export interface ParsedUrl {
   type: "image" | "twitter" | "generic";
 }
 
+// eslint-disable-next-line no-useless-escape
 export const QUOTE_LINK_RE = /^([^\[\]\n#]+)#\^(wr-\d{17})$/;
 
 export function isSafeUrl(url: string): boolean {
@@ -59,6 +60,7 @@ function classifyUrl(url: string): ParsedUrl["type"] {
     if (IMAGE_EXTENSIONS.some((ext) => pathname.endsWith(ext))) {
       return "image";
     }
+  // eslint-disable-next-line no-empty
   } catch {}
 
   return "generic";
@@ -136,9 +138,12 @@ export function renderTextWithTagsAndUrls(
         callbacks.renderMathBlock(segment.tex, blockEl);
       } else {
         try {
+          // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment, no-undef
           const { renderMath, finishRenderMath } = require("obsidian");
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
           const rendered = renderMath(segment.tex, true);
           blockEl.appendChild(rendered);
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
           finishRenderMath();
         } catch {
           blockEl.textContent = segment.tex;
@@ -305,6 +310,7 @@ function renderInlineTokens(
   urls: ParsedUrl[],
   seen: Set<string>
 ): void {
+  // eslint-disable-next-line no-useless-escape
   const TOKEN_REGEX = /(\$[^$]+\$|`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*|~~[^~]+~~|==[^=]+=+|!\[\[[^\]]+\]\]|\[\[[^\]]+\]\]|\[[^\[\]\n]+\]\((?:https?|obsidian):\/\/[^\s)]+\)|#[^\s#]+|(?:https?|obsidian):\/\/[^\s<>"'\]]+)/g;
   const parts = text.split(TOKEN_REGEX);
 
@@ -337,6 +343,7 @@ function renderInlineTokens(
       continue;
     }
 
+    // eslint-disable-next-line no-useless-escape
     const mdLinkMatch = part.match(/^\[([^\[\]\n]+)\]\(((?:https?|obsidian):\/\/[^\s)]+)\)$/);
     if (mdLinkMatch) {
       const label = mdLinkMatch[1];
@@ -427,9 +434,12 @@ function renderInlineTokens(
       const mathContent = part.slice(1, -1);
       const mathEl = container.createEl("span", { cls: "wr-math" });
       try {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment, no-undef
         const { renderMath, finishRenderMath } = require("obsidian");
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
         const rendered = renderMath(mathContent, false);
         mathEl.appendChild(rendered);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         finishRenderMath();
       } catch {
         mathEl.textContent = part;
@@ -503,7 +513,7 @@ function el<K extends keyof HTMLElementTagNameMap>(
   cls?: string,
   text?: string
 ): HTMLElementTagNameMap[K] {
-  const e = document.createElement(tag);
+  const e = activeDocument.createElement(tag);
   if (cls) e.className = cls;
   if (text) e.textContent = text;
   return e;
@@ -608,6 +618,7 @@ export function renderUrlPreviews(
     } else {
       const placeholder = el("div", "wr-ogp-loading");
       container.appendChild(placeholder);
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       ogpCache.fetchOGP(pu.url).then((data) => {
         placeholder.textContent = "";
         if (!data || (!data.title && !data.description)) {

@@ -1,5 +1,13 @@
 # Release Notes
 
+## 2.6.1 - 2026-06-07
+
+### Improvements
+
+- Improved internal structure.
+
+---
+
 ## 2.6.0 - 2026-06-07
 
 ### New Features

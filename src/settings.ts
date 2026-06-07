@@ -131,7 +131,7 @@ export class WrotSettingTab extends PluginSettingTab {
         list.push(el);
       }
       el = el.parentElement;
-      if (!el || el === document.body || el === document.documentElement) break;
+      if (!el || el === activeDocument.body || el === activeDocument.documentElement) break;
     }
     return list;
   }
@@ -147,9 +147,9 @@ export class WrotSettingTab extends PluginSettingTab {
     };
     // 同期/次フレーム/フォールバックの3段階で復元を試行
     restore();
-    requestAnimationFrame(restore);
-    setTimeout(restore, 0);
-    setTimeout(restore, 50);
+    window.requestAnimationFrame(restore);
+    window.setTimeout(restore, 0);
+    window.setTimeout(restore, 50);
   }
 
   display(): void {
@@ -177,10 +177,10 @@ export class WrotSettingTab extends PluginSettingTab {
       containerEl.toggleClass("wr-settings-narrow", narrow);
       this.applySettingItemStateClasses(containerEl);
     };
-    requestAnimationFrame(updateNarrow);
+    window.requestAnimationFrame(updateNarrow);
     if (typeof ResizeObserver !== "undefined") {
       this.narrowObserver = new ResizeObserver(() => {
-        requestAnimationFrame(updateNarrow);
+        window.requestAnimationFrame(updateNarrow);
       });
       this.narrowObserver.observe(containerEl);
     }
@@ -255,6 +255,7 @@ export class WrotSettingTab extends PluginSettingTab {
       .addText((text) => {
         tsText = text;
         text
+          // eslint-disable-next-line obsidianmd/ui/sentence-case
           .setPlaceholder("YYYY/MM/DD HH:mm:ss")
           .setValue(this.plugin.settings.timestampFormat)
           .onChange(async (value) => {
@@ -420,6 +421,7 @@ export class WrotSettingTab extends PluginSettingTab {
       .addText((text) => {
         iconText = text;
         text
+          // eslint-disable-next-line obsidianmd/ui/sentence-case
           .setPlaceholder("send")
           .setValue(this.plugin.settings.submitIcon)
           .onChange(async (value) => {
@@ -561,6 +563,7 @@ export class WrotSettingTab extends PluginSettingTab {
           }
           // ルールブロックの表示/非表示を切り替えるため設定タブ全体を再構築
           this.skipLockReset = true;
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           this.withScrollPreserved(() => this.display());
         })
       );
@@ -574,7 +577,7 @@ export class WrotSettingTab extends PluginSettingTab {
 
       if (!this.plugin.settings.tagColorRulesEnabled) return;
 
-      const isDarkTheme = (): boolean => document.body.classList.contains("theme-dark");
+      const isDarkTheme = (): boolean => activeDocument.body.classList.contains("theme-dark");
       const getDefaultBg = (): string =>
         isDarkTheme() ? this.plugin.settings.bgColorDark : this.plugin.settings.bgColorLight;
       const getDefaultText = (): string =>
@@ -588,14 +591,15 @@ export class WrotSettingTab extends PluginSettingTab {
         /^#[0-9a-fA-F]{6}$/.test(v) && !(isDarkTheme() && isLightDefaultText(v)) ? v : getDefaultText();
 
       const getDefaultAccent = (): string => {
-        const raw = getComputedStyle(document.body).getPropertyValue("--text-accent").trim();
+        const raw = getComputedStyle(activeDocument.body).getPropertyValue("--text-accent").trim();
         if (/^#[0-9a-fA-F]{6}$/.test(raw)) return raw;
-        const probe = document.createElement("div");
+        const probe = activeDocument.createElement("div");
         probe.style.color = raw || "var(--text-accent)";
+        // eslint-disable-next-line obsidianmd/no-static-styles-assignment
         probe.style.display = "none";
-        document.body.appendChild(probe);
+        activeDocument.body.appendChild(probe);
         const resolved = getComputedStyle(probe).color;
-        document.body.removeChild(probe);
+        activeDocument.body.removeChild(probe);
         const m = resolved.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/);
         if (m) {
           const toHex = (n: string) => parseInt(n, 10).toString(16).padStart(2, "0");

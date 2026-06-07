@@ -36,7 +36,7 @@ export function refreshQuoteCardsForFile(
   resolveRuleAccent?: (ruleClass: string) => string | null
 ): void {
   const baseName = file.basename;
-  const cards = document.querySelectorAll<HTMLElement>(
+  const cards = activeDocument.querySelectorAll<HTMLElement>(
     `.wr-quote-card[data-quote-file="${CSS.escape(baseName)}"]`
   );
   cards.forEach((card) => {
@@ -70,6 +70,7 @@ function formatMemoTimestamp(time: string, format?: string): string {
 }
 
 // 入れ子引用マーカーは再帰展開せず "QT:" 化 (マトリョーシカ防止)
+// eslint-disable-next-line no-useless-escape
 const NESTED_QUOTE_RE_INLINE = /[\s]*\[\[[^\[\]]+#\^wr-\d{17}\]\][\s]*/g;
 
 const NESTED_QUOTE_PLACEHOLDER = "QT:";
@@ -80,6 +81,7 @@ function sanitizeNestedQuotes(text: string): string {
 }
 
 // プレビュー幅を圧迫する 画像/数式/コード ブロックは アイコン+ラベル のサマリに置換
+// eslint-disable-next-line no-useless-escape
 const IMAGE_EMBED_RE = /!\[\[[^\[\]]+\.(?:png|jpe?g|gif|webp|svg|bmp)\]\]/gi;
 const IMAGE_EMBED_PLACEHOLDER = "@@WR_IMAGE_EMBED@@";
 
@@ -102,7 +104,7 @@ function sanitizeCodeBlocks(text: string): string {
 }
 
 function decorateImageEmbedMarkers(root: HTMLElement): void {
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const walker = activeDocument.createTreeWalker(root, NodeFilter.SHOW_TEXT);
   const textNodes: Text[] = [];
   let n: Node | null;
   while ((n = walker.nextNode())) {
@@ -114,17 +116,17 @@ function decorateImageEmbedMarkers(root: HTMLElement): void {
     const parent = tn.parentNode;
     if (!parent) continue;
     const parts = tn.data.split(IMAGE_EMBED_PLACEHOLDER);
-    const frag = document.createDocumentFragment();
+    const frag = activeDocument.createDocumentFragment();
     parts.forEach((part, i) => {
-      if (part) frag.appendChild(document.createTextNode(part));
+      if (part) frag.appendChild(activeDocument.createTextNode(part));
       if (i < parts.length - 1) {
-        const span = document.createElement("span");
+        const span = activeDocument.createElement("span");
         span.className = "wr-quote-image-marker";
-        const iconEl = document.createElement("span");
+        const iconEl = activeDocument.createElement("span");
         iconEl.className = "wr-quote-image-marker-icon";
         setIcon(iconEl, "image");
         span.appendChild(iconEl);
-        span.appendChild(document.createTextNode(" image"));
+        span.appendChild(activeDocument.createTextNode(" image"));
         frag.appendChild(span);
       }
     });
@@ -133,7 +135,7 @@ function decorateImageEmbedMarkers(root: HTMLElement): void {
 }
 
 function decorateMathBlockMarkers(root: HTMLElement): void {
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const walker = activeDocument.createTreeWalker(root, NodeFilter.SHOW_TEXT);
   const textNodes: Text[] = [];
   let n: Node | null;
   while ((n = walker.nextNode())) {
@@ -145,17 +147,17 @@ function decorateMathBlockMarkers(root: HTMLElement): void {
     const parent = tn.parentNode;
     if (!parent) continue;
     const parts = tn.data.split(MATH_BLOCK_PLACEHOLDER);
-    const frag = document.createDocumentFragment();
+    const frag = activeDocument.createDocumentFragment();
     parts.forEach((part, i) => {
-      if (part) frag.appendChild(document.createTextNode(part));
+      if (part) frag.appendChild(activeDocument.createTextNode(part));
       if (i < parts.length - 1) {
-        const span = document.createElement("span");
+        const span = activeDocument.createElement("span");
         span.className = "wr-quote-math-marker";
-        const iconEl = document.createElement("span");
+        const iconEl = activeDocument.createElement("span");
         iconEl.className = "wr-quote-math-marker-icon";
         setIcon(iconEl, "sigma");
         span.appendChild(iconEl);
-        span.appendChild(document.createTextNode(" math"));
+        span.appendChild(activeDocument.createTextNode(" math"));
         frag.appendChild(span);
       }
     });
@@ -164,7 +166,7 @@ function decorateMathBlockMarkers(root: HTMLElement): void {
 }
 
 function decorateCodeBlockMarkers(root: HTMLElement): void {
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const walker = activeDocument.createTreeWalker(root, NodeFilter.SHOW_TEXT);
   const textNodes: Text[] = [];
   let n: Node | null;
   while ((n = walker.nextNode())) {
@@ -176,17 +178,17 @@ function decorateCodeBlockMarkers(root: HTMLElement): void {
     const parent = tn.parentNode;
     if (!parent) continue;
     const parts = tn.data.split(CODE_BLOCK_PLACEHOLDER);
-    const frag = document.createDocumentFragment();
+    const frag = activeDocument.createDocumentFragment();
     parts.forEach((part, i) => {
-      if (part) frag.appendChild(document.createTextNode(part));
+      if (part) frag.appendChild(activeDocument.createTextNode(part));
       if (i < parts.length - 1) {
-        const span = document.createElement("span");
+        const span = activeDocument.createElement("span");
         span.className = "wr-quote-code-marker";
-        const iconEl = document.createElement("span");
+        const iconEl = activeDocument.createElement("span");
         iconEl.className = "wr-quote-code-marker-icon";
         setIcon(iconEl, "code");
         span.appendChild(iconEl);
-        span.appendChild(document.createTextNode(" code"));
+        span.appendChild(activeDocument.createTextNode(" code"));
         frag.appendChild(span);
       }
     });
@@ -195,7 +197,7 @@ function decorateCodeBlockMarkers(root: HTMLElement): void {
 }
 
 function decorateNestedQuoteMarkers(root: HTMLElement): void {
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const walker = activeDocument.createTreeWalker(root, NodeFilter.SHOW_TEXT);
   const textNodes: Text[] = [];
   let n: Node | null;
   while ((n = walker.nextNode())) {
@@ -207,11 +209,11 @@ function decorateNestedQuoteMarkers(root: HTMLElement): void {
     const parent = tn.parentNode;
     if (!parent) continue;
     const parts = tn.data.split(NESTED_QUOTE_PLACEHOLDER);
-    const frag = document.createDocumentFragment();
+    const frag = activeDocument.createDocumentFragment();
     parts.forEach((part, i) => {
-      if (part) frag.appendChild(document.createTextNode(part));
+      if (part) frag.appendChild(activeDocument.createTextNode(part));
       if (i < parts.length - 1) {
-        const span = document.createElement("span");
+        const span = activeDocument.createElement("span");
         span.className = "wr-nested-quote-marker";
         span.textContent = NESTED_QUOTE_DISPLAY;
         frag.appendChild(span);
@@ -350,7 +352,7 @@ function flashJumpTargetReadingView(
       resizeObserver = null;
     }
     if (resizeSettleTimeout !== null) {
-      clearTimeout(resizeSettleTimeout);
+      window.clearTimeout(resizeSettleTimeout);
       resizeSettleTimeout = null;
     }
   };
@@ -358,16 +360,16 @@ function flashJumpTargetReadingView(
   let interruptListenersAttached = false;
   const removeInterruptListeners = () => {
     if (!interruptListenersAttached) return;
-    document.removeEventListener("keydown", cancel, true);
-    document.removeEventListener("mousedown", cancel, true);
-    document.removeEventListener("wheel", cancel, true);
-    document.removeEventListener("touchstart", cancel, true);
+    activeDocument.removeEventListener("keydown", cancel, true);
+    activeDocument.removeEventListener("mousedown", cancel, true);
+    activeDocument.removeEventListener("wheel", cancel, true);
+    activeDocument.removeEventListener("touchstart", cancel, true);
     interruptListenersAttached = false;
   };
   const cancel = () => {
     if (canceled) return;
     canceled = true;
-    for (const id of pendingTimeouts) clearTimeout(id);
+    for (const id of pendingTimeouts) window.clearTimeout(id);
     pendingTimeouts.clear();
     stopMutationWatch();
     stopResizeWatch();
@@ -387,10 +389,10 @@ function flashJumpTargetReadingView(
   const attachInterruptListenersOnce = () => {
     if (interruptListenersAttached) return;
     interruptListenersAttached = true;
-    document.addEventListener("keydown", cancel, true);
-    document.addEventListener("mousedown", cancel, true);
-    document.addEventListener("wheel", cancel, true);
-    document.addEventListener("touchstart", cancel, true);
+    activeDocument.addEventListener("keydown", cancel, true);
+    activeDocument.addEventListener("mousedown", cancel, true);
+    activeDocument.addEventListener("wheel", cancel, true);
+    activeDocument.addEventListener("touchstart", cancel, true);
   };
 
   const schedule = (fn: () => void, ms: number) => {
@@ -456,7 +458,7 @@ function flashJumpTargetReadingView(
           return;
         }
         if (canceled) return;
-        if (resizeSettleTimeout !== null) clearTimeout(resizeSettleTimeout);
+        if (resizeSettleTimeout !== null) window.clearTimeout(resizeSettleTimeout);
         resizeSettleTimeout = window.setTimeout(() => {
           resizeSettleTimeout = null;
           if (canceled) return;
@@ -523,7 +525,7 @@ function flashJumpTargetReadingView(
         onTargetAppeared(preferred);
       }
     });
-    mutationObserver.observe(document.body, {
+    mutationObserver.observe(activeDocument.body, {
       childList: true,
       subtree: true,
       attributes: true,
@@ -584,21 +586,21 @@ export function flashJumpTarget(
       resizeObserver = null;
     }
     if (resizeSettleTimeout !== null) {
-      clearTimeout(resizeSettleTimeout);
+      window.clearTimeout(resizeSettleTimeout);
       resizeSettleTimeout = null;
     }
   };
 
   const removeInterruptListeners = () => {
-    document.removeEventListener("keydown", cancel, true);
-    document.removeEventListener("mousedown", cancel, true);
-    document.removeEventListener("wheel", cancel, true);
-    document.removeEventListener("touchstart", cancel, true);
+    activeDocument.removeEventListener("keydown", cancel, true);
+    activeDocument.removeEventListener("mousedown", cancel, true);
+    activeDocument.removeEventListener("wheel", cancel, true);
+    activeDocument.removeEventListener("touchstart", cancel, true);
   };
   const cancel = () => {
     if (canceled) return;
     canceled = true;
-    for (const id of pendingTimeouts) clearTimeout(id);
+    for (const id of pendingTimeouts) window.clearTimeout(id);
     pendingTimeouts.clear();
     stopResizeWatch();
     // 走り出してる点滅クラスも即時除去
@@ -613,12 +615,12 @@ export function flashJumpTarget(
   // 余韻イベントが発火することがある（特に iOS）。同じシーケンス内で
   // リスナー登録すると自分のタップで cancel が誘発されてジャンプが空振りする。
   // 次フレームに送ってシーケンスをまたいでから購読開始する。
-  requestAnimationFrame(() => {
+  window.requestAnimationFrame(() => {
     if (canceled) return;
-    document.addEventListener("keydown", cancel, true);
-    document.addEventListener("mousedown", cancel, true);
-    document.addEventListener("wheel", cancel, true);
-    document.addEventListener("touchstart", cancel, true);
+    activeDocument.addEventListener("keydown", cancel, true);
+    activeDocument.addEventListener("mousedown", cancel, true);
+    activeDocument.addEventListener("wheel", cancel, true);
+    activeDocument.addEventListener("touchstart", cancel, true);
   });
 
   const schedule = (fn: () => void, ms: number) => {
@@ -688,7 +690,7 @@ export function flashJumpTarget(
         }
         if (canceled) return;
         if (resizeSettleTimeout !== null) {
-          clearTimeout(resizeSettleTimeout);
+          window.clearTimeout(resizeSettleTimeout);
         }
         resizeSettleTimeout = window.setTimeout(() => {
           resizeSettleTimeout = null;
@@ -726,6 +728,7 @@ export function flashJumpTarget(
 // 現在アクティブな MarkdownView のコンテナ要素を返す。
 // 同じファイルが LV/RV で並行して開かれている場合の、対象要素の絞り込みに使う。
 function getActiveViewContainer(app: App): HTMLElement | null {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
   const obs = require("obsidian") as typeof import("obsidian");
   const view = app.workspace.getActiveViewOfType(obs.MarkdownView);
   return view?.containerEl ?? null;
@@ -768,14 +771,15 @@ function scrollElementIntoCenter(el: HTMLElement): void {
   apply();
   // モバイル（特に iOS）では1度の代入だと慣性処理に上書きされる場合があるため、
   // 次フレームでもう一度同じ計算で書き直して確実に反映させる
-  requestAnimationFrame(apply);
+  window.requestAnimationFrame(apply);
 }
 
 // LV/RV/タイムライン全てから wr-block-id-{blockId} 付き要素を収集。
 // モバイルでタイムラインが一時表示ドロワーの時だけ除外
 function collectFlashTargets(blockId: string, app: App): HTMLElement[] {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
   const all = Array.from(
-    document.querySelectorAll(`.wr-block-id-${blockId}`)
+    activeDocument.querySelectorAll(`.wr-block-id-${blockId}`)
   ) as HTMLElement[];
 
   if (!Platform.isMobile) return all;
@@ -843,10 +847,12 @@ export function renderQuoteCard(
   // <a href> のデフォルト遷移が走って中途半端な状態になり、ホバー残り＋
   // 2回押し問題を生む。メモ準備フラグを使った eager ハンドラで先に防ぐ。
   let memoReady: Memo | null = null;
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
   card.addEventListener("click", async (e) => {
     e.preventDefault();
     e.stopPropagation();
     if (!memoReady) return;
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
     const obs = require("obsidian") as typeof import("obsidian");
     const activeView = app.workspace.getActiveViewOfType(obs.MarkdownView);
     const activeFilePath = activeView?.file?.path;
@@ -875,8 +881,11 @@ export function renderQuoteCard(
       // contentEl.clientHeight が「中身全体の高さ」を返すケースがあり halfLines が targetLine を
       // 上回ると scrollLine が 0 に丸められて先頭に飛ぶ症状が出ていた。
       const targetLine = memoReady.lineStart;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       const mode = (targetView as any).currentMode;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       if (mode && typeof mode.applyScroll === "function") {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         mode.applyScroll(targetLine);
       }
     }

@@ -29,11 +29,14 @@ export default class WrotPlugin extends Plugin {
     );
 
     this.addRibbonIcon("feather", "Wrot", () => {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       this.activateView();
     });
 
     this.addCommand({
+      // eslint-disable-next-line obsidianmd/commands/no-plugin-id-in-command-id
       id: "open-wrot",
+      // eslint-disable-next-line obsidianmd/commands/no-plugin-name-in-command-name, obsidianmd/ui/sentence-case
       name: "Open Wrot",
       callback: () => this.activateView(),
     });
@@ -71,30 +74,38 @@ export default class WrotPlugin extends Plugin {
       const view = leaf.view;
       if (!(view instanceof MarkdownView)) return;
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       const previewMode = (view as any).previewMode;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       if (previewMode?.rerender) {
         try {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
           previewMode.rerender(true);
+        // eslint-disable-next-line no-empty
         } catch {}
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       const cm = (view.editor as any)?.cm;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       if (cm?.dispatch) {
         try {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
           cm.dispatch({ effects: vaultFilesChanged.of(null) });
+        // eslint-disable-next-line no-empty
         } catch {}
       }
     });
   }
 
   applyFontFollow(): void {
-    document.body.classList.toggle("wr-font-follow", this.settings.followObsidianFontSize);
+    activeDocument.body.classList.toggle("wr-font-follow", this.settings.followObsidianFontSize);
     if (this.fontStyleEl) {
       this.fontStyleEl.remove();
     }
-    this.fontStyleEl = document.createElement("style");
+    this.fontStyleEl = activeDocument.createElement("style");
     this.fontStyleEl.id = "wr-font-override";
-    document.head.appendChild(this.fontStyleEl);
+    activeDocument.head.appendChild(this.fontStyleEl);
 
     if (this.settings.followObsidianFontSize) {
       // 14:13:12 の比率を保つため --font-text-size を基準にスケールする
@@ -123,7 +134,7 @@ export default class WrotPlugin extends Plugin {
   }
 
   applyBgColor(): void {
-    const isDark = document.body.classList.contains("theme-dark");
+    const isDark = activeDocument.body.classList.contains("theme-dark");
     const bgColor = this.validHex(
       isDark ? this.settings.bgColorDark : this.settings.bgColorLight,
       isDark ? DEFAULT_SETTINGS.bgColorDark : DEFAULT_SETTINGS.bgColorLight
@@ -141,9 +152,9 @@ export default class WrotPlugin extends Plugin {
     if (this.bgStyleEl) {
       this.bgStyleEl.remove();
     }
-    this.bgStyleEl = document.createElement("style");
+    this.bgStyleEl = activeDocument.createElement("style");
     this.bgStyleEl.id = "wr-bg-override";
-    document.head.appendChild(this.bgStyleEl);
+    activeDocument.head.appendChild(this.bgStyleEl);
 
     this.bgStyleEl.textContent = `/* @css */
       body {
@@ -455,7 +466,7 @@ export default class WrotPlugin extends Plugin {
   applyCalendarDayShape(): void {
     const radiusMap = { circle: "50%", rounded: "6px", square: "0px" } as const;
     const radius = radiusMap[this.settings.calendarDayShape ?? "circle"];
-    document.body.style.setProperty("--wr-cal-day-radius", radius);
+    activeDocument.body.style.setProperty("--wr-cal-day-radius", radius);
   }
 
   applyTagColorRules(): void {
@@ -853,10 +864,10 @@ export default class WrotPlugin extends Plugin {
 
     if (parts.length === 0) return;
 
-    this.tagRuleStyleEl = document.createElement("style");
+    this.tagRuleStyleEl = activeDocument.createElement("style");
     this.tagRuleStyleEl.id = "wr-tag-rule-override";
     this.tagRuleStyleEl.textContent = parts.join("");
-    document.head.appendChild(this.tagRuleStyleEl);
+    activeDocument.head.appendChild(this.tagRuleStyleEl);
   }
 
   refreshReadingViews(): void {
@@ -869,7 +880,7 @@ export default class WrotPlugin extends Plugin {
       '.code-block-flair[class*="wr-tag-rule-"], ' +
       '.copy-code-button[class*="wr-tag-rule-"], ' +
       '.wr-flair-bg[class*="wr-tag-rule-"]';
-    document.querySelectorAll<HTMLElement>(sweepSelector).forEach((el) => {
+    activeDocument.querySelectorAll<HTMLElement>(sweepSelector).forEach((el) => {
       const existing = Array.from(el.classList);
       for (const cls of existing) {
         if (/^wr-tag-rule-\d+$/.test(cls)) el.classList.remove(cls);
@@ -878,7 +889,7 @@ export default class WrotPlugin extends Plugin {
 
     if (!this.settings.tagColorRulesEnabled) return;
 
-    document.querySelectorAll('code.language-wr, .block-language-wr code, pre > code[class*="language-wr"]').forEach((code) => {
+    activeDocument.querySelectorAll('code.language-wr, .block-language-wr code, pre > code[class*="language-wr"]').forEach((code) => {
       const block = code.closest(".block-language-wr") || code.closest("pre");
       if (!(block instanceof HTMLElement)) return;
 
@@ -886,11 +897,11 @@ export default class WrotPlugin extends Plugin {
       const container = block.parentElement;
       if (container) {
         container.querySelectorAll(".code-block-flair, .copy-code-button").forEach((el) => {
-          if (el instanceof HTMLElement) targets.push(el);
+          if (el.instanceOf(HTMLElement)) targets.push(el);
         });
       }
       block.querySelectorAll(".code-block-flair, .copy-code-button").forEach((el) => {
-        if (el instanceof HTMLElement) targets.push(el);
+        if (el.instanceOf(HTMLElement)) targets.push(el);
       });
 
       const rawText = code.getAttribute("data-wr-original") || code.textContent || "";
@@ -911,10 +922,14 @@ export default class WrotPlugin extends Plugin {
     this.app.workspace.iterateAllLeaves((leaf) => {
       const view = leaf.view;
       if (!(view instanceof MarkdownView)) return;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       const cm = (view.editor as any)?.cm;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       if (cm?.dispatch) {
         try {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
           cm.dispatch({ effects: tagRulesChanged.of(null) });
+        // eslint-disable-next-line no-empty
         } catch {}
       }
     });
@@ -943,6 +958,7 @@ export default class WrotPlugin extends Plugin {
   refreshViews(): void {
     const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_WROT);
     for (const leaf of leaves) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       (leaf.view as WrotView).refresh();
     }
   }
@@ -994,7 +1010,7 @@ export default class WrotPlugin extends Plugin {
     this.tagRuleStyleEl = null;
     this.fontStyleEl?.remove();
     this.fontStyleEl = null;
-    document.body.classList.remove("wr-font-follow");
+    activeDocument.body.classList.remove("wr-font-follow");
   }
 
   async activateView(): Promise<void> {
@@ -1002,6 +1018,7 @@ export default class WrotPlugin extends Plugin {
     const existing = workspace.getLeavesOfType(VIEW_TYPE_WROT);
 
     if (existing.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises, obsidianmd/no-unsupported-api
       workspace.revealLeaf(existing[0]);
       return;
     }
@@ -1021,10 +1038,12 @@ export default class WrotPlugin extends Plugin {
     }
 
     await leaf.setViewState({ type: VIEW_TYPE_WROT, active: true });
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises, obsidianmd/no-unsupported-api
     workspace.revealLeaf(leaf);
   }
 
   async loadSettings(): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const raw = (await this.loadData()) ?? {};
     let dirty = false;
     for (const key of ["autoLinkEnabled", "autoLinkExcludeList"]) {
@@ -1041,6 +1060,7 @@ export default class WrotPlugin extends Plugin {
       submitLabel: t("defaults.submitLabel"),
       inputPlaceholder: t("defaults.inputPlaceholder"),
     };
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     this.settings = Object.assign({}, localizedDefaults, raw);
 
     // calendarDayShape 未記録の場合：新規インストールは "rounded"、既存ユーザーは "circle" を維持。

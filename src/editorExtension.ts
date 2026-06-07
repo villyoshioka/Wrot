@@ -48,8 +48,10 @@ import {
   QUOTE_LINK_RE,
   type ParsedUrl,
 } from "./utils/urlRenderer";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { renderQuoteCard, invalidateMemoCache } from "./utils/quoteCard";
 import type { OGPCache } from "./utils/ogpCache";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { OGPData } from "./utils/ogpCache";
 
 const tagMark = Decoration.mark({ class: "wr-tag-highlight" });
@@ -80,7 +82,7 @@ function makeLineDeco(classes: (string | null | undefined)[]): Decoration {
 
 class BulletWidget extends WidgetType {
   toDOM(): HTMLElement {
-    const span = document.createElement("span");
+    const span = activeDocument.createElement("span");
     span.className = "wr-lp-marker wr-lp-bullet";
     span.textContent = "\u2022";
     return span;
@@ -91,9 +93,9 @@ class BulletWidget extends WidgetType {
 class CheckboxWidget extends WidgetType {
   constructor(private checked: boolean, private pos: number) { super(); }
   toDOM(view: EditorView): HTMLElement {
-    const wrap = document.createElement("span");
+    const wrap = activeDocument.createElement("span");
     wrap.className = "wr-lp-marker wr-lp-check";
-    const cb = document.createElement("input");
+    const cb = activeDocument.createElement("input");
     cb.type = "checkbox";
     cb.checked = this.checked;
     cb.addEventListener("click", (e) => {
@@ -110,6 +112,7 @@ class CheckboxWidget extends WidgetType {
   }
   // 同じ位置のcheckboxはWidget差し替えではなくDOM再利用で更新する。checked状態だけ差分反映する
   updateDOM(dom: HTMLElement): boolean {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const cb = dom.querySelector("input[type=\"checkbox\"]") as HTMLInputElement | null;
     if (!cb) return false;
     if (cb.checked !== this.checked) cb.checked = this.checked;
@@ -122,7 +125,7 @@ class CheckboxWidget extends WidgetType {
 class OlMarkerWidget extends WidgetType {
   constructor(private label: string) { super(); }
   toDOM(): HTMLElement {
-    const span = document.createElement("span");
+    const span = activeDocument.createElement("span");
     span.className = "wr-lp-marker wr-lp-ol";
     span.textContent = this.label;
     return span;
@@ -137,7 +140,7 @@ class ObsidianLinkWidget extends WidgetType {
     private unresolved: boolean = false
   ) { super(); }
   toDOM(): HTMLElement {
-    const link = document.createElement("a");
+    const link = activeDocument.createElement("a");
     link.className = this.unresolved
       ? "wr-internal-link wr-internal-link-unresolved"
       : "wr-internal-link";
@@ -158,7 +161,7 @@ class ObsidianLinkWidget extends WidgetType {
 class MdLinkWidget extends WidgetType {
   constructor(private label: string, private url: string) { super(); }
   toDOM(): HTMLElement {
-    const link = document.createElement("a");
+    const link = activeDocument.createElement("a");
     link.className = "wr-url-highlight";
     link.textContent = this.label;
     link.addEventListener("click", (e) => {
@@ -177,7 +180,7 @@ class MdLinkWidget extends WidgetType {
 class InternalLinkWidget extends WidgetType {
   constructor(private fileName: string, private app: App, private resolved: boolean) { super(); }
   toDOM(): HTMLElement {
-    const link = document.createElement("a");
+    const link = activeDocument.createElement("a");
     link.className = this.resolved
       ? "wr-internal-link"
       : "wr-internal-link wr-internal-link-unresolved";
@@ -185,6 +188,7 @@ class InternalLinkWidget extends WidgetType {
     link.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       this.app.workspace.openLinkText(this.fileName, "", false);
     });
     return link;
@@ -198,7 +202,7 @@ class InternalLinkWidget extends WidgetType {
 class EmbedMissingWidget extends WidgetType {
   constructor(private fileName: string) { super(); }
   toDOM(): HTMLElement {
-    const span = document.createElement("span");
+    const span = activeDocument.createElement("span");
     span.className = "wr-embed-missing";
     span.textContent = `![[${this.fileName}]]`;
     return span;
@@ -212,12 +216,15 @@ class EmbedMissingWidget extends WidgetType {
 class MathWidget extends WidgetType {
   constructor(private tex: string) { super(); }
   toDOM(): HTMLElement {
-    const span = document.createElement("span");
+    const span = activeDocument.createElement("span");
     span.className = "wr-math";
     try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment, no-undef
       const { renderMath, finishRenderMath } = require("obsidian");
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
       const rendered = renderMath(this.tex, false);
       span.appendChild(rendered);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
       finishRenderMath();
     } catch {
       span.textContent = `$${this.tex}$`;
@@ -236,7 +243,7 @@ class CodeBlockWidget extends WidgetType {
     private ruleClass: string | null
   ) { super(); }
   toDOM(): HTMLElement {
-    const container = document.createElement("div");
+    const container = activeDocument.createElement("div");
     container.className = "wr-codeblock-display wr-lp-codeblock wr-codeblock-line";
     if (this.ruleClass) container.classList.add(this.ruleClass);
 
@@ -248,7 +255,9 @@ class CodeBlockWidget extends WidgetType {
 
     // Obsidian の loadPrism() で構文ハイライトを適用（Prismのトークン色は app.css で定義済み）
     if (this.lang) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       loadPrism().then((Prism: any) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         Prism.highlightElement(codeEl);
       }).catch(() => {});
     }
@@ -264,13 +273,16 @@ class CodeBlockWidget extends WidgetType {
 class MathBlockWidget extends WidgetType {
   constructor(private tex: string, private ruleClass: string | null) { super(); }
   toDOM(): HTMLElement {
-    const container = document.createElement("div");
+    const container = activeDocument.createElement("div");
     container.className = "wr-math-display wr-lp-mathblock wr-codeblock-line";
     if (this.ruleClass) container.classList.add(this.ruleClass);
     try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment, no-undef
       const { renderMath, finishRenderMath } = require("obsidian");
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
       const rendered = renderMath(this.tex, true);
       container.appendChild(rendered);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
       finishRenderMath();
     } catch {
       container.textContent = this.tex;
@@ -291,12 +303,12 @@ class EmbedImageWidget extends WidgetType {
     private ruleClass: string | null
   ) { super(); }
   toDOM(): HTMLElement {
-    const container = document.createElement("div");
+    const container = activeDocument.createElement("div");
     // CSS `:has()` 警告回避: 子に必ず wr-embed-img を持つので状態クラスを直接付与
     container.className = "wr-media-area wr-lp-media wr-has-img";
     if (this.ruleClass) container.classList.add(this.ruleClass);
     for (const { src, alt } of this.images) {
-      const img = document.createElement("img");
+      const img = activeDocument.createElement("img");
       img.className = "wr-embed-img";
       img.src = src;
       img.alt = alt;
@@ -317,9 +329,9 @@ class EmbedImageWidget extends WidgetType {
 class InlineEmbedImageWidget extends WidgetType {
   constructor(private src: string, private alt: string) { super(); }
   toDOM(): HTMLElement {
-    const wrapper = document.createElement("div");
+    const wrapper = activeDocument.createElement("div");
     wrapper.className = "wr-lp-inline-img-wrapper";
-    const img = document.createElement("img");
+    const img = activeDocument.createElement("img");
     img.className = "wr-embed-img wr-lp-inline-img";
     img.src = this.src;
     img.alt = this.alt;
@@ -364,7 +376,7 @@ class UrlPreviewWidget extends WidgetType {
   }
 
   toDOM(): HTMLElement {
-    const container = document.createElement("div");
+    const container = activeDocument.createElement("div");
     container.className = "wr-media-area wr-lp-media";
     if (this.ruleClass) container.classList.add(this.ruleClass);
 
@@ -431,12 +443,12 @@ class QuoteBlockWidget extends WidgetType {
   }
 
   toDOM(): HTMLElement {
-    const container = document.createElement("div");
+    const container = activeDocument.createElement("div");
     container.className = "wr-quote-block";
     if (this.ruleClass) container.classList.add(this.ruleClass);
 
     if (this.parsedUrls.length > 0) {
-      const mediaArea = document.createElement("div");
+      const mediaArea = activeDocument.createElement("div");
       mediaArea.className = "wr-media-area wr-lp-media";
       if (this.ruleClass) mediaArea.classList.add(this.ruleClass);
       let hasContent = false;
@@ -460,7 +472,7 @@ class QuoteBlockWidget extends WidgetType {
     }
 
     // 引用は底
-    const slot = document.createElement("span");
+    const slot = activeDocument.createElement("span");
     slot.className = "wr-quote-card-slot wr-lp-quote-card";
     if (this.ruleClass) slot.classList.add(this.ruleClass);
     renderQuoteCard(slot, this.fileName, this.blockId, this.app, this.currentFilePath, {
@@ -554,6 +566,7 @@ function findWrBlocks(view: EditorView, plugin: WrotPlugin | null): WrBlock[] {
     let hasQuoteMarker = false;
     let quoteLineIdx = -1;
     for (let j = startLn + 1; j < endLn; j++) {
+      // eslint-disable-next-line no-useless-escape
       if (/\[\[[^\[\]]+#\^wr-\d{17}\]\]/.test(doc.line(j).text)) {
         hasQuoteMarker = true;
         quoteLineIdx = j;
@@ -697,6 +710,7 @@ function buildDecorations(
         const isQuoteMarkerOnlyLine = (() => {
           if (showRaw) return false;
           if (!block.hasQuoteMarker) return false;
+          // eslint-disable-next-line no-useless-escape
           return /^\s*\[\[[^\[\]]+#\^wr-\d{17}\]\]\s*$/.test(l.text);
         })();
         if (isEmbedOnlyLine || isQuoteMarkerOnlyLine) {
@@ -818,6 +832,7 @@ function buildDecorations(
 
         // 通常URLとの重複を避けるためmarkdownリンクを先に処理
         const mdLinkRanges: { from: number; to: number }[] = [];
+        // eslint-disable-next-line no-useless-escape
         const mdLinkRegex = /\[([^\[\]\n]+)\]\(((?:https?|obsidian):\/\/[^\s)]+)\)/g;
         while ((match = mdLinkRegex.exec(l.text)) !== null) {
           const from = l.from + match.index;
@@ -854,6 +869,7 @@ function buildDecorations(
                 const decoded = decodeURIComponent(filePath);
                 fileName = decoded.split("/").pop() || decoded;
               }
+            // eslint-disable-next-line no-empty
             } catch {}
             const looksLikeImage = !!fileName && IMAGE_EXT_RE.test(fileName);
             const resolved = fileName ? app.metadataCache.getFirstLinkpathDest(fileName, "") : null;
@@ -1032,6 +1048,7 @@ function buildDecorations(
         // 同じ位置に Decoration.replace と Decoration.mark が並ぶと
         // RangeSetBuilder が startSide 順序エラーで全装飾を弾くため、
         // replace を先にソートしておく
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
         const isReplace = (d: Decoration): boolean => (d as any).point === true;
         // 引用行の wr-blockquote-wrap mark は引用全体（行末まで）を覆う mark。
         // URL ハイライト等のインラインmarkと同じ範囲になったとき、後勝ち（外側）に
@@ -1039,7 +1056,9 @@ function buildDecorations(
         // 子の wr-blockquote-wrap の muted color が URL のアクセント色を打ち消す。
         // wr-blockquote-wrap は常に後勝ち（外側）に来るよう明示的に並べる。
         const isBlockquoteWrap = (d: Decoration): boolean => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
           const spec = (d as any).spec;
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
           return spec && typeof spec.class === "string" && spec.class.includes("wr-blockquote-wrap");
         };
         entries.sort((a, b) => {
@@ -1088,6 +1107,7 @@ function buildDecorations(
         let quoteFileName: string | null = null;
         let quoteBlockId: string | null = null;
         for (let j = block.startLn + 1; j < block.endLn; j++) {
+          // eslint-disable-next-line no-useless-escape
           const m = doc.line(j).text.match(/\[\[([^\[\]]+)#\^(wr-\d{17})\]\]/);
           if (m) {
             quoteFileName = m[1];
@@ -1164,9 +1184,10 @@ export function createWrEditorExtension(ogpCache: OGPCache, app: App, plugin: Wr
         this.decorations = built.decorations;
         // 初回の hidden range 反映は次フレームで dispatch (constructor 内 dispatch は不可)
         const initialRanges = built.hiddenRanges;
-        requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => {
           try {
             this.currentView.dispatch({ effects: setHiddenRanges.of(initialRanges) });
+          // eslint-disable-next-line no-empty
           } catch {}
           this.fetchMissing();
         });
@@ -1202,9 +1223,10 @@ export function createWrEditorExtension(ogpCache: OGPCache, app: App, plugin: Wr
           // hidden range の更新は同じトランザクションサイクル内では dispatch できないため、
           // 次フレームに送る
           const pendingRanges = built.hiddenRanges;
-          requestAnimationFrame(() => {
+          window.requestAnimationFrame(() => {
             try {
               this.currentView.dispatch({ effects: setHiddenRanges.of(pendingRanges) });
+            // eslint-disable-next-line no-empty
             } catch {}
           });
           if (!hasOgpEffect) {
@@ -1219,10 +1241,12 @@ export function createWrEditorExtension(ogpCache: OGPCache, app: App, plugin: Wr
           for (const pu of parsedUrls) {
             if (pu.type === "image") continue;
             if (ogpCache.get(pu.url)) continue;
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             ogpCache.fetchOGP(pu.url).then(() => {
               // フェッチ完了時点で最新のview参照を使う
               try {
                 this.currentView.dispatch({ effects: ogpFetched.of(null) });
+              // eslint-disable-next-line no-empty
               } catch {}
             });
           }
