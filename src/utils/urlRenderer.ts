@@ -237,7 +237,18 @@ function renderTextSegment(
       } else {
         quoteList = null;
         quoteListType = null;
-        if (target.childNodes.length > 0) {
+        // 直前の子が入れ子引用やリストの箱 (block 要素) のときは、箱自体が行を
+        // 変えるため <br> を足すと空行が 1 行余分に生まれる (例: ">> a" の直後の
+        // "> b")。テキスト行の継続時だけ改行を挟む。
+        const last = target.lastChild;
+        const lastTag =
+          last && last.nodeType === Node.ELEMENT_NODE ? (last as Element).tagName : "";
+        if (
+          target.childNodes.length > 0 &&
+          lastTag !== "BLOCKQUOTE" &&
+          lastTag !== "UL" &&
+          lastTag !== "OL"
+        ) {
           target.createEl("br");
         }
         renderInlineTokens(target, body, callbacks, urls, seen);

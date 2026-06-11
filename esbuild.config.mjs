@@ -1,7 +1,6 @@
 import esbuild from "esbuild";
 import process from "process";
 import fs from "fs";
-import path from "path";
 
 const prod = process.argv[2] === "production";
 
@@ -18,18 +17,10 @@ function minifyCss(css) {
     .trim();
 }
 
-// dev/styles.css（git管理外、人間が編集する非圧縮ソース）を読み込み、
-// ルート直下の styles.css に圧縮版を書き出す。dev/styles.css が存在しない
-// 環境（CI のチェックアウト直後など）ではスキップして無変更で抜ける。
-function buildStyles() {
-  const srcPath = path.join("dev", "styles.css");
-  if (!fs.existsSync(srcPath)) {
-    return;
-  }
-  const src = fs.readFileSync(srcPath, "utf8");
-  const out = minifyCss(src);
-  fs.writeFileSync("styles.css", out);
-}
+// styles.css はリポジトリ直下の非圧縮版をそのまま管理する（人間が直接編集する）。
+// リリース時の圧縮は GitHub Actions が scripts/minify-styles.mjs で行うため、
+// このビルドでは styles.css に触らない。上の minifyCss は main.ts 内の
+// `/* @css */` テンプレートリテラル圧縮 (cssEvalPlugin) 専用。
 
 // `/* @css */` マーカー付き template literal をビルド時にミニファイする esbuild プラグイン。
 // 例: `` `/* @css */ body { color: ${c}; } ` `` の中身を圧縮する。
@@ -178,7 +169,13 @@ if (prod) {
     sourcemap: false,
     plugins: [cssEvalPlugin],
   });
-  buildStyles();
+  // リリース3点セットをローカル確認・手動コピー用に dist/ へ揃える（git管理外）。
+  // styles.css の圧縮は CI (scripts/minify-styles.mjs) と同じ処理なので、
+  // dist/ の中身はリリースアセットと同一内容になる。
+  fs.mkdirSync("dist", { recursive: true });
+  fs.writeFileSync("dist/styles.css", minifyCss(fs.readFileSync("styles.css", "utf8")));
+  fs.copyFileSync("main.js", "dist/main.js");
+  fs.copyFileSync("manifest.json", "dist/manifest.json");
   process.exit(0);
 } else {
   // watch モード（dev）: JSは圧縮、動的CSSテンプレートリテラルは元のまま残す

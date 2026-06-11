@@ -151,6 +151,7 @@ export default class WrotPlugin extends Plugin {
     this.bgStyleEl.textContent = `/* @css */
       body {
         --wr-bg-color: ${bgColor};
+        --wr-bg-hover: ${hoverColor};
       }
       body .wr-input-area,
       body .wr-card,
@@ -181,6 +182,16 @@ export default class WrotPlugin extends Plugin {
         background-color: transparent !important;
       }
       body .wr-ogp-card:hover {
+        background: ${hoverColor} !important;
+        background-color: ${hoverColor} !important;
+      }
+      /* モバイル: タップ後に貼りつく :hover を無効化し、押している間 (:active) だけ
+         PC の hover と同じ色を出す (光り方を PC に揃える) */
+      body.is-mobile .wr-ogp-card:hover {
+        background: ${bgColor} !important;
+        background-color: ${bgColor} !important;
+      }
+      body.is-mobile .wr-ogp-card:active {
         background: ${hoverColor} !important;
         background-color: ${hoverColor} !important;
       }
@@ -324,6 +335,12 @@ export default class WrotPlugin extends Plugin {
       }
       body .wr-toolbar-btn.wr-toolbar-active {
         color: var(--text-accent) !important;
+      }
+      /* メニュー表示中の 3点ボタン。 上の muted ルール (0,2,1) より高い特異度 (0,3,1) で
+         必ず勝たせる。 静的CSS側の同等ルールに依存せず、 ここでも明示して光らせる */
+      body .wr-menu-btn.wr-toolbar-active .svg-icon {
+        color: var(--text-accent) !important;
+        stroke: var(--text-accent) !important;
       }
       body .cm-line.wr-codeblock-line .wr-tag-highlight,
       body .cm-line.wr-codeblock-line .wr-url-highlight,
@@ -754,6 +771,13 @@ export default class WrotPlugin extends Plugin {
         color: ${accent ?? "var(--text-accent)"} !important;
         stroke: ${accent ?? "var(--text-accent)"} !important;
       }
+      /* メニュー表示中の 3点ボタン。 上の mButtons ルール (specificity 0,4,1) に
+         静的CSSの active ルール (0,3,1) が負けるため、 アクセント未設定でも
+         ここで必ず上書きして光らせる */
+      body .wr-card.${cls} .wr-menu-btn.wr-toolbar-active .svg-icon {
+        color: ${accent ?? "var(--text-accent)"} !important;
+        stroke: ${accent ?? "var(--text-accent)"} !important;
+      }
       ${accent ? `
       /* Rule ${i}: アクセント色（引用カード以下は slot 単位で除外。
          引用カード内のリンク・タグは「引用元のアクセント」で別途塗るため、
@@ -775,10 +799,6 @@ export default class WrotPlugin extends Plugin {
       body .cm-line.wr-codeblock-line.${cls} .wr-internal-link:not(.wr-quote-card-slot *),
       body .cm-line.wr-codeblock-line.${cls} .wr-url:not(.wr-quote-card-slot *) {
         color: ${accent} !important;
-      }
-      body .wr-card.${cls} .wr-menu-btn.wr-toolbar-active .svg-icon {
-        color: ${accent} !important;
-        stroke: ${accent} !important;
       }
       ` : ""}
 
@@ -811,6 +831,21 @@ export default class WrotPlugin extends Plugin {
       body div.block-language-wr.${cls} .wr-ogp-card:hover,
       body pre.${cls} .wr-ogp-card:hover,
       body .wr-lp-media.${cls} .wr-ogp-card:hover {
+        background: ${hoverBg} !important;
+        background-color: ${hoverBg} !important;
+      }
+      /* モバイル: タップ後に貼りつく :hover を無効化し、押している間だけ hover 色を出す */
+      body.is-mobile .wr-card.${cls} .wr-ogp-card:hover,
+      body.is-mobile div.block-language-wr.${cls} .wr-ogp-card:hover,
+      body.is-mobile pre.${cls} .wr-ogp-card:hover,
+      body.is-mobile .wr-lp-media.${cls} .wr-ogp-card:hover {
+        background: ${bg} !important;
+        background-color: ${bg} !important;
+      }
+      body.is-mobile .wr-card.${cls} .wr-ogp-card:active,
+      body.is-mobile div.block-language-wr.${cls} .wr-ogp-card:active,
+      body.is-mobile pre.${cls} .wr-ogp-card:active,
+      body.is-mobile .wr-lp-media.${cls} .wr-ogp-card:active {
         background: ${hoverBg} !important;
         background-color: ${hoverBg} !important;
       }

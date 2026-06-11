@@ -24,6 +24,10 @@ jobs:
           NAME="${TAG#v}"
           echo "name=${NAME}" >> "$GITHUB_OUTPUT"
 
+      # リポジトリの styles.css は非圧縮版。リリースアセットだけ圧縮する
+      - name: Minify styles.css for release
+        run: node scripts/minify-styles.mjs
+
       - name: Generate artifact attestations
         uses: actions/attest-build-provenance@v4
         with:

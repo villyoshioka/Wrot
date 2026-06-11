@@ -1,1 +1,2331 @@
-.wr-container{padding:12px 12px 0;display:flex;flex-direction:column;height:100%;overflow:hidden;position:relative}.wr-date-nav{display:flex;align-items:center;gap:2px;margin-bottom:12px;flex-wrap:wrap}.workspace-leaf-content[data-type="wrot-view"] .wr-nav-btn{background:none;border:none;box-shadow:none;padding:2px;cursor:pointer;color:var(--text-muted);border-radius:6px;line-height:1;min-height:0;display:flex;align-items:center;justify-content:center}.wr-nav-btn .svg-icon{width:20px;height:20px}.workspace-leaf-content[data-type="wrot-view"] .wr-nav-btn:focus,.workspace-leaf-content[data-type="wrot-view"] .wr-nav-btn:focus-visible{background:none}.workspace-leaf-content[data-type="wrot-view"] .wr-nav-btn:hover{background:rgba(var(--mono-rgb-100),0.05)}.workspace-leaf-content[data-type="wrot-view"] .wr-nav-btn:active{background:rgba(var(--mono-rgb-100),0.08);color:var(--text-accent)}.wr-date-label{font-weight:600;font-size:var(--wr-font-date);color:var(--text-normal);flex:1;text-align:center;line-height:1;cursor:pointer}.wr-date-label:hover{color:var(--text-accent)}.wr-date-label:active,.wr-date-label-active{opacity:0.7}.workspace-leaf-content[data-type="wrot-view"] .wr-today-btn{background:none;border:none;box-shadow:none;color:var(--text-muted);border-radius:6px;padding:4px 14px;cursor:pointer;font-size:var(--wr-font-ui-small);line-height:1;min-height:0;margin-left:auto}.workspace-leaf-content[data-type="wrot-view"] .wr-today-btn:focus,.workspace-leaf-content[data-type="wrot-view"] .wr-today-btn:focus-visible{background:none}.workspace-leaf-content[data-type="wrot-view"] .wr-today-btn:hover{background:rgba(var(--mono-rgb-100),0.05)}.workspace-leaf-content[data-type="wrot-view"] .wr-today-btn:active{background:rgba(var(--mono-rgb-100),0.08);color:var(--text-accent)}.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-btn{margin-left:2px;position:relative}.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-btn.wr-toolbar-active,.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-btn.wr-toolbar-active:hover,.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-btn.wr-toolbar-active:active{background:rgba(var(--mono-rgb-100),0.05)}.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-popover{position:absolute;z-index:50;width:max-content;padding:8px;background:var(--wr-bg-color,#f8f8f8);border:1px solid rgba(var(--mono-rgb-100),0.12);border-radius:10px;box-shadow:0 3px 12px rgba(0,0,0,0.14);user-select:none}.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-month-label{font-size:var(--wr-font-ui-small);font-weight:600;color:var(--text-normal);text-align:center;flex:1;background:none;border:none;box-shadow:none;cursor:pointer;padding:4px 8px;border-radius:6px;line-height:1;min-height:0}.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-month-label:hover,.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-month-label:focus,.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-month-label:focus-visible{background:none}.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-month-label:active{opacity:0.7}.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-nav-btn{background:none;border:none;box-shadow:none;padding:2px;cursor:pointer;color:var(--text-muted);border-radius:6px;line-height:1;min-height:0;display:flex;align-items:center;justify-content:center}.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-nav-btn:focus,.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-nav-btn:focus-visible{background:none}.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-nav-btn:hover{background:rgba(var(--mono-rgb-100),0.05)}.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-nav-btn:active{background:rgba(var(--mono-rgb-100),0.08);color:var(--text-accent)}.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-nav-btn .svg-icon{width:16px;height:16px}.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-weekdays{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:2px}.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-weekday{text-align:center;font-size:var(--wr-font-ui-smaller);color:var(--text-muted);padding:2px 0}.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px}.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-grid.wr-calendar-grid-years{grid-template-columns:repeat(3,1fr);gap:4px;padding:4px 0}.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-year{background:none;border:none;box-shadow:none;cursor:pointer;color:var(--text-normal);font-size:var(--wr-font-ui-small);line-height:1;min-height:0;padding:8px 0;border-radius:14px;display:flex;align-items:center;justify-content:center}.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-year:hover{background:rgba(var(--mono-rgb-100),0.05)}.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-year.wr-calendar-day-selected,.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-year.wr-calendar-day-selected.wr-calendar-day-today{background:var(--interactive-accent);color:var(--text-on-accent);font-weight:600}.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day{background:none;border:none;box-shadow:none;cursor:pointer;color:var(--text-normal);font-size:var(--wr-font-ui-small);line-height:1;min-height:0;padding:0;width:100%;max-width:34px;min-width:0;aspect-ratio:1;max-height:28px;margin:0 auto;display:flex;align-items:center;justify-content:center;border-radius:var(--wr-cal-day-radius,50%)}.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day:hover{background:rgba(var(--mono-rgb-100),0.05)}.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-outside{color:var(--text-faint)}.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-today{color:var(--text-accent);font-weight:600}.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-selected,.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-selected.wr-calendar-day-today{background:var(--interactive-accent);color:var(--text-on-accent);font-weight:600}.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-selected:hover{background:var(--interactive-accent-hover,var(--interactive-accent))}.wr-input-area{margin-bottom:8px;background:var(--wr-bg-color,#f8f8f8);border-radius:12px;padding:6px 14px 8px}.wr-input-header{display:flex;justify-content:flex-end;align-items:center;margin-top:4px;margin-bottom:6px}body .wr-textarea{width:100%;min-height:48px;max-height:none;resize:none;overflow-y:auto;border:none!important;outline:none!important;box-shadow:none;padding:0;font-size:var(--wr-font-text);font-family:inherit;background:transparent!important;color:var(--text-normal);box-sizing:border-box;line-height:1.6;border-radius:0}body .wr-textarea:focus{outline:none!important;border:none!important;box-shadow:none}.wr-textarea::placeholder{color:var(--text-faint)}.wr-input-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:4px}.wr-input-toolbar.wr-toolbar-wrapped{gap:4px 8px}body .wr-toolbar-btn{background:none!important;border:none;box-shadow:none;outline:none;padding:2px;cursor:pointer;color:var(--text-muted);min-width:auto}body .wr-input-toolbar.wr-toolbar-wrapped .wr-toolbar-btn{padding:6px 2px;min-height:0;height:auto;margin:0!important}.wr-toolbar-btn:hover{color:var(--text-normal)}.wr-toolbar-btn:active{color:var(--text-accent)}.wr-toolbar-btn.wr-toolbar-active{color:var(--text-accent)}.wr-toolbar-btn.wr-toolbar-disabled{color:var(--text-faint);cursor:not-allowed;pointer-events:none}.wr-toolbar-btn.wr-toolbar-ime-muted{opacity:0.45;pointer-events:none}.wr-toolbar-btn .svg-icon{width:18px;height:18px}.wr-thumbnail-container{margin:6px 0 4px}.wr-thumbnail{position:relative;display:inline-block;max-width:120px}.wr-thumbnail-img{display:block;max-width:120px;max-height:120px;width:auto;height:auto;border-radius:6px}body .wr-thumbnail-remove{position:absolute;top:-6px;right:-6px;width:22px;height:22px;min-width:0;min-height:0;padding:0!important;border-radius:50%;border:none;box-shadow:none;cursor:pointer;display:flex;align-items:center;justify-content:center}.wr-thumbnail-remove .svg-icon{width:14px;height:14px}body .wr-submit-btn{background:rgba(var(--mono-rgb-100),0.08);border:none;box-shadow:none;outline:none;padding:4px 14px;border-radius:8px;font-size:var(--wr-font-ui-small);cursor:pointer;font-weight:500;color:var(--text-muted)}body .wr-submit-btn:not(.wr-submit-active){cursor:default;pointer-events:none}.wr-submit-icon{display:inline-flex;align-items:center;vertical-align:middle}.wr-submit-icon .svg-icon{width:12px;height:12px}body .wr-submit-btn.wr-submit-active{background:var(--interactive-accent);color:var(--text-on-accent)}.wr-list{display:flex;flex-direction:column;gap:8px;flex:1;overflow-y:auto;min-height:0;padding-bottom:4px}.wr-empty{text-align:center;color:var(--text-muted);padding:24px 0;font-size:var(--wr-font-text)}.wr-card{background:var(--wr-bg-color,#f8f8f8);border-radius:10px;padding:12px 14px;position:relative;font-size:var(--wr-font-text)}.wr-card-footer{display:flex;align-items:center;gap:8px;margin-top:10px}.wr-timestamp{font-size:0.85em;line-height:1;color:var(--text-muted)}.wr-tag{color:var(--text-accent);cursor:pointer}.wr-tag:hover{text-decoration:none}.wr-tag-highlight{color:var(--text-accent)!important}.wr-bullet-list,.wr-ordered-list{list-style:none;margin:2px 0;padding-left:0}.wr-bullet-list>li,.wr-ordered-list>li{padding-left:22px;position:relative}.wr-bullet-list>li:not(.wr-check-item)::before{content:"•";position:absolute;left:4px;font-size:0.85em;color:var(--text-muted)}.wr-ordered-list{counter-reset:wr-ol-tl}.wr-ordered-list>li{counter-increment:wr-ol-tl}.wr-ordered-list>li::before{content:counter(wr-ol-tl) ".";position:absolute;left:4px;color:var(--text-muted)}ul.wr-reading-list,ol.wr-reading-list{list-style:none;margin:2px 0;padding-left:0;font-size:var(--code-size)!important;font-family:var(--font-monospace)!important}ul.wr-reading-list>li,ol.wr-reading-list>li{margin-inline-start:0!important;padding-left:22px;position:relative}ul.wr-reading-list>li:not(.wr-check-item)::before{content:"•";position:absolute;left:4px;font-size:0.85em;color:var(--text-muted)}ol.wr-reading-list{counter-reset:wr-ol}ol.wr-reading-list>li{counter-increment:wr-ol}ol.wr-reading-list>li::before{content:counter(wr-ol) ".";position:absolute;left:4px;color:var(--text-muted)}.wr-bullet-list li,.wr-reading-list li,.wr-ordered-list li{margin:1px 0}.wr-bullet-list .wr-check-item{list-style:none}.wr-bullet-list .wr-check-item input[type="checkbox"],.wr-reading-list .wr-check-item input[type="checkbox"]{position:absolute!important;left:3px!important;top:50%!important;transform:translateY(-50%)!important;width:14px!important;height:14px!important;margin:0!important}.wr-bullet-list .wr-check-item input[type="checkbox"]:checked::after,.wr-reading-list .wr-check-item input[type="checkbox"]:checked::after{top:-2.5px!important;inset-inline-start:-2px!important}.wr-list-highlight{color:var(--text-muted)!important}.wr-check-unchecked{color:var(--text-muted)!important}.wr-check-checked{color:var(--text-muted)!important}body .wr-check-done{text-decoration:line-through;color:var(--text-muted)!important}.wr-ol-highlight{color:var(--text-muted)!important}.wr-internal-link{color:var(--text-accent);cursor:pointer;text-decoration:none}.wr-internal-link:hover{text-decoration:underline}.wr-internal-link-highlight{color:var(--text-accent)!important}.wr-embed-img{max-width:100%;border-radius:8px;margin:4px 0;display:block}pre.language-wr>.wr-embed-img,.block-language-wr>.wr-embed-img{margin-bottom:24px}.wr-lp-inline-img-wrapper{display:block;box-sizing:border-box;padding-right:16px}.wr-embed-img.wr-lp-inline-img{display:block;margin:4px 0;max-width:100%}.wr-embed-img.wr-rv-inline-img{display:block;margin:32px 0 4px 0;max-width:100%}.wr-embed-missing{color:var(--text-muted);font-style:italic}body .wr-internal-link-unresolved{color:var(--text-muted);font-style:italic}body .wr-inline-code{background:rgba(var(--mono-rgb-100),0.08);padding:2px 5px;border-radius:4px!important;font-size:0.85em!important;font-family:var(--font-monospace)!important;color:var(--text-normal)!important}.wr-backtick{font-size:0;width:0;overflow:hidden;display:inline}body code.language-wr span.wr-inline-code{background:rgba(var(--mono-rgb-100),0.08);padding:2px 5px;border-radius:4px;display:inline!important;color:var(--text-normal)!important;font-size:0.85em!important}body .wr-inline-code-highlight{background:rgba(var(--mono-rgb-100),0.08);border-radius:0;padding:1px 4px;font-family:var(--font-monospace)!important;vertical-align:baseline;line-height:inherit;box-sizing:border-box}.cm-hmd-codeblock>.wr-inline-code-highlight:first-child{padding-right:0}.cm-hmd-codeblock>.wr-inline-code-highlight:last-child:not(:first-child){padding-left:0}body code.wr-code-hidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}.wr-plain-text{font-size:var(--code-size);font-family:var(--font-monospace);color:var(--code-normal);white-space:pre-wrap;word-break:normal;line-height:var(--line-height-normal)}body .wr-highlight{background:var(--text-highlight-bg);padding:1px 2px;border-radius:2px}.wr-math{display:inline}.wr-math-highlight{color:var(--text-accent)!important}.wr-math-display{display:block;margin:0.5em 0;overflow-x:auto;text-align:center}.wr-codeblock-display{margin:0.5em 0}.wr-codeblock-display pre,.wr-codeblock-display pre code{background:inherit!important}body .wr-codeblock-display pre{margin:0!important;padding:0.6em 0 0.6em 0!important;border-radius:6px;overflow-x:auto;border:none}.wr-codeblock-display pre code{font-family:var(--font-monospace);font-size:0.9em;line-height:1.5;white-space:pre}.block-language-wr .wr-codeblock-display,.block-language-wr .wr-math-display{display:block}.wr-lp-codeblock,.wr-lp-mathblock{display:block;margin:0;padding:0}body .wr-codeblock-display .copy-code-button,body .wr-codeblock-display .code-block-flair,body .wr-codeblock-display .edit-block-button{display:none!important}body .wr-obsidian-url-line{height:auto;max-height:1.8em;overflow:hidden!important}body .wr-blockquote{border-left:3px solid var(--text-muted);margin:4px 5px;color:var(--text-muted)!important;font-style:normal!important;background:none!important}.wr-blockquote *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-tag *):not(.wr-reading-url *){color:var(--text-muted)!important}body .wr-content .wr-blockquote{padding-left:10px;font-size:inherit;font-family:inherit}body .block-language-wr>.wr-blockquote,body pre>.wr-blockquote{padding-left:10px;font-size:var(--code-size)!important;font-family:var(--font-monospace)!important}body .wr-quote-card-body .wr-blockquote{padding-left:10px}.wr-quote-highlight{color:var(--text-muted)!important}body pre.language-wr .copy-code-button:not(#x):not(#y):not(#z),body .block-language-wr .copy-code-button:not(#x):not(#y):not(#z){z-index:100}body pre.language-wr .copy-code-button{background:transparent!important}pre.language-wr .copy-code-button svg,pre.language-wr .copy-code-button svg *,.block-language-wr .copy-code-button svg,.block-language-wr .copy-code-button svg *{background:transparent!important}.wr-spacer{height:1em}body .wr-format-btn{margin-left:8px}body .wr-toolbar-disabled{opacity:0.3;cursor:default;pointer-events:none}body .wr-bold-highlight{font-weight:bold}body .wr-italic-highlight{font-style:italic}body .wr-strike-highlight{text-decoration:line-through}body .wr-highlight-highlight{background:var(--text-highlight-bg)}.wr-blockquote-line{color:var(--text-muted)!important}.wr-blockquote-wrap{color:var(--text-muted)}body .cm-line.wr-blockquote-line{position:relative;padding-inline-start:calc(var(--size-4-4) + 18px)!important;white-space:pre-wrap;word-break:break-all}.cm-line.wr-blockquote-line::before{content:"";position:absolute;left:calc(var(--size-4-4) + 5px);top:0;bottom:0;width:3px;background-color:var(--text-muted)}body .cm-line.wr-blockquote-depth-2{padding-inline-start:calc(var(--size-4-4) + 36px)!important}.cm-line.wr-blockquote-depth-2::before{box-shadow:18px 0 0 0 var(--text-muted)}body .cm-line.wr-blockquote-depth-3{padding-inline-start:calc(var(--size-4-4) + 54px)!important}.cm-line.wr-blockquote-depth-3::before{box-shadow:18px 0 0 0 var(--text-muted),36px 0 0 0 var(--text-muted)}body .cm-line.wr-blockquote-depth-4{padding-inline-start:calc(var(--size-4-4) + 72px)!important}.cm-line.wr-blockquote-depth-4::before{box-shadow:18px 0 0 0 var(--text-muted),36px 0 0 0 var(--text-muted),54px 0 0 0 var(--text-muted)}body .cm-line.wr-blockquote-depth-5{padding-inline-start:calc(var(--size-4-4) + 90px)!important}.cm-line.wr-blockquote-depth-5::before{box-shadow:18px 0 0 0 var(--text-muted),36px 0 0 0 var(--text-muted),54px 0 0 0 var(--text-muted),72px 0 0 0 var(--text-muted)}.wr-lp-marker{display:inline-block;width:22px;padding-left:3px;box-sizing:border-box;color:var(--text-muted)!important;vertical-align:middle;text-align:left}.wr-lp-bullet{font-size:0.85em}.wr-lp-check{padding-left:2px}.wr-lp-check input[type="checkbox"]{width:14px!important;height:14px!important;margin:0!important;padding:0!important;vertical-align:-2px;cursor:default}.wr-lp-check input[type="checkbox"]:checked::after{top:-2.5px!important;inset-inline-start:-2px!important}.wr-content{font-size:var(--wr-font-text);line-height:1.5;color:var(--text-normal);white-space:pre-wrap;word-break:break-word}.wr-copy-btn{display:inline-flex;align-items:center;gap:2px;font-size:var(--wr-font-ui-smaller);line-height:1;color:var(--text-muted);cursor:pointer;background:none;border:none;padding:0}.wr-copy-btn:hover{color:var(--text-muted)}.wr-copy-btn .svg-icon{width:11px;height:11px;color:var(--text-muted);stroke:var(--text-muted)}body .wr-copy-btn.wr-copy-done .svg-icon{color:var(--text-accent);stroke:var(--text-accent)}.wr-menu-btn{display:inline-flex;align-items:center;justify-content:center;line-height:1;color:var(--text-muted);cursor:pointer;background:none;border:none;padding:0;position:relative}.wr-menu-btn::before{content:"";position:absolute;inset:-8px}.wr-menu-btn:hover{color:var(--text-normal)}.wr-menu-btn .svg-icon{width:14px;height:14px;color:var(--text-muted);stroke:var(--text-muted)}body.wr-font-follow .wr-menu-btn .svg-icon{width:var(--wr-font-ui-small);height:var(--wr-font-ui-small)}body .wr-menu-btn.wr-toolbar-active .svg-icon{color:var(--text-accent)!important;stroke:var(--text-accent)!important}.wr-pin-indicator{position:absolute;right:14px;bottom:12px;display:inline-flex;align-items:center;line-height:1;color:var(--text-muted);pointer-events:none}.wr-pin-indicator .svg-icon{width:14px;height:14px;color:var(--text-muted);stroke:var(--text-muted)}body.wr-font-follow .wr-pin-indicator .svg-icon{width:var(--wr-font-ui-small);height:var(--wr-font-ui-small)}.wr-menu .menu-item.wr-menu-hint{font-size:var(--wr-font-ui-smaller);opacity:0.75;cursor:default;padding-top:0}body .wr-menu .menu-item.is-disabled,body .wr-menu .menu-item.is-disabled:hover,body .wr-menu .menu-item.is-disabled:active,body .wr-menu .menu-item.is-disabled:focus,body .wr-menu .menu-item.is-disabled.selected,body .wr-menu .menu-item.is-disabled.is-active,body .wr-menu .menu-item.is-disabled.is-focused{background:transparent!important;-webkit-tap-highlight-color:transparent!important;cursor:default;pointer-events:none}body div.block-language-wr,body .language-wr{background:var(--wr-bg-color,#f8f8f8)}body .wr-codeblock-line{background-color:var(--wr-bg-color,#f8f8f8)}body .wr-codeblock-line:not(.HyperMD-codeblock-end){padding-right:32px!important}body .wr-hidden-line{height:0!important;padding:0!important;margin:0!important;line-height:0;font-size:0!important;overflow:hidden!important}body div.block-language-wr{border:none;border-radius:8px;padding:12px 16px!important;width:100%;box-sizing:border-box;display:block!important}body div.block-language-wr *:not(.wr-inline-code-highlight):not(svg):not(svg *),body .wr-flair-bg:not(svg):not(svg *){background:var(--wr-bg-color,#f8f8f8)}.wr-codeblock-line .code-block-flair{background:transparent!important}body div.block-language-wr .wr-inline-code{background:rgba(var(--mono-rgb-100),0.08)}body div.block-language-wr .wr-highlight{background:var(--text-highlight-bg)}div.block-language-wr pre{padding:0!important;margin:0!important}body pre.language-wr{padding-top:32px!important;padding-bottom:32px!important;padding-left:16px!important;padding-right:16px!important}body pre.language-wr .copy-code-button{right:0px!important}body pre.language-wr.wr-rv-rich-tail{padding-bottom:12px!important}.wr-url,.wr-reading-url{color:var(--text-accent);text-decoration:underline;cursor:pointer;word-break:break-all}.wr-url:hover,.wr-reading-url:hover{opacity:0.8}.wr-url-highlight{color:var(--text-accent)!important;text-decoration:underline}.wr-url-highlight,.wr-url-highlight *{color:var(--text-accent)!important;-webkit-text-fill-color:var(--text-accent)!important}body .wr-media-area{margin-top:8px;display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:8px!important;overflow:hidden;box-sizing:border-box;width:100%}body .wr-media-area:empty{margin:0;padding:0!important;gap:0!important;height:0!important}.cm-line.wr-codeblock-line.HyperMD-codeblock-end>.wr-media-area:empty{position:absolute!important;width:0!important}body .block-language-wr>.wr-media-area{padding:0 16px 12px}body pre.language-wr>.wr-media-area.wr-has-link,body .block-language-wr>.wr-media-area.wr-has-link{padding-bottom:28px}body .wr-media-link{display:flex!important;justify-content:center!important;max-width:100%}body .wr-inline-img{max-width:100%;width:auto;height:auto;border-radius:8px;cursor:pointer;display:block!important}body .wr-ogp-card{display:flex!important;flex-direction:row!important;align-items:stretch!important;border:1px solid rgba(0,0,0,0.1);border-radius:8px;overflow:hidden;cursor:pointer;background:var(--wr-bg-color,#f8f8f8);text-decoration:none;color:inherit!important;height:120px!important;width:100%;max-width:100%;white-space:normal;font-family:var(--font-interface);box-sizing:border-box;padding:0!important;margin:0}body .wr-ogp-card:hover{background:var(--wr-bg-hover,#e8e6e1)!important;border-color:rgba(0,0,0,0.2)}body .wr-ogp-thumb{width:120px!important;height:120px!important;object-fit:cover;flex-shrink:0!important;border-radius:0!important;margin:0;padding:0!important}body .wr-ogp-body{padding:8px 12px;overflow:hidden;flex:1!important;display:flex!important;flex-direction:column!important;justify-content:center!important;min-width:0}body .wr-ogp-title{font-size:var(--wr-font-ui-small);font-weight:600;line-height:1.3;overflow:hidden!important;text-overflow:ellipsis;display:-webkit-box!important;-webkit-line-clamp:2;-webkit-box-orient:vertical;color:var(--text-normal)}body .wr-ogp-desc{font-size:var(--wr-font-ui-smaller);color:var(--text-muted);margin-top:2px;overflow:hidden!important;text-overflow:ellipsis;display:-webkit-box!important;-webkit-line-clamp:2;-webkit-box-orient:vertical}body .wr-ogp-site{font-size:calc(var(--wr-font-ui-smaller) - 1px);color:var(--text-faint);margin-top:4px}.wr-twitter-card{border-left:3px solid #1da1f2}.wr-ogp-loading{font-size:var(--wr-font-ui-smaller);color:var(--text-muted);padding:4px 0}body .wr-lp-media{margin-top:0!important;padding:0 16px 0 2px;font-family:var(--font-interface)!important;font-size:var(--wr-font-text)!important;white-space:normal}body .wr-lp-media.wr-has-img,body .wr-lp-media.wr-has-link{padding-bottom:24px}.is-mobile .wr-container{padding:6px 12px}.is-mobile .wr-date-nav{gap:4px;margin-bottom:6px}body.is-mobile .wr-nav-btn{padding:2px 6px}body.is-mobile .wr-today-btn{padding:2px 8px}body.is-mobile .wr-nav-btn:focus:not(.wr-toolbar-active),body.is-mobile .wr-nav-btn:focus-visible:not(.wr-toolbar-active),body.is-mobile .wr-today-btn:focus,body.is-mobile .wr-today-btn:focus-visible{background:transparent!important}body.is-mobile .wr-nav-btn:hover:not(.wr-toolbar-active),body.is-mobile .wr-today-btn:hover{background:transparent!important}body.is-mobile .wr-nav-btn:active:not(.wr-toolbar-active),body.is-mobile .wr-today-btn:active{background:rgba(var(--mono-rgb-100),0.08)!important;color:var(--text-accent)}body.is-mobile .wr-calendar-btn.wr-toolbar-active,body.is-mobile .wr-calendar-btn.wr-toolbar-active:active,body.is-mobile .wr-calendar-btn.wr-toolbar-active:hover{background:rgba(var(--mono-rgb-100),0.05)!important}.is-mobile .wr-date-label{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}body.is-mobile .wr-calendar-day{max-width:42px;max-height:34px}body.is-mobile .wr-calendar-day:hover:not(.wr-calendar-day-selected),body.is-mobile .wr-calendar-year:hover{background:none}body.is-mobile .wr-calendar-day:active:not(.wr-calendar-day-selected),body.is-mobile .wr-calendar-year:active{background:rgba(var(--mono-rgb-100),0.08)}body.is-mobile .wr-calendar-nav-btn:focus,body.is-mobile .wr-calendar-nav-btn:focus-visible,body.is-mobile .wr-calendar-nav-btn:hover{background:transparent!important}body.is-mobile .wr-calendar-nav-btn:active{background:rgba(var(--mono-rgb-100),0.08)!important;color:var(--text-accent)}.is-mobile .wr-input-area{padding:4px 10px 4px;margin-bottom:8px;border-radius:8px}.is-mobile .wr-input-header{margin-top:4px;margin-bottom:8px}body.is-mobile .wr-submit-btn{-webkit-appearance:none!important;appearance:none!important;padding:6px 14px;border-radius:8px;min-height:0;height:auto;max-height:none;line-height:1.4}.is-mobile .wr-textarea{min-height:28px;line-height:1.4}.is-mobile .wr-input-toolbar{gap:8px;margin-top:2px}.is-mobile .wr-input-toolbar.wr-toolbar-wrapped{gap:4px 8px}body.is-mobile .wr-toolbar-btn{padding:2px}body.is-mobile .wr-input-toolbar.wr-toolbar-wrapped .wr-toolbar-btn{padding:6px 2px}.is-mobile .wr-toolbar-btn .svg-icon{width:16px;height:16px}.is-mobile .wr-card{padding:10px 10px 6px;border-radius:8px}.is-mobile .wr-content{line-height:1.4}.is-mobile .wr-card-footer{margin-top:8px;gap:6px}body:not(.wr-font-follow).is-mobile .wr-today-btn{font-size:11px}body:not(.wr-font-follow).is-mobile .wr-date-label{font-size:13px}body:not(.wr-font-follow).is-mobile .wr-submit-btn{font-size:13px}body:not(.wr-font-follow).is-mobile .wr-textarea{font-size:13px}body:not(.wr-font-follow).is-mobile .wr-content{font-size:13px}body:not(.wr-font-follow).is-mobile .wr-timestamp{font-size:10px}.is-mobile .wr-list{gap:10px;padding-bottom:16px}body.is-mobile .wr-settings input[type="color"]{width:48px!important;min-width:48px!important;max-width:48px!important;height:48px!important;min-height:48px!important;max-height:48px!important;border-radius:50%!important;border:none!important;padding:0!important;margin:0;cursor:pointer;-webkit-appearance:none!important;appearance:none!important;flex-shrink:0!important;flex-grow:0!important;box-sizing:content-box;overflow:hidden!important}.is-mobile .wr-settings input[type="color"]::-webkit-color-swatch-wrapper{padding:0!important;margin:0!important;border-radius:50%!important;width:48px!important;height:48px!important}.is-mobile .wr-settings input[type="color"]::-webkit-color-swatch{border:none!important;border-radius:50%!important;width:48px!important;height:48px!important}@media (min-width:768px){.is-mobile .wr-input-area{overflow-x:hidden;box-sizing:border-box}.is-mobile .wr-container{overflow-x:hidden}}.wr-settings .wr-tag-rule-separator{border:none;border-top:1px solid var(--background-modifier-border);margin:14px 0}.wr-settings .wr-tag-rule-group.wr-tag-rule-locked .setting-item:not(.wr-tag-rule-label-setting){opacity:0.55}.wr-settings .wr-tag-rule-group .wr-tag-rule-disabled{pointer-events:none;cursor:not-allowed}body.is-mobile .wr-settings .setting-item:not(.wr-setting-has-text-input):not(.wr-setting-has-select){display:flex!important;flex-wrap:nowrap;flex-direction:row;align-items:center;gap:12px}body.is-mobile .wr-settings .setting-item:not(.wr-setting-has-text-input):not(.wr-setting-has-select)>.setting-item-info{flex:1 1 auto;min-width:0;width:auto!important;margin:0!important}body.is-mobile .wr-settings .setting-item:not(.wr-setting-has-text-input):not(.wr-setting-has-select)>.setting-item-control{flex:0 0 auto;justify-content:flex-end;width:auto!important;min-width:0;max-width:none;margin:0!important;padding:0}.wr-settings .setting-item.wr-reverse-controls .setting-item-control>:first-child{order:2}.wr-settings .setting-item.wr-reverse-controls .setting-item-control>:last-child{order:1}body .wr-settings.wr-settings-narrow .setting-item.wr-setting-has-text-input{display:flex!important;flex-direction:column;align-items:stretch;gap:6px}body .wr-settings.wr-settings-narrow .setting-item.wr-setting-has-text-input>.setting-item-info{width:100%;flex:0 0 auto;margin:0!important}body .wr-settings.wr-settings-narrow .setting-item.wr-setting-has-text-input>.setting-item-control{width:100%;flex:0 0 auto;justify-content:flex-start;margin:0!important;padding:0}.wr-settings.wr-settings-narrow .setting-item.wr-setting-has-text-input .setting-item-control input[type="text"]{flex:1 1 auto;min-width:0}.wr-quote-card-slot{display:block;margin:6px 0 0 0}.cm-line .wr-quote-card-slot.wr-lp-quote-card{display:block;margin:0 var(--size-4-4,16px) 0 0}.wr-quote-block>.wr-quote-card-slot.wr-lp-quote-card{margin:0 var(--size-4-4,16px) 0 0}.wr-quote-card{display:block;text-decoration:none;color:inherit;border:1px dashed var(--text-muted);border-radius:8px;background-color:transparent;padding:10px 12px;margin:0;transition:border-color 0.15s ease,background-color 0.15s ease,opacity 0.15s ease;cursor:pointer}.wr-quote-card:hover{border-color:var(--text-normal);background-color:rgba(0,0,0,0.06);text-decoration:none}.theme-dark .wr-quote-card:hover{background-color:rgba(255,255,255,0.06)}.wr-quote-card-body{font-size:0.9em;color:var(--text-muted);line-height:1.5;margin-bottom:4px;letter-spacing:normal;word-spacing:normal;font-family:var(--font-text,var(--default-font))}body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body,body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body *:not(.wr-tag):not(.wr-url):not(.wr-internal-link):not(.wr-nested-quote-marker):not(.wr-tag *):not(.wr-url *):not(.wr-internal-link *):not(.wr-quote-image-marker):not(.wr-quote-math-marker):not(.wr-quote-code-marker):not(.wr-quote-image-marker *):not(.wr-quote-math-marker *):not(.wr-quote-code-marker *),body .wr-quote-card-slot .wr-quote-card .wr-quote-card-meta{color:var(--text-muted)!important}body .wr-quote-card-slot .wr-quote-card{border-color:var(--text-muted)}body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-tag,body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-url,body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-internal-link,body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-nested-quote-marker{color:var(--text-accent)!important}.wr-quote-card-line{display:flex;align-items:baseline;white-space:pre-wrap;word-break:break-word}.wr-quote-card-line-text{flex:1 1 auto;min-width:0}.wr-quote-card-marker-slot{flex:0 0 1.4em;display:inline-flex;align-items:center;justify-content:flex-start;color:var(--text-muted);font-variant-numeric:tabular-nums}.wr-quote-card-check{display:inline-block;width:0.95em;height:0.95em;border:1.2px solid var(--text-muted);border-radius:50%;box-sizing:border-box;position:relative;flex:0 0 auto}.wr-quote-card-check-done{background-color:var(--text-muted);border-color:var(--text-muted)}.wr-quote-card-check-done::after{content:"";position:absolute;left:28%;top:12%;width:28%;height:56%;border:solid var(--background-primary);border-width:0 0.12em 0.12em 0;transform:rotate(45deg)}.wr-quote-card-body .wr-tag,.wr-quote-card-body .wr-url,.wr-quote-card-body .wr-internal-link{color:var(--text-accent)}.wr-quote-block{display:block;margin:-16px 0 0 0}.wr-quote-block>.wr-media-area{margin-bottom:28px}.wr-media-area.wr-has-link + .wr-quote-card-slot{margin-top:25px}.wr-quote-block>.wr-lp-media.wr-has-img,.wr-quote-block>.wr-lp-media.wr-has-link{padding-bottom:0!important}.wr-quote-block>.wr-quote-card-slot{margin-top:0}.wr-quote-image-marker,.wr-quote-math-marker,.wr-quote-code-marker{color:var(--text-muted)}.wr-quote-image-marker-icon,.wr-quote-math-marker-icon,.wr-quote-code-marker-icon{display:inline;margin-right:0.2em;color:inherit}.wr-quote-image-marker-icon .svg-icon,.wr-quote-math-marker-icon .svg-icon,.wr-quote-code-marker-icon .svg-icon{width:1em;height:1em;vertical-align:-0.15em}.wr-nested-quote-marker{color:var(--text-accent)}.wr-quote-card-meta{font-size:0.8em;color:var(--text-muted);font-family:var(--font-text,var(--default-font))}.wr-quote-card-dead{cursor:default;opacity:0.65}.wr-quote-card-dead:hover{border-color:var(--text-muted)}@keyframes wr-quote-jump-flash{0%,100%{background-color:transparent}50%{background-color:var(--wr-flash-color,hsla(var(--accent-h),var(--accent-s),var(--accent-l),0.22))}}.cm-line.wr-quote-jump-flash,.wr-quote-jump-flash{animation:wr-quote-jump-flash 1.6s ease-in-out 2!important}.cm-line.wr-codeblock-line.wr-quote-jump-flash,.block-language-wr.wr-quote-jump-flash,pre.wr-quote-jump-flash,.wr-card.wr-quote-jump-flash{position:relative}.cm-line.wr-codeblock-line.wr-quote-jump-flash::after,.block-language-wr.wr-quote-jump-flash::after,pre.wr-quote-jump-flash::after,.wr-card.wr-quote-jump-flash::after{content:"";position:absolute;inset:0;pointer-events:none;background-color:var(--wr-flash-color,hsla(var(--accent-h),var(--accent-s),var(--accent-l),0.22));animation:wr-quote-jump-flash-overlay 1.4s ease-out 1 forwards;border-radius:inherit}@keyframes wr-quote-jump-flash-overlay{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
+/* ========================================
+   Wrot - Plugin View Styles
+
+   Specificity note: a trailing :not(#x) on a selector is an ID-level
+   specificity boost used to beat Obsidian core / theme rules without the
+   priority flag (themes never use ID selectors, so this reliably wins).
+   The declarations that still carry the priority flag are only those where
+   the opposing side also uses it (mobile default styles / tag-rule CSS
+   dynamically injected by main.ts / native form controls).
+   ======================================== */
+
+.wr-container {
+  padding: 12px 12px 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  /* Positioning context for the absolutely placed calendar popover */
+  position: relative;
+}
+
+/* Date Navigation */
+.wr-date-nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+
+.workspace-leaf-content[data-type="wrot-view"] .wr-nav-btn {
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 2px;
+  cursor: pointer;
+  color: var(--text-muted);
+  border-radius: 6px;
+  line-height: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wr-nav-btn .svg-icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Suppress Obsidian's default button:focus-visible background that lingers
+   after a click. Placed before the :hover rule so that while hovering,
+   :hover (later in source) still shows its background. */
+.workspace-leaf-content[data-type="wrot-view"] .wr-nav-btn:focus,
+.workspace-leaf-content[data-type="wrot-view"] .wr-nav-btn:focus-visible {
+  background: none;
+}
+
+.workspace-leaf-content[data-type="wrot-view"] .wr-nav-btn:hover {
+  background: rgba(var(--mono-rgb-100), 0.05);
+}
+
+.workspace-leaf-content[data-type="wrot-view"] .wr-nav-btn:active {
+  background: rgba(var(--mono-rgb-100), 0.08);
+  color: var(--text-accent);
+}
+
+.wr-date-label {
+  font-weight: 600;
+  font-size: var(--wr-font-date);
+  color: var(--text-normal);
+  flex: 1;
+  text-align: center;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.wr-date-label:hover {
+  color: var(--text-accent);
+}
+.wr-date-label:active,
+.wr-date-label-active {
+  opacity: 0.7;
+}
+
+.workspace-leaf-content[data-type="wrot-view"] .wr-today-btn {
+  background: none;
+  border: none;
+  box-shadow: none;
+  color: var(--text-muted);
+  border-radius: 6px;
+  padding: 4px 14px;
+  cursor: pointer;
+  font-size: var(--wr-font-ui-small);
+  line-height: 1;
+  min-height: 0;
+  margin-left: auto;
+}
+
+/* Suppress Obsidian's default button:focus-visible background lingering after a click */
+.workspace-leaf-content[data-type="wrot-view"] .wr-today-btn:focus,
+.workspace-leaf-content[data-type="wrot-view"] .wr-today-btn:focus-visible {
+  background: none;
+}
+
+.workspace-leaf-content[data-type="wrot-view"] .wr-today-btn:hover {
+  background: rgba(var(--mono-rgb-100), 0.05);
+}
+
+.workspace-leaf-content[data-type="wrot-view"] .wr-today-btn:active {
+  background: rgba(var(--mono-rgb-100), 0.08);
+  color: var(--text-accent);
+}
+
+/* Calendar Button: jump to an arbitrary date.
+   Normally appears as a plain button with the Lucide calendar icon.
+   On click, a custom-built calendar (.wr-calendar-popover) opens with
+   absolute positioning anchored to the button. The native input[type=date]
+   is not used (to keep the look identical across all platforms).
+   The Today button (.wr-today-btn) is pushed right via margin-left: auto,
+   so this button sits paired immediately to its right. */
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-btn {
+  margin-left: 2px;
+  position: relative;
+}
+/* Keep the hover-like style on the button while the calendar is open.
+   Even if :active/:hover land on it (e.g. arrow taps) while open, pin the
+   background to the light tint so the darker :active color (0.08) cannot
+   cut in and cause flicker. */
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-btn.wr-toolbar-active,
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-btn.wr-toolbar-active:hover,
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-btn.wr-toolbar-active:active {
+  background: rgba(var(--mono-rgb-100), 0.05);
+}
+
+/* ===== Custom calendar popover =====
+   Date picker UI opened with absolute positioning inside the view body
+   (wr-container). The position (top/left) is computed in JS so it sits
+   right below the button and stays within the container (preventing the
+   calendar from overflowing off-screen at the right edge of the sidebar).
+   Drawn entirely by us so it looks identical on every platform. The
+   background uses Wrot's configured background color (--wr-bg-color) to
+   blend with the memo cards and input area, and the text color follows
+   the Wrot-configured text color applied by applyBgColor. */
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-popover {
+  position: absolute;
+  z-index: 50;
+  width: max-content;
+  padding: 8px;
+  background: var(--wr-bg-color, #f8f8f8);
+  border: 1px solid rgba(var(--mono-rgb-100), 0.12);
+  border-radius: 10px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.14);
+  user-select: none;
+}
+
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-month-label {
+  font-size: var(--wr-font-ui-small);
+  font-weight: 600;
+  color: var(--text-normal);
+  text-align: center;
+  flex: 1;
+  /* Restore a span-like look (it is a button that switches to year mode when pressed) */
+  background: none;
+  border: none;
+  box-shadow: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  line-height: 1;
+  min-height: 0;
+}
+
+/* Match the date label (.wr-date-label) convention:
+   no background box on hover; only lower opacity while pressed to convey the press. */
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-month-label:hover,
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-month-label:focus,
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-month-label:focus-visible {
+  background: none;
+}
+
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-month-label:active {
+  opacity: 0.7;
+}
+
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-nav-btn {
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 2px;
+  cursor: pointer;
+  color: var(--text-muted);
+  border-radius: 6px;
+  line-height: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Suppress the focus background lingering after a click (Obsidian's default
+   button:focus-visible). Placed before the :hover rule so that while
+   hovering, :hover (later in source) still shows its background. */
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-nav-btn:focus,
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-nav-btn:focus-visible {
+  background: none;
+}
+
+/* Follows the main date controls (prev/next day buttons):
+   hover is just a faint glow (color stays muted), accent color while pressed. */
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-nav-btn:hover {
+  background: rgba(var(--mono-rgb-100), 0.05);
+}
+
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-nav-btn:active {
+  background: rgba(var(--mono-rgb-100), 0.08);
+  color: var(--text-accent);
+}
+
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-nav-btn .svg-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 2px;
+}
+
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-weekday {
+  text-align: center;
+  font-size: var(--wr-font-ui-smaller);
+  color: var(--text-muted);
+  padding: 2px 0;
+}
+
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+}
+
+/* Year mode: lay out 12 years in 3 columns */
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-grid.wr-calendar-grid-years {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 4px 0;
+}
+
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-year {
+  background: none;
+  border: none;
+  box-shadow: none;
+  cursor: pointer;
+  color: var(--text-normal);
+  font-size: var(--wr-font-ui-small);
+  line-height: 1;
+  min-height: 0;
+  padding: 8px 0;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-year:hover {
+  background: rgba(var(--mono-rgb-100), 0.05);
+}
+
+/* Year cells are wide, so the selected highlight uses a capsule shape instead of a circle */
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-year.wr-calendar-day-selected,
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-year.wr-calendar-day-selected.wr-calendar-day-today {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  font-weight: 600;
+}
+
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day {
+  background: none;
+  border: none;
+  box-shadow: none;
+  cursor: pointer;
+  color: var(--text-normal);
+  font-size: var(--wr-font-ui-small);
+  line-height: 1;
+  min-height: 0;
+  padding: 0;
+  /* Fills the cell width and shrinks in narrow views. aspect-ratio keeps the
+     cell square so the circular highlight never turns into an ellipse.
+     max-width caps the size in wide views, max-height caps vertical sprawl. */
+  width: 100%;
+  max-width: 34px;
+  min-width: 0;
+  aspect-ratio: 1;
+  max-height: 28px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--wr-cal-day-radius, 50%);
+}
+
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day:hover {
+  background: rgba(var(--mono-rgb-100), 0.05);
+}
+
+/* Cells from the previous/next month are toned down to distinguish them from the current month */
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-outside {
+  color: var(--text-faint);
+}
+
+/* Today: shown with accent-colored text (unless selected) */
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-today {
+  color: var(--text-accent);
+  font-weight: 600;
+}
+
+/* Selected date: circular accent-background highlight. Takes precedence over the today highlight */
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-selected,
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-selected.wr-calendar-day-today {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  font-weight: 600;
+}
+
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-selected:hover {
+  background: var(--interactive-accent-hover, var(--interactive-accent));
+}
+
+/* Input Area */
+.wr-input-area {
+  margin-bottom: 8px;
+  background: var(--wr-bg-color, #f8f8f8);
+  border-radius: 12px;
+  padding: 6px 14px 8px;
+}
+
+.wr-input-header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 4px;
+  margin-bottom: 6px;
+}
+
+body .wr-textarea {
+  width: 100%;
+  min-height: 48px;
+  max-height: none;
+  resize: none;
+  overflow-y: auto;
+  box-shadow: none;
+  padding: 0;
+  font-size: var(--wr-font-text);
+  font-family: inherit;
+  color: var(--text-normal);
+  box-sizing: border-box;
+  line-height: 1.6;
+  border-radius: 0;
+}
+
+/* Reset Obsidian / theme textarea decoration (borders) */
+body .wr-textarea:not(#x) {
+  border: none;
+  outline: none;
+}
+
+/*! kept - form field background is forced with the priority flag by core or themes */
+body .wr-textarea {
+  background: transparent !important;
+}
+
+body .wr-textarea:focus:not(#x) {
+  outline: none;
+  border: none;
+  box-shadow: none;
+}
+
+.wr-textarea::placeholder {
+  color: var(--text-faint);
+}
+
+.wr-input-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.wr-input-toolbar.wr-toolbar-wrapped {
+  gap: 4px 8px;
+}
+
+
+body .wr-toolbar-btn {
+  border: none;
+  box-shadow: none;
+  outline: none;
+  padding: 2px;
+  cursor: pointer;
+  color: var(--text-muted);
+  min-width: auto;
+}
+
+/* Reset Obsidian / theme button background */
+body .wr-toolbar-btn:not(#x) {
+  background: none;
+}
+
+body .wr-input-toolbar.wr-toolbar-wrapped .wr-toolbar-btn {
+  padding: 6px 2px;
+  min-height: 0;
+  height: auto;
+}
+
+body .wr-input-toolbar.wr-toolbar-wrapped .wr-toolbar-btn:not(#x) {
+  margin: 0;
+}
+
+.wr-toolbar-btn:hover {
+  color: var(--text-normal);
+}
+
+.wr-toolbar-btn:active {
+  color: var(--text-accent);
+}
+
+.wr-toolbar-btn.wr-toolbar-active {
+  color: var(--text-accent);
+}
+
+.wr-toolbar-btn.wr-toolbar-disabled {
+  color: var(--text-faint);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* While IME composition is in progress: keep the accent but lower the tone and block clicks */
+.wr-toolbar-btn.wr-toolbar-ime-muted {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.wr-toolbar-btn .svg-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.wr-thumbnail-container {
+  margin: 6px 0 4px;
+}
+
+.wr-thumbnail {
+  position: relative;
+  display: inline-block;
+  max-width: 120px;
+}
+
+.wr-thumbnail-img {
+  display: block;
+  max-width: 120px;
+  max-height: 120px;
+  width: auto;
+  height: auto;
+  border-radius: 6px;
+}
+
+body .wr-thumbnail-remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 22px;
+  height: 22px;
+  min-width: 0;
+  min-height: 0;
+  border-radius: 50%;
+  border: none;
+  box-shadow: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Reset Obsidian / theme button padding */
+body .wr-thumbnail-remove:not(#x) {
+  padding: 0;
+}
+
+.wr-thumbnail-remove .svg-icon {
+  width: 14px;
+  height: 14px;
+}
+
+
+body .wr-submit-btn {
+  background: rgba(var(--mono-rgb-100), 0.08);
+  border: none;
+  box-shadow: none;
+  outline: none;
+  padding: 4px 14px;
+  border-radius: 8px;
+  font-size: var(--wr-font-ui-small);
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+/* When the input is empty (inactive), keep the look but disable pressing */
+body .wr-submit-btn:not(.wr-submit-active) {
+  cursor: default;
+  pointer-events: none;
+}
+
+.wr-submit-icon {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+
+.wr-submit-icon .svg-icon {
+  width: 12px;
+  height: 12px;
+}
+
+body .wr-submit-btn.wr-submit-active {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+/* Memo Card List */
+.wr-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding-bottom: 4px;
+}
+
+.wr-empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 24px 0;
+  font-size: var(--wr-font-text);
+}
+
+/* Memo Card */
+.wr-card {
+  background: var(--wr-bg-color, #f8f8f8);
+  border-radius: 10px;
+  padding: 12px 14px;
+  position: relative;
+  font-size: var(--wr-font-text);
+}
+
+.wr-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.wr-timestamp {
+  font-size: 0.85em;
+  line-height: 1;
+  color: var(--text-muted);
+}
+
+/* Tags */
+.wr-tag {
+  color: var(--text-accent);
+  cursor: pointer;
+}
+
+.wr-tag:hover {
+  text-decoration: none;
+}
+
+/* Live Preview: tag highlight in qm code blocks */
+body .wr-tag-highlight:not(#x) {
+  color: var(--text-accent);
+}
+
+/* List styles (timeline) */
+.wr-bullet-list,
+.wr-ordered-list {
+  list-style: none;
+  margin: 2px 0;
+  padding-left: 0;
+}
+
+.wr-bullet-list > li,
+.wr-ordered-list > li {
+  padding-left: 22px;
+  position: relative;
+}
+
+.wr-bullet-list > li:not(.wr-check-item)::before {
+  content: "•";
+  position: absolute;
+  left: 4px;
+  font-size: 0.85em;
+  color: var(--text-muted);
+}
+
+.wr-ordered-list {
+  counter-reset: wr-ol-tl;
+}
+
+.wr-ordered-list > li {
+  counter-increment: wr-ol-tl;
+}
+
+.wr-ordered-list > li::before {
+  content: counter(wr-ol-tl) ".";
+  position: absolute;
+  left: 4px;
+  color: var(--text-muted);
+}
+
+/* List styles (reading view) */
+ul.wr-reading-list,
+ol.wr-reading-list {
+  list-style: none;
+  margin: 2px 0;
+  padding-left: 0;
+}
+
+/* RV lists match the code-block typography (must beat theme font rules for lists) */
+body ul.wr-reading-list:not(#x),
+body ol.wr-reading-list:not(#x) {
+  font-size: var(--code-size);
+  font-family: var(--font-monospace);
+}
+
+ul.wr-reading-list > li,
+ol.wr-reading-list > li {
+  padding-left: 22px;
+  position: relative;
+}
+
+body ul.wr-reading-list:not(#x) > li,
+body ol.wr-reading-list:not(#x) > li {
+  margin-inline-start: 0;
+}
+
+ul.wr-reading-list > li:not(.wr-check-item)::before {
+  content: "•";
+  position: absolute;
+  left: 4px;
+  font-size: 0.85em;
+  color: var(--text-muted);
+}
+
+ol.wr-reading-list {
+  counter-reset: wr-ol;
+}
+
+ol.wr-reading-list > li {
+  counter-increment: wr-ol;
+}
+
+ol.wr-reading-list > li::before {
+  content: counter(wr-ol) ".";
+  position: absolute;
+  left: 4px;
+  color: var(--text-muted);
+}
+
+.wr-bullet-list li,
+.wr-reading-list li,
+.wr-ordered-list li {
+  margin: 1px 0;
+}
+
+/* Timeline: check item */
+.wr-bullet-list .wr-check-item {
+  list-style: none;
+}
+
+/*! kept - native checkbox metrics fight theme rules that also use the priority flag */
+.wr-bullet-list .wr-check-item input[type="checkbox"],
+.wr-reading-list .wr-check-item input[type="checkbox"] {
+  position: absolute !important;
+  left: 3px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 14px !important;
+  height: 14px !important;
+  margin: 0 !important;
+}
+
+/*! kept - checkmark offset fights theme rules that also use the priority flag */
+.wr-bullet-list .wr-check-item input[type="checkbox"]:checked::after,
+.wr-reading-list .wr-check-item input[type="checkbox"]:checked::after {
+  top: -2.5px !important;
+  inset-inline-start: -2px !important;
+}
+
+
+/* Live Preview: list/checklist highlights */
+body .wr-list-highlight:not(#x) {
+  color: var(--text-muted);
+}
+
+body .wr-check-unchecked:not(#x) {
+  color: var(--text-muted);
+}
+
+body .wr-check-checked:not(#x) {
+  color: var(--text-muted);
+}
+
+body .wr-check-done:not(#x) {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+body .wr-ol-highlight:not(#x) {
+  color: var(--text-muted);
+}
+
+/* Internal links */
+.wr-internal-link {
+  color: var(--text-accent);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.wr-internal-link:hover {
+  text-decoration: underline;
+}
+
+body .wr-internal-link-highlight:not(#x) {
+  color: var(--text-accent);
+}
+
+/* Embedded images */
+.wr-embed-img {
+  max-width: 100%;
+  border-radius: 8px;
+  margin: 4px 0;
+  display: block;
+}
+
+/* RV: images aggregated at the tail of a normal post. The copy button's
+   position creates natural spacing above, but below, block padding plus
+   image margin alone leaves the vertical balance lopsided.
+   Implementation-wise, RV appendChilds the image directly under
+   pre.language-wr, so we target pre.language-wr's direct child rather
+   than block-language-wr's. */
+pre.language-wr > .wr-embed-img,
+.block-language-wr > .wr-embed-img {
+  margin-bottom: 24px;
+}
+
+/* Spacing fix for posts with a quote marker where the image sits inline.
+   The wrapper's padding-right shrinks the "available width" for the image,
+   producing a right margin aligned with the wr block's right padding.
+   Left padding respects the natural cm-line / code block padding as is. */
+.wr-lp-inline-img-wrapper {
+  display: block;
+  box-sizing: border-box;
+  padding-right: 16px;
+}
+
+.wr-embed-img.wr-lp-inline-img {
+  display: block;
+  margin: 4px 0;
+  max-width: 100%;
+}
+
+/* In posts with a quote marker, an image placed directly under <code> gets
+   overlapped by the copy button. margin-top pushes the image's top down so
+   the copy button stays outside the image.
+   Normal posts never get the wr-rv-inline-img class, so they are unaffected. */
+.wr-embed-img.wr-rv-inline-img {
+  display: block;
+  margin: 32px 0 4px 0;
+  max-width: 100%;
+}
+
+.wr-embed-missing {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+body .wr-internal-link-unresolved {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Inline code */
+body .wr-inline-code {
+  background: rgba(var(--mono-rgb-100), 0.08);
+  padding: 2px 5px;
+}
+
+/* Typography must beat the theme's rules for code elements */
+body .wr-inline-code:not(#x) {
+  border-radius: 4px;
+  font-size: 0.85em;
+  font-family: var(--font-monospace);
+  color: var(--text-normal);
+}
+
+.wr-backtick {
+  font-size: 0;
+  width: 0;
+  overflow: hidden;
+  display: inline;
+}
+
+body code.language-wr span.wr-inline-code {
+  background: rgba(var(--mono-rgb-100), 0.08);
+  padding: 2px 5px;
+  border-radius: 4px;
+}
+
+body code.language-wr span.wr-inline-code:not(#x) {
+  display: inline;
+  color: var(--text-normal);
+  font-size: 0.85em;
+}
+
+/*
+ * For inline code `xxx` in LV (CodeMirror), CodeMirror generates either
+ * 1 span (cursor outside: hidden backticks + content) or 3 spans (cursor
+ * inside: left backtick / content / right backtick) depending on cursor
+ * position. Fully erasing the seams in the 3-span case is hard in CSS due
+ * to the combination of semi-transparent backgrounds and subpixel
+ * boundaries, so we never use rounded corners and render a flat,
+ * perfectly square band instead.
+ */
+body .wr-inline-code-highlight {
+  background: rgba(var(--mono-rgb-100), 0.08);
+  border-radius: 0;
+  /* The middle span (the content) carries horizontal padding so that it and
+   * the adjacent outer spans meet "padding against padding". We avoid the
+   * negative-margin overlap approach because stacking semi-transparent
+   * backgrounds makes the seams look darker. */
+  padding: 1px 4px;
+  /* Align the vertical position and height of the three spans. */
+  vertical-align: baseline;
+  line-height: inherit;
+  box-sizing: border-box;
+}
+
+/* The monospace font must beat the CodeMirror token-level font rules */
+body .wr-inline-code-highlight:not(#x) {
+  font-family: var(--font-monospace);
+}
+
+/* For inline code inside a wr block in LV, the DOM structure CodeMirror
+ * generates changes with cursor position (cursor outside: 1 span /
+ * cursor inside: 3 spans). With rounded corners, the 3-span state shows
+ * visibly split seams due to subpixel boundaries plus stacked
+ * semi-transparent backgrounds, and fully fixing that proved infeasible
+ * in CSS. By giving up rounded corners and always rendering a perfectly
+ * square band, it reads as a visually consistent "flat background band"
+ * regardless of cursor state. */
+
+/* When the cursor is inside (= multiple wr-inline-code-highlight spans
+ * within the same .cm-hmd-codeblock), the backtick spans at both ends are
+ * direct children of .cm-hmd-codeblock. Zero the inner padding to avoid
+ * doubled padding where they join the middle span. */
+.cm-hmd-codeblock > .wr-inline-code-highlight:first-child {
+  padding-right: 0;
+}
+.cm-hmd-codeblock > .wr-inline-code-highlight:last-child:not(:first-child) {
+  padding-left: 0;
+}
+
+/* Reading View: hidden code element (kept for copy button) */
+body code.wr-code-hidden:not(#x) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Reading View: plain text rendered outside code */
+.wr-plain-text {
+  font-size: var(--code-size);
+  font-family: var(--font-monospace);
+  color: var(--code-normal);
+  white-space: pre-wrap;
+  word-break: normal;
+  line-height: var(--line-height-normal);
+}
+
+/* Format styles */
+body .wr-highlight {
+  background: var(--text-highlight-bg);
+  padding: 1px 2px;
+  border-radius: 2px;
+}
+
+/* Inline math */
+.wr-math {
+  display: inline;
+}
+
+body .wr-math-highlight:not(#x) {
+  color: var(--text-accent);
+}
+
+/* Display math block */
+.wr-math-display {
+  display: block;
+  margin: 0.5em 0;
+  overflow-x: auto;
+  text-align: center;
+}
+
+/* Fenced code block (Timeline / RV / LV) */
+.wr-codeblock-display {
+  margin: 0.5em 0;
+}
+
+/* Inherit outer memo background only (so tag-color rules flow through).
+   Text color / token color should follow Obsidian's Prism theme, so we do NOT
+   set `color` on pre/code here. */
+body .wr-codeblock-display pre:not(#x),
+body .wr-codeblock-display pre code:not(#x) {
+  background: inherit;
+}
+
+body .wr-codeblock-display pre {
+  border-radius: 6px;
+  overflow-x: auto;
+  border: none;
+}
+
+body .wr-codeblock-display pre:not(#x) {
+  margin: 0;
+  padding: 0.6em 0 0.6em 0;
+}
+
+.wr-codeblock-display pre code {
+  font-family: var(--font-monospace);
+  font-size: 0.9em;
+  line-height: 1.5;
+  white-space: pre;
+}
+
+/* Inside Reading View, the outer wr code block hides its own code element;
+   our nested code-block display should not be hidden */
+.block-language-wr .wr-codeblock-display,
+.block-language-wr .wr-math-display {
+  display: block;
+}
+
+/* Live Preview: make widget occupy its own line cleanly */
+.wr-lp-codeblock,
+.wr-lp-mathblock {
+  display: block;
+  /* LV wraps the widget in a block replace; keep spacing identical to RV / Timeline */
+  margin: 0;
+  padding: 0;
+}
+
+/* Nested code blocks inside a Wrot memo should not show Obsidian's
+   auto-generated copy / flair buttons, since the outer memo already has its
+   own copy button in the footer. */
+body .wr-codeblock-display .copy-code-button:not(#x),
+body .wr-codeblock-display .code-block-flair:not(#x),
+body .wr-codeblock-display .edit-block-button:not(#x) {
+  display: none;
+}
+
+/* Live Preview: obsidian:// URL line height fix */
+body .wr-obsidian-url-line {
+  height: auto;
+  max-height: 1.8em;
+}
+
+body .wr-obsidian-url-line:not(#x) {
+  overflow: hidden;
+}
+
+/* Blockquote */
+/* Blockquote (shared) */
+body .wr-blockquote {
+  border-left: 3px solid var(--text-muted);
+  margin: 4px 5px;
+}
+
+/* Must beat the theme's blockquote decoration (color, italics, background) */
+body .wr-blockquote:not(#x) {
+  color: var(--text-muted);
+  font-style: normal;
+  background: none;
+}
+
+body .wr-blockquote *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-tag *):not(.wr-reading-url *):not(#x) {
+  color: var(--text-muted);
+}
+
+/* Blockquote: timeline inherits .wr-content font */
+body .wr-content .wr-blockquote {
+  padding-left: 10px;
+  font-size: inherit;
+  font-family: inherit;
+}
+
+/* Blockquote: reading view matches code block text */
+body .block-language-wr > .wr-blockquote,
+body pre > .wr-blockquote {
+  padding-left: 10px;
+}
+
+body .block-language-wr > .wr-blockquote:not(#x),
+body pre > .wr-blockquote:not(#x) {
+  font-size: var(--code-size);
+  font-family: var(--font-monospace);
+}
+
+/* Blockquote: inside the quote-card body preview (shared by LV/RV/timeline).
+   Where the rules under .wr-content or .block-language-wr do not apply,
+   padding-left collapses to 0 and the bar-to-text gap looks different
+   between LV and RV, so align it explicitly here. */
+body .wr-quote-card-body .wr-blockquote {
+  padding-left: 10px;
+}
+
+body .wr-quote-highlight:not(#x) {
+  color: var(--text-muted);
+}
+
+
+/* Keep copy button clickable above Wrot's list/quote elements (do not
+   touch position/opacity so Obsidian's hover-to-show behavior stays intact).
+   In RV (Reading View) the .copy-code-button is placed directly under
+   pre.language-wr, not inside .block-language-wr, so cover both parent
+   patterns. ID-level specificity ensures no other rule can reset this
+   back to z-index: auto. */
+body pre.language-wr .copy-code-button:not(#x):not(#y):not(#z),
+body .block-language-wr .copy-code-button:not(#x):not(#y):not(#z) {
+  z-index: 100;
+}
+
+/* RV: button sits above card content; card background makes it look odd */
+/*! kept - must beat tag-rule CSS injected at runtime by main.ts which uses the priority flag */
+body pre.language-wr .copy-code-button {
+  background: transparent !important;
+}
+
+/* With a tag rule active, .copy-code-button.wr-flair-bg gets the card
+   background color, and in some cases it also lands on the inner SVG and
+   blots out the icon. Make sure the SVG alone stays transparent. */
+/*! kept - must beat tag-rule CSS injected at runtime by main.ts */
+pre.language-wr .copy-code-button svg,
+pre.language-wr .copy-code-button svg *,
+.block-language-wr .copy-code-button svg,
+.block-language-wr .copy-code-button svg * {
+  background: transparent !important;
+}
+
+.wr-spacer {
+  height: 1em;
+}
+
+/* Format menu button spacing */
+body .wr-format-btn {
+  margin-left: 8px;
+}
+
+/* Toolbar button disabled state */
+body .wr-toolbar-disabled {
+  opacity: 0.3;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* Live Preview: format highlights */
+body .wr-bold-highlight {
+  font-weight: bold;
+}
+
+body .wr-italic-highlight {
+  font-style: italic;
+}
+
+body .wr-strike-highlight {
+  text-decoration: line-through;
+}
+
+body .wr-highlight-highlight {
+  background: var(--text-highlight-bg);
+}
+
+/* Live Preview: blockquote line */
+body .wr-blockquote-line:not(#x) {
+  color: var(--text-muted);
+}
+
+.wr-blockquote-wrap {
+  color: var(--text-muted);
+}
+
+/* LV blockquote vertical bar: matches RV blockquote spacing.
+   Bar-to-bar gap = 18px (margin 5 + border 3 + padding 10), bar-to-text gap = 10px. */
+body .cm-line.wr-blockquote-line:not(#x) {
+  position: relative;
+  padding-inline-start: calc(var(--size-4-4) + 18px);
+  /* When a quote starts with a URL, on iOS WebKit the wrapped whitespace left
+     over from the ">" marker CodeMirror hid can act as the line-box ascender
+     and create a full blank line. Avoid this by switching break-spaces to
+     pre-wrap, combined with word-break: break-all so URLs still wrap. */
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.cm-line.wr-blockquote-line::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--size-4-4) + 5px);
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background-color: var(--text-muted);
+}
+
+body .cm-line.wr-blockquote-depth-2:not(#x) {
+  padding-inline-start: calc(var(--size-4-4) + 36px);
+}
+
+.cm-line.wr-blockquote-depth-2::before {
+  box-shadow: 18px 0 0 0 var(--text-muted);
+}
+
+body .cm-line.wr-blockquote-depth-3:not(#x) {
+  padding-inline-start: calc(var(--size-4-4) + 54px);
+}
+
+.cm-line.wr-blockquote-depth-3::before {
+  box-shadow:
+    18px 0 0 0 var(--text-muted),
+    36px 0 0 0 var(--text-muted);
+}
+
+body .cm-line.wr-blockquote-depth-4:not(#x) {
+  padding-inline-start: calc(var(--size-4-4) + 72px);
+}
+
+.cm-line.wr-blockquote-depth-4::before {
+  box-shadow:
+    18px 0 0 0 var(--text-muted),
+    36px 0 0 0 var(--text-muted),
+    54px 0 0 0 var(--text-muted);
+}
+
+body .cm-line.wr-blockquote-depth-5:not(#x) {
+  padding-inline-start: calc(var(--size-4-4) + 90px);
+}
+
+.cm-line.wr-blockquote-depth-5::before {
+  box-shadow:
+    18px 0 0 0 var(--text-muted),
+    36px 0 0 0 var(--text-muted),
+    54px 0 0 0 var(--text-muted),
+    72px 0 0 0 var(--text-muted);
+}
+
+/* Live Preview: shared marker style */
+.wr-lp-marker {
+  display: inline-block;
+  width: 22px;
+  padding-left: 3px;
+  box-sizing: border-box;
+  vertical-align: middle;
+  text-align: left;
+}
+
+body .wr-lp-marker:not(#x) {
+  color: var(--text-muted);
+}
+
+.wr-lp-bullet {
+  font-size: 0.85em;
+}
+
+.wr-lp-check {
+  padding-left: 2px;
+}
+
+/*! kept - native checkbox metrics fight theme rules that also use the priority flag */
+.wr-lp-check input[type="checkbox"] {
+  width: 14px !important;
+  height: 14px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  vertical-align: -2px;
+  cursor: default;
+}
+
+/*! kept - checkmark offset fights theme rules that also use the priority flag */
+.wr-lp-check input[type="checkbox"]:checked::after {
+  top: -2.5px !important;
+  inset-inline-start: -2px !important;
+}
+
+/* Content */
+.wr-content {
+  font-size: var(--wr-font-text);
+  line-height: 1.5;
+  color: var(--text-normal);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Copy Button (inline in footer) */
+.wr-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: var(--wr-font-ui-smaller);
+  line-height: 1;
+  color: var(--text-muted);
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.wr-copy-btn:hover {
+  color: var(--text-muted);
+}
+
+.wr-copy-btn .svg-icon {
+  width: 11px;
+  height: 11px;
+  color: var(--text-muted);
+  stroke: var(--text-muted);
+}
+
+body .wr-copy-btn.wr-copy-done .svg-icon {
+  color: var(--text-accent);
+  stroke: var(--text-accent);
+}
+
+/* Per-memo 3-dot menu button (replaces the old copy-only button). */
+.wr-menu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  color: var(--text-muted);
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  position: relative;
+}
+
+/* Invisible hit-area expansion so the icon is easier to tap on mobile
+   without growing the visible button or shifting the card layout. */
+.wr-menu-btn::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
+}
+
+.wr-menu-btn:hover {
+  color: var(--text-normal);
+}
+
+.wr-menu-btn .svg-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--text-muted);
+  stroke: var(--text-muted);
+}
+
+/* Follow Obsidian's UI font size when enabled, keep the 14px baseline otherwise. */
+body.wr-font-follow .wr-menu-btn .svg-icon {
+  width: var(--wr-font-ui-small);
+  height: var(--wr-font-ui-small);
+}
+
+body .wr-menu-btn.wr-toolbar-active .svg-icon:not(#x) {
+  /* Beat Obsidian's default SVG color/stroke rules with ID-level specificity */
+  color: var(--text-accent);
+  stroke: var(--text-accent);
+}
+
+/* Pin indicator lives outside the footer and is absolute-positioned to
+   the card's bottom-right corner, at the same vertical level as the
+   footer. Rendered only when the memo is pinned — no slot reserved
+   otherwise, since the indicator does not affect the footer layout. */
+.wr-pin-indicator {
+  position: absolute;
+  right: 14px;
+  bottom: 12px;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.wr-pin-indicator .svg-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--text-muted);
+  stroke: var(--text-muted);
+}
+
+body.wr-font-follow .wr-pin-indicator .svg-icon {
+  width: var(--wr-font-ui-small);
+  height: var(--wr-font-ui-small);
+}
+
+/* Menu hint line used when the pin-limit is reached. Renders as an
+   inert sub-label under the disabled "Pin" item. */
+.wr-menu .menu-item.wr-menu-hint {
+  font-size: var(--wr-font-ui-smaller);
+  opacity: 0.75;
+  cursor: default;
+  padding-top: 0;
+}
+
+/* Disable the tap highlight and focus background when a disabled menu item
+   is tapped on mobile. Obsidian's Menu adds the is-disabled class, but the
+   -webkit-tap-highlight-color and :active backgrounds come through other
+   paths, so kill them explicitly here. To beat Obsidian's default menu-item
+   rules, use the body prefix and spell out every state selector. */
+body .wr-menu .menu-item.is-disabled:not(#x),
+body .wr-menu .menu-item.is-disabled:hover:not(#x),
+body .wr-menu .menu-item.is-disabled:active:not(#x),
+body .wr-menu .menu-item.is-disabled:focus:not(#x),
+body .wr-menu .menu-item.is-disabled.selected:not(#x),
+body .wr-menu .menu-item.is-disabled.is-active:not(#x),
+body .wr-menu .menu-item.is-disabled.is-focused:not(#x) {
+  background: transparent;
+  -webkit-tap-highlight-color: transparent;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* ========================================
+   Reading View & Live Preview - qm code block card
+   ======================================== */
+
+/* Parent element of the code block processor output + Reading View */
+body div.block-language-wr,
+body .language-wr {
+  background: var(--wr-bg-color, #f8f8f8);
+}
+
+/* Live Preview: qm code block lines */
+body .wr-codeblock-line {
+  background-color: var(--wr-bg-color, #f8f8f8);
+}
+
+/* Reserve right padding on body lines only (so text avoids the ~28px-wide
+   flair). The end line carries the media-area widget, so keep its previous
+   state (no right margin) to preserve the balance of images / OGP cards. */
+body .wr-codeblock-line:not(.HyperMD-codeblock-end):not(#x) {
+  padding-right: 32px;
+}
+
+body .wr-hidden-line:not(#x) {
+  height: 0;
+  padding: 0;
+  margin: 0;
+  line-height: 0;
+  font-size: 0;
+  overflow: hidden;
+}
+
+body div.block-language-wr {
+  border: none;
+  border-radius: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+body div.block-language-wr:not(#x) {
+  padding: 12px 16px;
+  display: block;
+}
+
+body div.block-language-wr *:not(.wr-inline-code-highlight):not(svg):not(svg *),
+body .wr-flair-bg:not(svg):not(svg *) {
+  background: var(--wr-bg-color, #f8f8f8);
+}
+
+/* LV: .code-block-flair doubles as the copy button in Live Preview. Its hit area
+   extends leftward across the memo text, so we must not fill it with the card
+   background color. Force transparent so the memo text shows through. */
+body .wr-codeblock-line .code-block-flair:not(#x) {
+  background: transparent;
+}
+
+/* Exclude elements that carry their own background color */
+body div.block-language-wr .wr-inline-code {
+  background: rgba(var(--mono-rgb-100), 0.08);
+}
+body div.block-language-wr .wr-highlight {
+  background: var(--text-highlight-bg);
+}
+
+body .block-language-wr pre:not(#x) {
+  padding: 0;
+  margin: 0;
+}
+
+/* RV: copy button (32px tall, top:0 right:0) overlaps first content line at
+   default padding-top:12px. Push content below the button.
+   Left/right padding are kept equal so content and images sit balanced. */
+body pre.language-wr:not(#x) {
+  padding-top: 32px;
+  padding-bottom: 32px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+body pre.language-wr .copy-code-button:not(#x) {
+  right: 0px;
+}
+
+/* RV: quotes/images/URL cards have their own spacing; revert to Obsidian default bottom padding.
+   wr-rv-rich-tail is set in postProcessor when the block contains a quote card or ends with media
+   (replaces the former :has() selector to avoid the performance warning). */
+body pre.language-wr.wr-rv-rich-tail:not(#x) {
+  padding-bottom: 12px;
+}
+
+/* ========================================
+   URL & Rich Preview Styles
+   ======================================== */
+
+/* Inline URL links (sidebar + reading view) */
+.wr-url,
+.wr-reading-url {
+  color: var(--text-accent);
+  text-decoration: underline;
+  cursor: pointer;
+  word-break: break-all;
+}
+
+.wr-url:hover,
+.wr-reading-url:hover {
+  opacity: 0.8;
+}
+
+/* Live Preview: URL highlight */
+.wr-url-highlight {
+  text-decoration: underline;
+}
+
+/* When CodeMirror overlays wr-url-highlight and wr-blockquote-wrap on the
+   same range, posts after the first can get their inner/outer nesting
+   inverted, and the inner wr-blockquote-wrap's muted color cancels the
+   URL's accent color via inheritance. Force the accent color on every
+   element under wr-url-highlight so URLs always render in accent color
+   regardless of nesting order. */
+body .wr-url-highlight:not(#x),
+body .wr-url-highlight *:not(#x) {
+  color: var(--text-accent);
+  -webkit-text-fill-color: var(--text-accent);
+}
+
+/* Media area below memo content */
+body .wr-media-area {
+  margin-top: 8px;
+  overflow: hidden;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+body .wr-media-area:not(#x) {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+/* When the OGP card is not rendered (cache miss or fetch failure),
+   wr-media-area can be left empty, so use :empty to collapse all spacing */
+body .wr-media-area:empty:not(#x) {
+  margin: 0;
+  padding: 0;
+  gap: 0;
+  height: 0;
+}
+
+/* LV: when an empty wr-media-area widget lands on the wr fence's closing
+   line (HyperMD-codeblock-end), the widget adds extra vertical height
+   (line break + widgetBuffer). The line itself must stay visible to show
+   the ``` fence characters, so only the empty widget inside is taken out
+   of layout with position: absolute so it cannot affect line height. */
+.cm-line.wr-codeblock-line.HyperMD-codeblock-end > .wr-media-area:empty:not(#x) {
+  position: absolute;
+  width: 0;
+}
+
+/* Reading View: media area inside block-language-wr */
+body .block-language-wr > .wr-media-area {
+  padding: 0 16px 12px;
+}
+
+/* RV image-URL posts (those containing wr-media-link) get the same generous
+   bottom spacing as normal images (wr-embed-img directly under pre) so the
+   "image post" experience matches.
+   In RV the wr-media-area is also placed directly under pre.language-wr
+   by the implementation, so target both. */
+body pre.language-wr > .wr-media-area.wr-has-link,
+body .block-language-wr > .wr-media-area.wr-has-link {
+  padding-bottom: 28px;
+}
+
+/* Inline image preview */
+body .wr-media-link {
+  max-width: 100%;
+}
+
+body .wr-media-link:not(#x) {
+  display: flex;
+  justify-content: center;
+}
+
+body .wr-inline-img {
+  max-width: 100%;
+  width: auto;
+  height: auto;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+body .wr-inline-img:not(#x) {
+  display: block;
+}
+
+/* OGP Card */
+body .wr-ogp-card {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--wr-bg-color, #f8f8f8);
+  text-decoration: none;
+  width: 100%;
+  max-width: 100%;
+  white-space: normal;
+  font-family: var(--font-interface);
+  box-sizing: border-box;
+  margin: 0;
+}
+
+/* Reset link defaults (color, spacing, display), beating the theme's rules for a elements */
+body .wr-ogp-card:not(#x) {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  color: inherit;
+  height: 120px;
+  padding: 0;
+}
+
+/*! kept - fights tag-rule CSS injected at runtime by main.ts */
+body .wr-ogp-card:hover {
+  /* RV OGP card hover with a tag color configured is a long-known bug
+     (structurally unwinnable specificity war against the tag-rule feature's
+     dynamically generated CSS from JS). Deferred as out of scope for v2.2.0. */
+  background: var(--wr-bg-hover, #e8e6e1) !important;
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+body .wr-ogp-thumb {
+  object-fit: cover;
+  margin: 0;
+}
+
+body .wr-ogp-thumb:not(#x) {
+  width: 120px;
+  height: 120px;
+  flex-shrink: 0;
+  border-radius: 0;
+  padding: 0;
+}
+
+body .wr-ogp-body {
+  padding: 8px 12px;
+  overflow: hidden;
+  min-width: 0;
+}
+
+body .wr-ogp-body:not(#x) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+body .wr-ogp-title {
+  font-size: var(--wr-font-ui-small);
+  font-weight: 600;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  color: var(--text-normal);
+}
+
+body .wr-ogp-title:not(#x) {
+  overflow: hidden;
+  display: -webkit-box;
+}
+
+body .wr-ogp-desc {
+  font-size: var(--wr-font-ui-smaller);
+  color: var(--text-muted);
+  margin-top: 2px;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+body .wr-ogp-desc:not(#x) {
+  overflow: hidden;
+  display: -webkit-box;
+}
+
+body .wr-ogp-site {
+  font-size: calc(var(--wr-font-ui-smaller) - 1px);
+  color: var(--text-faint);
+  margin-top: 4px;
+}
+
+/* Twitter/X Card */
+.wr-twitter-card {
+  border-left: 3px solid #1da1f2;
+}
+
+/* OGP loading placeholder */
+.wr-ogp-loading {
+  font-size: var(--wr-font-ui-smaller);
+  color: var(--text-muted);
+  padding: 4px 0;
+}
+
+/* Live Preview: widget preview area.
+   Cancel wr-media-area's margin-top: 8px in LV; vertical spacing is
+   controlled by the child elements instead */
+body .wr-lp-media {
+  padding: 0 16px 0 2px;
+  white-space: normal;
+}
+
+body .wr-lp-media:not(#x) {
+  margin-top: 0;
+  font-family: var(--font-interface);
+  font-size: var(--wr-font-text);
+}
+
+/* wr-lp-media containing an image gets thicker padding-bottom to visually
+   balance the ~25px gap that the cm-widgetBuffer/noun spans on the wr
+   fence's closing line create above the image.
+   A normal image (wr-embed-img) and an image URL (wr-media-link) are the
+   same "image" experience to the user, so both get the same bottom spacing.
+   wr-lp-media with only URL cards (OGP cards etc.) does not get this extra spacing */
+body .wr-lp-media.wr-has-img,
+body .wr-lp-media.wr-has-link {
+  padding-bottom: 24px;
+}
+
+/* ========================================
+   Mobile adjustments
+   ======================================== */
+.is-mobile .wr-container {
+  padding: 6px 12px;
+}
+
+.is-mobile .wr-date-nav {
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+body.is-mobile .wr-nav-btn {
+  padding: 2px 6px;
+}
+
+body.is-mobile .wr-today-btn {
+  padding: 2px 8px;
+}
+
+/* Prevent lingering :hover background on mobile (iOS/Android).
+   Keep :active feedback while the finger is down.
+   Obsidian mobile defaults sometimes apply :focus-visible / :hover
+   backgrounds with the priority flag, so we use the priority flag here too
+   to win reliably (a pure specificity contest loses in some environments) */
+/*! kept - Obsidian mobile applies pseudo-class backgrounds with the priority flag */
+body.is-mobile .wr-nav-btn:focus:not(.wr-toolbar-active),
+body.is-mobile .wr-nav-btn:focus-visible:not(.wr-toolbar-active),
+body.is-mobile .wr-today-btn:focus,
+body.is-mobile .wr-today-btn:focus-visible {
+  background: transparent !important;
+}
+
+/*! kept - Obsidian mobile applies pseudo-class backgrounds with the priority flag */
+body.is-mobile .wr-nav-btn:hover:not(.wr-toolbar-active),
+body.is-mobile .wr-today-btn:hover {
+  background: transparent !important;
+}
+
+/*! kept - press feedback must outrank Obsidian mobile pseudo-class backgrounds */
+body.is-mobile .wr-nav-btn:active:not(.wr-toolbar-active),
+body.is-mobile .wr-today-btn:active {
+  background: rgba(var(--mono-rgb-100), 0.08) !important;
+  color: var(--text-accent);
+}
+
+/* While the calendar is open, pin the button to the faint glow the whole
+   time. Our mobile :active 0.08 rule (which carries the priority flag) would
+   otherwise cut in on arrow taps and cause flicker, so use the priority flag
+   to reliably hold the light tint (0.05). */
+/*! kept - must outrank our own mobile active rule above which carries the priority flag */
+body.is-mobile .wr-calendar-btn.wr-toolbar-active,
+body.is-mobile .wr-calendar-btn.wr-toolbar-active:active,
+body.is-mobile .wr-calendar-btn.wr-toolbar-active:hover {
+  background: rgba(var(--mono-rgb-100), 0.05) !important;
+}
+
+.is-mobile .wr-date-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Mobile: calendar day cells sized for easy finger taps.
+   Widen the cap a bit while keeping aspect-ratio; max-height lids the vertical size. */
+body.is-mobile .wr-calendar-day {
+  max-width: 42px;
+  max-height: 34px;
+}
+
+/* Mobile: kill the lingering :hover background on day/year cells.
+   On touch, :hover sticks until the next tap, so after switching from year
+   to month mode, the day cell that happens to sit under the tap coordinates
+   would keep a faint background — prevent that
+   (the selected highlight .wr-calendar-day-selected is preserved by a separate rule). */
+body.is-mobile .wr-calendar-day:hover:not(.wr-calendar-day-selected),
+body.is-mobile .wr-calendar-year:hover {
+  background: none;
+}
+
+/* Mobile: while killing the hover residue, still show press feedback at the
+   moment of the tap. Same convention as the arrow buttons
+   (.wr-calendar-nav-btn) so it is clear which cell was pressed.
+   The selected highlight (.wr-calendar-day-selected) keeps its priority. */
+body.is-mobile .wr-calendar-day:active:not(.wr-calendar-day-selected),
+body.is-mobile .wr-calendar-year:active {
+  background: rgba(var(--mono-rgb-100), 0.08);
+}
+
+/* Mobile: kill the :hover/:focus background lingering after arrow-button taps.
+   Same convention as the prev-day/today buttons (keep only :active feedback). */
+/*! kept - Obsidian mobile applies pseudo-class backgrounds with the priority flag */
+body.is-mobile .wr-calendar-nav-btn:focus,
+body.is-mobile .wr-calendar-nav-btn:focus-visible,
+body.is-mobile .wr-calendar-nav-btn:hover {
+  background: transparent !important;
+}
+
+/*! kept - press feedback must outrank Obsidian mobile pseudo-class backgrounds */
+body.is-mobile .wr-calendar-nav-btn:active {
+  background: rgba(var(--mono-rgb-100), 0.08) !important;
+  color: var(--text-accent);
+}
+
+.is-mobile .wr-input-area {
+  padding: 4px 10px 4px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+}
+
+.is-mobile .wr-input-header {
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+body.is-mobile .wr-submit-btn:not(#x) {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+body.is-mobile .wr-submit-btn {
+  padding: 6px 14px;
+  border-radius: 8px;
+  min-height: 0;
+  height: auto;
+  max-height: none;
+  line-height: 1.4;
+}
+
+.is-mobile .wr-textarea {
+  min-height: 28px;
+  line-height: 1.4;
+}
+
+/*! kept - Obsidian mobile draws form-field borders with the priority flag */
+body.is-mobile .wr-textarea,
+body.is-mobile .wr-textarea:focus {
+  border: none !important;
+  outline: none !important;
+}
+
+.is-mobile .wr-input-toolbar {
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.is-mobile .wr-input-toolbar.wr-toolbar-wrapped {
+  gap: 4px 8px;
+}
+
+body.is-mobile .wr-toolbar-btn {
+  padding: 2px;
+}
+
+body.is-mobile .wr-input-toolbar.wr-toolbar-wrapped .wr-toolbar-btn {
+  padding: 6px 2px;
+}
+
+.is-mobile .wr-toolbar-btn .svg-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.is-mobile .wr-card {
+  padding: 10px 10px 6px;
+  border-radius: 8px;
+}
+
+.is-mobile .wr-content {
+  line-height: 1.4;
+}
+
+
+.is-mobile .wr-card-footer {
+  margin-top: 8px;
+  gap: 6px;
+}
+
+body:not(.wr-font-follow).is-mobile .wr-today-btn {
+  font-size: 11px;
+}
+
+body:not(.wr-font-follow).is-mobile .wr-date-label {
+  font-size: 13px;
+}
+
+body:not(.wr-font-follow).is-mobile .wr-submit-btn {
+  font-size: 13px;
+}
+
+body:not(.wr-font-follow).is-mobile .wr-textarea {
+  font-size: 13px;
+}
+
+body:not(.wr-font-follow).is-mobile .wr-content {
+  font-size: 13px;
+}
+
+body:not(.wr-font-follow).is-mobile .wr-timestamp {
+  font-size: 10px;
+}
+
+.is-mobile .wr-list {
+  gap: 10px;
+  padding-bottom: 16px;
+}
+
+/* Mobile: match the URL card (OGP) glow to the PC hover.
+   On touch, :hover sticks after a tap until the next one, so disable it and
+   show the PC hover color only while pressed (:active).
+   The OS tap highlight would double the glow, so disable it. */
+body.is-mobile .wr-ogp-card {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/*! kept - must beat the hover rule injected at runtime by main.ts which uses the priority flag */
+body.is-mobile .wr-ogp-card:hover {
+  background: var(--wr-bg-color, #f8f8f8) !important;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+/*! kept - press feedback must outrank the hover rule injected at runtime by main.ts */
+body.is-mobile .wr-ogp-card:active {
+  background: var(--wr-bg-hover, #e8e6e1) !important;
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Settings: color picker fix for mobile */
+/*! kept - native color input metrics need forcing on mobile WebView */
+body.is-mobile .wr-settings input[type="color"] {
+  width: 48px !important;
+  min-width: 48px !important;
+  max-width: 48px !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  max-height: 48px !important;
+  border-radius: 50% !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0;
+  cursor: pointer;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  flex-shrink: 0 !important;
+  flex-grow: 0 !important;
+  box-sizing: content-box;
+  overflow: hidden !important;
+}
+
+/*! kept - native color input metrics need forcing on mobile WebView */
+.is-mobile .wr-settings input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 50% !important;
+  width: 48px !important;
+  height: 48px !important;
+}
+
+/*! kept - native color input metrics need forcing on mobile WebView */
+.is-mobile .wr-settings input[type="color"]::-webkit-color-swatch {
+  border: none !important;
+  border-radius: 50% !important;
+  width: 48px !important;
+  height: 48px !important;
+}
+
+/* ========================================
+   iPad (tablet) adjustments
+   ======================================== */
+@media (min-width: 768px) {
+  .is-mobile .wr-input-area {
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
+  .is-mobile .wr-container {
+    overflow-x: hidden;
+  }
+}
+
+/* Settings: tag rule separator between rules */
+.wr-settings .wr-tag-rule-separator {
+  border: none;
+  border-top: 1px solid var(--background-modifier-border);
+  margin: 14px 0;
+}
+
+/* Settings: locked tag rule — visual grayout for the editable fields only.
+   The rule label row (which holds the lock toggle itself) stays at full
+   opacity so the unlock affordance remains clearly tappable. */
+.wr-settings .wr-tag-rule-group.wr-tag-rule-locked
+  .setting-item:not(.wr-tag-rule-label-setting) {
+  opacity: 0.55;
+}
+
+.wr-settings .wr-tag-rule-group .wr-tag-rule-disabled {
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+/* Mobile: keep text inputs and selects stacked vertically; everything else aligns on a single row */
+body.is-mobile .wr-settings .setting-item:not(.wr-setting-has-text-input):not(.wr-setting-has-select):not(#x) {
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+
+body.is-mobile .wr-settings .setting-item:not(.wr-setting-has-text-input):not(.wr-setting-has-select) > .setting-item-info:not(#x) {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: auto;
+  margin: 0;
+}
+
+body.is-mobile .wr-settings .setting-item:not(.wr-setting-has-text-input):not(.wr-setting-has-select) > .setting-item-control:not(#x) {
+  flex: 0 0 auto;
+  justify-content: flex-end;
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Settings: reverse visual order of control row (color picker + reset button)
+   so the reset ends up on the left of the picker. Uses `order` instead of
+   `row-reverse` to avoid changing the flex main-axis layout behaviour. */
+.wr-settings .setting-item.wr-reverse-controls .setting-item-control > :first-child {
+  order: 2;
+}
+.wr-settings .setting-item.wr-reverse-controls .setting-item-control > :last-child {
+  order: 1;
+}
+
+/* Settings: narrow layout (e.g. iPad mini portrait). Stack label above
+   control full-width ONLY for rows containing a text input, since those are
+   the rows that get cramped. Color pickers, toggles, dropdowns, and
+   delete/reset buttons stay on a single line. */
+body .wr-settings.wr-settings-narrow .setting-item.wr-setting-has-text-input:not(#x) {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+
+body .wr-settings.wr-settings-narrow .setting-item.wr-setting-has-text-input > .setting-item-info:not(#x) {
+  width: 100%;
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+body .wr-settings.wr-settings-narrow .setting-item.wr-setting-has-text-input > .setting-item-control:not(#x) {
+  width: 100%;
+  flex: 0 0 auto;
+  justify-content: flex-start;
+  margin: 0;
+  padding: 0;
+}
+
+/* Narrow-layout text inputs should fill the row. */
+.wr-settings.wr-settings-narrow .setting-item.wr-setting-has-text-input .setting-item-control input[type="text"] {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+
+
+/* ===== Wrot quote card (Twitter quote-RT style) ===== */
+.wr-quote-card-slot {
+  display: block;
+  margin: 6px 0 0 0;
+}
+
+/* LV: when the quote-card slot is placed as a child of wr-quote-block, no
+   negative margin is needed. Under wr-quote-block, lay it flat with margin: 0 */
+.cm-line .wr-quote-card-slot.wr-lp-quote-card {
+  display: block;
+  margin: 0 var(--size-4-4, 16px) 0 0;
+}
+
+/* Slots inside wr-quote-block keep only the right margin so they do not hit the wr fence's right edge */
+.wr-quote-block > .wr-quote-card-slot.wr-lp-quote-card {
+  margin: 0 var(--size-4-4, 16px) 0 0;
+}
+
+.wr-quote-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  border: 1px dashed var(--text-muted);
+  border-radius: 8px;
+  background-color: transparent;
+  padding: 10px 12px;
+  margin: 0;
+  transition: border-color 0.15s ease, background-color 0.15s ease, opacity 0.15s ease;
+  cursor: pointer;
+}
+
+.wr-quote-card:hover {
+  border-color: var(--text-normal);
+  background-color: rgba(0, 0, 0, 0.06);
+  text-decoration: none;
+}
+
+.theme-dark .wr-quote-card:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.wr-quote-card-body {
+  font-size: 0.9em;
+  color: var(--text-muted);
+  /* Line limiting is already done on the JS side (PREVIEW_MAX_LINES = 3 in
+     renderPreviewLines) on a logical-line basis. Applying -webkit-line-clamp
+     in CSS would cut on visual lines (after wrapping), leaving effectively
+     only 1-2 logical lines visible in narrow environments like mobile, plus
+     the side effect of the "..." becoming a native interactive expansion
+     trigger. The visual clip is removed; the 3 logical lines grow naturally
+     including their wraps. */
+  line-height: 1.5;
+  margin-bottom: 4px;
+  letter-spacing: normal;
+  word-spacing: normal;
+  font-family: var(--font-text, var(--default-font));
+}
+
+/* main.ts applies textColor with the priority flag to every element inside
+   the wr block, so the quote card body, meta, and border raise their
+   specificity to a winning level before applying the muted color.
+   To beat main.ts's selector "body .cm-line.wr-codeblock-line *"
+   (specificity 0,0,2,1) we need more classes; including wr-quote-card-slot
+   makes it 0,0,3,1 and wins */
+/*! kept - must beat tag-rule CSS injected at runtime by main.ts which uses the priority flag */
+body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body,
+body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body *:not(.wr-tag):not(.wr-url):not(.wr-internal-link):not(.wr-nested-quote-marker):not(.wr-tag *):not(.wr-url *):not(.wr-internal-link *):not(.wr-quote-image-marker):not(.wr-quote-math-marker):not(.wr-quote-code-marker):not(.wr-quote-image-marker *):not(.wr-quote-math-marker *):not(.wr-quote-code-marker *),
+body .wr-quote-card-slot .wr-quote-card .wr-quote-card-meta {
+  color: var(--text-muted) !important;
+}
+
+/* The dashed border is also stated explicitly with raised specificity so main.ts rules cannot affect it */
+body .wr-quote-card-slot .wr-quote-card {
+  border-color: var(--text-muted);
+}
+
+/* Accent targets inside the quote card body (tags / URLs / internal links /
+   QT markers) override back to accent color with even stronger specificity */
+/*! kept - must beat tag-rule CSS injected at runtime by main.ts */
+body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-tag,
+body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-url,
+body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-internal-link,
+body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-nested-quote-marker {
+  color: var(--text-accent) !important;
+}
+
+/* The preview card renders as a flat "one line = one block" structure.
+   Placing the bullet / "1." / checkbox inline at the start of the line
+   instead of using ul/ol/li keeps the 3-line max-height clip stable */
+.wr-quote-card-line {
+  display: flex;
+  align-items: baseline;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.wr-quote-card-line-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Line-start marker slot. Bullet / "1." / circle check all share a fixed
+   width so the following text starts at the same position. Combining text
+   glyphs (bullet / "1.") with CSS-drawn markers (circle check) completely
+   avoids theme-dependent <input type="checkbox"> style interference */
+.wr-quote-card-marker-slot {
+  flex: 0 0 1.4em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Apple Reminders-style circular check marker. A 1em circle; when checked,
+   a checkmark is drawn inside (built from CSS borders) */
+.wr-quote-card-check {
+  display: inline-block;
+  width: 0.95em;
+  height: 0.95em;
+  border: 1.2px solid var(--text-muted);
+  border-radius: 50%;
+  box-sizing: border-box;
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.wr-quote-card-check-done {
+  background-color: var(--text-muted);
+  border-color: var(--text-muted);
+}
+
+.wr-quote-card-check-done::after {
+  content: "";
+  position: absolute;
+  left: 28%;
+  top: 12%;
+  width: 28%;
+  height: 56%;
+  border: solid var(--background-primary);
+  border-width: 0 0.12em 0.12em 0;
+  transform: rotate(45deg);
+}
+
+/* Accent targets (tags / URLs / internal links etc.) keep their accent color inside the card too */
+.wr-quote-card-body .wr-tag,
+.wr-quote-card-body .wr-url,
+.wr-quote-card-body .wr-internal-link {
+  color: var(--text-accent);
+}
+
+/* LV: wrapper for wr-quote-block (URL preview + quote card), placed as an
+   inline widget at endLine.to in posts that contain a quote */
+.wr-quote-block {
+  display: block;
+  /* Cancel the ~16px top gap created by the cm-widgetBuffer / noun spans on
+     the HyperMD-codeblock-end line, bringing the body and the quote card to
+     a natural distance */
+  margin: -16px 0 0 0;
+}
+
+/* Gap between the URL preview (incl. image URLs) and the quote card. Matches the look of quotes following a normal ![[]] image */
+.wr-quote-block > .wr-media-area {
+  margin-bottom: 28px;
+}
+
+/* RV / timeline: when an image URL .wr-media-link sits right before the
+   quote card, pad it up to match the spacing after a normal (![[]]) image */
+.wr-media-area.wr-has-link + .wr-quote-card-slot {
+  margin-top: 25px;
+}
+
+/* wr-lp-media under wr-quote-block has the quote card hanging right below,
+   so the padding-bottom: 24px meant for tail placement is unnecessary.
+   Spacing is controlled by wr-quote-block's margin-bottom instead */
+.wr-quote-block > .wr-lp-media.wr-has-img,
+.wr-quote-block > .wr-lp-media.wr-has-link {
+  padding-bottom: 0;
+}
+
+.wr-quote-block > .wr-quote-card-slot {
+  margin-top: 0;
+}
+
+/* Image embed / math / code block markers inside the quote-card body
+   preview (Obsidian image / sigma / code icon + label text).
+   inline-flex would drift off the text baseline, so build it as plain
+   inline and give the svg itself a height and vertical-align so it lines
+   up with the text */
+.wr-quote-image-marker,
+.wr-quote-math-marker,
+.wr-quote-code-marker {
+  color: var(--text-muted);
+}
+
+.wr-quote-image-marker-icon,
+.wr-quote-math-marker-icon,
+.wr-quote-code-marker-icon {
+  display: inline;
+  margin-right: 0.2em;
+  color: inherit;
+}
+
+.wr-quote-image-marker-icon .svg-icon,
+.wr-quote-math-marker-icon .svg-icon,
+.wr-quote-code-marker-icon .svg-icon {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+}
+
+
+/* Nested-quote marker (X-style "QT: ...") stands out in accent color */
+.wr-nested-quote-marker {
+  color: var(--text-accent);
+}
+
+.wr-quote-card-meta {
+  font-size: 0.8em;
+  color: var(--text-muted);
+  font-family: var(--font-text, var(--default-font));
+}
+
+.wr-quote-card-dead {
+  cursor: default;
+  opacity: 0.65;
+}
+
+.wr-quote-card-dead:hover {
+  border-color: var(--text-muted);
+}
+
+/* When clicking a quote card jumps to the source post, gently flash the
+   whole target block. If the source post matches a tag rule (has an
+   accent), JS sets --wr-flash-color on the element so it glows in that
+   accent. If unset, the Obsidian theme's accent color is used. */
+@keyframes wr-quote-jump-flash {
+  0%, 100% { background-color: transparent; }
+  50% { background-color: var(--wr-flash-color, hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.22)); }
+}
+
+/*! kept - flash animation must outrank theme and editor animation declarations */
+.cm-line.wr-quote-jump-flash,
+.wr-quote-jump-flash {
+  animation: wr-quote-jump-flash 1.6s ease-in-out 2 !important;
+}
+
+/* Both cm-line and RV blocks easily get their background-color overridden
+   by the background settings, so paint on top via an ::after overlay */
+.cm-line.wr-codeblock-line.wr-quote-jump-flash,
+.block-language-wr.wr-quote-jump-flash,
+pre.wr-quote-jump-flash,
+.wr-card.wr-quote-jump-flash {
+  position: relative;
+}
+
+.cm-line.wr-codeblock-line.wr-quote-jump-flash::after,
+.block-language-wr.wr-quote-jump-flash::after,
+pre.wr-quote-jump-flash::after,
+.wr-card.wr-quote-jump-flash::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-color: var(--wr-flash-color, hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.22));
+  animation: wr-quote-jump-flash-overlay 1.4s ease-out 1 forwards;
+  border-radius: inherit;
+}
+
+@keyframes wr-quote-jump-flash-overlay {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  100% { opacity: 0; }
+}

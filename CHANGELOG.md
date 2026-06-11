@@ -1,5 +1,23 @@
 # Release Notes
 
+## 2.7.1 - 2026-06-12
+
+### Updates
+
+- Updated dependencies.
+
+### Improvements
+
+- Tapping a URL card on mobile now gives the same visual feedback as on desktop.
+- Improved internal structure.
+
+### Bug Fixes
+
+- Fixed an issue where an extra blank line could appear in posts that contain a deeper quote inside a quote.
+- Fixed an issue where the three-dot menu button sometimes did not change color while the menu was open.
+
+---
+
 ## 2.7.0 - 2026-06-07
 
 ### Important Changes

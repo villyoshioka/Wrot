@@ -16,9 +16,9 @@ function setCachedMemos(filePath: string, memos: Memo[]): void {
   if (MEMO_CACHE.has(filePath)) MEMO_CACHE.delete(filePath);
   MEMO_CACHE.set(filePath, memos);
   while (MEMO_CACHE.size > MEMO_CACHE_MAX) {
-    const oldest = MEMO_CACHE.keys().next().value;
-    if (oldest === undefined) break;
-    MEMO_CACHE.delete(oldest);
+    const iter = MEMO_CACHE.keys().next();
+    if (iter.done) break;
+    MEMO_CACHE.delete(iter.value);
   }
 }
 
