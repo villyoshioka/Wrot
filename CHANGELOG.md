@@ -1,5 +1,18 @@
 # Release Notes
 
+## 2.7.2 - 2026-06-12
+
+### Updates
+
+- Updated dependencies.
+
+### Improvements
+
+- Aligned the vertical position of checkboxes with the text.
+- Improved internal structure.
+
+---
+
 ## 2.7.1 - 2026-06-12
 
 ### Updates

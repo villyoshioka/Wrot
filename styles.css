@@ -691,23 +691,25 @@ ol.wr-reading-list > li::before {
   list-style: none;
 }
 
-/*! kept - native checkbox metrics fight theme rules that also use the priority flag */
-.wr-bullet-list .wr-check-item input[type="checkbox"],
-.wr-reading-list .wr-check-item input[type="checkbox"] {
-  position: absolute !important;
-  left: 3px !important;
-  top: 50% !important;
-  transform: translateY(-50%) !important;
-  width: 14px !important;
-  height: 14px !important;
-  margin: 0 !important;
+/* Native checkbox metrics. Surveyed themes (Minimal / Things / AnuPpuccin /
+   Catppuccin) only use the priority flag for checkbox colors/borders, never
+   metrics, and their metric rules target task-list classes Wrot's bare
+   inputs don't carry — so the :not(#x) specificity boost is enough here. */
+.wr-bullet-list .wr-check-item input[type="checkbox"]:not(#x),
+.wr-reading-list .wr-check-item input[type="checkbox"]:not(#x) {
+  position: absolute;
+  left: 3px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  margin: 0;
 }
 
-/*! kept - checkmark offset fights theme rules that also use the priority flag */
-.wr-bullet-list .wr-check-item input[type="checkbox"]:checked::after,
-.wr-reading-list .wr-check-item input[type="checkbox"]:checked::after {
-  top: -2.5px !important;
-  inset-inline-start: -2px !important;
+.wr-bullet-list .wr-check-item input[type="checkbox"]:not(#x):checked::after,
+.wr-reading-list .wr-check-item input[type="checkbox"]:not(#x):checked::after {
+  top: -2.5px;
+  inset-inline-start: -2px;
 }
 
 
@@ -1203,20 +1205,20 @@ body .wr-lp-marker:not(#x) {
   padding-left: 2px;
 }
 
-/*! kept - native checkbox metrics fight theme rules that also use the priority flag */
-.wr-lp-check input[type="checkbox"] {
-  width: 14px !important;
-  height: 14px !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  vertical-align: -2px;
+/* Native checkbox metrics — same survey-based reasoning as the timeline
+   checkbox block above; :not(#x) outranks themes' non-priority rules. */
+.wr-lp-check input[type="checkbox"]:not(#x) {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  padding: 0;
+  vertical-align: 0px;
   cursor: default;
 }
 
-/*! kept - checkmark offset fights theme rules that also use the priority flag */
-.wr-lp-check input[type="checkbox"]:checked::after {
-  top: -2.5px !important;
-  inset-inline-start: -2px !important;
+.wr-lp-check input[type="checkbox"]:not(#x):checked::after {
+  top: -2.5px;
+  inset-inline-start: -2px;
 }
 
 /* Content */
@@ -1913,43 +1915,46 @@ body.is-mobile .wr-ogp-card:active {
   border-color: rgba(0, 0, 0, 0.2);
 }
 
-/* Settings: color picker fix for mobile */
-/*! kept - native color input metrics need forcing on mobile WebView */
+/* Settings: color picker fix for mobile.
+   Obsidian mobile styles input[type="color"] (appearance reset, width: 100%,
+   --swatch-* metrics) with normal-priority rules only, so plugin CSS wins by
+   load order + specificity without the priority flag. */
 body.is-mobile .wr-settings input[type="color"] {
-  width: 48px !important;
-  min-width: 48px !important;
-  max-width: 48px !important;
-  height: 48px !important;
-  min-height: 48px !important;
-  max-height: 48px !important;
-  border-radius: 50% !important;
-  border: none !important;
-  padding: 0 !important;
+  --swatch-width: 48px;
+  --swatch-height: 48px;
+  --swatch-radius: 50%;
+  width: 48px;
+  min-width: 48px;
+  max-width: 48px;
+  height: 48px;
+  min-height: 48px;
+  max-height: 48px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
   margin: 0;
   cursor: pointer;
-  -webkit-appearance: none !important;
-  appearance: none !important;
-  flex-shrink: 0 !important;
-  flex-grow: 0 !important;
+  -webkit-appearance: none;
+  appearance: none;
+  flex-shrink: 0;
+  flex-grow: 0;
   box-sizing: content-box;
-  overflow: hidden !important;
+  overflow: hidden;
 }
 
-/*! kept - native color input metrics need forcing on mobile WebView */
-.is-mobile .wr-settings input[type="color"]::-webkit-color-swatch-wrapper {
-  padding: 0 !important;
-  margin: 0 !important;
-  border-radius: 50% !important;
-  width: 48px !important;
-  height: 48px !important;
+body.is-mobile .wr-settings input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+  margin: 0;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
 }
 
-/*! kept - native color input metrics need forcing on mobile WebView */
-.is-mobile .wr-settings input[type="color"]::-webkit-color-swatch {
-  border: none !important;
-  border-radius: 50% !important;
-  width: 48px !important;
-  height: 48px !important;
+body.is-mobile .wr-settings input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
 }
 
 /* ========================================
