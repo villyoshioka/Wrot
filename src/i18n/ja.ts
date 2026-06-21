@@ -54,6 +54,12 @@ const ja = {
   "settings.option.pinLimit.3": "3 件",
   "settings.option.pinLimit.5": "5 件",
 
+  // ─── settings: 禅モード時のピン留め表示 ────────────────────────────
+  "settings.item.zenModePins.name": "禅モード時のピン留め表示",
+  "settings.item.zenModePins.desc": "禅モード時にピン留めされたメモを表示するかを選びます。",
+  "settings.option.zenModePins.hide": "表示しない",
+  "settings.option.zenModePins.show": "表示する",
+
   // ─── settings: URLプレビュー ────────────────────────────────────────
   "settings.item.ogp.name": "URLプレビュー",
   "settings.item.ogp.desc":
@@ -119,6 +125,7 @@ const ja = {
   "view.formatMenu.strikethrough": "取り消し線",
   "view.formatMenu.highlight": "ハイライト",
   "view.formatMenu.settings": "設定",
+  "view.formatMenu.zenMode": "禅モード",
 
   // ─── view: 投稿の3点メニュー ───────────────────────────────────────
   "view.postMenu.copy": "コピー",

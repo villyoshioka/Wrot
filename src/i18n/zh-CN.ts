@@ -54,6 +54,11 @@ const zhCN = {
   "settings.option.pinLimit.3": "3 条",
   "settings.option.pinLimit.5": "5 条",
 
+  "settings.item.zenModePins.name": "禅模式中的置顶显示",
+  "settings.item.zenModePins.desc": "选择在禅模式启用时是否显示已置顶的帖子。",
+  "settings.option.zenModePins.hide": "隐藏",
+  "settings.option.zenModePins.show": "显示",
+
   "settings.item.ogp.name": "URL 预览",
   "settings.item.ogp.desc":
     "自动获取并显示笔记内 URL 的 OGP 信息。关闭后将不再访问外部网络。",
@@ -120,6 +125,7 @@ const zhCN = {
   "view.formatMenu.strikethrough": "删除线",
   "view.formatMenu.highlight": "高亮",
   "view.formatMenu.settings": "设置",
+  "view.formatMenu.zenMode": "禅模式",
 
   "view.postMenu.copy": "复制",
   "view.postMenu.quotePost": "引用此条内容",

@@ -54,6 +54,11 @@ const de = {
   "settings.option.pinLimit.3": "3 Beiträge",
   "settings.option.pinLimit.5": "5 Beiträge",
 
+  "settings.item.zenModePins.name": "Angeheftete Beiträge im Zen-Modus",
+  "settings.item.zenModePins.desc": "Legt fest, ob angeheftete Beiträge im Zen-Modus angezeigt werden.",
+  "settings.option.zenModePins.hide": "Ausblenden",
+  "settings.option.zenModePins.show": "Anzeigen",
+
   "settings.item.ogp.name": "URL-Vorschau",
   "settings.item.ogp.desc":
     "Ruft automatisch OGP-Informationen von URLs in Notizen ab und zeigt sie an. Wenn deaktiviert, findet keine externe Kommunikation statt.",
@@ -114,6 +119,7 @@ const de = {
   "view.formatMenu.strikethrough": "Durchgestrichen",
   "view.formatMenu.highlight": "Hervorheben",
   "view.formatMenu.settings": "Einstellungen",
+  "view.formatMenu.zenMode": "Zen-Modus",
 
   "view.postMenu.copy": "Kopieren",
   "view.postMenu.quotePost": "Beitrag zitieren",

@@ -59,6 +59,7 @@ export class WrotView extends ItemView {
   // 「今日」追従中フラグ。trueのときだけ日付変更を跨いで自動更新する
   private anchoredToToday: boolean = true;
   private listContainer!: HTMLElement;
+  private pinnedContainer: HTMLElement | null = null;
   private dateLabel!: HTMLElement;
   private dateNavEl!: HTMLElement;
   private calendarBtnEl: HTMLElement | null = null;
@@ -122,6 +123,7 @@ export class WrotView extends ItemView {
     this.buildDateNav(container);
     this.buildInputArea(container);
     this.listContainer = container.createDiv({ cls: "wr-list" });
+    this.applyZenMode();
 
     this.scope!.register(["Mod"], "Enter", (evt) => {
       if (activeDocument.activeElement === this.textarea) {
@@ -155,6 +157,7 @@ export class WrotView extends ItemView {
       this.toolbarResizeObserver = null;
     }
     this.clearPendingImage();
+    this.clearPinnedContainer();
     this.contentEl.empty();
   }
 
@@ -629,6 +632,20 @@ export class WrotView extends ItemView {
         });
         menu.addSeparator();
         menu.addItem((item) => {
+          const zenActive = this.plugin.settings.zenMode;
+          item
+            .setTitle(t("view.formatMenu.zenMode"))
+            .setIcon("crosshair")
+            .onClick(async () => {
+              this.plugin.settings.zenMode = !zenActive;
+              await this.plugin.saveSettings();
+              this.applyZenMode();
+              await this.refresh();
+            });
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- assertion needed for cross-version Obsidian typings
+          (item as { setChecked?: (v: boolean) => void }).setChecked?.(zenActive);
+        });
+        menu.addItem((item) => {
           item.setTitle(t("view.formatMenu.settings")).setIcon("settings").onClick(() => {
             const settingApi = (this.app as { setting?: { open?: () => void; openTabById?: (id: string) => void } }).setting;
             if (settingApi?.open && settingApi?.openTabById) {
@@ -880,6 +897,7 @@ export class WrotView extends ItemView {
       this.dateLabel.setText(isToday ? `${dateText}${t("view.dateNav.todaySuffix")}` : dateText);
 
       this.listContainer.empty();
+      this.clearPinnedContainer();
 
       // \u30d4\u30f3\u7559\u3081\u306f\u73fe\u5728\u65e5\u4ed8\u3068\u72ec\u7acb\u3057\u3066\u30bf\u30a4\u30e0\u30e9\u30a4\u30f3\u5148\u982d\u306b\u8868\u793a\u3059\u308b\u305f\u3081\u5148\u306b\u89e3\u6c7a
       const pinnedResolved = await this.resolvePinnedMemos();
@@ -923,6 +941,32 @@ export class WrotView extends ItemView {
     } finally {
       this.refreshing = false;
     }
+  }
+
+  // 禅モード時はピン留め表示設定に従い、非禅モード時は常に表示する
+  private shouldShowPinnedSection(): boolean {
+    if (this.plugin.settings.zenMode) {
+      return this.plugin.settings.zenModePins === "show";
+    }
+    return true;
+  }
+
+  // 禅モードの表示状態を設定に合わせて反映する
+  private applyZenMode(): void {
+    this.contentEl.toggleClass("wr-zen-mode", this.plugin.settings.zenMode);
+  }
+
+  private clearPinnedContainer(): void {
+    this.pinnedContainer?.remove();
+    this.pinnedContainer = null;
+  }
+
+  private ensurePinnedContainer(): HTMLElement {
+    if (this.pinnedContainer) return this.pinnedContainer;
+    const container = this.contentEl.createDiv({ cls: "wr-pinned-section" });
+    this.listContainer.insertAdjacentElement("beforebegin", container);
+    this.pinnedContainer = container;
+    return container;
   }
 
   // \u30d4\u30f3\u8a2d\u5b9a\u304b\u3089\u5b9f\u4f53\u30e1\u30e2\u3092\u89e3\u6c7a\u3059\u308b\uff08\u8a2d\u5b9a\u306e\u6574\u7406\u306f\u30d4\u30f3\u8ffd\u52a0/\u524a\u9664\u5074\u3067\u884c\u3046\uff09
@@ -1015,7 +1059,10 @@ export class WrotView extends ItemView {
   }
 
   private renderMemoCard(memo: Memo, options: { pinned: boolean; filePath: string }): void {
-    const card = this.listContainer.createDiv({ cls: "wr-card" });
+    const host = options.pinned && this.shouldShowPinnedSection()
+      ? this.ensurePinnedContainer()
+      : this.listContainer;
+    const card = host.createDiv({ cls: "wr-card" });
     if (options.pinned) card.classList.add("wr-card-pinned");
     const T = memo.time.replace(/[-:.TZ+]/g, "").slice(0, 17);
     card.classList.add(`wr-block-id-wr-${T}`);

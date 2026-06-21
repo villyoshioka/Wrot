@@ -539,6 +539,14 @@ body .wr-submit-btn.wr-submit-active {
   color: var(--text-on-accent);
 }
 
+/* Pinned Section (独立コンテナ・禅モード連携) */
+.wr-pinned-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
 /* Memo Card List */
 .wr-list {
   display: flex;
@@ -548,6 +556,25 @@ body .wr-submit-btn.wr-submit-active {
   overflow-y: auto;
   min-height: 0;
   padding-bottom: 4px;
+}
+
+/* Zen Mode: タイムラインを隠して入力フォーム＋日付ナビのみ残す */
+.wr-zen-mode .wr-list {
+  display: none;
+}
+
+.wr-zen-mode .wr-pinned-section {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* 禅モードで隠す: 今日ボタン・カレンダーボタン
+   nav-btn ベースルールが高特異性セレクタで display:flex を指定しているため、
+   同等の特異性で上書きする */
+.workspace-leaf-content[data-type="wrot-view"] .wr-zen-mode .wr-today-btn,
+.workspace-leaf-content[data-type="wrot-view"] .wr-zen-mode .wr-calendar-btn {
+  display: none;
 }
 
 .wr-empty {

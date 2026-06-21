@@ -53,6 +53,11 @@ const enGB = {
   "settings.option.pinLimit.3": "3 items",
   "settings.option.pinLimit.5": "5 items",
 
+  "settings.item.zenModePins.name": "Pinned Posts in Zen Mode",
+  "settings.item.zenModePins.desc": "Choose whether to display pinned posts while Zen Mode is active.",
+  "settings.option.zenModePins.hide": "Hide",
+  "settings.option.zenModePins.show": "Show",
+
   "settings.item.ogp.name": "URL Preview",
   "settings.item.ogp.desc":
     "Automatically fetch and display OGP information from URLs in notes. If turned off, no external communication will occur.",
@@ -113,6 +118,7 @@ const enGB = {
   "view.formatMenu.strikethrough": "Strikethrough",
   "view.formatMenu.highlight": "Highlight",
   "view.formatMenu.settings": "Settings",
+  "view.formatMenu.zenMode": "Zen Mode",
 
   "view.postMenu.copy": "Copy",
   "view.postMenu.quotePost": "Quote Post",

@@ -54,6 +54,11 @@ const ko = {
   "settings.option.pinLimit.3": "3개",
   "settings.option.pinLimit.5": "5개",
 
+  "settings.item.zenModePins.name": "젠 모드에서 고정 게시물 표시",
+  "settings.item.zenModePins.desc": "젠 모드가 활성화된 동안 고정된 게시물을 표시할지 선택합니다.",
+  "settings.option.zenModePins.hide": "숨기기",
+  "settings.option.zenModePins.show": "표시",
+
   "settings.item.ogp.name": "URL 미리보기 (OGP)",
   "settings.item.ogp.desc":
     "게시물 내 URL의 미리보기 정보를 가져옵니다. 끄면 외부와 통신하지 않습니다.",
@@ -116,6 +121,7 @@ const ko = {
   "view.formatMenu.strikethrough": "취소선",
   "view.formatMenu.highlight": "형광펜",
   "view.formatMenu.settings": "설정",
+  "view.formatMenu.zenMode": "젠 모드",
 
   "view.postMenu.copy": "복사",
   "view.postMenu.quotePost": "게시물 인용",

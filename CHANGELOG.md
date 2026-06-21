@@ -1,5 +1,18 @@
 # Release Notes
 
+## 2.8.0 - 2026-06-21
+
+### Updates
+
+- Updated dependencies.
+
+### New Features
+
+- Added Zen Mode. Toggle it from the three-dot menu in the post form to hide the timeline, Today button, and calendar button for a focused writing experience.
+- Added a setting for pinned post visibility in Zen Mode. Choose whether pinned posts are displayed while Zen Mode is active.
+
+---
+
 ## 2.7.2 - 2026-06-12
 
 ### Updates

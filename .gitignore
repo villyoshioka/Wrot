@@ -1,7 +1,10 @@
 node_modules/
 .claude/
+.opencode/
+.kilo/
 .env
 data.json
 CLAUDE.md
+AGENTS.md
 dist/
 dev/

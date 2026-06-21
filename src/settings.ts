@@ -45,6 +45,8 @@ export interface WrotSettings {
   calendarDayShape: "circle" | "rounded" | "square";
   pins: PinEntry[];
   pinLimit: PinLimit;
+  zenMode: boolean;
+  zenModePins: "hide" | "show";
   // 起動時に Obsidian の言語が変わったかを検知するための「前回保存時のロケール」記録。
   // 未設定（既存ユーザーで初出のとき）は loadSettings で現在ロケールを採用するだけで、リセットは走らせない。
   lastLocale?: string;
@@ -70,6 +72,8 @@ export const DEFAULT_SETTINGS: WrotSettings = {
   calendarDayShape: "rounded",
   pins: [],
   pinLimit: 3,
+  zenMode: false,
+  zenModePins: "hide",
 };
 
 const SETTINGS_NARROW_THRESHOLD_PX = 600;
@@ -548,6 +552,21 @@ export class WrotSettingTab extends PluginSettingTab {
           })
       )
     calendarDayShapeSetting.settingEl.toggle(this.plugin.settings.showCalendarButton);
+
+    new Setting(containerEl)
+      .setName(t("settings.item.zenModePins.name"))
+      .setDesc(t("settings.item.zenModePins.desc"))
+      .addDropdown((dropdown) =>
+        dropdown
+          .addOption("hide", t("settings.option.zenModePins.hide"))
+          .addOption("show", t("settings.option.zenModePins.show"))
+          .setValue(this.plugin.settings.zenModePins)
+          .onChange(async (value) => {
+            this.plugin.settings.zenModePins = value as WrotSettings["zenModePins"];
+            await this.plugin.saveSettings();
+            this.plugin.refreshViews();
+          })
+      );
 
     new Setting(containerEl).setName(t("settings.section.tagrules")).setHeading();
 
