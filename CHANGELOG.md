@@ -1,5 +1,13 @@
 # Release Notes
 
+## 2.9.1 - 2026-06-24
+
+### Bug Fixes
+
+- Fixed a layout break that occurred when opening Wrot in the main area on mobile.
+
+---
+
 ## 2.9.0 - 2026-06-23
 
 ### Deprecated

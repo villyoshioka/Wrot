@@ -19,10 +19,12 @@
   position: relative;
 }
 
-/* メインエリア（タブ）配置時に際限なく広がるのを防ぐ: 固定幅で中央寄せ */
+/* メインエリア（タブ）配置時に際限なく広がるのを防ぐ: 固定幅で中央寄せ。
+   margin-inline のみ指定して上下マージンは親 flex 計算に委ねることで、
+   モバイルのメインエリアでコンテンツが上に寄る崩れを防ぐ。 */
 .workspace-split.mod-root .workspace-leaf-content[data-type="wrot-view"] .wr-container {
-  max-width: 780px;
-  margin: 0 auto;
+  max-width: 760px;
+  margin-inline: auto;
 }
 
 /* Date Navigation */
