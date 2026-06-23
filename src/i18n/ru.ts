@@ -52,11 +52,6 @@ const ru = {
   "settings.option.pinLimit.3": "3 записи",
   "settings.option.pinLimit.5": "5 записей",
 
-  "settings.item.zenModePins.name": "Закреплённые записи в Дзен-режиме",
-  "settings.item.zenModePins.desc": "Выберите, показывать ли закреплённые записи при активном Дзен-режиме.",
-  "settings.option.zenModePins.hide": "Скрыть",
-  "settings.option.zenModePins.show": "Показать",
-
   "settings.item.ogp.name": "Предпросмотр URL",
   "settings.item.ogp.desc":
     "Автоматическое получение OGP-информации из ссылок. Если выключено, внешние соединения не выполняются.",
@@ -118,7 +113,6 @@ const ru = {
   "view.formatMenu.strikethrough": "Зачеркивание",
   "view.formatMenu.highlight": "Выделение",
   "view.formatMenu.settings": "Настройки",
-  "view.formatMenu.zenMode": "Дзен-режим",
 
   "view.postMenu.copy": "Копировать",
   "view.postMenu.quotePost": "Цитировать запись",

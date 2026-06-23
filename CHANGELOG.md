@@ -1,5 +1,19 @@
 # Release Notes
 
+## 2.9.0 - 2026-06-23
+
+### Deprecated
+
+- Removed Zen Mode after finding through actual use that it did not fit Wrot.
+
+### Improvements
+
+- Fixed the three-dot menu position.
+- Improved display responsiveness to width and layout.
+- Buttons now scale with font-size following when enabled.
+
+---
+
 ## 2.8.0 - 2026-06-21
 
 ### Updates

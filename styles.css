@@ -19,13 +19,18 @@
   position: relative;
 }
 
+/* メインエリア（タブ）配置時に際限なく広がるのを防ぐ: 固定幅で中央寄せ */
+.workspace-split.mod-root .workspace-leaf-content[data-type="wrot-view"] .wr-container {
+  max-width: 780px;
+  margin: 0 auto;
+}
+
 /* Date Navigation */
 .wr-date-nav {
   display: flex;
   align-items: center;
   gap: 2px;
   margin-bottom: 12px;
-  flex-wrap: wrap;
 }
 
 
@@ -47,6 +52,13 @@
 .wr-nav-btn .svg-icon {
   width: 20px;
   height: 20px;
+}
+
+/* Follow Obsidian's UI font size when enabled, but never shrink below the default.
+   Ratio: 20px icon / 14px text-baseline = 1.429 */
+body.wr-font-follow .wr-nav-btn .svg-icon {
+  width: max(20px, calc(var(--wr-font-text) * 1.429));
+  height: max(20px, calc(var(--wr-font-text) * 1.429));
 }
 
 /* Suppress Obsidian's default button:focus-visible background that lingers
@@ -74,6 +86,9 @@
   text-align: center;
   line-height: 1;
   cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .wr-date-label:hover {
@@ -229,6 +244,13 @@
 .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-nav-btn .svg-icon {
   width: 16px;
   height: 16px;
+}
+
+/* Follow Obsidian's UI font size when enabled, but never shrink below the default.
+   Ratio: 16px icon / 14px text-baseline = 1.143 */
+body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
+  width: max(16px, calc(var(--wr-font-text) * 1.143));
+  height: max(16px, calc(var(--wr-font-text) * 1.143));
 }
 
 .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-weekdays {
@@ -457,6 +479,13 @@ body .wr-input-toolbar.wr-toolbar-wrapped .wr-toolbar-btn:not(#x) {
   height: 18px;
 }
 
+/* Follow Obsidian's UI font size when enabled, but never shrink below the default.
+   Ratio: 18px icon / 14px text-baseline = 1.286 */
+body.wr-font-follow .wr-toolbar-btn .svg-icon {
+  width: max(18px, calc(var(--wr-font-text) * 1.286));
+  height: max(18px, calc(var(--wr-font-text) * 1.286));
+}
+
 .wr-thumbnail-container {
   margin: 6px 0 4px;
 }
@@ -556,25 +585,6 @@ body .wr-submit-btn.wr-submit-active {
   overflow-y: auto;
   min-height: 0;
   padding-bottom: 4px;
-}
-
-/* Zen Mode: タイムラインを隠して入力フォーム＋日付ナビのみ残す */
-.wr-zen-mode .wr-list {
-  display: none;
-}
-
-.wr-zen-mode .wr-pinned-section {
-  flex: 1;
-  overflow-y: auto;
-  min-height: 0;
-}
-
-/* 禅モードで隠す: 今日ボタン・カレンダーボタン
-   nav-btn ベースルールが高特異性セレクタで display:flex を指定しているため、
-   同等の特異性で上書きする */
-.workspace-leaf-content[data-type="wrot-view"] .wr-zen-mode .wr-today-btn,
-.workspace-leaf-content[data-type="wrot-view"] .wr-zen-mode .wr-calendar-btn {
-  display: none;
 }
 
 .wr-empty {
@@ -1320,10 +1330,12 @@ body .wr-copy-btn.wr-copy-done .svg-icon {
   stroke: var(--text-muted);
 }
 
-/* Follow Obsidian's UI font size when enabled, keep the 14px baseline otherwise. */
+/* Follow Obsidian's UI font size when enabled, keep the 14px baseline otherwise.
+   Use max() so icons never shrink below their default 14px.
+   Ratio: 14px icon / 14px text-baseline = 1.0 */
 body.wr-font-follow .wr-menu-btn .svg-icon {
-  width: var(--wr-font-ui-small);
-  height: var(--wr-font-ui-small);
+  width: max(14px, var(--wr-font-text));
+  height: max(14px, var(--wr-font-text));
 }
 
 body .wr-menu-btn.wr-toolbar-active .svg-icon:not(#x) {
@@ -1355,8 +1367,8 @@ body .wr-menu-btn.wr-toolbar-active .svg-icon:not(#x) {
 }
 
 body.wr-font-follow .wr-pin-indicator .svg-icon {
-  width: var(--wr-font-ui-small);
-  height: var(--wr-font-ui-small);
+  width: max(14px, var(--wr-font-text));
+  height: max(14px, var(--wr-font-text));
 }
 
 /* Menu hint line used when the pin-limit is reached. Renders as an
@@ -1566,7 +1578,7 @@ body .wr-media-link {
 
 body .wr-media-link:not(#x) {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 body .wr-inline-img {

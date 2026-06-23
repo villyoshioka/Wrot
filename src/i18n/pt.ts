@@ -55,11 +55,6 @@ const pt = {
   "settings.option.pinLimit.3": "3 itens",
   "settings.option.pinLimit.5": "5 itens",
 
-  "settings.item.zenModePins.name": "Publicações fixadas no Modo Zen",
-  "settings.item.zenModePins.desc": "Escolha se deseja exibir publicações fixadas enquanto o Modo Zen está ativo.",
-  "settings.option.zenModePins.hide": "Ocultar",
-  "settings.option.zenModePins.show": "Exibir",
-
   "settings.item.ogp.name": "Visualização de URL",
   "settings.item.ogp.desc":
     "Exibe automaticamente informações de OGP para URLs. Se desativado, não realizará comunicações externas.",
@@ -122,7 +117,6 @@ const pt = {
   "view.formatMenu.strikethrough": "Tachado",
   "view.formatMenu.highlight": "Destaque",
   "view.formatMenu.settings": "Configurações",
-  "view.formatMenu.zenMode": "Modo Zen",
 
   "view.postMenu.copy": "Copiar",
   "view.postMenu.quotePost": "Citar postagem",

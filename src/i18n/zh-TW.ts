@@ -54,11 +54,6 @@ const zhTW = {
   "settings.option.pinLimit.3": "3 件",
   "settings.option.pinLimit.5": "5 件",
 
-  "settings.item.zenModePins.name": "禪模式中的釘選顯示",
-  "settings.item.zenModePins.desc": "選擇在禪模式啟用時是否顯示已釘選的貼文。",
-  "settings.option.zenModePins.hide": "隱藏",
-  "settings.option.zenModePins.show": "顯示",
-
   "settings.item.ogp.name": "URL 預覽",
   "settings.item.ogp.desc":
     "自動從筆記內的 URL 取得 OGP 資訊並顯示。關閉後將不進行外部通訊。",
@@ -125,7 +120,6 @@ const zhTW = {
   "view.formatMenu.strikethrough": "刪除線",
   "view.formatMenu.highlight": "高亮",
   "view.formatMenu.settings": "設定",
-  "view.formatMenu.zenMode": "禪模式",
 
   "view.postMenu.copy": "複製",
   "view.postMenu.quotePost": "引用貼文",

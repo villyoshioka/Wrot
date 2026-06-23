@@ -1070,7 +1070,7 @@ export default class WrotPlugin extends Plugin {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- value from untyped Obsidian/CodeMirror internal API
     const raw = (await this.loadData()) ?? {};
     let dirty = false;
-    for (const key of ["autoLinkEnabled", "autoLinkExcludeList"]) {
+    for (const key of ["autoLinkEnabled", "autoLinkExcludeList", "zenMode", "zenModePins"]) {
       if (key in raw) {
         delete (raw as Record<string, unknown>)[key];
         dirty = true;

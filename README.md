@@ -26,7 +26,6 @@ Everything you write is saved directly into your Daily Notes. This means it work
 - **Links & URL Previews** — Supports internal links (![[]]), external URLs, and OGP cards. Get a quick look at link content with image previews. See [Using Images, Links, and Embeds](https://github.com/villyoshioka/Wrot/blob/main/docs/en/links-and-embeds.md) for more details.
 - **Seamless Image Uploads** — Quickly attach screenshots or image files via paste, drag-and-drop, or the upload button. Preview thumbnails before you post, and easily remove any mistakes with a single click.
 - **Fully Customizable** — Tailor your workspace by adjusting background/text colors and even customizing the post button’s text and icon.
-- **Zen Mode** — Toggle Zen Mode from the three-dot menu in the post form to hide the timeline, Today button, and calendar button, creating a focused space for writing. Pinned post visibility in Zen Mode is also configurable.
 
 ---
 
@@ -105,7 +104,6 @@ Wrot is highly customizable. Key settings include:
 - **Themes** — Custom background and text colors for both Light and Dark modes.
 - **Tag Styling** — Set specific colors for tags to categorize your timeline visually.
 - **Pin Limits** — Choose to pin 1, 3, or 5 notes to the top.
-- **Zen Mode Pinned Posts** — Choose whether pinned posts are displayed while Zen Mode is active.
 - **Button Customization** — Change the post button’s label and icon.
 - **Time Formats** — Customize how timestamps appear (e.g., `YYYY/MM/DD HH:mm:ss`).
 - **URL Previews** — Toggle OGP card previews on or off.

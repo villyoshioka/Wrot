@@ -56,11 +56,6 @@ const it = {
   "settings.option.pinLimit.3": "3 elementi",
   "settings.option.pinLimit.5": "5 elementi",
 
-  "settings.item.zenModePins.name": "Post fissati in Modalità Zen",
-  "settings.item.zenModePins.desc": "Scegli se mostrare i post fissati mentre la Modalità Zen è attiva.",
-  "settings.option.zenModePins.hide": "Nascondi",
-  "settings.option.zenModePins.show": "Mostra",
-
   "settings.item.ogp.name": "Anteprima URL",
   "settings.item.ogp.desc":
     "Ottieni e visualizza automaticamente le informazioni OGP dagli URL nelle note. Se disattivato, non verrà effettuata alcuna comunicazione esterna.",
@@ -130,7 +125,6 @@ const it = {
   "view.formatMenu.strikethrough": "Barrato",
   "view.formatMenu.highlight": "Evidenziato",
   "view.formatMenu.settings": "Impostazioni",
-  "view.formatMenu.zenMode": "Modalità Zen",
 
   "view.postMenu.copy": "Copia",
   "view.postMenu.quotePost": "Cita post",

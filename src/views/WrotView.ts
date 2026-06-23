@@ -123,7 +123,6 @@ export class WrotView extends ItemView {
     this.buildDateNav(container);
     this.buildInputArea(container);
     this.listContainer = container.createDiv({ cls: "wr-list" });
-    this.applyZenMode();
 
     this.scope!.register(["Mod"], "Enter", (evt) => {
       if (activeDocument.activeElement === this.textarea) {
@@ -632,20 +631,6 @@ export class WrotView extends ItemView {
         });
         menu.addSeparator();
         menu.addItem((item) => {
-          const zenActive = this.plugin.settings.zenMode;
-          item
-            .setTitle(t("view.formatMenu.zenMode"))
-            .setIcon("crosshair")
-            .onClick(async () => {
-              this.plugin.settings.zenMode = !zenActive;
-              await this.plugin.saveSettings();
-              this.applyZenMode();
-              await this.refresh();
-            });
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- assertion needed for cross-version Obsidian typings
-          (item as { setChecked?: (v: boolean) => void }).setChecked?.(zenActive);
-        });
-        menu.addItem((item) => {
           item.setTitle(t("view.formatMenu.settings")).setIcon("settings").onClick(() => {
             const settingApi = (this.app as { setting?: { open?: () => void; openTabById?: (id: string) => void } }).setting;
             if (settingApi?.open && settingApi?.openTabById) {
@@ -655,7 +640,7 @@ export class WrotView extends ItemView {
           });
         });
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- assertion needed for cross-version Obsidian typings
-      }, e as MouseEvent);
+      }, e as MouseEvent, -4);
     });
 
     const updateActive = () => {
@@ -943,19 +928,6 @@ export class WrotView extends ItemView {
     }
   }
 
-  // 禅モード時はピン留め表示設定に従い、非禅モード時は常に表示する
-  private shouldShowPinnedSection(): boolean {
-    if (this.plugin.settings.zenMode) {
-      return this.plugin.settings.zenModePins === "show";
-    }
-    return true;
-  }
-
-  // 禅モードの表示状態を設定に合わせて反映する
-  private applyZenMode(): void {
-    this.contentEl.toggleClass("wr-zen-mode", this.plugin.settings.zenMode);
-  }
-
   private clearPinnedContainer(): void {
     this.pinnedContainer?.remove();
     this.pinnedContainer = null;
@@ -1059,7 +1031,7 @@ export class WrotView extends ItemView {
   }
 
   private renderMemoCard(memo: Memo, options: { pinned: boolean; filePath: string }): void {
-    const host = options.pinned && this.shouldShowPinnedSection()
+    const host = options.pinned
       ? this.ensurePinnedContainer()
       : this.listContainer;
     const card = host.createDiv({ cls: "wr-card" });
@@ -1572,7 +1544,8 @@ export class WrotView extends ItemView {
   }
 
   // メニューは同時に1つだけ開く。トリガーボタンには開いている間 active クラスを付与
-  openMenu(trigger: HTMLElement, buildMenu: (m: Menu) => void, evt: MouseEvent): void {
+  // yOffset: メニュー縦位置の微調整（正=下方向、負=上方向）
+  openMenu(trigger: HTMLElement, buildMenu: (m: Menu) => void, evt: MouseEvent, yOffset = 0): void {
     if (this.currentMenu) {
       this.currentMenu.hide();
     }
@@ -1593,7 +1566,10 @@ export class WrotView extends ItemView {
       }
     });
 
-    menu.showAtMouseEvent(evt);
+    // メニュー展開位置をボタン基準で固定化: ボタンの左端から右方向へ展開
+    const rect = trigger.getBoundingClientRect();
+    const doc = trigger.ownerDocument ?? activeDocument;
+    menu.showAtPosition({ x: rect.left, y: rect.bottom + yOffset }, doc);
   }
 
 }
