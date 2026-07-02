@@ -82,7 +82,7 @@ function makeLineDeco(classes: (string | null | undefined)[]): Decoration {
 
 class BulletWidget extends WidgetType {
   toDOM(): HTMLElement {
-    const span = activeDocument.createElement("span");
+    const span = createSpan();
     span.className = "wr-lp-marker wr-lp-bullet";
     span.textContent = "\u2022";
     return span;
@@ -93,9 +93,9 @@ class BulletWidget extends WidgetType {
 class CheckboxWidget extends WidgetType {
   constructor(private checked: boolean, private pos: number) { super(); }
   toDOM(view: EditorView): HTMLElement {
-    const wrap = activeDocument.createElement("span");
+    const wrap = createSpan();
     wrap.className = "wr-lp-marker wr-lp-check";
-    const cb = activeDocument.createElement("input");
+    const cb = createEl("input");
     cb.type = "checkbox";
     cb.checked = this.checked;
     cb.addEventListener("click", (e) => {
@@ -125,7 +125,7 @@ class CheckboxWidget extends WidgetType {
 class OlMarkerWidget extends WidgetType {
   constructor(private label: string) { super(); }
   toDOM(): HTMLElement {
-    const span = activeDocument.createElement("span");
+    const span = createSpan();
     span.className = "wr-lp-marker wr-lp-ol";
     span.textContent = this.label;
     return span;
@@ -140,7 +140,7 @@ class ObsidianLinkWidget extends WidgetType {
     private unresolved: boolean = false
   ) { super(); }
   toDOM(): HTMLElement {
-    const link = activeDocument.createElement("a");
+    const link = createEl("a");
     link.className = this.unresolved
       ? "wr-internal-link wr-internal-link-unresolved"
       : "wr-internal-link";
@@ -161,7 +161,7 @@ class ObsidianLinkWidget extends WidgetType {
 class MdLinkWidget extends WidgetType {
   constructor(private label: string, private url: string) { super(); }
   toDOM(): HTMLElement {
-    const link = activeDocument.createElement("a");
+    const link = createEl("a");
     link.className = "wr-url-highlight";
     link.textContent = this.label;
     link.addEventListener("click", (e) => {
@@ -180,7 +180,7 @@ class MdLinkWidget extends WidgetType {
 class InternalLinkWidget extends WidgetType {
   constructor(private fileName: string, private app: App, private resolved: boolean) { super(); }
   toDOM(): HTMLElement {
-    const link = activeDocument.createElement("a");
+    const link = createEl("a");
     link.className = this.resolved
       ? "wr-internal-link"
       : "wr-internal-link wr-internal-link-unresolved";
@@ -202,7 +202,7 @@ class InternalLinkWidget extends WidgetType {
 class EmbedMissingWidget extends WidgetType {
   constructor(private fileName: string) { super(); }
   toDOM(): HTMLElement {
-    const span = activeDocument.createElement("span");
+    const span = createSpan();
     span.className = "wr-embed-missing";
     span.textContent = `![[${this.fileName}]]`;
     return span;
@@ -216,7 +216,7 @@ class EmbedMissingWidget extends WidgetType {
 class MathWidget extends WidgetType {
   constructor(private tex: string) { super(); }
   toDOM(): HTMLElement {
-    const span = activeDocument.createElement("span");
+    const span = createSpan();
     span.className = "wr-math";
     try {
       // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment, no-undef -- internal Obsidian/CodeMirror API or intentional pattern
@@ -243,7 +243,7 @@ class CodeBlockWidget extends WidgetType {
     private ruleClass: string | null
   ) { super(); }
   toDOM(): HTMLElement {
-    const container = activeDocument.createElement("div");
+    const container = createDiv();
     container.className = "wr-codeblock-display wr-lp-codeblock wr-codeblock-line";
     if (this.ruleClass) container.classList.add(this.ruleClass);
 
@@ -271,7 +271,7 @@ class CodeBlockWidget extends WidgetType {
 class MathBlockWidget extends WidgetType {
   constructor(private tex: string, private ruleClass: string | null) { super(); }
   toDOM(): HTMLElement {
-    const container = activeDocument.createElement("div");
+    const container = createDiv();
     container.className = "wr-math-display wr-lp-mathblock wr-codeblock-line";
     if (this.ruleClass) container.classList.add(this.ruleClass);
     try {
@@ -301,12 +301,12 @@ class EmbedImageWidget extends WidgetType {
     private ruleClass: string | null
   ) { super(); }
   toDOM(): HTMLElement {
-    const container = activeDocument.createElement("div");
+    const container = createDiv();
     // CSS `:has()` 警告回避: 子に必ず wr-embed-img を持つので状態クラスを直接付与
     container.className = "wr-media-area wr-lp-media wr-has-img";
     if (this.ruleClass) container.classList.add(this.ruleClass);
     for (const { src, alt } of this.images) {
-      const img = activeDocument.createElement("img");
+      const img = createEl("img");
       img.className = "wr-embed-img";
       img.src = src;
       img.alt = alt;
@@ -327,9 +327,9 @@ class EmbedImageWidget extends WidgetType {
 class InlineEmbedImageWidget extends WidgetType {
   constructor(private src: string, private alt: string) { super(); }
   toDOM(): HTMLElement {
-    const wrapper = activeDocument.createElement("div");
+    const wrapper = createDiv();
     wrapper.className = "wr-lp-inline-img-wrapper";
-    const img = activeDocument.createElement("img");
+    const img = createEl("img");
     img.className = "wr-embed-img wr-lp-inline-img";
     img.src = this.src;
     img.alt = this.alt;
@@ -374,7 +374,7 @@ class UrlPreviewWidget extends WidgetType {
   }
 
   toDOM(): HTMLElement {
-    const container = activeDocument.createElement("div");
+    const container = createDiv();
     container.className = "wr-media-area wr-lp-media";
     if (this.ruleClass) container.classList.add(this.ruleClass);
 
@@ -441,12 +441,12 @@ class QuoteBlockWidget extends WidgetType {
   }
 
   toDOM(): HTMLElement {
-    const container = activeDocument.createElement("div");
+    const container = createDiv();
     container.className = "wr-quote-block";
     if (this.ruleClass) container.classList.add(this.ruleClass);
 
     if (this.parsedUrls.length > 0) {
-      const mediaArea = activeDocument.createElement("div");
+      const mediaArea = createDiv();
       mediaArea.className = "wr-media-area wr-lp-media";
       if (this.ruleClass) mediaArea.classList.add(this.ruleClass);
       let hasContent = false;
@@ -470,7 +470,7 @@ class QuoteBlockWidget extends WidgetType {
     }
 
     // 引用は底
-    const slot = activeDocument.createElement("span");
+    const slot = createSpan();
     slot.className = "wr-quote-card-slot wr-lp-quote-card";
     if (this.ruleClass) slot.classList.add(this.ruleClass);
     renderQuoteCard(slot, this.fileName, this.blockId, this.app, this.currentFilePath, {

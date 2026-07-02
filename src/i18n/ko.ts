@@ -47,6 +47,15 @@ const ko = {
   "settings.item.inputPlaceholder.desc":
     "입력창이 비어 있을 때 표시되는 텍스트를 변경할 수 있습니다. 비워두면 표시되지 않습니다.",
 
+  "settings.item.tagSuggest.name": "태그 자동 완성",
+  "settings.item.tagSuggest.desc":
+    "입력창에서 #을 입력하면 이전 게시물에서 사용한 태그가 후보로 표시됩니다.",
+  "settings.item.tagSuggestClear.name": "태그 자동 완성 기록 지우기",
+  "settings.item.tagSuggestClear.desc":
+    "후보로 기억하고 있는 태그를 모두 삭제합니다.",
+  "settings.item.tagSuggestClear.button": "지우기",
+  "settings.notice.tagSuggestCleared": "태그 자동 완성 기록을 삭제했습니다",
+
   "settings.item.pinLimit.name": "고정 개수 제한",
   "settings.item.pinLimit.desc":
     "타임라인 상단에 고정할 수 있는 게시물의 최대 개수를 설정합니다.",

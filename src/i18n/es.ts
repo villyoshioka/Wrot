@@ -48,6 +48,15 @@ const es = {
   "settings.item.inputPlaceholder.desc":
     "Cambia el texto que aparece cuando el campo de entrada está vacío. Si se deja en blanco, se ocultará.",
 
+  "settings.item.tagSuggest.name": "Autocompletado de etiquetas",
+  "settings.item.tagSuggest.desc":
+    "Al escribir # en el campo de entrada, se muestran como sugerencias las etiquetas usadas en publicaciones anteriores.",
+  "settings.item.tagSuggestClear.name": "Borrar historial de autocompletado de etiquetas",
+  "settings.item.tagSuggestClear.desc":
+    "Elimina todas las etiquetas recordadas como sugerencias.",
+  "settings.item.tagSuggestClear.button": "Borrar",
+  "settings.notice.tagSuggestCleared": "Historial de autocompletado de etiquetas borrado",
+
   "settings.item.pinLimit.name": "Límite de fijados",
   "settings.item.pinLimit.desc":
     "Establece el número máximo de notas que se pueden fijar en la línea de tiempo.",

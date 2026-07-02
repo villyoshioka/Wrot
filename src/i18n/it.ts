@@ -49,6 +49,15 @@ const it = {
   "settings.item.inputPlaceholder.desc":
     "Puoi modificare il testo visualizzato quando il campo di input è vuoto. Lascia vuoto per nasconderlo.",
 
+  "settings.item.tagSuggest.name": "Completamento automatico dei tag",
+  "settings.item.tagSuggest.desc":
+    "Digitando # nel campo di input, i tag usati nei post precedenti vengono mostrati come suggerimenti.",
+  "settings.item.tagSuggestClear.name": "Cancella cronologia dei tag",
+  "settings.item.tagSuggestClear.desc":
+    "Elimina tutti i tag memorizzati come suggerimenti.",
+  "settings.item.tagSuggestClear.button": "Cancella",
+  "settings.notice.tagSuggestCleared": "Cronologia dei tag cancellata",
+
   "settings.item.pinLimit.name": "Limite post fissati",
   "settings.item.pinLimit.desc":
     "Imposta il numero massimo di note che possono essere fissate in alto nella timeline.",

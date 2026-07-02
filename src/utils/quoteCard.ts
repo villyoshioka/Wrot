@@ -116,13 +116,13 @@ function decorateImageEmbedMarkers(root: HTMLElement): void {
     const parent = tn.parentNode;
     if (!parent) continue;
     const parts = tn.data.split(IMAGE_EMBED_PLACEHOLDER);
-    const frag = activeDocument.createDocumentFragment();
+    const frag = createFragment();
     parts.forEach((part, i) => {
       if (part) frag.appendChild(activeDocument.createTextNode(part));
       if (i < parts.length - 1) {
-        const span = activeDocument.createElement("span");
+        const span = createSpan();
         span.className = "wr-quote-image-marker";
-        const iconEl = activeDocument.createElement("span");
+        const iconEl = createSpan();
         iconEl.className = "wr-quote-image-marker-icon";
         setIcon(iconEl, "image");
         span.appendChild(iconEl);
@@ -147,13 +147,13 @@ function decorateMathBlockMarkers(root: HTMLElement): void {
     const parent = tn.parentNode;
     if (!parent) continue;
     const parts = tn.data.split(MATH_BLOCK_PLACEHOLDER);
-    const frag = activeDocument.createDocumentFragment();
+    const frag = createFragment();
     parts.forEach((part, i) => {
       if (part) frag.appendChild(activeDocument.createTextNode(part));
       if (i < parts.length - 1) {
-        const span = activeDocument.createElement("span");
+        const span = createSpan();
         span.className = "wr-quote-math-marker";
-        const iconEl = activeDocument.createElement("span");
+        const iconEl = createSpan();
         iconEl.className = "wr-quote-math-marker-icon";
         setIcon(iconEl, "sigma");
         span.appendChild(iconEl);
@@ -178,13 +178,13 @@ function decorateCodeBlockMarkers(root: HTMLElement): void {
     const parent = tn.parentNode;
     if (!parent) continue;
     const parts = tn.data.split(CODE_BLOCK_PLACEHOLDER);
-    const frag = activeDocument.createDocumentFragment();
+    const frag = createFragment();
     parts.forEach((part, i) => {
       if (part) frag.appendChild(activeDocument.createTextNode(part));
       if (i < parts.length - 1) {
-        const span = activeDocument.createElement("span");
+        const span = createSpan();
         span.className = "wr-quote-code-marker";
-        const iconEl = activeDocument.createElement("span");
+        const iconEl = createSpan();
         iconEl.className = "wr-quote-code-marker-icon";
         setIcon(iconEl, "code");
         span.appendChild(iconEl);
@@ -209,11 +209,11 @@ function decorateNestedQuoteMarkers(root: HTMLElement): void {
     const parent = tn.parentNode;
     if (!parent) continue;
     const parts = tn.data.split(NESTED_QUOTE_PLACEHOLDER);
-    const frag = activeDocument.createDocumentFragment();
+    const frag = createFragment();
     parts.forEach((part, i) => {
       if (part) frag.appendChild(activeDocument.createTextNode(part));
       if (i < parts.length - 1) {
-        const span = activeDocument.createElement("span");
+        const span = createSpan();
         span.className = "wr-nested-quote-marker";
         span.textContent = NESTED_QUOTE_DISPLAY;
         frag.appendChild(span);
@@ -827,7 +827,7 @@ export function renderQuoteCard(
   // <a href> だと Obsidian の内部リンク処理が mousedown/mouseup を奪い、
   // クリックイベントが届かないことがある（特に <a> 要素本体をクリックした時）。
   // <div> + role="link" で代替し、自前の click ハンドラに任せる。
-  const card = slot.createEl("div", { cls: "wr-quote-card" });
+  const card = slot.createDiv({ cls: "wr-quote-card" });
   card.setAttr("role", "link");
   card.setAttr("tabindex", "0");
   card.dataset.quoteFile = fileName;

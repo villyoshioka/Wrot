@@ -47,6 +47,14 @@ const zhTW = {
   "settings.item.inputPlaceholder.desc":
     "可以更改貼文表單為空時顯示的文字（佔位符）。留空則隱藏。",
 
+  "settings.item.tagSuggest.name": "標籤自動補全",
+  "settings.item.tagSuggest.desc":
+    "在輸入框中輸入 # 時，會將過去貼文中使用過的標籤顯示為候選。",
+  "settings.item.tagSuggestClear.name": "清除標籤補全歷史",
+  "settings.item.tagSuggestClear.desc": "刪除所有已記住的標籤候選。",
+  "settings.item.tagSuggestClear.button": "清除",
+  "settings.notice.tagSuggestCleared": "已清除標籤補全歷史",
+
   "settings.item.pinLimit.name": "釘選上限",
   "settings.item.pinLimit.desc":
     "設定可固定在時間軸上的筆記最大數量。",

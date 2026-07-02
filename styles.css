@@ -361,6 +361,62 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
   background: var(--interactive-accent-hover, var(--interactive-accent));
 }
 
+/* ===== Tag suggestion dropdown =====
+   Autocomplete for #tags in the post form. Opened with absolute positioning
+   inside the view body (wr-container), right below the tag being typed.
+   The position (top/left) is computed in JS from a hidden mirror element
+   (.wr-tag-suggest-mirror) that replicates the textarea's text layout.
+   Follows the calendar popover conventions (background, border, shadow). */
+.workspace-leaf-content[data-type="wrot-view"] .wr-tag-suggest {
+  position: absolute;
+  z-index: 50;
+  width: max-content;
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 4px;
+  background: var(--wr-bg-color, #f8f8f8);
+  border: 1px solid rgba(var(--mono-rgb-100), 0.12);
+  border-radius: 8px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.14);
+  user-select: none;
+}
+
+.workspace-leaf-content[data-type="wrot-view"] .wr-tag-suggest-item {
+  padding: 3px 10px;
+  border-radius: 5px;
+  font-size: var(--wr-font-ui-small);
+  color: var(--text-normal);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.workspace-leaf-content[data-type="wrot-view"] .wr-tag-suggest-item:hover {
+  background: rgba(var(--mono-rgb-100), 0.05);
+}
+
+/* Keyboard-selected candidate. Takes precedence over the hover tint. */
+.workspace-leaf-content[data-type="wrot-view"] .wr-tag-suggest-item-selected,
+.workspace-leaf-content[data-type="wrot-view"] .wr-tag-suggest-item-selected:hover {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+/* Off-screen measuring element replicating the textarea's text layout.
+   Box/font metrics (width, padding, font, etc.) are copied over in JS;
+   only the invariant parts live here. */
+.workspace-leaf-content[data-type="wrot-view"] .wr-tag-suggest-mirror {
+  position: absolute;
+  top: 0;
+  left: -9999px;
+  visibility: hidden;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow: hidden;
+  pointer-events: none;
+}
+
 /* Input Area */
 .wr-input-area {
   margin-bottom: 8px;

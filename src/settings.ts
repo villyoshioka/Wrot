@@ -1,4 +1,4 @@
-import { App, ColorComponent, PluginSettingTab, Setting, TextComponent, setIcon } from "obsidian";
+import { App, ColorComponent, Notice, PluginSettingTab, Setting, TextComponent, setIcon } from "obsidian";
 import type WrotPlugin from "./main";
 import { t } from "./i18n";
 
@@ -38,6 +38,7 @@ export interface WrotSettings {
   inputPlaceholder: string;
   enableOgpFetch: boolean;
   checkStrikethrough: boolean;
+  tagSuggestEnabled: boolean;
   tagColorRulesEnabled: boolean;
   tagColorRules: TagColorRule[];
   followObsidianFontSize: boolean;
@@ -63,6 +64,7 @@ export const DEFAULT_SETTINGS: WrotSettings = {
   inputPlaceholder: "あなたが書くのを待っています...",
   enableOgpFetch: true,
   checkStrikethrough: false,
+  tagSuggestEnabled: true,
   tagColorRulesEnabled: false,
   tagColorRules: [],
   followObsidianFontSize: false,
@@ -472,6 +474,36 @@ export class WrotSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
+      .setName(t("settings.item.tagSuggest.name"))
+      .setDesc(t("settings.item.tagSuggest.desc"))
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.tagSuggestEnabled)
+          .onChange(async (value) => {
+            this.plugin.settings.tagSuggestEnabled = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    // 履歴の削除はトグルの副作用にせず、消す意思を持って押す専用ボタンとして分ける
+    new Setting(containerEl)
+      .setName(t("settings.item.tagSuggestClear.name"))
+      .setDesc(t("settings.item.tagSuggestClear.desc"))
+      .addButton((btn) => {
+        btn
+          .setButtonText(t("settings.item.tagSuggestClear.button"))
+          .onClick(async () => {
+            this.plugin.recentTags = [];
+            await this.plugin.saveRecentTags();
+            new Notice(t("settings.notice.tagSuggestCleared"));
+          });
+        // 破壊的操作なので Obsidian 標準の警告スタイル(mod-warning)で強調する。
+        // setWarning() は非推奨、後継の setDestructive() は Obsidian 1.13.0 以降のみで
+        // minAppVersion 1.8.7 では使えないため、両者が付与する既存クラスを直接付ける。
+        btn.buttonEl.addClass("mod-warning");
+      });
+
+    new Setting(containerEl)
       .setName(t("settings.item.pinLimit.name"))
       .setDesc(t("settings.item.pinLimit.desc"))
       .addDropdown((dropdown) =>
@@ -598,7 +630,7 @@ export class WrotSettingTab extends PluginSettingTab {
       const getDefaultAccent = (): string => {
         const raw = getComputedStyle(activeDocument.body).getPropertyValue("--text-accent").trim();
         if (/^#[0-9a-fA-F]{6}$/.test(raw)) return raw;
-        const probe = activeDocument.createElement("div");
+        const probe = createDiv();
         probe.setCssStyles({ color: raw || "var(--text-accent)", display: "none" });
         activeDocument.body.appendChild(probe);
         const resolved = getComputedStyle(probe).color;

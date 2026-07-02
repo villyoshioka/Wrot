@@ -47,6 +47,15 @@ const de = {
   "settings.item.inputPlaceholder.desc":
     "Sie können den Text ändern, der angezeigt wird, wenn das Eingabefeld leer ist. Lassen Sie das Feld leer, um ihn auszublenden.",
 
+  "settings.item.tagSuggest.name": "Tag-Autovervollständigung",
+  "settings.item.tagSuggest.desc":
+    "Bei der Eingabe von # im Eingabefeld werden Tags aus früheren Beiträgen als Vorschläge angezeigt.",
+  "settings.item.tagSuggestClear.name": "Tag-Vorschlagsverlauf löschen",
+  "settings.item.tagSuggestClear.desc":
+    "Löscht alle als Vorschläge gespeicherten Tags.",
+  "settings.item.tagSuggestClear.button": "Löschen",
+  "settings.notice.tagSuggestCleared": "Tag-Vorschlagsverlauf gelöscht",
+
   "settings.item.pinLimit.name": "Limit für angepinnte Beiträge",
   "settings.item.pinLimit.desc":
     "Legt die maximale Anzahl von Notizen fest, die in der Timeline fixiert werden können.",

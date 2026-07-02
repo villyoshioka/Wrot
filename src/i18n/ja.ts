@@ -47,6 +47,14 @@ const ja = {
   "settings.item.inputPlaceholder.desc":
     "投稿フォームが空の時に表示されるテキストを変更できます。空欄にすると非表示になります。",
 
+  "settings.item.tagSuggest.name": "タグ入力補完",
+  "settings.item.tagSuggest.desc":
+    "投稿フォームで # に続けて入力すると、過去の投稿で使ったタグを候補として表示します。",
+  "settings.item.tagSuggestClear.name": "タグ補完の履歴をクリア",
+  "settings.item.tagSuggestClear.desc": "補完候補として覚えているタグをすべて削除します。",
+  "settings.item.tagSuggestClear.button": "クリア",
+  "settings.notice.tagSuggestCleared": "タグ補完の履歴を削除しました",
+
   // ─── settings: ピン留めの上限 ──────────────────────────────────────
   "settings.item.pinLimit.name": "ピン留めの上限",
   "settings.item.pinLimit.desc": "タイムラインに固定できるメモの最大件数を設定します。",

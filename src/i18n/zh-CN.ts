@@ -47,6 +47,14 @@ const zhCN = {
   "settings.item.inputPlaceholder.desc":
     "可以自定义输入框为空时显示的提示文字。留空则不显示。",
 
+  "settings.item.tagSuggest.name": "标签自动补全",
+  "settings.item.tagSuggest.desc":
+    "在输入框中输入 # 时，会将过去帖子中用过的标签显示为候选。",
+  "settings.item.tagSuggestClear.name": "清除标签补全历史",
+  "settings.item.tagSuggestClear.desc": "删除所有已记住的标签候选。",
+  "settings.item.tagSuggestClear.button": "清除",
+  "settings.notice.tagSuggestCleared": "已清除标签补全历史",
+
   "settings.item.pinLimit.name": "置顶上限",
   "settings.item.pinLimit.desc":
     "设置时间轴中最多可以置顶的笔记数量。",

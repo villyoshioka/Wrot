@@ -49,6 +49,15 @@ const fr = {
   "settings.item.inputPlaceholder.desc":
     "Texte affiché lorsque le champ de saisie est vide. Laissez vide pour ne rien afficher.",
 
+  "settings.item.tagSuggest.name": "Saisie semi-automatique des tags",
+  "settings.item.tagSuggest.desc":
+    "Saisir # dans le champ de saisie affiche les tags utilisés dans vos publications précédentes comme suggestions.",
+  "settings.item.tagSuggestClear.name": "Effacer l'historique des tags",
+  "settings.item.tagSuggestClear.desc":
+    "Supprime tous les tags mémorisés comme suggestions.",
+  "settings.item.tagSuggestClear.button": "Effacer",
+  "settings.notice.tagSuggestCleared": "Historique des tags effacé",
+
   "settings.item.pinLimit.name": "Limite d'épinglage",
   "settings.item.pinLimit.desc":
     "Nombre maximal de notes pouvant être épinglées à la chronologie.",

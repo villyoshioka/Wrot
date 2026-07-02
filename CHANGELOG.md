@@ -1,5 +1,21 @@
 # Release Notes
 
+## 2.10.0 - 2026-07-02
+
+### Updates
+
+- Updated dependencies.
+
+### New Features
+
+- Added tag autocomplete. Typing # in the post form shows tags used in your past posts as suggestions, and you can insert one just by selecting it. It can also be turned off in settings. Also added a button in settings to clear the tag autocomplete history.
+
+### Improvements
+
+- Improved internal structure.
+
+---
+
 ## 2.9.1 - 2026-06-24
 
 ### Bug Fixes

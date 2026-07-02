@@ -8,6 +8,7 @@ import { renderQuoteCard } from "../utils/quoteCard";
 import { ensureBlockIdOnFence } from "../utils/memoWriter";
 import { isImageFile, saveImageToVault, buildEmbedLink } from "../utils/imageAttachment";
 import { openCalendarPopover, CalendarPopoverHandle } from "../utils/calendarPopover";
+import { TagSuggest, extractTagsForHistory, mergeRecentTags } from "../utils/tagSuggest";
 import type WrotPlugin from "../main";
 import type { PinEntry } from "../settings";
 import { t } from "../i18n";
@@ -64,6 +65,7 @@ export class WrotView extends ItemView {
   private dateNavEl!: HTMLElement;
   private calendarBtnEl: HTMLElement | null = null;
   private calendarPopover: CalendarPopoverHandle | null = null;
+  private tagSuggest: TagSuggest | null = null;
   textarea!: HTMLTextAreaElement;
   submitLabelEl!: HTMLElement;
   submitIconEl!: HTMLElement;
@@ -149,6 +151,8 @@ export class WrotView extends ItemView {
   }
 
   async onClose(): Promise<void> {
+    this.tagSuggest?.destroy();
+    this.tagSuggest = null;
     this.closeCalendarPopover();
     this.unregisterFileWatcher();
     if (this.toolbarResizeObserver) {
@@ -256,7 +260,7 @@ export class WrotView extends ItemView {
       this.refresh();
     });
 
-    this.dateLabel = nav.createEl("span", { cls: "wr-date-label" });
+    this.dateLabel = nav.createSpan({ cls: "wr-date-label" });
     // eslint-disable-next-line @typescript-eslint/no-misused-promises -- async handler intentionally used as a callback
     this.dateLabel.addEventListener("click", async () => {
       this.dateLabel.classList.add("wr-date-label-active");
@@ -363,8 +367,20 @@ export class WrotView extends ItemView {
     };
     this.textarea.addEventListener("input", autoGrow);
 
+    // タグ補完。container(wr-container)内にドロップダウンを配置する。
+    // 有効/無効は毎回設定値を見るので、トグル変更が即座に反映される。
+    this.tagSuggest = new TagSuggest({
+      textarea: this.textarea,
+      container,
+      getCandidates: () => this.plugin.recentTags,
+      isEnabled: () => this.plugin.settings.tagSuggestEnabled,
+    });
+
     this.textarea.addEventListener("keydown", (e: KeyboardEvent) => {
       if (e.isComposing) return;
+      // ドロップダウン表示中は候補操作（矢印/Enter/Tab/Esc）を最優先で処理する。
+      // Mod+Enter は内部で閉じるだけで消費しないため、下の投稿処理へそのまま流れる。
+      if (this.tagSuggest?.handleKeydown(e)) return;
       if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
         return;
       }
@@ -445,10 +461,17 @@ export class WrotView extends ItemView {
 
     const toolbar = inputArea.createDiv({ cls: "wr-input-toolbar" });
 
+    // タグ補完の候補リストは件数によってツールバーに重なる。表示中（およびタップ確定
+    // 直後のゴーストクリック期間）はツールバーの各ボタンを反応させない（見た目は変えない）。
+    const toolbarSuppressed = () => this.tagSuggest?.isSuppressingUi() ?? false;
+
     const imageAddBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn" });
     setIcon(imageAddBtn, "image-plus");
     imageAddBtn.addEventListener("mousedown", (e) => e.preventDefault());
-    imageAddBtn.addEventListener("click", () => this.openImagePicker());
+    imageAddBtn.addEventListener("click", () => {
+      if (toolbarSuppressed()) return;
+      this.openImagePicker();
+    });
     this.imageAddBtn = imageAddBtn;
 
     const embedBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn" });
@@ -476,6 +499,7 @@ export class WrotView extends ItemView {
     olBtn.addEventListener("mousedown", (e) => e.preventDefault());
 
     embedBtn.addEventListener("click", () => {
+      if (toolbarSuppressed()) return;
       const ta = this.textarea;
       if (ta.selectionStart !== ta.selectionEnd) {
         this.wrapSelectionWithEmbedBrackets();
@@ -519,6 +543,7 @@ export class WrotView extends ItemView {
     };
 
     boldBtn.addEventListener("click", () => {
+      if (toolbarSuppressed()) return;
       // IME中はボタンが active な時だけ無効化 (updateFormatBtns と条件を揃える)
       if (this.imeLocked && (this.activeFormatMode === "bold" || this.isInsideMarker("**"))) return;
       if (this.activeFormatMode === "italic" || this.isInsideMarker("*")) return;
@@ -550,6 +575,7 @@ export class WrotView extends ItemView {
       updateFormatBtns();
     });
     italicBtn.addEventListener("click", () => {
+      if (toolbarSuppressed()) return;
       // IME中はボタンが active な時だけ無効化 (updateFormatBtns と条件を揃える)
       if (this.imeLocked && (this.activeFormatMode === "italic" || this.isInsideMarker("*"))) return;
       if (this.activeFormatMode === "bold" || this.isInsideMarker("**")) return;
@@ -581,14 +607,17 @@ export class WrotView extends ItemView {
       updateFormatBtns();
     });
     listBtn.addEventListener("click", () => {
+      if (toolbarSuppressed()) return;
       this.insertAtLineStart("- ");
       this.updateToolbarActive(listBtn, checkBtn, olBtn);
     });
     checkBtn.addEventListener("click", () => {
+      if (toolbarSuppressed()) return;
       this.insertAtLineStart("- [ ] ");
       this.updateToolbarActive(listBtn, checkBtn, olBtn);
     });
     olBtn.addEventListener("click", () => {
+      if (toolbarSuppressed()) return;
       this.insertAtLineStart("1. ");
       this.updateToolbarActive(listBtn, checkBtn, olBtn);
     });
@@ -596,6 +625,7 @@ export class WrotView extends ItemView {
     setIcon(formatBtn, "ellipsis");
     formatBtn.addEventListener("mousedown", (e) => e.preventDefault());
     formatBtn.addEventListener("click", (e) => {
+      if (toolbarSuppressed()) return;
       const ta = this.textarea;
       const hasSelection = ta.selectionStart !== ta.selectionEnd;
       this.openMenu(formatBtn, (menu) => {
@@ -654,7 +684,11 @@ export class WrotView extends ItemView {
     // input/keyup/click/selectは取りこぼし(シフト+矢印など)が出るため不採用。
     // textareaフォーカス中のみ実行して無駄を抑える。
     this.registerDomEvent(activeDocument, "selectionchange", () => {
-      if (activeDocument.activeElement === this.textarea) updateActive();
+      if (activeDocument.activeElement === this.textarea) {
+        updateActive();
+        // カーソル移動でタグから離れたらドロップダウンを閉じる/追従させる
+        this.tagSuggest?.refresh();
+      }
     });
     // フォーカス取得直後はselectionchangeが発火しないため明示同期
     this.textarea.addEventListener("focus", () => {
@@ -721,6 +755,12 @@ export class WrotView extends ItemView {
       }
     });
 
+    // タグ補完の開閉判定。値の変化(input)と IME 確定(compositionend)の両方で更新する。
+    // IME 変換中の input でも refresh する（未確定文字での絞り込みを効かせるため）。
+    this.textarea.addEventListener("input", () => this.tagSuggest?.refresh());
+    this.textarea.addEventListener("compositionend", () => this.tagSuggest?.refresh());
+    this.textarea.addEventListener("blur", () => this.tagSuggest?.notifyBlur());
+
     // ツールバーの折り返し検出。offsetTopはpadding変更の影響を受けないためResizeObserverでループしない
     const updateToolbarWrapped = () => {
       const buttons = toolbar.querySelectorAll<HTMLElement>(".wr-toolbar-btn");
@@ -750,7 +790,7 @@ export class WrotView extends ItemView {
 
   private openImagePicker(): void {
     if (this.pendingImage) return;
-    const input = activeDocument.createElement("input");
+    const input = createEl("input");
     input.type = "file";
     input.accept = "image/png, image/gif, image/jpeg";
     input.multiple = false;
@@ -860,6 +900,17 @@ export class WrotView extends ItemView {
 
       this.ignoreNextModify = true;
       await appendMemo(this.app, file, bodyText);
+
+      // 投稿が成功したときだけ、本文で使われたタグを補完候補として記録する。
+      // rawText は全角＃→# 正規化済み。抽出は表示側と同じ判定に揃えてある。
+      if (this.plugin.settings.tagSuggestEnabled) {
+        const usedTags = extractTagsForHistory(rawText);
+        if (usedTags.length > 0) {
+          this.plugin.recentTags = mergeRecentTags(this.plugin.recentTags, usedTags);
+          await this.plugin.saveRecentTags();
+        }
+      }
+
       this.textarea.value = "";
       this.textarea.setCssStyles({ height: "" });
       this.activeFormatMode = null;
@@ -1107,7 +1158,7 @@ export class WrotView extends ItemView {
       (pu) => pu.type === "image" || !pu.url.startsWith("obsidian://")
     );
     if (previewUrls.length > 0) {
-      const mediaEl = activeDocument.createElement("div");
+      const mediaEl = createDiv();
       mediaEl.className = "wr-media-area";
       const quoteSlot = contentEl.querySelector(".wr-quote-card-slot");
       if (quoteSlot && quoteSlot.parentNode) {
@@ -1123,9 +1174,9 @@ export class WrotView extends ItemView {
 
     const fmt = this.plugin.settings.timestampFormat || "YYYY/MM/DD HH:mm:ss";
     const formatted = moment(memo.time).format(fmt);
-    footer.createEl("span", { cls: "wr-timestamp", text: formatted });
+    footer.createSpan({ cls: "wr-timestamp", text: formatted });
 
-    const menuBtn = footer.createEl("span", { cls: "wr-menu-btn" });
+    const menuBtn = footer.createSpan({ cls: "wr-menu-btn" });
     setIcon(menuBtn, "ellipsis");
     // eslint-disable-next-line @typescript-eslint/no-misused-promises -- async handler intentionally used as a callback
     menuBtn.addEventListener("click", async (e) => {
@@ -1175,7 +1226,7 @@ export class WrotView extends ItemView {
     });
 
     if (options.pinned) {
-      const pinIndicator = card.createEl("span", { cls: "wr-pin-indicator" });
+      const pinIndicator = card.createSpan({ cls: "wr-pin-indicator" });
       setIcon(pinIndicator, "pin");
     }
   }

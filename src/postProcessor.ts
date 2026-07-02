@@ -226,7 +226,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
     const text = textNode.textContent || "";
     if (!text.includes("#") && !text.match(/(?:https?|obsidian):\/\//) && !text.includes("[[") && !text.includes("`") && !text.includes("*") && !text.includes("~") && !text.includes("=") && !text.includes("$")) continue;
 
-    const frag = activeDocument.createDocumentFragment();
+    const frag = createFragment();
     // eslint-disable-next-line no-useless-escape -- escape kept for regex readability
     const parts = text.split(/(\$[^$]+\$|`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*|~~[^~]+~~|==[^=]+=+|!\[\[[^\]]+\]\]|\[\[[^\]]+\]\]|\[[^\[\]\n]+\]\((?:https?|obsidian):\/\/[^\s)]+\)|#[^\s#]+|(?:https?|obsidian):\/\/[^\s<>"'\]]+)/g);
     let hasMatch = false;
@@ -238,12 +238,12 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
 
       const codeMatch = part.match(/^`([^`]+)`$/);
       if (codeMatch) {
-        const codeEl = activeDocument.createElement("span");
+        const codeEl = createSpan();
         codeEl.className = "wr-inline-code";
-        const tickOpen = activeDocument.createElement("span");
+        const tickOpen = createSpan();
         tickOpen.className = "wr-backtick";
         tickOpen.textContent = "`";
-        const tickClose = activeDocument.createElement("span");
+        const tickClose = createSpan();
         tickClose.className = "wr-backtick";
         tickClose.textContent = "`";
         codeEl.appendChild(tickOpen);
@@ -254,7 +254,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
         continue;
       }
 
-      const formatPatterns: [RegExp, string, string][] = [
+      const formatPatterns: [RegExp, keyof HTMLElementTagNameMap, string][] = [
         [/^\*\*(.+)\*\*$/, "strong", "**"],
         [/^\*(.+)\*$/, "em", "*"],
         [/^~~(.+)~~$/, "del", "~~"],
@@ -264,12 +264,12 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
       for (const [re, tag, marker] of formatPatterns) {
         const m = part.match(re);
         if (m) {
-          const el = activeDocument.createElement(tag);
+          const el = createEl(tag);
           if (tag === "mark") el.className = "wr-highlight";
-          const mOpen = activeDocument.createElement("span");
+          const mOpen = createSpan();
           mOpen.className = "wr-backtick";
           mOpen.textContent = marker;
-          const mClose = activeDocument.createElement("span");
+          const mClose = createSpan();
           mClose.className = "wr-backtick";
           mClose.textContent = marker;
           el.appendChild(mOpen);
@@ -289,7 +289,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
         const label = mdLinkMatch[1];
         const url = mdLinkMatch[2];
         if (isSafeUrl(url)) {
-          const span = activeDocument.createElement("span");
+          const span = createSpan();
           span.className = "wr-reading-url";
           span.textContent = label;
           span.addEventListener("pointerup", (e) => {
@@ -314,7 +314,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
         if (IMAGE_EXT.test(fileName)) {
           const file = plugin.app.metadataCache.getFirstLinkpathDest(fileName, "");
           if (file) {
-            const img = activeDocument.createElement("img");
+            const img = createEl("img");
             img.className = hasQuoteMarker ? "wr-embed-img wr-rv-inline-img" : "wr-embed-img";
             img.src = plugin.app.vault.getResourcePath(file);
             img.alt = fileName;
@@ -327,7 +327,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
             hasMatch = true;
             continue;
           } else {
-            const span = activeDocument.createElement("span");
+            const span = createSpan();
             span.className = "wr-embed-missing";
             span.textContent = `![[${fileName}]]`;
             frag.appendChild(span);
@@ -335,7 +335,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
           hasMatch = true;
           continue;
         } else {
-          const a = activeDocument.createElement("a");
+          const a = createEl("a");
           const resolved = plugin.app.metadataCache.getFirstLinkpathDest(fileName, "") !== null;
           a.className = resolved ? "wr-internal-link" : "wr-internal-link wr-internal-link-unresolved";
           a.textContent = fileName;
@@ -352,7 +352,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
         const linkName = linkMatch[1];
         const quoteMatch = linkName.match(QUOTE_LINK_RE);
         if (quoteMatch) {
-          const slot = activeDocument.createElement("span");
+          const slot = createSpan();
           slot.className = "wr-quote-card-slot";
           renderQuoteCard(slot, quoteMatch[1], quoteMatch[2], plugin.app, "", {
             timestampFormat: plugin.settings.timestampFormat,
@@ -361,7 +361,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
           });
           frag.appendChild(slot);
         } else {
-          const a = activeDocument.createElement("a");
+          const a = createEl("a");
           const resolved = plugin.app.metadataCache.getFirstLinkpathDest(linkName, "") !== null;
           a.className = resolved ? "wr-internal-link" : "wr-internal-link wr-internal-link-unresolved";
           a.textContent = linkName;
@@ -375,14 +375,14 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
         }
         hasMatch = true;
       } else if (part.match(/^#[^\s#]+$/)) {
-        const span = activeDocument.createElement("span");
+        const span = createSpan();
         span.className = "wr-reading-tag";
         span.textContent = part;
         frag.appendChild(span);
         hasMatch = true;
       } else if (part.match(/^\$([^$]+)\$$/)) {
         const mathContent = part.slice(1, -1);
-        const mathEl = activeDocument.createElement("span");
+        const mathEl = createSpan();
         mathEl.className = "wr-math";
         try {
           // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment, no-undef -- internal Obsidian/CodeMirror API or intentional pattern
@@ -416,7 +416,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
         const isImageEmbed = looksLikeImage && resolved !== null;
         const isUnresolvedImage = looksLikeImage && resolved === null;
         if (!isImageEmbed) {
-          const link = activeDocument.createElement("a");
+          const link = createEl("a");
           link.className = isUnresolvedImage
             ? "wr-internal-link wr-internal-link-unresolved"
             : "wr-internal-link";
@@ -437,7 +437,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
         const cleaned = part.replace(/[.,;:!?)]+$/, "");
         const trailing = part.slice(cleaned.length);
 
-        const span = activeDocument.createElement("span");
+        const span = createSpan();
         span.className = "wr-reading-url";
         span.textContent = cleaned;
         span.addEventListener("pointerup", (e) => {
@@ -492,7 +492,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
         (pu) => pu.type === "image" || !pu.url.startsWith("obsidian://")
       );
       if (parsedUrls.length > 0 && !blockEl.querySelector(".wr-media-area")) {
-        const mediaEl = activeDocument.createElement("div");
+        const mediaEl = createDiv();
         mediaEl.className = "wr-media-area";
         insertMediaNode(mediaEl);
         renderUrlPreviews(mediaEl, parsedUrls, plugin.ogpCache, resolveImagePath);
@@ -510,7 +510,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
 }
 
 function renderCodeBlockFragment(segment: Extract<Segment, { kind: "codeblock" }>, plugin: WrotPlugin): HTMLElement {
-  const blockEl = activeDocument.createElement("div");
+  const blockEl = createDiv();
   blockEl.className = "wr-codeblock-display";
   const fence = "~".repeat(Math.max(3, segment.fenceTildes));
   const source = (segment.lang ? `${fence}${segment.lang}\n` : `${fence}\n`) + segment.code + `\n${fence}`;
@@ -526,7 +526,7 @@ function renderCodeBlockFragment(segment: Extract<Segment, { kind: "codeblock" }
 }
 
 function renderMathBlockFragment(segment: Extract<Segment, { kind: "mathblock" }>): HTMLElement {
-  const blockEl = activeDocument.createElement("div");
+  const blockEl = createDiv();
   blockEl.className = "wr-math-display";
   try {
     const rendered = renderMath(segment.tex, true);
@@ -611,7 +611,7 @@ function convertListLines(
       const lastFrag = fragments[fragments.length - 1];
       const continuingQuote = quoteStack.length > 0 && lastFrag instanceof HTMLElement && lastFrag === quoteStack[0];
       if (!continuingQuote) {
-        const root = activeDocument.createElement("blockquote");
+        const root = createEl("blockquote");
         root.className = "wr-blockquote";
         fragments.push(root);
         quoteStack = [root];
@@ -621,7 +621,7 @@ function convertListLines(
       }
       while (quoteStack.length < depth) {
         const parent = quoteStack[quoteStack.length - 1];
-        const bq = activeDocument.createElement("blockquote");
+        const bq = createEl("blockquote");
         bq.className = "wr-blockquote";
         parent.appendChild(bq);
         quoteStack.push(bq);
@@ -632,16 +632,16 @@ function convertListLines(
       const innerOl = !innerCheck && !innerList && body.match(/^\d+\.\s?(.+)$/);
       if (innerCheck || innerList) {
         if (quoteListEl === null || quoteListType !== "ul" || quoteListDepth !== depth || quoteListEl.parentElement !== target) {
-          quoteListEl = activeDocument.createElement("ul");
+          quoteListEl = createEl("ul");
           quoteListEl.className = "wr-reading-list";
           target.appendChild(quoteListEl);
           quoteListType = "ul";
           quoteListDepth = depth;
         }
-        const li = activeDocument.createElement("li");
+        const li = createEl("li");
         if (innerCheck) {
           li.className = "wr-check-item";
-          const cb = activeDocument.createElement("input");
+          const cb = createEl("input");
           cb.type = "checkbox";
           if (innerCheck[1] === "x") cb.checked = true;
           const innerLineIdx = i;
@@ -669,7 +669,7 @@ function convertListLines(
           });
           li.appendChild(cb);
           if (innerCheck[1] === "x" && plugin.settings.checkStrikethrough) {
-            const span = activeDocument.createElement("span");
+            const span = createSpan();
             span.className = "wr-check-done";
             span.appendChild(activeDocument.createTextNode(innerCheck[2]));
             li.appendChild(span);
@@ -682,20 +682,20 @@ function convertListLines(
         quoteListEl.appendChild(li);
       } else if (innerOl) {
         if (quoteListEl === null || quoteListType !== "ol" || quoteListDepth !== depth || quoteListEl.parentElement !== target) {
-          quoteListEl = activeDocument.createElement("ol");
+          quoteListEl = createEl("ol");
           quoteListEl.className = "wr-reading-list";
           target.appendChild(quoteListEl);
           quoteListType = "ol";
           quoteListDepth = depth;
         }
-        const li = activeDocument.createElement("li");
+        const li = createEl("li");
         li.appendChild(activeDocument.createTextNode(innerOl[1]));
         quoteListEl.appendChild(li);
       } else {
         quoteListEl = null;
         quoteListType = null;
         if (target.childNodes.length > 0 && target.lastChild?.nodeName !== "OL" && target.lastChild?.nodeName !== "UL" && target.lastChild?.nodeName !== "BLOCKQUOTE") {
-          target.appendChild(activeDocument.createElement("br"));
+          target.appendChild(createEl("br"));
         }
         target.appendChild(activeDocument.createTextNode(body));
       }
@@ -706,14 +706,14 @@ function convertListLines(
       if (currentListType !== "ul") {
         if (currentListEl) fragments.push(currentListEl);
         flushPlain();
-        currentListEl = activeDocument.createElement("ul");
+        currentListEl = createEl("ul");
         currentListEl.className = "wr-reading-list";
         currentListType = "ul";
       }
-      const li = activeDocument.createElement("li");
+      const li = createEl("li");
       if (checkMatch) {
         li.className = "wr-check-item";
-        const cb = activeDocument.createElement("input");
+        const cb = createEl("input");
         cb.type = "checkbox";
         if (checkMatch[1] === "x") cb.checked = true;
         const lineIdx = i;
@@ -742,7 +742,7 @@ function convertListLines(
         });
         li.appendChild(cb);
         if (checkMatch[1] === "x" && plugin.settings.checkStrikethrough) {
-          const span = activeDocument.createElement("span");
+          const span = createSpan();
           span.className = "wr-check-done";
           span.appendChild(activeDocument.createTextNode(checkMatch[2]));
           li.appendChild(span);
@@ -760,11 +760,11 @@ function convertListLines(
       if (currentListType !== "ol") {
         if (currentListEl) fragments.push(currentListEl);
         flushPlain();
-        currentListEl = activeDocument.createElement("ol");
+        currentListEl = createEl("ol");
         currentListEl.className = "wr-reading-list";
         currentListType = "ol";
       }
-      const li = activeDocument.createElement("li");
+      const li = createEl("li");
       li.appendChild(activeDocument.createTextNode(olMatch[1]));
       currentListEl!.appendChild(li);
     } else {
@@ -797,11 +797,11 @@ function convertListLines(
   for (const frag of fragments) {
     if (typeof frag === "string") {
       if (frag.trim() === "" && hasContent) {
-        const spacer = activeDocument.createElement("div");
+        const spacer = createDiv();
         spacer.className = "wr-spacer";
         block.appendChild(spacer);
       } else if (frag.trim() !== "") {
-        const div = activeDocument.createElement("div");
+        const div = createDiv();
         div.className = "wr-plain-text";
         div.textContent = frag;
         block.appendChild(div);

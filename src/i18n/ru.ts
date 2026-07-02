@@ -45,6 +45,15 @@ const ru = {
   "settings.item.inputPlaceholder.desc":
     "Текст, отображаемый в пустом поле ввода. Оставьте поле пустым, чтобы скрыть подсказку.",
 
+  "settings.item.tagSuggest.name": "Автодополнение тегов",
+  "settings.item.tagSuggest.desc":
+    "При вводе # в поле ввода показываются теги из прошлых записей в качестве подсказок.",
+  "settings.item.tagSuggestClear.name": "Очистить историю тегов",
+  "settings.item.tagSuggestClear.desc":
+    "Удаляет все теги, сохранённые как подсказки.",
+  "settings.item.tagSuggestClear.button": "Очистить",
+  "settings.notice.tagSuggestCleared": "История тегов очищена",
+
   "settings.item.pinLimit.name": "Лимит закрепления",
   "settings.item.pinLimit.desc":
     "Максимальное количество заметок, которые можно закрепить в ленте.",

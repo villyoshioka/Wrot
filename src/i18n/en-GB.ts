@@ -46,6 +46,15 @@ const enGB = {
   "settings.item.inputPlaceholder.desc":
     "Customise the text shown when the post form is empty. Leave blank to hide.",
 
+  "settings.item.tagSuggest.name": "Tag Autocomplete",
+  "settings.item.tagSuggest.desc":
+    "Typing # in the post form shows tags used in your past posts as suggestions.",
+  "settings.item.tagSuggestClear.name": "Clear Tag Autocomplete History",
+  "settings.item.tagSuggestClear.desc":
+    "Delete all tags remembered as autocomplete suggestions.",
+  "settings.item.tagSuggestClear.button": "Clear",
+  "settings.notice.tagSuggestCleared": "Tag autocomplete history cleared",
+
   "settings.item.pinLimit.name": "Pin Limit",
   "settings.item.pinLimit.desc":
     "Set the maximum number of notes that can be pinned to the timeline.",

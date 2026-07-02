@@ -48,6 +48,15 @@ const pt = {
   "settings.item.inputPlaceholder.desc":
     "Texto exibido quando o campo de postagem está vazio. Deixe em branco para ocultar.",
 
+  "settings.item.tagSuggest.name": "Autocompletar de tags",
+  "settings.item.tagSuggest.desc":
+    "Ao digitar # no campo de postagem, as tags usadas em publicações anteriores são exibidas como sugestões.",
+  "settings.item.tagSuggestClear.name": "Limpar histórico de tags",
+  "settings.item.tagSuggestClear.desc":
+    "Exclui todas as tags memorizadas como sugestões.",
+  "settings.item.tagSuggestClear.button": "Limpar",
+  "settings.notice.tagSuggestCleared": "Histórico de tags limpo",
+
   "settings.item.pinLimit.name": "Limite de fixação",
   "settings.item.pinLimit.desc":
     "Define o número máximo de notas que podem ser fixadas na linha do tempo.",

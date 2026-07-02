@@ -1,4 +1,4 @@
-import { Plugin, TFile, WorkspaceLeaf, loadMathJax, setIcon, MarkdownView } from "obsidian";
+import { Plugin, TFile, WorkspaceLeaf, loadMathJax, normalizePath, setIcon, MarkdownView } from "obsidian";
 import { VIEW_TYPE_WROT } from "./constants";
 import { WrotSettings, DEFAULT_SETTINGS, WrotSettingTab, TagColorRule, SubColorScope } from "./settings";
 import { WrotView } from "./views/WrotView";
@@ -12,6 +12,11 @@ const ATTACHMENT_EXT_RE = /^(png|jpe?g|gif|webp|svg|bmp)$/i;
 export default class WrotPlugin extends Plugin {
   settings!: WrotSettings;
   ogpCache!: OGPCache;
+  // タグ補完の候補（先頭 # なし、新しい順）。設定とは別に tags.json へ永続化する。
+  // 投稿のたびに自動で書き換わるデータなので、ユーザーが編集する設定(data.json)と混ぜない。
+  recentTags: string[] = [];
+  // 旧バージョンで settings(data.json) に保持していた候補の移行用。loadSettings が拾う。
+  private legacyRecentTags: string[] | null = null;
   private bgStyleEl: HTMLStyleElement | null = null;
   private tagRuleStyleEl: HTMLStyleElement | null = null;
   private fontStyleEl: HTMLStyleElement | null = null;
@@ -19,6 +24,7 @@ export default class WrotPlugin extends Plugin {
   async onload(): Promise<void> {
     initI18n();
     await this.loadSettings();
+    await this.loadRecentTags();
     await loadMathJax();
     this.ogpCache = new OGPCache();
     this.ogpCache.enabled = this.settings.enableOgpFetch;
@@ -95,6 +101,8 @@ export default class WrotPlugin extends Plugin {
     if (this.fontStyleEl) {
       this.fontStyleEl.remove();
     }
+    // NOTE: createEl("style") にすると no-forbidden-elements がエラーになるため createElement を維持する。
+    // 動的なユーザー設定色を反映する手段として style 要素の注入が必要（styles.css では表現できない）。
     this.fontStyleEl = activeDocument.createElement("style");
     this.fontStyleEl.id = "wr-font-override";
     activeDocument.head.appendChild(this.fontStyleEl);
@@ -144,6 +152,7 @@ export default class WrotPlugin extends Plugin {
     if (this.bgStyleEl) {
       this.bgStyleEl.remove();
     }
+    // NOTE: createEl("style") にすると no-forbidden-elements がエラーになるため createElement を維持する。
     this.bgStyleEl = activeDocument.createElement("style");
     this.bgStyleEl.id = "wr-bg-override";
     activeDocument.head.appendChild(this.bgStyleEl);
@@ -891,6 +900,7 @@ export default class WrotPlugin extends Plugin {
 
     if (parts.length === 0) return;
 
+    // NOTE: createEl("style") にすると no-forbidden-elements がエラーになるため createElement を維持する。
     this.tagRuleStyleEl = activeDocument.createElement("style");
     this.tagRuleStyleEl.id = "wr-tag-rule-override";
     this.tagRuleStyleEl.textContent = parts.join("");
@@ -1070,7 +1080,13 @@ export default class WrotPlugin extends Plugin {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- value from untyped Obsidian/CodeMirror internal API
     const raw = (await this.loadData()) ?? {};
     let dirty = false;
-    for (const key of ["autoLinkEnabled", "autoLinkExcludeList", "zenMode", "zenModePins"]) {
+    // 補完候補を data.json に保持していた時期からの移行。値を退避してからキーを消す
+    // （実際の書き出しは loadRecentTags が tags.json 未作成のときのみ行う）。
+    const rawRecentTags = (raw as { recentTags?: unknown }).recentTags;
+    if (Array.isArray(rawRecentTags)) {
+      this.legacyRecentTags = rawRecentTags.filter((v): v is string => typeof v === "string");
+    }
+    for (const key of ["autoLinkEnabled", "autoLinkExcludeList", "zenMode", "zenModePins", "recentTags"]) {
       if (key in raw) {
         delete (raw as Record<string, unknown>)[key];
         dirty = true;
@@ -1119,6 +1135,43 @@ export default class WrotPlugin extends Plugin {
     await this.saveData(this.settings);
     if (this.ogpCache) {
       this.ogpCache.enabled = this.settings.enableOgpFetch;
+    }
+  }
+
+  // タグ補完候補の保存先。設定(data.json)とは別ファイルに分離する。
+  private tagHistoryPath(): string | null {
+    const dir = this.manifest.dir;
+    return dir ? normalizePath(`${dir}/tags.json`) : null;
+  }
+
+  async loadRecentTags(): Promise<void> {
+    const path = this.tagHistoryPath();
+    if (!path) return;
+    try {
+      if (await this.app.vault.adapter.exists(path)) {
+        const parsed: unknown = JSON.parse(await this.app.vault.adapter.read(path));
+        this.recentTags = Array.isArray(parsed)
+          ? parsed.filter((v): v is string => typeof v === "string")
+          : [];
+      } else if (this.legacyRecentTags) {
+        // data.json 保持時代からの移行: 初回だけ引き継いで tags.json を作る
+        this.recentTags = this.legacyRecentTags;
+        await this.saveRecentTags();
+      }
+    } catch {
+      // 読めない場合は空から再スタート（候補は投稿でまた貯まるため致命的でない）
+      this.recentTags = [];
+    }
+    this.legacyRecentTags = null;
+  }
+
+  async saveRecentTags(): Promise<void> {
+    const path = this.tagHistoryPath();
+    if (!path) return;
+    try {
+      await this.app.vault.adapter.write(path, JSON.stringify(this.recentTags));
+    } catch {
+      // 保存失敗は致命的でないため無視する（次の投稿時に再試行される）
     }
   }
 }

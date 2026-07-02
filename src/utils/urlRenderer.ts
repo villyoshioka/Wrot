@@ -220,7 +220,7 @@ function renderTextSegment(
             checkbox.disabled = true;
           }
           const textContainer = innerCheck[1] === "x" && callbacks.checkStrikethrough
-            ? li.createEl("span", { cls: "wr-check-done" })
+            ? li.createSpan({ cls: "wr-check-done" })
             : li;
           renderInlineTokens(textContainer, innerCheck[2], callbacks, urls, seen);
         } else if (innerList) {
@@ -277,7 +277,7 @@ function renderTextSegment(
           checkbox.disabled = true;
         }
         const textContainer = checkMatch[1] === "x" && callbacks.checkStrikethrough
-          ? li.createEl("span", { cls: "wr-check-done" })
+          ? li.createSpan({ cls: "wr-check-done" })
           : li;
         renderInlineTokens(textContainer, checkMatch[2], callbacks, urls, seen);
       } else if (listMatch) {
@@ -394,7 +394,7 @@ function renderInlineTokens(
             attr: { src, alt: fileName, loading: "lazy" },
           });
         } else {
-          container.createEl("span", { cls: "wr-embed-missing", text: `![[${fileName}]]` });
+          container.createSpan({ cls: "wr-embed-missing", text: `![[${fileName}]]` });
         }
       } else {
         const resolved = callbacks.resolveLinkTarget ? callbacks.resolveLinkTarget(fileName) : true;
@@ -414,7 +414,7 @@ function renderInlineTokens(
       // 引用カードマーカー [[fileName#^wr-T]] の検出を優先
       const quoteMatch = linkName.match(QUOTE_LINK_RE);
       if (quoteMatch && callbacks.renderQuoteCard) {
-        const slot = container.createEl("span", { cls: "wr-quote-card-slot" });
+        const slot = container.createSpan({ cls: "wr-quote-card-slot" });
         callbacks.renderQuoteCard(slot, quoteMatch[1], quoteMatch[2]);
       } else {
         const resolved = callbacks.resolveLinkTarget ? callbacks.resolveLinkTarget(linkName) : true;
@@ -430,7 +430,7 @@ function renderInlineTokens(
         }
       }
     } else if (part.match(/^#[^\s#]+$/)) {
-      const tagEl = container.createEl("span", {
+      const tagEl = container.createSpan({
         cls: "wr-tag",
         text: part,
       });
@@ -443,7 +443,7 @@ function renderInlineTokens(
       }
     } else if (part.match(/^\$([^$]+)\$$/)) {
       const mathContent = part.slice(1, -1);
-      const mathEl = container.createEl("span", { cls: "wr-math" });
+      const mathEl = container.createSpan({ cls: "wr-math" });
       try {
         // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment, no-undef -- internal Obsidian/CodeMirror API or intentional pattern
         const { renderMath, finishRenderMath } = require("obsidian");
@@ -524,7 +524,7 @@ function el<K extends keyof HTMLElementTagNameMap>(
   cls?: string,
   text?: string
 ): HTMLElementTagNameMap[K] {
-  const e = activeDocument.createElement(tag);
+  const e = createEl(tag);
   if (cls) e.className = cls;
   if (text) e.textContent = text;
   return e;
