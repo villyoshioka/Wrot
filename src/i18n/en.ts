@@ -49,12 +49,10 @@ const en = {
 
   "settings.item.tagSuggest.name": "Tag Autocomplete",
   "settings.item.tagSuggest.desc":
-    "Typing # in the post form shows tags used in your past posts as suggestions.",
-  "settings.item.tagSuggestClear.name": "Clear Tag Autocomplete History",
-  "settings.item.tagSuggestClear.desc":
-    "Delete all tags remembered as autocomplete suggestions.",
-  "settings.item.tagSuggestClear.button": "Clear",
-  "settings.notice.tagSuggestCleared": "Tag autocomplete history cleared",
+    "Typing # in the post form shows tags used in your past posts as suggestions. The trash icon clears these suggestions.",
+  "settings.item.tagSuggestClear.name": "Clear Tag Suggestions",
+  "settings.notice.tagSuggestCleared": "Tag suggestions cleared",
+  "settings.item.tagSuggestClear.confirmLabel": "Click again to confirm",
 
   "settings.item.pinLimit.name": "Pin Limit",
   "settings.item.pinLimit.desc":
@@ -116,11 +114,6 @@ const en = {
   "settings.tagRule.scope.ogp.desc":
     "When off, automatically determined colors will be used.",
   "settings.tagRule.button.add": "Add Rule",
-
-  "settings.tooltip.resetDefault": "Reset to Defaults",
-  "settings.tooltip.deleteRule": "Delete This Rule",
-  "settings.tooltip.lock": "Lock",
-  "settings.tooltip.unlock": "Unlock to edit",
 
   "view.formatMenu.code": "Code",
   "view.formatMenu.math": "Math",

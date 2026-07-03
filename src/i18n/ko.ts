@@ -49,12 +49,10 @@ const ko = {
 
   "settings.item.tagSuggest.name": "태그 자동 완성",
   "settings.item.tagSuggest.desc":
-    "입력창에서 #을 입력하면 이전 게시물에서 사용한 태그가 후보로 표시됩니다.",
-  "settings.item.tagSuggestClear.name": "태그 자동 완성 기록 지우기",
-  "settings.item.tagSuggestClear.desc":
-    "후보로 기억하고 있는 태그를 모두 삭제합니다.",
-  "settings.item.tagSuggestClear.button": "지우기",
-  "settings.notice.tagSuggestCleared": "태그 자동 완성 기록을 삭제했습니다",
+    "입력창에서 #을 입력하면 이전 게시물에서 사용한 태그가 후보로 표시됩니다. 휴지통 아이콘으로 이 후보를 삭제할 수 있습니다.",
+  "settings.item.tagSuggestClear.name": "태그 자동 완성 후보 지우기",
+  "settings.notice.tagSuggestCleared": "태그 자동 완성 후보를 삭제했습니다",
+  "settings.item.tagSuggestClear.confirmLabel": "한 번 더 눌러 확정",
 
   "settings.item.pinLimit.name": "고정 개수 제한",
   "settings.item.pinLimit.desc":
@@ -112,11 +110,6 @@ const ko = {
   "settings.tagRule.scope.ogp.name": "OGP 카드에 서브 컬러 적용",
   "settings.tagRule.scope.ogp.desc": "끄면 시스템 기본 색상으로 표시됩니다.",
   "settings.tagRule.button.add": "규칙 추가",
-
-  "settings.tooltip.resetDefault": "기본값으로 복원",
-  "settings.tooltip.deleteRule": "규칙 삭제",
-  "settings.tooltip.lock": "편집 잠금",
-  "settings.tooltip.unlock": "클릭하여 잠금 해제",
 
   "view.formatMenu.code": "코드",
   "view.formatMenu.math": "수식",

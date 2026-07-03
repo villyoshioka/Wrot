@@ -50,12 +50,10 @@ const es = {
 
   "settings.item.tagSuggest.name": "Autocompletado de etiquetas",
   "settings.item.tagSuggest.desc":
-    "Al escribir # en el campo de entrada, se muestran como sugerencias las etiquetas usadas en publicaciones anteriores.",
-  "settings.item.tagSuggestClear.name": "Borrar historial de autocompletado de etiquetas",
-  "settings.item.tagSuggestClear.desc":
-    "Elimina todas las etiquetas recordadas como sugerencias.",
-  "settings.item.tagSuggestClear.button": "Borrar",
-  "settings.notice.tagSuggestCleared": "Historial de autocompletado de etiquetas borrado",
+    "Al escribir # en el campo de entrada, se muestran como sugerencias las etiquetas usadas en publicaciones anteriores. El icono de papelera borra estas sugerencias.",
+  "settings.item.tagSuggestClear.name": "Borrar sugerencias de etiquetas",
+  "settings.notice.tagSuggestCleared": "Sugerencias de etiquetas borradas",
+  "settings.item.tagSuggestClear.confirmLabel": "Pulsa de nuevo para confirmar",
 
   "settings.item.pinLimit.name": "Límite de fijados",
   "settings.item.pinLimit.desc":
@@ -117,11 +115,6 @@ const es = {
   "settings.tagRule.scope.ogp.desc":
     "Si se desactiva, se usará el color calculado automáticamente.",
   "settings.tagRule.button.add": "Añadir regla",
-
-  "settings.tooltip.resetDefault": "Restablecer valores",
-  "settings.tooltip.deleteRule": "Eliminar esta regla",
-  "settings.tooltip.lock": "Bloquear",
-  "settings.tooltip.unlock": "Desbloquear para editar",
 
   "view.formatMenu.code": "Código",
   "view.formatMenu.math": "Fórmula",

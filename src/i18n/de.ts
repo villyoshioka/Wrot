@@ -49,12 +49,10 @@ const de = {
 
   "settings.item.tagSuggest.name": "Tag-Autovervollständigung",
   "settings.item.tagSuggest.desc":
-    "Bei der Eingabe von # im Eingabefeld werden Tags aus früheren Beiträgen als Vorschläge angezeigt.",
-  "settings.item.tagSuggestClear.name": "Tag-Vorschlagsverlauf löschen",
-  "settings.item.tagSuggestClear.desc":
-    "Löscht alle als Vorschläge gespeicherten Tags.",
-  "settings.item.tagSuggestClear.button": "Löschen",
-  "settings.notice.tagSuggestCleared": "Tag-Vorschlagsverlauf gelöscht",
+    "Bei der Eingabe von # im Eingabefeld werden Tags aus früheren Beiträgen als Vorschläge angezeigt. Das Papierkorb-Symbol löscht diese Vorschläge.",
+  "settings.item.tagSuggestClear.name": "Tag-Vorschläge löschen",
+  "settings.notice.tagSuggestCleared": "Tag-Vorschläge gelöscht",
+  "settings.item.tagSuggestClear.confirmLabel": "Zum Bestätigen erneut drücken",
 
   "settings.item.pinLimit.name": "Limit für angepinnte Beiträge",
   "settings.item.pinLimit.desc":
@@ -110,11 +108,6 @@ const de = {
   "settings.tagRule.scope.ogp.name": "Subfarbe auf OGP-Karten anwenden",
   "settings.tagRule.scope.ogp.desc": "Wenn deaktiviert, wird die automatisch festgelegte Farbe verwendet.",
   "settings.tagRule.button.add": "Regel hinzufügen",
-
-  "settings.tooltip.resetDefault": "Auf Standardwerte zurücksetzen",
-  "settings.tooltip.deleteRule": "Diese Regel löschen",
-  "settings.tooltip.lock": "Sperren",
-  "settings.tooltip.unlock": "Zum Bearbeiten entsperren",
 
   "view.formatMenu.code": "Code",
   "view.formatMenu.math": "Formel",

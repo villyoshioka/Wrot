@@ -47,12 +47,10 @@ const ru = {
 
   "settings.item.tagSuggest.name": "Автодополнение тегов",
   "settings.item.tagSuggest.desc":
-    "При вводе # в поле ввода показываются теги из прошлых записей в качестве подсказок.",
-  "settings.item.tagSuggestClear.name": "Очистить историю тегов",
-  "settings.item.tagSuggestClear.desc":
-    "Удаляет все теги, сохранённые как подсказки.",
-  "settings.item.tagSuggestClear.button": "Очистить",
-  "settings.notice.tagSuggestCleared": "История тегов очищена",
+    "При вводе # в поле ввода показываются теги из прошлых записей в качестве подсказок. Значок корзины удаляет эти подсказки.",
+  "settings.item.tagSuggestClear.name": "Очистить подсказки тегов",
+  "settings.notice.tagSuggestCleared": "Подсказки тегов очищены",
+  "settings.item.tagSuggestClear.confirmLabel": "Нажмите ещё раз для подтверждения",
 
   "settings.item.pinLimit.name": "Лимит закрепления",
   "settings.item.pinLimit.desc":
@@ -109,11 +107,6 @@ const ru = {
   "settings.tagRule.scope.ogp.name": "Применять доп. цвет к карточкам OGP",
   "settings.tagRule.scope.ogp.desc": "Рамки и фон предпросмотра ссылок.",
   "settings.tagRule.button.add": "Добавить правило",
-
-  "settings.tooltip.resetDefault": "Сбросить по умолчанию",
-  "settings.tooltip.deleteRule": "Удалить правило",
-  "settings.tooltip.lock": "Заблокировать",
-  "settings.tooltip.unlock": "Разблокировать для редактирования",
 
   "view.formatMenu.code": "Код",
   "view.formatMenu.math": "Формула",

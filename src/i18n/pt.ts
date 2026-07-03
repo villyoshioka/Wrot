@@ -50,12 +50,10 @@ const pt = {
 
   "settings.item.tagSuggest.name": "Autocompletar de tags",
   "settings.item.tagSuggest.desc":
-    "Ao digitar # no campo de postagem, as tags usadas em publicações anteriores são exibidas como sugestões.",
-  "settings.item.tagSuggestClear.name": "Limpar histórico de tags",
-  "settings.item.tagSuggestClear.desc":
-    "Exclui todas as tags memorizadas como sugestões.",
-  "settings.item.tagSuggestClear.button": "Limpar",
-  "settings.notice.tagSuggestCleared": "Histórico de tags limpo",
+    "Ao digitar # no campo de postagem, as tags usadas em publicações anteriores são exibidas como sugestões. O ícone de lixeira apaga essas sugestões.",
+  "settings.item.tagSuggestClear.name": "Limpar sugestões de tags",
+  "settings.notice.tagSuggestCleared": "Sugestões de tags apagadas",
+  "settings.item.tagSuggestClear.confirmLabel": "Pressione novamente para confirmar",
 
   "settings.item.pinLimit.name": "Limite de fixação",
   "settings.item.pinLimit.desc":
@@ -113,11 +111,6 @@ const pt = {
   "settings.tagRule.scope.ogp.name": "Aplicar cor secundária a cartões OGP",
   "settings.tagRule.scope.ogp.desc": "Se desativado, usará a cor automática.",
   "settings.tagRule.button.add": "Adicionar regra",
-
-  "settings.tooltip.resetDefault": "Restaurar valores padrão",
-  "settings.tooltip.deleteRule": "Excluir regra",
-  "settings.tooltip.lock": "Bloquear",
-  "settings.tooltip.unlock": "Desbloquear para editar",
 
   "view.formatMenu.code": "Código",
   "view.formatMenu.math": "Fórmula",

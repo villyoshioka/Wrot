@@ -1,6 +1,6 @@
 {
   "name": "wrot",
-  "version": "2.10.0",
+  "version": "2.11.0",
   "description": "A daily memo tool with a timeline UI.",
   "type": "module",
   "scripts": {

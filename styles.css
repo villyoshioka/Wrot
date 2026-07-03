@@ -2108,7 +2108,11 @@ body.is-mobile .wr-settings .setting-item:not(.wr-setting-has-text-input):not(.w
   flex: 0 0 auto;
   justify-content: flex-end;
   width: auto;
-  min-width: 0;
+  /* Reserve the same control-column width on every single-row item so the
+     descriptions all wrap at the same edge, BRAT-style. The widest cluster is
+     extra icon (~36px) + 8px gap + toggle, hence the +44px. --toggle-width
+     follows the per-platform value from Obsidian (62px on iOS, 52px elsewhere). */
+  min-width: calc(var(--toggle-width) + 44px);
   max-width: none;
   margin: 0;
   padding: 0;
@@ -2155,6 +2159,19 @@ body .wr-settings.wr-settings-narrow .setting-item.wr-setting-has-text-input > .
   min-width: 0;
 }
 
+/* Manual breaks in setting descriptions (from "\n" in locale strings) are a
+   desktop-only refinement; on mobile the columns are narrow enough that
+   natural wrapping does the job, so the forced breaks are disabled there. */
+body.is-mobile .wr-settings .wr-pc-break {
+  display: none;
+}
+
+/* Tag-suggest clear icon, armed state (first press of the two-press confirm):
+   the icon is replaced by the confirm label in warning color. */
+.wr-settings .extra-setting-button.wr-confirm-armed {
+  color: var(--text-error);
+  font-size: var(--font-ui-smaller);
+}
 
 
 /* ===== Wrot quote card (Twitter quote-RT style) ===== */

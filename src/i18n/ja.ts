@@ -19,7 +19,7 @@ const ja = {
   // ─── settings: ヘッダー日付表示形式 ─────────────────────────────────
   "settings.item.headerDateFormat.name": "ヘッダー日付表示形式",
   "settings.item.headerDateFormat.desc":
-    "日付ナビに表示する日付のフォーマットを指定します。（YYYY, MM, DD などが使えます）空欄で初期値に戻ります。",
+    "日付ナビのフォーマットを指定します。（YYYY, MM, DD などが使えます）\n空欄で初期値に戻ります。",
 
   // ─── settings: タイムスタンプ表示形式 ───────────────────────────────
   "settings.item.timestampFormat.name": "タイムスタンプ表示形式",
@@ -42,22 +42,21 @@ const ja = {
   "settings.item.submitIcon.name": "投稿ボタンのアイコン",
   // 「投稿ボタンのアイコンを変更できます。アイコン名は [こちら](Lucide) からコピーしてください。空欄にするとアイコンを非表示にできます。」
   // を {linkOpen}/{linkClose} プレースホルダで分割し、リンク部分だけアンカー要素で挟む
-  "settings.item.submitIcon.desc": "投稿ボタンのアイコンを変更できます。アイコン名は {linkOpen}こちら{linkClose} からコピーしてください。空欄にするとアイコンを非表示にできます。",
+  "settings.item.submitIcon.desc": "投稿ボタンのアイコンを変更できます。アイコン名は {linkOpen}こちら{linkClose} からコピーしてください。\n空欄にするとアイコンを非表示にできます。",
   "settings.item.inputPlaceholder.name": "投稿フォームの空欄メッセージ",
   "settings.item.inputPlaceholder.desc":
-    "投稿フォームが空の時に表示されるテキストを変更できます。空欄にすると非表示になります。",
+    "投稿フォームが空の時に表示されるテキストを変更できます。\n空欄にすると非表示になります。",
 
   "settings.item.tagSuggest.name": "タグ入力補完",
   "settings.item.tagSuggest.desc":
-    "投稿フォームで # に続けて入力すると、過去の投稿で使ったタグを候補として表示します。",
-  "settings.item.tagSuggestClear.name": "タグ補完の履歴をクリア",
-  "settings.item.tagSuggestClear.desc": "補完候補として覚えているタグをすべて削除します。",
-  "settings.item.tagSuggestClear.button": "クリア",
-  "settings.notice.tagSuggestCleared": "タグ補完の履歴を削除しました",
+    "投稿フォームで # に続けて入力すると、過去の投稿で使ったタグを候補として表示します。\nゴミ箱アイコンで補完候補を削除できます。",
+  "settings.item.tagSuggestClear.name": "タグの補完候補を削除",
+  "settings.notice.tagSuggestCleared": "タグの補完候補を削除しました",
+  "settings.item.tagSuggestClear.confirmLabel": "もう一度押して確定",
 
   // ─── settings: ピン留めの上限 ──────────────────────────────────────
   "settings.item.pinLimit.name": "ピン留めの上限",
-  "settings.item.pinLimit.desc": "タイムラインに固定できるメモの最大件数を設定します。",
+  "settings.item.pinLimit.desc": "タイムラインに固定できるメモの上限を設定します。",
   "settings.option.pinLimit.1": "1 件",
   "settings.option.pinLimit.3": "3 件",
   "settings.option.pinLimit.5": "5 件",
@@ -65,7 +64,7 @@ const ja = {
   // ─── settings: URLプレビュー ────────────────────────────────────────
   "settings.item.ogp.name": "URLプレビュー",
   "settings.item.ogp.desc":
-    "メモ内のURLからOGP情報を自動取得して表示します。オフにすると外部通信を行いません。",
+    "メモ内のURLからOGP情報を自動取得して表示します。\nオフにすると外部通信を行いません。",
 
   // ─── settings: チェック済みの取り消し線 ────────────────────────────
   "settings.item.checkStrikethrough.name": "チェック済みの取り消し線",
@@ -80,12 +79,12 @@ const ja = {
 
   "settings.item.showCalendarButton.name":"カレンダーボタンを表示",
   "settings.item.showCalendarButton.desc":
-    "日付ナビにカレンダーボタンを表示します。タップで任意の日付へジャンプできます。",
+    "日付ナビにカレンダーボタンを表示します。\nタップで任意の日付へジャンプできます。",
 
   // ─── settings: タグ別に色を変える ───────────────────────────────────
   "settings.item.tagColorRules.name": "タグ別に色を変える",
   "settings.item.tagColorRules.desc":
-    "指定タグを含む投稿の背景色と文字色を変更します。複数ルールに該当する場合は本文で先に出たタグが優先されます。",
+    "指定タグを含む投稿の背景色と文字色を変更します。\n複数ルールに該当する場合は本文で先に出たタグが優先されます。",
 
   // ─── settings: タグルール内 ─────────────────────────────────────────
   "settings.tagRule.label": "ルール {n}",
@@ -99,10 +98,10 @@ const ja = {
     "このタグを含む投稿の本文文字色を設定します。（タグ・リンク・URLはアクセントカラー側で設定します）",
   "settings.tagRule.accent.name": "アクセントカラー",
   "settings.tagRule.accent.desc":
-    "タグ・リンク・URL・コピー完了アイコンなどアクセントカラーが使われる要素の色を設定します。未設定時はテーマのアクセントカラーを使います。",
+    "タグ・リンク・URL・コピー完了アイコンなどアクセントカラーが使われる要素の色を設定します。\n未設定時はテーマのアクセントカラーを使います。",
   "settings.tagRule.sub.name": "サブカラー",
   "settings.tagRule.sub.desc":
-    "タイムスタンプ・アイコン・リストマーカー・引用線・チェックボックスなどサブ要素の色をまとめて設定します。未設定時は背景色と文字色から自動算出します。",
+    "タイムスタンプ・アイコン・リストマーカー・引用線・チェックボックスなどサブ要素の色をまとめて設定します。\n未設定時は背景色と文字色から自動算出します。",
   "settings.tagRule.scope.buttons.name": "タイムスタンプ・メニュー・ピンにサブカラーを適用",
   "settings.tagRule.scope.buttons.desc": "オフのときは自動設定された色になります。",
   "settings.tagRule.scope.quote.name": "引用にサブカラーを適用",
@@ -112,12 +111,6 @@ const ja = {
   "settings.tagRule.scope.ogp.name": "OGPカードにサブカラーを適用",
   "settings.tagRule.scope.ogp.desc": "オフのときは自動設定された色になります。",
   "settings.tagRule.button.add": "ルールを追加",
-
-  // ─── settings: ツールチップ ─────────────────────────────────────────
-  "settings.tooltip.resetDefault": "初期値に戻す",
-  "settings.tooltip.deleteRule": "このルールを削除",
-  "settings.tooltip.lock": "ロックする",
-  "settings.tooltip.unlock": "編集するにはロックを解除",
 
   // ─── view: 書式メニュー（書いてる途中のテキストに対する書式操作） ──
   "view.formatMenu.code": "コード",

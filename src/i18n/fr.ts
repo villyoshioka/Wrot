@@ -51,12 +51,10 @@ const fr = {
 
   "settings.item.tagSuggest.name": "Saisie semi-automatique des tags",
   "settings.item.tagSuggest.desc":
-    "Saisir # dans le champ de saisie affiche les tags utilisés dans vos publications précédentes comme suggestions.",
-  "settings.item.tagSuggestClear.name": "Effacer l'historique des tags",
-  "settings.item.tagSuggestClear.desc":
-    "Supprime tous les tags mémorisés comme suggestions.",
-  "settings.item.tagSuggestClear.button": "Effacer",
-  "settings.notice.tagSuggestCleared": "Historique des tags effacé",
+    "Saisir # dans le champ de saisie affiche les tags utilisés dans vos publications précédentes comme suggestions. L'icône de corbeille efface ces suggestions.",
+  "settings.item.tagSuggestClear.name": "Effacer les suggestions de tags",
+  "settings.notice.tagSuggestCleared": "Suggestions de tags effacées",
+  "settings.item.tagSuggestClear.confirmLabel": "Appuyez à nouveau pour confirmer",
 
   "settings.item.pinLimit.name": "Limite d'épinglage",
   "settings.item.pinLimit.desc":
@@ -117,11 +115,6 @@ const fr = {
   "settings.tagRule.scope.ogp.desc":
     "Si désactivé, utilise la couleur par défaut.",
   "settings.tagRule.button.add": "Ajouter une règle",
-
-  "settings.tooltip.resetDefault": "Rétablir par défaut",
-  "settings.tooltip.deleteRule": "Supprimer la règle",
-  "settings.tooltip.lock": "Verrouiller",
-  "settings.tooltip.unlock": "Déverrouiller pour modifier",
 
   "view.formatMenu.code": "Code",
   "view.formatMenu.math": "Équation",

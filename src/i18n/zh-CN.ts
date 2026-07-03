@@ -49,11 +49,10 @@ const zhCN = {
 
   "settings.item.tagSuggest.name": "标签自动补全",
   "settings.item.tagSuggest.desc":
-    "在输入框中输入 # 时，会将过去帖子中用过的标签显示为候选。",
-  "settings.item.tagSuggestClear.name": "清除标签补全历史",
-  "settings.item.tagSuggestClear.desc": "删除所有已记住的标签候选。",
-  "settings.item.tagSuggestClear.button": "清除",
-  "settings.notice.tagSuggestCleared": "已清除标签补全历史",
+    "在输入框中输入 # 时，会将过去帖子中用过的标签显示为候选。垃圾桶图标可清除补全候选。",
+  "settings.item.tagSuggestClear.name": "清除标签补全候选",
+  "settings.notice.tagSuggestCleared": "已清除标签补全候选",
+  "settings.item.tagSuggestClear.confirmLabel": "再按一次以确认",
 
   "settings.item.pinLimit.name": "置顶上限",
   "settings.item.pinLimit.desc":
@@ -115,11 +114,6 @@ const zhCN = {
   "settings.tagRule.scope.ogp.desc":
     "关闭时将使用系统自动计算的颜色。",
   "settings.tagRule.button.add": "添加规则",
-
-  "settings.tooltip.resetDefault": "恢复默认值",
-  "settings.tooltip.deleteRule": "删除此规则",
-  "settings.tooltip.lock": "锁定",
-  "settings.tooltip.unlock": "解锁后即可编辑",
 
   "view.formatMenu.code": "代码",
   "view.formatMenu.math": "公式",

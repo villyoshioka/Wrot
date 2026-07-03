@@ -1,5 +1,14 @@
 # Release Notes
 
+## 2.11.0 - 2026-07-04
+
+### Improvements
+
+- Improved the tag autocomplete settings UI. Suggestions are now cleared by pressing the trash icon twice.
+- Adjusted the descriptions in settings.
+
+---
+
 ## 2.10.0 - 2026-07-02
 
 ### Updates

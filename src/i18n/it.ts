@@ -51,12 +51,10 @@ const it = {
 
   "settings.item.tagSuggest.name": "Completamento automatico dei tag",
   "settings.item.tagSuggest.desc":
-    "Digitando # nel campo di input, i tag usati nei post precedenti vengono mostrati come suggerimenti.",
-  "settings.item.tagSuggestClear.name": "Cancella cronologia dei tag",
-  "settings.item.tagSuggestClear.desc":
-    "Elimina tutti i tag memorizzati come suggerimenti.",
-  "settings.item.tagSuggestClear.button": "Cancella",
-  "settings.notice.tagSuggestCleared": "Cronologia dei tag cancellata",
+    "Digitando # nel campo di input, i tag usati nei post precedenti vengono mostrati come suggerimenti. L'icona del cestino cancella questi suggerimenti.",
+  "settings.item.tagSuggestClear.name": "Cancella i suggerimenti dei tag",
+  "settings.notice.tagSuggestCleared": "Suggerimenti dei tag cancellati",
+  "settings.item.tagSuggestClear.confirmLabel": "Premi di nuovo per confermare",
 
   "settings.item.pinLimit.name": "Limite post fissati",
   "settings.item.pinLimit.desc":
@@ -121,11 +119,6 @@ const it = {
   "settings.tagRule.scope.ogp.desc":
     "Se disattivato, verrà utilizzato il colore impostato automaticamente.",
   "settings.tagRule.button.add": "Aggiungi regola",
-
-  "settings.tooltip.resetDefault": "Ripristina predefiniti",
-  "settings.tooltip.deleteRule": "Elimina questa regola",
-  "settings.tooltip.lock": "Blocca",
-  "settings.tooltip.unlock": "Sblocca per modificare",
 
   "view.formatMenu.code": "Codice",
   "view.formatMenu.math": "Formula",

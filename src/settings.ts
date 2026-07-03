@@ -76,6 +76,21 @@ export const DEFAULT_SETTINGS: WrotSettings = {
 
 const SETTINGS_NARROW_THRESHOLD_PX = 600;
 
+// 翻訳文中の "\n" を説明文の改行として `target` に流し込む。
+// この改行は PC 向けの整形で、モバイルでは CSS(.wr-pc-break) で無効化して
+// 通常の折り返しに任せる。
+function appendWithBreaks(target: DocumentFragment | HTMLElement, text: string): void {
+  text.split("\n").forEach((part, i) => {
+    if (i > 0) target.createEl("br", { cls: "wr-pc-break" });
+    target.appendText(part);
+  });
+}
+
+// setDesc 用ラッパー。"\n" を含まない文はそのまま文字列で返す。
+function descWithBreaks(text: string): string | DocumentFragment {
+  if (!text.includes("\n")) return text;
+  return createFragment((frag) => appendWithBreaks(frag, text));
+}
 export class WrotSettingTab extends PluginSettingTab {
   plugin: WrotPlugin;
   private narrowObserver: ResizeObserver | null = null;
@@ -202,7 +217,7 @@ export class WrotSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName(t("settings.item.viewPlacement.name"))
-      .setDesc(t("settings.item.viewPlacement.desc"))
+      .setDesc(descWithBreaks(t("settings.item.viewPlacement.desc")))
       .addDropdown((dropdown) =>
         dropdown
           .addOption("left", t("settings.option.viewPlacement.left"))
@@ -217,7 +232,7 @@ export class WrotSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName(t("settings.item.followFontSize.name"))
-      .setDesc(t("settings.item.followFontSize.desc"))
+      .setDesc(descWithBreaks(t("settings.item.followFontSize.desc")))
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.followObsidianFontSize)
@@ -231,7 +246,7 @@ export class WrotSettingTab extends PluginSettingTab {
     let headerDateText: TextComponent;
     new Setting(containerEl)
       .setName(t("settings.item.headerDateFormat.name"))
-      .setDesc(t("settings.item.headerDateFormat.desc"))
+      .setDesc(descWithBreaks(t("settings.item.headerDateFormat.desc")))
       .addText((text) => {
         headerDateText = text;
         const localizedDefault = t("defaults.headerDateFormat");
@@ -245,7 +260,7 @@ export class WrotSettingTab extends PluginSettingTab {
           });
       })
       .addExtraButton((btn) =>
-        btn.setIcon("reset").setTooltip(t("settings.tooltip.resetDefault")).onClick(async () => {
+        btn.setIcon("reset").onClick(async () => {
           const localizedDefault = t("defaults.headerDateFormat");
           this.plugin.settings.headerDateFormat = localizedDefault;
           await this.plugin.saveSettings();
@@ -257,7 +272,7 @@ export class WrotSettingTab extends PluginSettingTab {
     let tsText: TextComponent;
     new Setting(containerEl)
       .setName(t("settings.item.timestampFormat.name"))
-      .setDesc(t("settings.item.timestampFormat.desc"))
+      .setDesc(descWithBreaks(t("settings.item.timestampFormat.desc")))
       .addText((text) => {
         tsText = text;
         // 日付フォーマットのトークン例（大文字小文字に意味があるため表記を変えない）
@@ -272,7 +287,7 @@ export class WrotSettingTab extends PluginSettingTab {
           });
       })
       .addExtraButton((btn) =>
-        btn.setIcon("reset").setTooltip(t("settings.tooltip.resetDefault")).onClick(async () => {
+        btn.setIcon("reset").onClick(async () => {
           this.plugin.settings.timestampFormat = DEFAULT_SETTINGS.timestampFormat;
           await this.plugin.saveSettings();
           this.plugin.refreshViews();
@@ -283,7 +298,7 @@ export class WrotSettingTab extends PluginSettingTab {
     let lightPicker: ColorComponent;
     new Setting(containerEl)
       .setName(t("settings.item.bgColorLight.name"))
-      .setDesc(t("settings.item.bgColorLight.desc"))
+      .setDesc(descWithBreaks(t("settings.item.bgColorLight.desc")))
       .setClass("wr-reverse-controls")
       .addColorPicker((picker) => {
         lightPicker = picker;
@@ -296,7 +311,7 @@ export class WrotSettingTab extends PluginSettingTab {
           });
       })
       .addExtraButton((btn) =>
-        btn.setIcon("reset").setTooltip(t("settings.tooltip.resetDefault")).onClick(async () => {
+        btn.setIcon("reset").onClick(async () => {
           this.plugin.settings.bgColorLight = DEFAULT_SETTINGS.bgColorLight;
           await this.plugin.saveSettings();
           this.plugin.applyBgColor();
@@ -307,7 +322,7 @@ export class WrotSettingTab extends PluginSettingTab {
     let textLightPicker: ColorComponent;
     new Setting(containerEl)
       .setName(t("settings.item.textColorLight.name"))
-      .setDesc(t("settings.item.textColorLight.desc"))
+      .setDesc(descWithBreaks(t("settings.item.textColorLight.desc")))
       .setClass("wr-reverse-controls")
       .addColorPicker((picker) => {
         textLightPicker = picker;
@@ -320,7 +335,7 @@ export class WrotSettingTab extends PluginSettingTab {
           });
       })
       .addExtraButton((btn) =>
-        btn.setIcon("reset").setTooltip(t("settings.tooltip.resetDefault")).onClick(async () => {
+        btn.setIcon("reset").onClick(async () => {
           this.plugin.settings.textColorLight = DEFAULT_SETTINGS.textColorLight;
           await this.plugin.saveSettings();
           this.plugin.applyBgColor();
@@ -331,7 +346,7 @@ export class WrotSettingTab extends PluginSettingTab {
     let darkPicker: ColorComponent;
     new Setting(containerEl)
       .setName(t("settings.item.bgColorDark.name"))
-      .setDesc(t("settings.item.bgColorDark.desc"))
+      .setDesc(descWithBreaks(t("settings.item.bgColorDark.desc")))
       .setClass("wr-reverse-controls")
       .addColorPicker((picker) => {
         darkPicker = picker;
@@ -344,7 +359,7 @@ export class WrotSettingTab extends PluginSettingTab {
           });
       })
       .addExtraButton((btn) =>
-        btn.setIcon("reset").setTooltip(t("settings.tooltip.resetDefault")).onClick(async () => {
+        btn.setIcon("reset").onClick(async () => {
           this.plugin.settings.bgColorDark = DEFAULT_SETTINGS.bgColorDark;
           await this.plugin.saveSettings();
           this.plugin.applyBgColor();
@@ -355,7 +370,7 @@ export class WrotSettingTab extends PluginSettingTab {
     let textDarkPicker: ColorComponent;
     new Setting(containerEl)
       .setName(t("settings.item.textColorDark.name"))
-      .setDesc(t("settings.item.textColorDark.desc"))
+      .setDesc(descWithBreaks(t("settings.item.textColorDark.desc")))
       .setClass("wr-reverse-controls")
       .addColorPicker((picker) => {
         textDarkPicker = picker;
@@ -368,7 +383,7 @@ export class WrotSettingTab extends PluginSettingTab {
           });
       })
       .addExtraButton((btn) =>
-        btn.setIcon("reset").setTooltip(t("settings.tooltip.resetDefault")).onClick(async () => {
+        btn.setIcon("reset").onClick(async () => {
           this.plugin.settings.textColorDark = DEFAULT_SETTINGS.textColorDark;
           await this.plugin.saveSettings();
           this.plugin.applyBgColor();
@@ -381,7 +396,7 @@ export class WrotSettingTab extends PluginSettingTab {
     let submitText: TextComponent;
     new Setting(containerEl)
       .setName(t("settings.item.submitLabel.name"))
-      .setDesc(t("settings.item.submitLabel.desc"))
+      .setDesc(descWithBreaks(t("settings.item.submitLabel.desc")))
       .addText((text) => {
         submitText = text;
         const localizedDefault = t("defaults.submitLabel");
@@ -395,7 +410,7 @@ export class WrotSettingTab extends PluginSettingTab {
           });
       })
       .addExtraButton((btn) =>
-        btn.setIcon("reset").setTooltip(t("settings.tooltip.resetDefault")).onClick(async () => {
+        btn.setIcon("reset").onClick(async () => {
           const localizedDefault = t("defaults.submitLabel");
           this.plugin.settings.submitLabel = localizedDefault;
           await this.plugin.saveSettings();
@@ -416,13 +431,13 @@ export class WrotSettingTab extends PluginSettingTab {
       const prefix = descTemplate.slice(0, linkOpenIdx);
       const linkText = descTemplate.slice(linkOpenIdx + "{linkOpen}".length, linkCloseIdx);
       const suffix = descTemplate.slice(linkCloseIdx + "{linkClose}".length);
-      descEl.appendText(prefix);
+      appendWithBreaks(descEl, prefix);
       const link = descEl.createEl("a", { text: linkText, href: t("settings.item.submitIcon.lucideUrl") });
       link.setAttr("target", "_blank");
-      descEl.appendText(suffix);
+      appendWithBreaks(descEl, suffix);
     } else {
       // プレースホルダが含まれない辞書のときは素のテキストとして表示
-      descEl.appendText(descTemplate);
+      appendWithBreaks(descEl, descTemplate);
     }
     iconSetting
       .addText((text) => {
@@ -439,7 +454,7 @@ export class WrotSettingTab extends PluginSettingTab {
           });
       })
       .addExtraButton((btn) =>
-        btn.setIcon("reset").setTooltip(t("settings.tooltip.resetDefault")).onClick(async () => {
+        btn.setIcon("reset").onClick(async () => {
           this.plugin.settings.submitIcon = DEFAULT_SETTINGS.submitIcon;
           await this.plugin.saveSettings();
           iconText.setValue(DEFAULT_SETTINGS.submitIcon);
@@ -450,7 +465,7 @@ export class WrotSettingTab extends PluginSettingTab {
     let placeholderText: TextComponent;
     new Setting(containerEl)
       .setName(t("settings.item.inputPlaceholder.name"))
-      .setDesc(t("settings.item.inputPlaceholder.desc"))
+      .setDesc(descWithBreaks(t("settings.item.inputPlaceholder.desc")))
       .addText((text) => {
         placeholderText = text;
         const localizedDefault = t("defaults.inputPlaceholder");
@@ -464,7 +479,7 @@ export class WrotSettingTab extends PluginSettingTab {
           });
       })
       .addExtraButton((btn) =>
-        btn.setIcon("reset").setTooltip(t("settings.tooltip.resetDefault")).onClick(async () => {
+        btn.setIcon("reset").onClick(async () => {
           const localizedDefault = t("defaults.inputPlaceholder");
           this.plugin.settings.inputPlaceholder = localizedDefault;
           await this.plugin.saveSettings();
@@ -474,38 +489,8 @@ export class WrotSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName(t("settings.item.tagSuggest.name"))
-      .setDesc(t("settings.item.tagSuggest.desc"))
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.plugin.settings.tagSuggestEnabled)
-          .onChange(async (value) => {
-            this.plugin.settings.tagSuggestEnabled = value;
-            await this.plugin.saveSettings();
-          })
-      );
-
-    // 履歴の削除はトグルの副作用にせず、消す意思を持って押す専用ボタンとして分ける
-    new Setting(containerEl)
-      .setName(t("settings.item.tagSuggestClear.name"))
-      .setDesc(t("settings.item.tagSuggestClear.desc"))
-      .addButton((btn) => {
-        btn
-          .setButtonText(t("settings.item.tagSuggestClear.button"))
-          .onClick(async () => {
-            this.plugin.recentTags = [];
-            await this.plugin.saveRecentTags();
-            new Notice(t("settings.notice.tagSuggestCleared"));
-          });
-        // 破壊的操作なので Obsidian 標準の警告スタイル(mod-warning)で強調する。
-        // setWarning() は非推奨、後継の setDestructive() は Obsidian 1.13.0 以降のみで
-        // minAppVersion 1.8.7 では使えないため、両者が付与する既存クラスを直接付ける。
-        btn.buttonEl.addClass("mod-warning");
-      });
-
-    new Setting(containerEl)
       .setName(t("settings.item.pinLimit.name"))
-      .setDesc(t("settings.item.pinLimit.desc"))
+      .setDesc(descWithBreaks(t("settings.item.pinLimit.desc")))
       .addDropdown((dropdown) =>
         dropdown
           .addOption("1", t("settings.option.pinLimit.1"))
@@ -524,8 +509,50 @@ export class WrotSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
+      .setName(t("settings.item.tagSuggest.name"))
+      .setDesc(descWithBreaks(t("settings.item.tagSuggest.desc")))
+      // 補完候補の削除はトグルの副作用にせず、専用アイコンとして併置する。
+      // 見た目はリセット等と同じ素のアイコン。誤操作ガードは BRAT の削除ボタンと
+      // 同じ2度押し方式で、1度目でアイコンが「もう一度押して確定」の警告表示に
+      // 変わり、2度目で削除を実行する。確定表示のまま数秒置くと自動キャンセルして
+      // アイコンに戻る。
+      .addExtraButton((btn) => {
+        let armTimer: number | null = null;
+        const disarm = () => {
+          if (armTimer !== null) {
+            window.clearTimeout(armTimer);
+            armTimer = null;
+          }
+          btn.extraSettingsEl.removeClass("wr-confirm-armed");
+          btn.extraSettingsEl.empty();
+          btn.setIcon("trash-2");
+        };
+        btn.setIcon("trash-2").setTooltip(t("settings.item.tagSuggestClear.name")).onClick(async () => {
+          if (armTimer === null) {
+            btn.extraSettingsEl.addClass("wr-confirm-armed");
+            btn.extraSettingsEl.empty();
+            btn.extraSettingsEl.setText(t("settings.item.tagSuggestClear.confirmLabel"));
+            armTimer = window.setTimeout(disarm, 3000);
+            return;
+          }
+          disarm();
+          this.plugin.recentTags = [];
+          await this.plugin.saveRecentTags();
+          new Notice(t("settings.notice.tagSuggestCleared"));
+        });
+      })
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.tagSuggestEnabled)
+          .onChange(async (value) => {
+            this.plugin.settings.tagSuggestEnabled = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
       .setName(t("settings.item.ogp.name"))
-      .setDesc(t("settings.item.ogp.desc"))
+      .setDesc(descWithBreaks(t("settings.item.ogp.desc")))
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.enableOgpFetch)
@@ -537,7 +564,7 @@ export class WrotSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName(t("settings.item.checkStrikethrough.name"))
-      .setDesc(t("settings.item.checkStrikethrough.desc"))
+      .setDesc(descWithBreaks(t("settings.item.checkStrikethrough.desc")))
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.checkStrikethrough)
@@ -552,7 +579,7 @@ export class WrotSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName(t("settings.item.showCalendarButton.name"))
-      .setDesc(t("settings.item.showCalendarButton.desc"))
+      .setDesc(descWithBreaks(t("settings.item.showCalendarButton.desc")))
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.showCalendarButton)
@@ -566,7 +593,7 @@ export class WrotSettingTab extends PluginSettingTab {
 
     calendarDayShapeSetting = new Setting(containerEl)
       .setName(t("settings.item.calendarDayShape.name"))
-      .setDesc(t("settings.item.calendarDayShape.desc"))
+      .setDesc(descWithBreaks(t("settings.item.calendarDayShape.desc")))
       .addDropdown((dropdown) =>
         dropdown
           .addOption("circle", t("settings.option.calendarDayShape.circle"))
@@ -585,7 +612,7 @@ export class WrotSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName(t("settings.item.tagColorRules.name"))
-      .setDesc(t("settings.item.tagColorRules.desc"))
+      .setDesc(descWithBreaks(t("settings.item.tagColorRules.desc")))
       .addToggle((toggle) =>
         toggle.setValue(this.plugin.settings.tagColorRulesEnabled).onChange(async (v) => {
           this.plugin.settings.tagColorRulesEnabled = v;
@@ -680,7 +707,6 @@ export class WrotSettingTab extends PluginSettingTab {
           lockBtnEl = btn.extraSettingsEl;
           btn
             .setIcon(isUnlocked() ? "lock-keyhole-open" : "lock-keyhole")
-            .setTooltip(isUnlocked() ? t("settings.tooltip.lock") : t("settings.tooltip.unlock"))
             .onClick(() => {
               if (isUnlocked()) {
                 this.unlockedRules.delete(ruleKey);
@@ -697,7 +723,6 @@ export class WrotSettingTab extends PluginSettingTab {
             trailingBtnEl = btn.extraSettingsEl;
             btn
               .setIcon(trailing.kind === "delete" ? "trash-2" : "reset")
-              .setTooltip(trailing.kind === "delete" ? t("settings.tooltip.deleteRule") : t("settings.tooltip.resetDefault"))
               .onClick(async () => {
                 if (!isUnlocked()) return;
                 await trailing.handler();
@@ -708,7 +733,7 @@ export class WrotSettingTab extends PluginSettingTab {
         let tagInputEl: HTMLInputElement | null = null;
         new Setting(groupEl)
           .setName(t("settings.tagRule.tag.name"))
-          .setDesc(t("settings.tagRule.tag.desc"))
+          .setDesc(descWithBreaks(t("settings.tagRule.tag.desc")))
           .addText((text) => {
             tagInputEl = text.inputEl;
             text
@@ -722,7 +747,7 @@ export class WrotSettingTab extends PluginSettingTab {
         let bgPickerEl: HTMLInputElement | null = null;
         new Setting(groupEl)
           .setName(t("settings.tagRule.bg.name"))
-          .setDesc(t("settings.tagRule.bg.desc"))
+          .setDesc(descWithBreaks(t("settings.tagRule.bg.desc")))
           .setClass("wr-reverse-controls")
           .addColorPicker((picker) => {
             bgPickerEl = (picker as unknown as { colorPickerEl: HTMLInputElement }).colorPickerEl;
@@ -734,7 +759,7 @@ export class WrotSettingTab extends PluginSettingTab {
         let fgPickerEl: HTMLInputElement | null = null;
         new Setting(groupEl)
           .setName(t("settings.tagRule.fg.name"))
-          .setDesc(t("settings.tagRule.fg.desc"))
+          .setDesc(descWithBreaks(t("settings.tagRule.fg.desc")))
           .setClass("wr-reverse-controls")
           .addColorPicker((picker) => {
             fgPickerEl = (picker as unknown as { colorPickerEl: HTMLInputElement }).colorPickerEl;
@@ -748,7 +773,7 @@ export class WrotSettingTab extends PluginSettingTab {
         let accentResetBtnEl: HTMLElement | null = null;
         new Setting(groupEl)
           .setName(t("settings.tagRule.accent.name"))
-          .setDesc(t("settings.tagRule.accent.desc"))
+          .setDesc(descWithBreaks(t("settings.tagRule.accent.desc")))
           .setClass("wr-reverse-controls")
           .addColorPicker((picker) => {
             accentPicker = picker;
@@ -763,7 +788,7 @@ export class WrotSettingTab extends PluginSettingTab {
           })
           .addExtraButton((btn) => {
             accentResetBtnEl = btn.extraSettingsEl;
-            btn.setIcon("reset").setTooltip(t("settings.tooltip.resetDefault")).onClick(async () => {
+            btn.setIcon("reset").onClick(async () => {
               if (!isUnlocked()) return;
               await onAccentChange(undefined);
               accentPicker.setValue(getDefaultAccent());
@@ -776,7 +801,7 @@ export class WrotSettingTab extends PluginSettingTab {
         let suppressSubChange = false;
         new Setting(groupEl)
           .setName(t("settings.tagRule.sub.name"))
-          .setDesc(t("settings.tagRule.sub.desc"))
+          .setDesc(descWithBreaks(t("settings.tagRule.sub.desc")))
           .setClass("wr-reverse-controls")
           .addColorPicker((picker) => {
             subPicker = picker;
@@ -796,7 +821,7 @@ export class WrotSettingTab extends PluginSettingTab {
           })
           .addExtraButton((btn) => {
             subResetBtnEl = btn.extraSettingsEl;
-            btn.setIcon("reset").setTooltip(t("settings.tooltip.resetDefault")).onClick(async () => {
+            btn.setIcon("reset").onClick(async () => {
               if (!isUnlocked()) return;
               await onSubChange(undefined);
               suppressSubChange = true;
@@ -871,10 +896,6 @@ export class WrotSettingTab extends PluginSettingTab {
           for (const el of scopeToggleEls) setDisabled(el, !unlocked);
           if (lockBtnEl) {
             setIcon(lockBtnEl, unlocked ? "lock-keyhole-open" : "lock-keyhole");
-            lockBtnEl.setAttr(
-              "aria-label",
-              unlocked ? t("settings.tooltip.lock") : t("settings.tooltip.unlock")
-            );
           }
         };
 

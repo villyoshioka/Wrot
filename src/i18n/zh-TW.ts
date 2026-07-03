@@ -49,11 +49,10 @@ const zhTW = {
 
   "settings.item.tagSuggest.name": "標籤自動補全",
   "settings.item.tagSuggest.desc":
-    "在輸入框中輸入 # 時，會將過去貼文中使用過的標籤顯示為候選。",
-  "settings.item.tagSuggestClear.name": "清除標籤補全歷史",
-  "settings.item.tagSuggestClear.desc": "刪除所有已記住的標籤候選。",
-  "settings.item.tagSuggestClear.button": "清除",
-  "settings.notice.tagSuggestCleared": "已清除標籤補全歷史",
+    "在輸入框中輸入 # 時，會將過去貼文中使用過的標籤顯示為候選。垃圾桶圖示可清除補全候選。",
+  "settings.item.tagSuggestClear.name": "清除標籤補全候選",
+  "settings.notice.tagSuggestCleared": "已清除標籤補全候選",
+  "settings.item.tagSuggestClear.confirmLabel": "再按一次以確認",
 
   "settings.item.pinLimit.name": "釘選上限",
   "settings.item.pinLimit.desc":
@@ -115,11 +114,6 @@ const zhTW = {
   "settings.tagRule.scope.ogp.desc":
     "關閉時將使用自動設定的顏色。",
   "settings.tagRule.button.add": "新增規則",
-
-  "settings.tooltip.resetDefault": "恢復成預設值",
-  "settings.tooltip.deleteRule": "刪除此規則",
-  "settings.tooltip.lock": "鎖定",
-  "settings.tooltip.unlock": "解除鎖定以進行編輯",
 
   "view.formatMenu.code": "程式碼",
   "view.formatMenu.math": "數式",
