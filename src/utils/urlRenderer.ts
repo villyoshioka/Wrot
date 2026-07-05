@@ -210,18 +210,24 @@ function renderTextSegment(
           li.addClass("wr-check-item");
           const checkbox = li.createEl("input", { attr: { type: "checkbox" } });
           if (innerCheck[1] === "x") checkbox.checked = true;
+          // テキストは常に span に包む。チェック切替時に再描画せず（カードの
+          // チラつき防止で modify 再描画は抑止される）、この span のクラスだけ
+          // 付け外しして取り消し線を即時反映するため。
+          const textContainer = li.createSpan(
+            innerCheck[1] === "x" && callbacks.checkStrikethrough ? { cls: "wr-check-done" } : {}
+          );
           if (callbacks.onCheckToggle) {
             const lineIdx = lineOffset + i;
             const cb = callbacks.onCheckToggle;
             checkbox.addEventListener("click", () => {
               cb(lineIdx, checkbox.checked);
+              if (callbacks.checkStrikethrough) {
+                textContainer.classList.toggle("wr-check-done", checkbox.checked);
+              }
             });
           } else {
             checkbox.disabled = true;
           }
-          const textContainer = innerCheck[1] === "x" && callbacks.checkStrikethrough
-            ? li.createSpan({ cls: "wr-check-done" })
-            : li;
           renderInlineTokens(textContainer, innerCheck[2], callbacks, urls, seen);
         } else if (innerList) {
           renderInlineTokens(li, innerList[1], callbacks, urls, seen);
@@ -267,18 +273,22 @@ function renderTextSegment(
         li.addClass("wr-check-item");
         const checkbox = li.createEl("input", { attr: { type: "checkbox" } });
         if (checkMatch[1] === "x") checkbox.checked = true;
+        // テキストは常に span に包む（理由は上の引用内チェックと同じ）
+        const textContainer = li.createSpan(
+          checkMatch[1] === "x" && callbacks.checkStrikethrough ? { cls: "wr-check-done" } : {}
+        );
         if (callbacks.onCheckToggle) {
           const lineIdx = lineOffset + i;
           const cb = callbacks.onCheckToggle;
           checkbox.addEventListener("click", () => {
             cb(lineIdx, checkbox.checked);
+            if (callbacks.checkStrikethrough) {
+              textContainer.classList.toggle("wr-check-done", checkbox.checked);
+            }
           });
         } else {
           checkbox.disabled = true;
         }
-        const textContainer = checkMatch[1] === "x" && callbacks.checkStrikethrough
-          ? li.createSpan({ cls: "wr-check-done" })
-          : li;
         renderInlineTokens(textContainer, checkMatch[2], callbacks, urls, seen);
       } else if (listMatch) {
         renderInlineTokens(li, listMatch[1], callbacks, urls, seen);

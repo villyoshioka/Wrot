@@ -4,9 +4,17 @@
    Specificity note: a trailing :not(#x) on a selector is an ID-level
    specificity boost used to beat Obsidian core / theme rules without the
    priority flag (themes never use ID selectors, so this reliably wins).
-   The declarations that still carry the priority flag are only those where
-   the opposing side also uses it (mobile default styles / tag-rule CSS
-   dynamically injected by main.ts / native form controls).
+   This stylesheet and the CSS injected at runtime by main.ts carry no
+   priority flags at all. The cascade is organized as an ID-level ladder:
+     0-1 IDs  this stylesheet's normal rules (theme-var defaults)
+     2 IDs    injected bg/text color stamps (settings colors; added
+              automatically by boostSelectors() in main.ts)
+     3 IDs    the few rules here that must beat the stamps (RV copy button)
+     4 IDs    injected tag-rule CSS (always on top)
+   The injected sheets are also kept at the end of <head> so equal
+   specificity resolves in their favor. Opponents that use the priority
+   flag themselves (some themes, possibly the mobile app) win by design -
+   that trade-off is accepted.
    ======================================== */
 
 .wr-container {
@@ -455,9 +463,12 @@ body .wr-textarea:not(#x) {
   outline: none;
 }
 
-/*! kept - form field background is forced with the priority flag by core or themes */
-body .wr-textarea {
-  background: transparent !important;
+/* Obsidian core paints form-field backgrounds on textarea (incl. :hover) and
+   themes may raise specificity further, so win by ID-level specificity
+   instead of the priority flag. Opponents that themselves use the priority
+   flag (if any) will win; that trade-off is intentional. */
+body .wr-textarea:not(#x):not(#y):not(#z) {
+  background: transparent;
 }
 
 body .wr-textarea:focus:not(#x) {
@@ -484,13 +495,10 @@ body .wr-textarea:focus:not(#x) {
 
 
 body .wr-toolbar-btn {
-  border: none;
   box-shadow: none;
   outline: none;
-  padding: 2px;
   cursor: pointer;
   color: var(--text-muted);
-  min-width: auto;
 }
 
 /* Reset Obsidian / theme button background */
@@ -498,14 +506,24 @@ body .wr-toolbar-btn:not(#x) {
   background: none;
 }
 
-body .wr-input-toolbar.wr-toolbar-wrapped .wr-toolbar-btn {
+/* Width-affecting metrics are pinned at ID level in BOTH wrap modes.
+   The wrap detection (WrotView updateToolbarWrapped) compares button
+   offsetTop, so the normal and wrapped modes must agree on button widths.
+   When a theme overrode the normal-mode metrics while the higher-specificity
+   wrapped-mode rule kept winning, the two modes disagreed on whether one row
+   fits and the ResizeObserver re-toggled the class every frame - the
+   "twitching form" seen with some themes (Primary / Mado 11 / Kakano). */
+body .wr-toolbar-btn:not(#x):not(#y):not(#z) {
+  border: none;
+  padding: 2px;
+  margin: 0;
+  min-width: auto;
+}
+
+body .wr-input-toolbar.wr-toolbar-wrapped .wr-toolbar-btn:not(#x):not(#y):not(#z) {
   padding: 6px 2px;
   min-height: 0;
   height: auto;
-}
-
-body .wr-input-toolbar.wr-toolbar-wrapped .wr-toolbar-btn:not(#x) {
-  margin: 0;
 }
 
 .wr-toolbar-btn:hover {
@@ -1155,21 +1173,25 @@ body .block-language-wr .copy-code-button:not(#x):not(#y):not(#z) {
   z-index: 100;
 }
 
-/* RV: button sits above card content; card background makes it look odd */
-/*! kept - must beat tag-rule CSS injected at runtime by main.ts which uses the priority flag */
-body pre.language-wr .copy-code-button {
-  background: transparent !important;
+/* RV: button sits above card content; card background makes it look odd.
+   3 ID levels: above the injected bg stamps (2) and Obsidian core's
+   ".markdown-rendered button.copy-code-button:hover", below the tag-rule
+   CSS (4) so with a tag rule active the button still gets the card color
+   (established behavior). */
+body pre.language-wr .copy-code-button:not(#x):not(#y):not(#z) {
+  background: transparent;
 }
 
 /* With a tag rule active, .copy-code-button.wr-flair-bg gets the card
    background color, and in some cases it also lands on the inner SVG and
-   blots out the icon. Make sure the SVG alone stays transparent. */
-/*! kept - must beat tag-rule CSS injected at runtime by main.ts */
-pre.language-wr .copy-code-button svg,
-pre.language-wr .copy-code-button svg *,
-.block-language-wr .copy-code-button svg,
-.block-language-wr .copy-code-button svg * {
-  background: transparent !important;
+   blots out the icon. Make sure the SVG alone stays transparent.
+   3 ID levels: outranks the injected bg stamps (2), stays below the
+   tag-rule CSS (4). */
+pre.language-wr .copy-code-button svg:not(#x):not(#y):not(#z),
+pre.language-wr .copy-code-button svg :not(#x):not(#y):not(#z),
+.block-language-wr .copy-code-button svg:not(#x):not(#y):not(#z),
+.block-language-wr .copy-code-button svg :not(#x):not(#y):not(#z) {
+  background: transparent;
 }
 
 .wr-spacer {
@@ -1177,7 +1199,12 @@ pre.language-wr .copy-code-button svg *,
 }
 
 /* Format menu button spacing */
-body .wr-format-btn {
+/* Separator gap between the insert-type buttons and the format menu button.
+   Pinned at the same ID level as the toolbar metric rules (and one class
+   stronger than their margin: 0) so it survives them and stays identical in
+   both wrap modes - a mode-independent margin cannot re-trigger the wrap
+   oscillation those rules guard against. */
+body .wr-toolbar-btn.wr-format-btn:not(#x):not(#y):not(#z) {
   margin-left: 8px;
 }
 
@@ -1677,12 +1704,12 @@ body .wr-ogp-card:not(#x) {
   padding: 0;
 }
 
-/*! kept - fights tag-rule CSS injected at runtime by main.ts */
 body .wr-ogp-card:hover {
   /* RV OGP card hover with a tag color configured is a long-known bug
-     (structurally unwinnable specificity war against the tag-rule feature's
-     dynamically generated CSS from JS). Deferred as out of scope for v2.2.0. */
-  background: var(--wr-bg-hover, #e8e6e1) !important;
+     (the tag-rule CSS injected by main.ts wins on specificity). Deferred as
+     out of scope for v2.2.0. The same hover color is also stamped by the
+     injected bg CSS, which sits later in <head> and enforces the value. */
+  background: var(--wr-bg-hover, #e8e6e1);
   border-color: rgba(0, 0, 0, 0.2);
 }
 
@@ -1807,38 +1834,38 @@ body.is-mobile .wr-today-btn {
 /* Prevent lingering :hover background on mobile (iOS/Android).
    Keep :active feedback while the finger is down.
    Obsidian mobile defaults sometimes apply :focus-visible / :hover
-   backgrounds with the priority flag, so we use the priority flag here too
-   to win reliably (a pure specificity contest loses in some environments) */
-/*! kept - Obsidian mobile applies pseudo-class backgrounds with the priority flag */
-body.is-mobile .wr-nav-btn:focus:not(.wr-toolbar-active),
-body.is-mobile .wr-nav-btn:focus-visible:not(.wr-toolbar-active),
-body.is-mobile .wr-today-btn:focus,
-body.is-mobile .wr-today-btn:focus-visible {
-  background: transparent !important;
+   backgrounds; win by ID-level specificity (:not(#x) x3) instead of the
+   priority flag. If the mobile app states these with the priority flag,
+   this loses - accepted trade-off of the no-priority-flag design. */
+body.is-mobile .wr-nav-btn:focus:not(.wr-toolbar-active):not(#x):not(#y):not(#z),
+body.is-mobile .wr-nav-btn:focus-visible:not(.wr-toolbar-active):not(#x):not(#y):not(#z),
+body.is-mobile .wr-today-btn:focus:not(#x):not(#y):not(#z),
+body.is-mobile .wr-today-btn:focus-visible:not(#x):not(#y):not(#z) {
+  background: transparent;
 }
 
-/*! kept - Obsidian mobile applies pseudo-class backgrounds with the priority flag */
-body.is-mobile .wr-nav-btn:hover:not(.wr-toolbar-active),
-body.is-mobile .wr-today-btn:hover {
-  background: transparent !important;
+body.is-mobile .wr-nav-btn:hover:not(.wr-toolbar-active):not(#x):not(#y):not(#z),
+body.is-mobile .wr-today-btn:hover:not(#x):not(#y):not(#z) {
+  background: transparent;
 }
 
-/*! kept - press feedback must outrank Obsidian mobile pseudo-class backgrounds */
-body.is-mobile .wr-nav-btn:active:not(.wr-toolbar-active),
-body.is-mobile .wr-today-btn:active {
-  background: rgba(var(--mono-rgb-100), 0.08) !important;
-  color: var(--text-accent);
+/* Press feedback must outrank the hover/focus resets above and any mobile
+   pseudo-class backgrounds; same ID-level boost keeps the relative order.
+   No color declaration here: the text color during a press stays on the
+   injected muted stamp, matching the pre-experiment behavior. */
+body.is-mobile .wr-nav-btn:active:not(.wr-toolbar-active):not(#x):not(#y):not(#z),
+body.is-mobile .wr-today-btn:active:not(#x):not(#y):not(#z) {
+  background: rgba(var(--mono-rgb-100), 0.08);
 }
 
 /* While the calendar is open, pin the button to the faint glow the whole
-   time. Our mobile :active 0.08 rule (which carries the priority flag) would
-   otherwise cut in on arrow taps and cause flicker, so use the priority flag
-   to reliably hold the light tint (0.05). */
-/*! kept - must outrank our own mobile active rule above which carries the priority flag */
-body.is-mobile .wr-calendar-btn.wr-toolbar-active,
-body.is-mobile .wr-calendar-btn.wr-toolbar-active:active,
-body.is-mobile .wr-calendar-btn.wr-toolbar-active:hover {
-  background: rgba(var(--mono-rgb-100), 0.05) !important;
+   time. Our mobile :active 0.08 rule above would otherwise cut in on arrow
+   taps and cause flicker; the extra class in the compound plus the same
+   ID-level boost reliably holds the light tint (0.05). */
+body.is-mobile .wr-calendar-btn.wr-toolbar-active:not(#x):not(#y):not(#z),
+body.is-mobile .wr-calendar-btn.wr-toolbar-active:active:not(#x):not(#y):not(#z),
+body.is-mobile .wr-calendar-btn.wr-toolbar-active:hover:not(#x):not(#y):not(#z) {
+  background: rgba(var(--mono-rgb-100), 0.05);
 }
 
 .is-mobile .wr-date-label {
@@ -1875,18 +1902,16 @@ body.is-mobile .wr-calendar-year:active {
 }
 
 /* Mobile: kill the :hover/:focus background lingering after arrow-button taps.
-   Same convention as the prev-day/today buttons (keep only :active feedback). */
-/*! kept - Obsidian mobile applies pseudo-class backgrounds with the priority flag */
-body.is-mobile .wr-calendar-nav-btn:focus,
-body.is-mobile .wr-calendar-nav-btn:focus-visible,
-body.is-mobile .wr-calendar-nav-btn:hover {
-  background: transparent !important;
+   Same convention as the prev-day/today buttons (keep only :active feedback).
+   ID-level specificity boost instead of the priority flag, same as above. */
+body.is-mobile .wr-calendar-nav-btn:focus:not(#x):not(#y):not(#z),
+body.is-mobile .wr-calendar-nav-btn:focus-visible:not(#x):not(#y):not(#z),
+body.is-mobile .wr-calendar-nav-btn:hover:not(#x):not(#y):not(#z) {
+  background: transparent;
 }
 
-/*! kept - press feedback must outrank Obsidian mobile pseudo-class backgrounds */
-body.is-mobile .wr-calendar-nav-btn:active {
-  background: rgba(var(--mono-rgb-100), 0.08) !important;
-  color: var(--text-accent);
+body.is-mobile .wr-calendar-nav-btn:active:not(#x):not(#y):not(#z) {
+  background: rgba(var(--mono-rgb-100), 0.08);
 }
 
 .is-mobile .wr-input-area {
@@ -1919,11 +1944,12 @@ body.is-mobile .wr-submit-btn {
   line-height: 1.4;
 }
 
-/*! kept - Obsidian mobile draws form-field borders with the priority flag */
-body.is-mobile .wr-textarea,
-body.is-mobile .wr-textarea:focus {
-  border: none !important;
-  outline: none !important;
+/* Obsidian mobile draws form-field borders; win by ID-level specificity
+   instead of the priority flag (loses only to priority-flag opponents). */
+body.is-mobile .wr-textarea:not(#x):not(#y):not(#z),
+body.is-mobile .wr-textarea:focus:not(#x):not(#y):not(#z) {
+  border: none;
+  outline: none;
 }
 
 .is-mobile .wr-input-toolbar {
@@ -1935,11 +1961,13 @@ body.is-mobile .wr-textarea:focus {
   gap: 4px 8px;
 }
 
-body.is-mobile .wr-toolbar-btn {
+/* Same ID-level pinning as the desktop rules: both wrap modes must agree on
+   button widths or the wrap detection oscillates (see the desktop comment). */
+body.is-mobile .wr-toolbar-btn:not(#x):not(#y):not(#z) {
   padding: 2px;
 }
 
-body.is-mobile .wr-input-toolbar.wr-toolbar-wrapped .wr-toolbar-btn {
+body.is-mobile .wr-input-toolbar.wr-toolbar-wrapped .wr-toolbar-btn:not(#x):not(#y):not(#z) {
   padding: 6px 2px;
 }
 
@@ -1961,6 +1989,15 @@ body.is-mobile .wr-input-toolbar.wr-toolbar-wrapped .wr-toolbar-btn {
 .is-mobile .wr-card-footer {
   margin-top: 8px;
   gap: 6px;
+}
+
+/* The pin indicator's absolute offsets mirror the card padding so it sits
+   on the same row as the footer (timestamp / 3-dot). The mobile card
+   shrinks its padding (10px sides, 6px bottom), so mirror that here too;
+   without this the pin floats up-right, off the footer row. */
+.is-mobile .wr-pin-indicator {
+  right: 10px;
+  bottom: 6px;
 }
 
 body:not(.wr-font-follow).is-mobile .wr-today-btn {
@@ -2000,15 +2037,17 @@ body.is-mobile .wr-ogp-card {
   -webkit-tap-highlight-color: transparent;
 }
 
-/*! kept - must beat the hover rule injected at runtime by main.ts which uses the priority flag */
+/* The same values are also stamped by the injected bg CSS from main.ts,
+   which sits later in <head> and enforces them; these copies keep the
+   behavior when the injected sheet is absent. Specificity is intentionally
+   kept below the tag-rule CSS so rule-colored cards keep their color. */
 body.is-mobile .wr-ogp-card:hover {
-  background: var(--wr-bg-color, #f8f8f8) !important;
+  background: var(--wr-bg-color, #f8f8f8);
   border-color: rgba(0, 0, 0, 0.1);
 }
 
-/*! kept - press feedback must outrank the hover rule injected at runtime by main.ts */
 body.is-mobile .wr-ogp-card:active {
-  background: var(--wr-bg-hover, #e8e6e1) !important;
+  background: var(--wr-bg-hover, #e8e6e1);
   border-color: rgba(0, 0, 0, 0.2);
 }
 
@@ -2232,17 +2271,16 @@ body.is-mobile .wr-settings .wr-pc-break {
   font-family: var(--font-text, var(--default-font));
 }
 
-/* main.ts applies textColor with the priority flag to every element inside
-   the wr block, so the quote card body, meta, and border raise their
-   specificity to a winning level before applying the muted color.
+/* main.ts applies textColor to every element inside the wr block, so the
+   quote card body, meta, and border raise their specificity to a winning
+   level before applying the muted color.
    To beat main.ts's selector "body .cm-line.wr-codeblock-line *"
    (specificity 0,0,2,1) we need more classes; including wr-quote-card-slot
    makes it 0,0,3,1 and wins */
-/*! kept - must beat tag-rule CSS injected at runtime by main.ts which uses the priority flag */
 body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body,
 body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body *:not(.wr-tag):not(.wr-url):not(.wr-internal-link):not(.wr-nested-quote-marker):not(.wr-tag *):not(.wr-url *):not(.wr-internal-link *):not(.wr-quote-image-marker):not(.wr-quote-math-marker):not(.wr-quote-code-marker):not(.wr-quote-image-marker *):not(.wr-quote-math-marker *):not(.wr-quote-code-marker *),
 body .wr-quote-card-slot .wr-quote-card .wr-quote-card-meta {
-  color: var(--text-muted) !important;
+  color: var(--text-muted);
 }
 
 /* The dashed border is also stated explicitly with raised specificity so main.ts rules cannot affect it */
@@ -2252,12 +2290,11 @@ body .wr-quote-card-slot .wr-quote-card {
 
 /* Accent targets inside the quote card body (tags / URLs / internal links /
    QT markers) override back to accent color with even stronger specificity */
-/*! kept - must beat tag-rule CSS injected at runtime by main.ts */
 body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-tag,
 body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-url,
 body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-internal-link,
 body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-nested-quote-marker {
-  color: var(--text-accent) !important;
+  color: var(--text-accent);
 }
 
 /* The preview card renders as a flat "one line = one block" structure.
@@ -2409,20 +2446,12 @@ body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-nested-quote-mar
 /* When clicking a quote card jumps to the source post, gently flash the
    whole target block. If the source post matches a tag rule (has an
    accent), JS sets --wr-flash-color on the element so it glows in that
-   accent. If unset, the Obsidian theme's accent color is used. */
-@keyframes wr-quote-jump-flash {
-  0%, 100% { background-color: transparent; }
-  50% { background-color: var(--wr-flash-color, hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.22)); }
-}
-
-/*! kept - flash animation must outrank theme and editor animation declarations */
-.cm-line.wr-quote-jump-flash,
-.wr-quote-jump-flash {
-  animation: wr-quote-jump-flash 1.6s ease-in-out 2 !important;
-}
-
-/* Both cm-line and RV blocks easily get their background-color overridden
-   by the background settings, so paint on top via an ::after overlay */
+   accent. If unset, the Obsidian theme's accent color is used.
+   The glow is painted only on an ::after overlay so the block's own
+   background color stays intact underneath. (An older variant animated the
+   element's background-color directly; it must not come back - animations
+   beat normal declarations regardless of specificity, so it would blank
+   the card background during the flash.) */
 .cm-line.wr-codeblock-line.wr-quote-jump-flash,
 .block-language-wr.wr-quote-jump-flash,
 pre.wr-quote-jump-flash,
@@ -2441,6 +2470,11 @@ pre.wr-quote-jump-flash::after,
   background-color: var(--wr-flash-color, hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.22));
   animation: wr-quote-jump-flash-overlay 1.4s ease-out 1 forwards;
   border-radius: inherit;
+  /* Above the RV copy button (z-index: 100): tag-rule cards paint the button
+     with an opaque card color, and without this the un-tinted button box
+     visibly floats while the rest of the card glows. pointer-events: none
+     keeps the button clickable underneath. */
+  z-index: 150;
 }
 
 @keyframes wr-quote-jump-flash-overlay {

@@ -358,6 +358,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
             timestampFormat: plugin.settings.timestampFormat,
             resolveRuleClass: (content) => plugin.getTagRuleClassForContent(content),
             resolveRuleAccent: (ruleClass) => plugin.getRuleAccentColor(ruleClass),
+            checkStrikethrough: plugin.settings.checkStrikethrough,
           });
           frag.appendChild(slot);
         } else {

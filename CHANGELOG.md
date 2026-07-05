@@ -1,5 +1,20 @@
 # Release Notes
 
+## 2.12.0 - 2026-07-05
+
+### Improvements
+
+- Significantly reworked the internal structure. This also resolves the warning shown on the Obsidian community plugin review page.
+
+### Bug Fixes
+
+- Fixed an issue where the copy button could stay unlit and appear to float during the quote-jump flash on cards with a tag rule color.
+- Fixed an issue where the pin indicator on mobile could be misaligned with the timestamp and the three-dot button.
+- Fixed an issue where toggling a checkbox in the timeline could delay the strikethrough, including inside quote cards, and cause the display to flicker.
+- Fixed an issue where the post form could twitch rapidly with certain themes that restyle buttons.
+
+---
+
 ## 2.11.0 - 2026-07-04
 
 ### Improvements

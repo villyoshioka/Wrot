@@ -418,7 +418,8 @@ class QuoteBlockWidget extends WidgetType {
     private ogpCache: OGPCache,
     private resolveImagePath: (fileName: string) => string | null,
     private resolveQuoteRuleClass: (content: string) => string | null,
-    private resolveQuoteRuleAccent: (ruleClass: string) => string | null
+    private resolveQuoteRuleAccent: (ruleClass: string) => string | null,
+    private checkStrikethrough: boolean
   ) {
     super();
     this.cachedSnapshot = parsedUrls.map((pu) => {
@@ -432,6 +433,7 @@ class QuoteBlockWidget extends WidgetType {
     if (this.blockId !== other.blockId) return false;
     if (this.ruleClass !== other.ruleClass) return false;
     if (this.timestampFormat !== other.timestampFormat) return false;
+    if (this.checkStrikethrough !== other.checkStrikethrough) return false;
     if (this.parsedUrls.length !== other.parsedUrls.length) return false;
     for (let i = 0; i < this.parsedUrls.length; i++) {
       if (this.parsedUrls[i].url !== other.parsedUrls[i].url) return false;
@@ -477,6 +479,7 @@ class QuoteBlockWidget extends WidgetType {
       timestampFormat: this.timestampFormat,
       resolveRuleClass: this.resolveQuoteRuleClass,
       resolveRuleAccent: this.resolveQuoteRuleAccent,
+      checkStrikethrough: this.checkStrikethrough,
     });
     container.appendChild(slot);
 
@@ -1132,7 +1135,8 @@ function buildDecorations(
                 ogpCache,
                 resolveImagePath,
                 (content) => plugin.getTagRuleClassForContent(content),
-                (ruleClass) => plugin.getRuleAccentColor(ruleClass)
+                (ruleClass) => plugin.getRuleAccentColor(ruleClass),
+                plugin.settings.checkStrikethrough
               ),
               side: 2,
             })

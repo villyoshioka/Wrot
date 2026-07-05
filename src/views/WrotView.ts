@@ -1112,6 +1112,10 @@ export class WrotView extends ItemView {
         // 連発・遅延発火する modify イベントを抑止して、カード全体の再描画によるチラつきを防ぐ
         this.ignoreModifyUntil = Date.now() + 500;
         await toggleCheckbox(this.app, file, fileLine);
+        // 書き込み完了が遅れると modify が抑止窓の外に届いて全カード再描画の
+        // かくつきになるため、完了時点からもう一度窓を張り直す。
+        // 取り消し線はクリック時にクラス切替で即時反映済みなので再描画は不要。
+        this.ignoreModifyUntil = Date.now() + 500;
       },
       onInternalLinkClick: (linkName) => {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
@@ -1127,6 +1131,7 @@ export class WrotView extends ItemView {
           timestampFormat: this.plugin.settings.timestampFormat,
           resolveRuleClass: (content) => this.plugin.getTagRuleClassForContent(content),
           resolveRuleAccent: (ruleClass) => this.plugin.getRuleAccentColor(ruleClass),
+          checkStrikethrough: this.plugin.settings.checkStrikethrough,
         });
       },
       renderCodeBlock: (code, lang, blockEl, fenceTildes) => {

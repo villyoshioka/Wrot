@@ -26,9 +26,17 @@ export function invalidateMemoCache(filePath: string): void {
   MEMO_CACHE.delete(filePath);
 }
 
-// ファイル変更時に「そのファイルを参照してる引用カード」を全部再描画する。
+// カードDOM → 引用元メモの対応。クリックハンドラのジャンプ先行番号の参照元。
+// クロージャ変数ではなく WeakMap に持つことで、カードを作り直さない
+// インプレース更新でもジャンプ先を最新のメモに差し替えられる。
+const CARD_MEMO = new WeakMap<HTMLElement, Memo>();
+
+// ファイル変更時に「そのファイルを参照してる引用カード」を全部更新する。
 // RV/LV/Wrotタイムライン どこにあっても data-quote-file/data-quote-block で特定できる。
-// fileName はリンクパス表記 (例: "2026年05月08日") なので、変更されたファイルのベース名と照合する
+// fileName はリンクパス表記 (例: "2026年05月08日") なので、変更されたファイルのベース名と照合する。
+// カードを作り直すとプレースホルダが一瞬挟まってちらつくため、枠とクリック
+// ハンドラを保ったまま中身だけ差し替えるインプレース更新を基本とし、
+// 構造が想定外のときだけ作り直しにフォールバックする。
 export function refreshQuoteCardsForFile(
   app: App,
   file: TFile,
@@ -47,13 +55,92 @@ export function refreshQuoteCardsForFile(
     const currentFilePath = card.dataset.quoteContext ?? "";
     const timestampFormat = card.dataset.quoteTsFormat;
     if (!fileName || !blockId) return;
+    const checkStrikethrough = card.dataset.quoteStrike === "1";
+    if (
+      updateQuoteCardInPlace(card, app, {
+        fileName,
+        blockId,
+        currentFilePath,
+        timestampFormat,
+        resolveRuleClass,
+        checkStrikethrough,
+      })
+    ) {
+      return;
+    }
     card.remove();
     renderQuoteCard(slot, fileName, blockId, app, currentFilePath, {
       timestampFormat,
       resolveRuleClass,
       resolveRuleAccent,
+      checkStrikethrough,
     });
   });
+}
+
+// 既存カードの枠・クリックハンドラ・data属性を保ったまま、本文と時刻だけ
+// 差し替える。差し替え完了までは古い中身が表示され続けるので、作り直し方式の
+// 「…」プレースホルダによるちらつきが出ない。
+// 戻り値 false は「このカードはインプレース更新できない構造」の意味で、
+// 呼び出し側が作り直しにフォールバックする。
+function updateQuoteCardInPlace(
+  card: HTMLElement,
+  app: App,
+  opts: {
+    fileName: string;
+    blockId: string;
+    currentFilePath: string;
+    timestampFormat?: string;
+    resolveRuleClass?: (content: string) => string | null;
+    checkStrikethrough?: boolean;
+  }
+): boolean {
+  const bodyEl = card.querySelector<HTMLElement>(".wr-quote-card-body");
+  const metaEl = card.querySelector<HTMLElement>(".wr-quote-card-meta");
+  if (!bodyEl || !metaEl) return false;
+
+  const file = app.metadataCache.getFirstLinkpathDest(opts.fileName, opts.currentFilePath);
+  if (!(file instanceof TFile)) {
+    CARD_MEMO.delete(card);
+    markDead(card, bodyEl, metaEl);
+    return true;
+  }
+
+  const apply = (memos: Memo[]) => {
+    const found = memos.find((m) => memoMatchesBlockId(m, opts.blockId));
+    if (!found) {
+      CARD_MEMO.delete(card);
+      markDead(card, bodyEl, metaEl);
+      return;
+    }
+    card.classList.remove("wr-quote-card-dead");
+    fillCardBody(card, bodyEl, metaEl, found, app, opts.timestampFormat, opts.checkStrikethrough);
+    // 引用元のタグルールクラスも最新の内容に合わせて当て直す
+    Array.from(card.classList)
+      .filter((c) => /^wr-tag-rule-\d+$/.test(c))
+      .forEach((c) => card.classList.remove(c));
+    if (opts.resolveRuleClass) {
+      const cls = opts.resolveRuleClass(found.content);
+      if (cls) card.classList.add(cls);
+    }
+    // ジャンプ先の行番号も最新化する (クリックハンドラは CARD_MEMO を参照)
+    CARD_MEMO.set(card, found);
+  };
+
+  const cached = getCachedMemos(file.path);
+  if (cached) {
+    apply(cached);
+    return true;
+  }
+  app.vault.cachedRead(file).then((content) => {
+    const memos = parseMemos(content);
+    setCachedMemos(file.path, memos);
+    apply(memos);
+  }).catch(() => {
+    CARD_MEMO.delete(card);
+    markDead(card, bodyEl, metaEl);
+  });
+  return true;
 }
 
 function memoMatchesBlockId(memo: Memo, blockId: string): boolean {
@@ -230,7 +317,8 @@ const PREVIEW_MAX_CHARS_PER_LINE = 200;
 function renderPreviewLines(
   bodyEl: HTMLElement,
   content: string,
-  app: App
+  app: App,
+  checkStrikethrough?: boolean
 ): void {
   const sanitized = sanitizeCodeBlocks(
     sanitizeMathBlocks(
@@ -270,7 +358,11 @@ function renderPreviewLines(
           ? "wr-quote-card-check wr-quote-card-check-done"
           : "wr-quote-card-check",
       });
-      const textSpan = lineEl.createSpan({ cls: "wr-quote-card-line-text" });
+      const textSpan = lineEl.createSpan({
+        cls: checkMatch[1] === "x" && checkStrikethrough
+          ? "wr-quote-card-line-text wr-check-done"
+          : "wr-quote-card-line-text",
+      });
       renderTextWithTagsAndUrls(textSpan, checkMatch[2], inlineCallbacks);
     } else if (listMatch) {
       const slot = lineEl.createSpan({ cls: "wr-quote-card-marker-slot wr-quote-card-marker-bullet" });
@@ -300,10 +392,11 @@ function fillCardBody(
   metaEl: HTMLElement,
   memo: Memo,
   app: App,
-  timestampFormat?: string
+  timestampFormat?: string,
+  checkStrikethrough?: boolean
 ): void {
   bodyEl.empty();
-  renderPreviewLines(bodyEl, memo.content, app);
+  renderPreviewLines(bodyEl, memo.content, app, checkStrikethrough);
   metaEl.textContent = formatMemoTimestamp(memo.time, timestampFormat);
 }
 
@@ -818,12 +911,15 @@ export function renderQuoteCard(
     resolveRuleClass?: (content: string) => string | null;
     // ルールクラス → アクセント色 (hex) を返す関数。 ジャンプ後の点滅色に使う
     resolveRuleAccent?: (ruleClass: string) => string | null;
+    // チェック済み項目のテキストに取り消し線を引く (本体リストの設定と同じ値を渡す)
+    checkStrikethrough?: boolean;
   }
 ): void {
   const localMemos = options?.localMemos;
   const timestampFormat = options?.timestampFormat;
   const resolveRuleClass = options?.resolveRuleClass;
   const resolveRuleAccent = options?.resolveRuleAccent;
+  const checkStrikethrough = options?.checkStrikethrough ?? false;
   // <a href> だと Obsidian の内部リンク処理が mousedown/mouseup を奪い、
   // クリックイベントが届かないことがある（特に <a> 要素本体をクリックした時）。
   // <div> + role="link" で代替し、自前の click ハンドラに任せる。
@@ -834,6 +930,8 @@ export function renderQuoteCard(
   card.dataset.quoteBlock = blockId;
   card.dataset.quoteContext = currentFilePath;
   if (timestampFormat) card.dataset.quoteTsFormat = timestampFormat;
+  // refreshQuoteCardsForFile での再描画時に設定値を引き継ぐため dataset に保存する
+  if (checkStrikethrough) card.dataset.quoteStrike = "1";
   const bodyEl = card.createDiv({ cls: "wr-quote-card-body", text: "…" });
   const metaEl = card.createDiv({ cls: "wr-quote-card-meta" });
 
@@ -845,12 +943,12 @@ export function renderQuoteCard(
 
   // メモが非同期で揃う前にユーザーがクリックすると、ハンドラ未登録のまま
   // <a href> のデフォルト遷移が走って中途半端な状態になり、ホバー残り＋
-  // 2回押し問題を生む。メモ準備フラグを使った eager ハンドラで先に防ぐ。
-  let memoReady: Memo | null = null;
+  // 2回押し問題を生む。メモ準備状態(CARD_MEMO)を使った eager ハンドラで先に防ぐ。
   // eslint-disable-next-line @typescript-eslint/no-misused-promises -- async handler intentionally used as a callback
   card.addEventListener("click", async (e) => {
     e.preventDefault();
     e.stopPropagation();
+    const memoReady = CARD_MEMO.get(card);
     if (!memoReady) return;
     // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef -- internal Obsidian/CodeMirror API or intentional pattern
     const obs = require("obsidian") as typeof import("obsidian");
@@ -892,7 +990,7 @@ export function renderQuoteCard(
   });
 
   const setupClick = (memo: Memo) => {
-    fillCardBody(card, bodyEl, metaEl, memo, app, timestampFormat);
+    fillCardBody(card, bodyEl, metaEl, memo, app, timestampFormat, checkStrikethrough);
     // 引用元のタグルールクラスを引用カード自身に当てる (引用先の親投稿のルールとは独立)
     if (resolveRuleClass) {
       // 既存のルールクラスは念のため削除
@@ -902,7 +1000,7 @@ export function renderQuoteCard(
       const cls = resolveRuleClass(memo.content);
       if (cls) card.classList.add(cls);
     }
-    memoReady = memo;
+    CARD_MEMO.set(card, memo);
   };
 
   if (localMemos) {
