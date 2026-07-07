@@ -1,5 +1,13 @@
 # Release Notes
 
+## 2.12.1 - 2026-07-08
+
+### Bug Fixes
+
+- Fixed an issue where the vertical quote line color in Live Preview did not match the timeline and Reading View.
+
+---
+
 ## 2.12.0 - 2026-07-05
 
 ### Improvements

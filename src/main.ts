@@ -393,6 +393,33 @@ export default class WrotPlugin extends Plugin {
       body .wr-blockquote-wrap {
         border-left-color: ${mutedColor};
       }
+      /* LVの引用縦バー(::before)とネスト分(box-shadow)。RVの border-left-color と
+         同じ mutedColor で塗り、ビュー間で引用バーの色ソースを揃える。
+         タグルールCSS(4段)は同セレクタをより高い段で持つため、そちらが優先される */
+      body .cm-line.wr-blockquote-line::before {
+        background-color: ${mutedColor};
+      }
+      body .cm-line.wr-blockquote-depth-2::before {
+        box-shadow: 18px 0 0 0 ${mutedColor};
+      }
+      body .cm-line.wr-blockquote-depth-3::before {
+        box-shadow:
+          18px 0 0 0 ${mutedColor},
+          36px 0 0 0 ${mutedColor};
+      }
+      body .cm-line.wr-blockquote-depth-4::before {
+        box-shadow:
+          18px 0 0 0 ${mutedColor},
+          36px 0 0 0 ${mutedColor},
+          54px 0 0 0 ${mutedColor};
+      }
+      body .cm-line.wr-blockquote-depth-5::before {
+        box-shadow:
+          18px 0 0 0 ${mutedColor},
+          36px 0 0 0 ${mutedColor},
+          54px 0 0 0 ${mutedColor},
+          72px 0 0 0 ${mutedColor};
+      }
       body .wr-bullet-list > li:not(.wr-check-item)::before,
       body .wr-ordered-list > li::before,
       body ul.wr-reading-list > li:not(.wr-check-item)::before,
