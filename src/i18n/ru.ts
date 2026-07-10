@@ -3,7 +3,7 @@ import type { Translations } from "./ja";
 // Russian translations. Translated via Nani.
 const ru = {
   "settings.section.basic": "Основные настройки",
-  "settings.section.display": "Настройки отображения",
+  "settings.section.advanced": "Расширенные настройки",
   "settings.section.tagrules": "Настройки правил по тегам",
 
   "settings.item.viewPlacement.name": "Позиция отображения",
@@ -77,9 +77,9 @@ const ru = {
   "settings.item.showCalendarButton.desc":
     "Отображать кнопку календаря в панели навигации. Нажмите, чтобы быстро перейти к нужной дате.",
 
-  "settings.item.tagColorRules.name": "Цветовые правила для тегов",
+  "settings.item.tagColorRules.name": "Правила для тегов",
   "settings.item.tagColorRules.desc":
-    "Изменяет цвета записей с определенными тегами. Если подходят несколько правил, приоритет отдается первому тегу в тексте.",
+    "Задает правила для каждого тега: цвета записей с определенными тегами и исключение из интеграции тегов. Для цветов, если подходят несколько правил, приоритет отдается первому тегу в тексте.",
 
   "settings.tagRule.label": "Правило {n}",
   "settings.tagRule.tag.name": "Тег",
@@ -106,6 +106,10 @@ const ru = {
   "settings.tagRule.scope.list.desc": "Маркеры списков и чекбоксы.",
   "settings.tagRule.scope.ogp.name": "Применять доп. цвет к карточкам OGP",
   "settings.tagRule.scope.ogp.desc": "Рамки и фон предпросмотра ссылок.",
+  "settings.item.graphTags.name": "Интеграция тегов",
+  "settings.item.graphTags.desc": "Интегрирует теги заметок с Obsidian.\nТеги внутри заметок отображаются в графе и находятся поиском по тегам (tag:) — как обычные теги.\nЕсли отключено, теги остаются только внутри Wrot.",
+  "settings.tagRule.noIntegration.name": "Исключить из интеграции тегов",
+  "settings.tagRule.noIntegration.desc": "Если включено, тег этого правила, написанный в заметках, исключается из интеграции тегов и остаётся только внутри Wrot.",
   "settings.tagRule.button.add": "Добавить правило",
 
   "view.formatMenu.code": "Код",

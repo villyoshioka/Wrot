@@ -3,7 +3,7 @@ import type { Translations } from "./ja";
 // Simplified Chinese (Mainland) translations. Translated via Nani.
 const zhCN = {
   "settings.section.basic": "基本设置",
-  "settings.section.display": "显示设置",
+  "settings.section.advanced": "高级设置",
   "settings.section.tagrules": "标签规则设置",
 
   "settings.item.viewPlacement.name": "显示位置",
@@ -79,9 +79,9 @@ const zhCN = {
   "settings.item.showCalendarButton.desc":
     "在日期导航栏中显示日历图标，方便你直接跳转到任何日期。",
 
-  "settings.item.tagColorRules.name": "按标签自定义颜色",
+  "settings.item.tagColorRules.name": "使用标签规则",
   "settings.item.tagColorRules.desc":
-    "根据特定标签更改记录的背景和文字颜色。若符合多个规则，优先适用正文中先出现的标签。",
+    "按标签设置规则：更改包含特定标签的记录的颜色，以及从标签集成中排除。颜色方面，若符合多个规则，优先适用正文中先出现的标签。",
 
   "settings.tagRule.label": "规则 {n}",
   "settings.tagRule.tag.name": "标签",
@@ -113,6 +113,10 @@ const zhCN = {
   "settings.tagRule.scope.ogp.name": "将辅助色应用于 OGP 卡片",
   "settings.tagRule.scope.ogp.desc":
     "关闭时将使用系统自动计算的颜色。",
+  "settings.item.graphTags.name": "标签集成",
+  "settings.item.graphTags.desc": "将备忘录标签与 Obsidian 集成。\n备忘录内的标签会像普通标签一样显示在关系图谱中，也能被标签搜索（tag:）命中。\n关闭后，标签仅保留在 Wrot 内。",
+  "settings.tagRule.noIntegration.name": "从标签集成中排除",
+  "settings.tagRule.noIntegration.desc": "开启后，写在备忘录内的此规则标签将不参与标签集成，仅保留在 Wrot 内。",
   "settings.tagRule.button.add": "添加规则",
 
   "view.formatMenu.code": "代码",

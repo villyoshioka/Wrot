@@ -3,7 +3,7 @@ import type { Translations } from "./ja";
 // Italian translations. Translated via Nani.
 const it = {
   "settings.section.basic": "Impostazioni di base",
-  "settings.section.display": "Impostazioni di visualizzazione",
+  "settings.section.advanced": "Impostazioni avanzate",
   "settings.section.tagrules": "Impostazioni regole tag",
 
   "settings.item.viewPlacement.name": "Posizione di visualizzazione",
@@ -81,9 +81,9 @@ const it = {
   "settings.item.showCalendarButton.desc":
     "Aggiunge un pulsante calendario alla barra di navigazione. Tocca per passare rapidamente a una data specifica.",
 
-  "settings.item.tagColorRules.name": "Cambia colori per tag",
+  "settings.item.tagColorRules.name": "Usa le regole per tag",
   "settings.item.tagColorRules.desc":
-    "Cambia il colore di sfondo e del testo dei post che contengono tag specifici. Se si applicano più regole, ha la priorità il primo tag che appare nel testo.",
+    "Imposta regole per tag: colori dei post che contengono tag specifici ed esclusione dall'integrazione dei tag. Per i colori, se si applicano più regole, ha la priorità il primo tag che appare nel testo.",
 
   "settings.tagRule.label": "Regola {n}",
   "settings.tagRule.tag.name": "Tag",
@@ -118,6 +118,12 @@ const it = {
     "Applica colore secondario alle schede OGP",
   "settings.tagRule.scope.ogp.desc":
     "Se disattivato, verrà utilizzato il colore impostato automaticamente.",
+  "settings.item.graphTags.name": "Integrazione dei tag",
+  "settings.item.graphTags.desc":
+    "Integra i tag dei memo con Obsidian.\nI tag contenuti nei memo compaiono nella vista grafo e rispondono alla ricerca per tag (tag:), proprio come i tag normali.\nSe disattivato, i tag restano solo all'interno di Wrot.",
+  "settings.tagRule.noIntegration.name": "Escludi dall'integrazione dei tag",
+  "settings.tagRule.noIntegration.desc":
+    "Se attivato, il tag di questa regola scritto nei memo resta fuori dall'integrazione dei tag e rimane solo all'interno di Wrot.",
   "settings.tagRule.button.add": "Aggiungi regola",
 
   "view.formatMenu.code": "Codice",

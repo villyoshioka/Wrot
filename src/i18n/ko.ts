@@ -3,7 +3,7 @@ import type { Translations } from "./ja";
 // Korean translations. Translated via Nani.
 const ko = {
   "settings.section.basic": "기본 설정",
-  "settings.section.display": "표시 설정",
+  "settings.section.advanced": "고급 설정",
   "settings.section.tagrules": "태그별 규칙 설정",
 
   "settings.item.viewPlacement.name": "표시 위치",
@@ -79,9 +79,9 @@ const ko = {
   "settings.item.showCalendarButton.desc":
     "날짜 네비게이션에 캘린더 버튼을 추가합니다. 버튼을 눌러 원하는 날짜로 바로 이동할 수 있습니다.",
 
-  "settings.item.tagColorRules.name": "태그별 색상 규칙",
+  "settings.item.tagColorRules.name": "태그별 규칙 사용",
   "settings.item.tagColorRules.desc":
-    "특정 태그가 포함된 게시물의 배경색과 글자색을 변경합니다. 여러 규칙이 겹치면 본문에서 먼저 등장한 태그가 우선 적용됩니다.",
+    "태그별로 규칙을 설정합니다: 특정 태그가 포함된 게시물의 색상 변경과 태그 통합에서의 제외. 색상은 여러 규칙이 겹치면 본문에서 먼저 등장한 태그가 우선 적용됩니다.",
 
   "settings.tagRule.label": "규칙 {n}",
   "settings.tagRule.tag.name": "태그",
@@ -109,6 +109,10 @@ const ko = {
   "settings.tagRule.scope.list.desc": "끄면 시스템 기본 색상으로 표시됩니다.",
   "settings.tagRule.scope.ogp.name": "OGP 카드에 서브 컬러 적용",
   "settings.tagRule.scope.ogp.desc": "끄면 시스템 기본 색상으로 표시됩니다.",
+  "settings.item.graphTags.name": "태그 통합",
+  "settings.item.graphTags.desc": "메모의 태그를 Obsidian과 통합합니다.\n메모 안의 태그가 일반 태그와 마찬가지로 그래프 뷰에 표시되고, 태그 검색(tag:)에서도 검색됩니다.\n끄면 태그는 Wrot 안에서만 사용됩니다.",
+  "settings.tagRule.noIntegration.name": "태그 통합에서 제외",
+  "settings.tagRule.noIntegration.desc": "켜면 메모 안에 쓴 이 규칙의 태그는 태그 통합에서 제외되어 Wrot 안에서만 사용됩니다.",
   "settings.tagRule.button.add": "규칙 추가",
 
   "view.formatMenu.code": "코드",

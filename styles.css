@@ -411,6 +411,22 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
   color: var(--text-on-accent);
 }
 
+/* Invisible focusable input used to rebuild the iOS input session after a
+   forced IME commit (the caret fails to render when refocusing the textarea
+   directly). Must stay editable-looking to the OS so the keyboard stays open;
+   it is created, focused and removed within a single confirm() run. */
+.workspace-leaf-content[data-type="wrot-view"] .wr-focus-bounce {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
 /* Off-screen measuring element replicating the textarea's text layout.
    Box/font metrics (width, padding, font, etc.) are copied over in JS;
    only the invariant parts live here. */
@@ -1561,8 +1577,14 @@ body pre.language-wr:not(#x) {
   padding-right: 16px;
 }
 
+/* The button background is transparent in RV, so wide horizontal padding
+   (theme/app default can be 20px per side) makes the visible icon float
+   ~26px away from the block's right edge. Narrow it so the icon hugs the
+   top-right corner. */
 body pre.language-wr .copy-code-button:not(#x) {
   right: 0px;
+  padding-left: 6px;
+  padding-right: 6px;
 }
 
 /* RV: quotes/images/URL cards have their own spacing; revert to Obsidian default bottom padding.

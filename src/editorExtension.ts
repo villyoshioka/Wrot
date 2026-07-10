@@ -91,7 +91,7 @@ class BulletWidget extends WidgetType {
 }
 
 class CheckboxWidget extends WidgetType {
-  constructor(private checked: boolean, private pos: number) { super(); }
+  constructor(private checked: boolean) { super(); }
   toDOM(view: EditorView): HTMLElement {
     const wrap = createSpan();
     wrap.className = "wr-lp-marker wr-lp-check";
@@ -99,13 +99,22 @@ class CheckboxWidget extends WidgetType {
     cb.type = "checkbox";
     cb.checked = this.checked;
     cb.addEventListener("click", (e) => {
-      e.preventDefault();
-      // クリック時にDOM側のcheckedを先に切り替えて、テキスト書き換え→Widget再構築のラグでチラつくのを抑える
-      const next = !this.checked;
+      // updateDOM のDOM再利用でリスナーが古いWidgetインスタンスに残り続けるため、
+      // 生成時の checked/pos は使わず、クリック時点の実位置と本文から状態を導く。
+      // preventDefault はしない: キャンセルするとイベント処理後にブラウザが checked を
+      // クリック前の値へ巻き戻すため、下の明示代入ごと打ち消されてボックス表示だけ
+      // 古いまま残る (本文と打ち消し線は新状態なのにボックスが変わらない症状になる)
+      const pos = view.posAtDOM(wrap);
+      if (!/^- \[[ x]\] /.test(view.state.doc.sliceString(pos, pos + 6))) {
+        // 位置が特定できないときは本文に書き込まず、ボックスもクリック前の状態へ戻す
+        e.preventDefault();
+        return;
+      }
+      // "- [" の直後、[ ] 内の文字は pos+3
+      const next = view.state.doc.sliceString(pos + 3, pos + 4) === " ";
+      // 本文から導いた状態をボックスへ明示反映し、万一のズレもここで同期する
       cb.checked = next;
-      const newChar = next ? "x" : " ";
-      // pos は "- [" の先頭。[ ] 内の文字は pos+3
-      view.dispatch({ changes: { from: this.pos + 3, to: this.pos + 4, insert: newChar } });
+      view.dispatch({ changes: { from: pos + 3, to: pos + 4, insert: next ? "x" : " " } });
     });
     wrap.appendChild(cb);
     return wrap;
@@ -119,7 +128,9 @@ class CheckboxWidget extends WidgetType {
     return true;
   }
   eq(other: CheckboxWidget): boolean { return this.checked === other.checked; }
-  ignoreEvent(): boolean { return false; }
+  // エディタ側にイベントを渡さない(CM6デフォルト)。渡すとmousedownでカーソルが
+  // ブロック内に入り、ブロック全体が生テキスト表示に開いてRVと体感がずれる
+  ignoreEvent(): boolean { return true; }
 }
 
 class OlMarkerWidget extends WidgetType {
@@ -756,7 +767,7 @@ function buildDecorations(
                 entries.push({
                   from: l.from + quotePrefix,
                   to: l.from + quotePrefix + innerCheck[0].length,
-                  deco: Decoration.replace({ widget: new CheckboxWidget(isChecked, l.from + quotePrefix) }),
+                  deco: Decoration.replace({ widget: new CheckboxWidget(isChecked) }),
                 });
               }
               if (isChecked && checkStrikethrough && l.to > l.from + quotePrefix + innerCheck[0].length) {
@@ -793,7 +804,7 @@ function buildDecorations(
             entries.push({
               from: l.from,
               to: l.from + checkMatch[0].length,
-              deco: Decoration.replace({ widget: new CheckboxWidget(isChecked, l.from) }),
+              deco: Decoration.replace({ widget: new CheckboxWidget(isChecked) }),
             });
           }
           if (isChecked && checkStrikethrough && l.to > l.from + checkMatch[0].length) {

@@ -3,7 +3,7 @@ import type { Translations } from "./ja";
 // Traditional Chinese (Taiwan) translations. Translated via Nani.
 const zhTW = {
   "settings.section.basic": "基本設定",
-  "settings.section.display": "外觀設定",
+  "settings.section.advanced": "進階設定",
   "settings.section.tagrules": "標籤規則設定",
 
   "settings.item.viewPlacement.name": "顯示位置",
@@ -79,9 +79,9 @@ const zhTW = {
   "settings.item.showCalendarButton.desc":
     "在日期導覽列中顯示日曆按鈕，點擊即可快速跳轉至指定日期。",
 
-  "settings.item.tagColorRules.name": "按標籤變更顏色",
+  "settings.item.tagColorRules.name": "使用標籤規則",
   "settings.item.tagColorRules.desc":
-    "變更包含指定標籤之貼文的背景顏色與文字顏色。若符合多個規則，將優先適用本文中先出現的標籤。",
+    "按標籤設定規則：變更包含指定標籤之貼文的顏色，以及從標籤整合中排除。顏色方面，若符合多個規則，將優先適用本文中先出現的標籤。",
 
   "settings.tagRule.label": "規則 {n}",
   "settings.tagRule.tag.name": "標籤",
@@ -113,6 +113,10 @@ const zhTW = {
   "settings.tagRule.scope.ogp.name": "於 OGP 卡片套用輔助色",
   "settings.tagRule.scope.ogp.desc":
     "關閉時將使用自動設定的顏色。",
+  "settings.item.graphTags.name": "標籤整合",
+  "settings.item.graphTags.desc": "將備忘錄標籤與 Obsidian 整合。\n備忘錄內的標籤會像一般標籤一樣顯示在關係圖中，也能被標籤搜尋（tag:）命中。\n停用後，標籤僅保留在 Wrot 內。",
+  "settings.tagRule.noIntegration.name": "從標籤整合中排除",
+  "settings.tagRule.noIntegration.desc": "開啟後，寫在備忘錄內的此規則標籤將不參與標籤整合，僅保留在 Wrot 內。",
   "settings.tagRule.button.add": "新增規則",
 
   "view.formatMenu.code": "程式碼",

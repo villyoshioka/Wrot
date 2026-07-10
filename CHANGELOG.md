@@ -1,5 +1,27 @@
 # Release Notes
 
+## 2.13.0 - 2026-07-10
+
+### New Features
+
+- Added Tag Integration. Tags inside your memos now appear in the graph view and match tag searches (tag:), just like regular tags. It can be turned off in settings, and individual tags can be excluded via tag rules.
+
+### Improvements
+
+- Unified the checkbox behavior in Live Preview with Reading View. Clicking a checkbox no longer expands the block into raw text, and the checkbox display no longer gets out of sync with the actual content.
+- Aligned the copy button in Reading View with the top-right corner of the block.
+- Adjusted the order and wording of the settings screen.
+
+### Bug Fixes
+
+- Fixed an issue on mobile where characters could not be deleted right after confirming a tag suggestion.
+
+### Notes
+
+- On the first launch after updating, tag integration (graph view and tag search) may take a moment to kick in while the integration support file is newly created. Subsequent launches behave as usual.
+
+---
+
 ## 2.12.1 - 2026-07-08
 
 ### Bug Fixes

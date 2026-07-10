@@ -2,7 +2,7 @@
 const ja = {
   // ─── settings: section ─────────────────────────────────────────────
   "settings.section.basic": "基本設定",
-  "settings.section.display": "表示設定",
+  "settings.section.advanced": "詳細設定",
   "settings.section.tagrules": "タグ別ルール設定",
 
   // ─── settings: 表示位置 ────────────────────────────────────────────
@@ -82,9 +82,9 @@ const ja = {
     "日付ナビにカレンダーボタンを表示します。\nタップで任意の日付へジャンプできます。",
 
   // ─── settings: タグ別に色を変える ───────────────────────────────────
-  "settings.item.tagColorRules.name": "タグ別に色を変える",
+  "settings.item.tagColorRules.name": "タグ別ルールを使う",
   "settings.item.tagColorRules.desc":
-    "指定タグを含む投稿の背景色と文字色を変更します。\n複数ルールに該当する場合は本文で先に出たタグが優先されます。",
+    "指定タグを含む投稿の色変更や、本体統合からの除外をタグ別に設定します。\n色は複数ルールに該当する場合、本文で先に出たタグが優先されます。",
 
   // ─── settings: タグルール内 ─────────────────────────────────────────
   "settings.tagRule.label": "ルール {n}",
@@ -110,6 +110,10 @@ const ja = {
   "settings.tagRule.scope.list.desc": "オフのときは自動設定された色になります。",
   "settings.tagRule.scope.ogp.name": "OGPカードにサブカラーを適用",
   "settings.tagRule.scope.ogp.desc": "オフのときは自動設定された色になります。",
+  "settings.item.graphTags.name": "タグの本体統合",
+  "settings.item.graphTags.desc": "メモのタグをObsidian本体と統合します。\nメモ内のタグが、普通のタグと同じようにグラフビューに表示され、タグ検索（tag:）でもヒットするようになります。\nオフにすると、タグはWrotの中だけのものになります。",
+  "settings.tagRule.noIntegration.name": "本体統合から除外",
+  "settings.tagRule.noIntegration.desc": "オンにすると、メモ内に書いたこのルールのタグは本体統合の対象から外れ、Wrotの中だけのものになります。",
   "settings.tagRule.button.add": "ルールを追加",
 
   // ─── view: 書式メニュー（書いてる途中のテキストに対する書式操作） ──

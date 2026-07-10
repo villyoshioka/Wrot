@@ -3,7 +3,7 @@ import type { Translations } from "./ja";
 // Portuguese translations. Translated via Nani.
 const pt = {
   "settings.section.basic": "Configurações básicas",
-  "settings.section.display": "Configurações de exibição",
+  "settings.section.advanced": "Configurações avançadas",
   "settings.section.tagrules": "Regras por tag",
 
   "settings.item.viewPlacement.name": "Posição de exibição",
@@ -80,9 +80,9 @@ const pt = {
   "settings.item.showCalendarButton.desc":
     "Exibe um ícone de calendário na barra de navegação. Toque para selecionar e ir direto para qualquer data.",
 
-  "settings.item.tagColorRules.name": "Mudar cor por tag",
+  "settings.item.tagColorRules.name": "Usar regras por tag",
   "settings.item.tagColorRules.desc":
-    "Altera as cores de postagens que contêm tags específicas. Se houver múltiplas tags, a primeira que aparecer terá prioridade.",
+    "Define regras por tag: cores para postagens que contêm tags específicas e exclusão da integração de tags. Para as cores, se houver múltiplas regras, a primeira tag que aparecer terá prioridade.",
 
   "settings.tagRule.label": "Regra {n}",
   "settings.tagRule.tag.name": "Tag",
@@ -110,6 +110,10 @@ const pt = {
   "settings.tagRule.scope.list.desc": "Se desativado, usará a cor automática.",
   "settings.tagRule.scope.ogp.name": "Aplicar cor secundária a cartões OGP",
   "settings.tagRule.scope.ogp.desc": "Se desativado, usará a cor automática.",
+  "settings.item.graphTags.name": "Integração de tags",
+  "settings.item.graphTags.desc": "Integra as tags dos memos ao Obsidian.\nAs tags dentro dos memos aparecem na visualização de grafo e respondem à busca por tags (tag:), assim como as tags normais.\nSe desativado, as tags ficam apenas dentro do Wrot.",
+  "settings.tagRule.noIntegration.name": "Excluir da integração de tags",
+  "settings.tagRule.noIntegration.desc": "Se ativado, a tag desta regra escrita dentro dos memos fica fora da integração de tags e permanece apenas dentro do Wrot.",
   "settings.tagRule.button.add": "Adicionar regra",
 
   "view.formatMenu.code": "Código",

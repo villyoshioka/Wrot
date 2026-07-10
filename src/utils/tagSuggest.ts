@@ -70,9 +70,20 @@ export class TagSuggest {
   // ポインタ操作で閉じた直後の抑止期限。閉じた後に同じ座標へ届く遅延クリック
   // （ゴーストクリック）が、候補リストの下にあった UI を誤って押すのを防ぐ。
   private suppressUiUntil = 0;
+  // IME 変換中かどうか。変換中の value 書き換えは iOS の入力状態を壊すため、
+  // confirm() が変換の強制確定を挟む判断に使う。
+  private composing = false;
+  private onCompositionStart = (): void => {
+    this.composing = true;
+  };
+  private onCompositionEnd = (): void => {
+    this.composing = false;
+  };
 
   constructor(opts: TagSuggestOptions) {
     this.opts = opts;
+    opts.textarea.addEventListener("compositionstart", this.onCompositionStart);
+    opts.textarea.addEventListener("compositionend", this.onCompositionEnd);
   }
 
   isOpen(): boolean {
@@ -166,6 +177,8 @@ export class TagSuggest {
   }
 
   destroy(): void {
+    this.opts.textarea.removeEventListener("compositionstart", this.onCompositionStart);
+    this.opts.textarea.removeEventListener("compositionend", this.onCompositionEnd);
     this.close();
   }
 
@@ -206,6 +219,12 @@ export class TagSuggest {
       this.popover = this.opts.container.createDiv({ cls: "wr-tag-suggest" });
       // ポップオーバー内のクリックを外へ伝播させない（カレンダーポップオーバーと同じ方針）。
       this.popover.addEventListener("click", (e) => e.stopPropagation());
+      // iOS はタップ後に互換マウスイベントを遅れて合成し、その既定動作が
+      // textarea からフォーカスを奪う（確定処理内の focus() より後に届くため、
+      // 戻したフォーカスが横取りされて以降のキー入力が全部効かなくなる）。
+      // pointerdown 側の preventDefault では抑止しきれないため mousedown も塞ぐ
+      // （ツールバーの各ボタンと同じ対策）。
+      this.popover.addEventListener("mousedown", (e) => e.preventDefault());
       activeDocument.addEventListener("pointerdown", this.onOutside, true);
     }
     this.popover.empty();
@@ -218,12 +237,14 @@ export class TagSuggest {
         cls: "wr-tag-suggest-item",
         text: `#${tag}`,
       });
-      // 確定は click ではなく pointerup で行う。
-      // pointerdown を preventDefault（textarea からフォーカスを奪わないため）すると、
-      // iOS WebKit では後続の click が発火しないことがあり、click 頼みだと
-      // モバイルでタップ確定できない。pointer イベントは抑止されないため確実。
+      // 確定は click ではなく pointerup で行う（iOS WebKit では click が
+      // 発火しないことがあり、click 頼みだとモバイルでタップ確定できない）。
+      // pointerdown は preventDefault しない: タップのネイティブ処理を丸ごと
+      // 抑止すると、iOS がキーボードの入力セッションを切り離すことがあり、
+      // フォーカスは textarea に残ったままキー入力だけ届かなくなる（実機で確認）。
+      // デスクトップのフォーカス横取りはポップオーバー側の mousedown
+      // preventDefault が防ぐ。
       item.addEventListener("pointerdown", (e) => {
-        e.preventDefault();
         this.tapStart = { id: e.pointerId, x: e.clientX, y: e.clientY };
         this.interacting = true;
       });
@@ -267,11 +288,57 @@ export class TagSuggest {
     if (tag === undefined || !token) return;
     const ta = this.opts.textarea;
     const insert = `#${tag} `;
-    ta.value = ta.value.slice(0, token.start) + insert + ta.value.slice(token.end);
-    ta.selectionStart = ta.selectionEnd = token.start + insert.length;
     this.suppressUiUntil = Date.now() + 400;
     this.close();
-    ta.focus();
+    // iOS のかな入力は打鍵中ずっと変換(composition)が生きており、Backspace も
+    // 「変換中文字列を1文字短くする」操作として実行される。変換が生きたまま
+    // 文面を書き換えると IME 側の変換セッションだけが実文面と対応の切れた
+    // 幽霊状態で残り、以降の単発 Backspace が空振りする(実機で確認)。
+    // 変換中の確定は、blur で変換を強制確定させ、その完了(compositionend)を
+    // 待ってから置き換えてフォーカスを戻す。強制確定は文面を変えないため
+    // token の位置はそのまま有効。
+    if (this.composing) {
+      let done = false;
+      const finish = (): void => {
+        if (done) return;
+        done = true;
+        ta.removeEventListener("compositionend", finish);
+        this.applyInsert(ta, token, insert);
+      };
+      ta.addEventListener("compositionend", finish);
+      ta.blur();
+      // compositionend が届かない環境向けの保険
+      window.setTimeout(finish, 150);
+      return;
+    }
+    this.applyInsert(ta, token, insert);
+  }
+
+  // 変換の強制確定後にそのまま focus() し直すと、iOS は古い入力セッションを
+  // 使い回してキャレット(カーソルの棒)を描画しない(入力機能は正常)。
+  // 不可視のダミー入力欄へ一度フォーカスを移してから戻し、セッションを
+  // 作り直させる。編集可能要素どうしの移動なのでキーボードは閉じない想定。
+  private rebuildFocus(ta: HTMLTextAreaElement): void {
+    const dummy = this.opts.container.createEl("input", {
+      cls: "wr-focus-bounce",
+      attr: { type: "text" },
+    });
+    dummy.focus({ preventScroll: true });
+    ta.focus({ preventScroll: true });
+    dummy.remove();
+  }
+
+  // トークンを置き換えて、カーソルを挿入末尾に置く(confirm の実体)。
+  // フォーカスが残っているところへ focus() を重ね掛けすると iOS がキーボード
+  // セッションを見失う引き金になり得るため、失っていた(=変換の強制確定で
+  // blur した)場合のみ、セッションを作り直す形で戻す。
+  private applyInsert(ta: HTMLTextAreaElement, token: ActiveToken, insert: string): void {
+    ta.value = ta.value.slice(0, token.start) + insert + ta.value.slice(token.end);
+    const caret = token.start + insert.length;
+    if (activeDocument.activeElement !== ta) {
+      this.rebuildFocus(ta);
+    }
+    ta.setSelectionRange(caret, caret);
     ta.dispatchEvent(new Event("input"));
   }
 

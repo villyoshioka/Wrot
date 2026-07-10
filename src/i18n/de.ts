@@ -3,7 +3,7 @@ import type { Translations } from "./ja";
 // German translations. Translated via Nani.
 const de = {
   "settings.section.basic": "Grundeinstellungen",
-  "settings.section.display": "Anzeigeeinstellungen",
+  "settings.section.advanced": "Erweiterte Einstellungen",
   "settings.section.tagrules": "Tag-Regeleinstellungen",
 
   "settings.item.viewPlacement.name": "Anzeigeposition",
@@ -79,9 +79,9 @@ const de = {
   "settings.item.showCalendarButton.desc":
     "Zeigt einen Button in der Datumsnavigation an, mit dem Sie per Fingertipp direkt zu einem beliebigen Datum springen können.",
 
-  "settings.item.tagColorRules.name": "Farben nach Tags ändern",
+  "settings.item.tagColorRules.name": "Tag-Regeln verwenden",
   "settings.item.tagColorRules.desc":
-    "Ändert die Hintergrund- und Textfarbe von Beiträgen, die bestimmte Tags enthalten. Wenn mehrere Regeln zutreffen, hat das im Text zuerst vorkommende Tag Vorrang.",
+    "Legt Regeln pro Tag fest: Farben für Beiträge mit bestimmten Tags sowie Ausschluss von der Tag-Integration. Bei den Farben hat, wenn mehrere Regeln zutreffen, das im Text zuerst vorkommende Tag Vorrang.",
 
   "settings.tagRule.label": "Regel {n}",
   "settings.tagRule.tag.name": "Tag",
@@ -107,6 +107,10 @@ const de = {
   "settings.tagRule.scope.list.desc": "Wenn deaktiviert, wird die automatisch festgelegte Farbe verwendet.",
   "settings.tagRule.scope.ogp.name": "Subfarbe auf OGP-Karten anwenden",
   "settings.tagRule.scope.ogp.desc": "Wenn deaktiviert, wird die automatisch festgelegte Farbe verwendet.",
+  "settings.item.graphTags.name": "Tag-Integration",
+  "settings.item.graphTags.desc": "Integriert Memo-Tags mit Obsidian.\nTags in den Memos erscheinen in der Graphenansicht und werden von der Tag-Suche (tag:) gefunden – genau wie normale Tags.\nWenn deaktiviert, bleiben Tags nur innerhalb von Wrot.",
+  "settings.tagRule.noIntegration.name": "Von der Tag-Integration ausschließen",
+  "settings.tagRule.noIntegration.desc": "Wenn aktiviert, wird der in Memos geschriebene Tag dieser Regel von der Tag-Integration ausgenommen und bleibt nur innerhalb von Wrot.",
   "settings.tagRule.button.add": "Regel hinzufügen",
 
   "view.formatMenu.code": "Code",

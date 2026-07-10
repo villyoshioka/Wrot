@@ -3,7 +3,7 @@ import type { Translations } from "./ja";
 // Spanish translations. Translated via Nani.
 const es = {
   "settings.section.basic": "Configuración básica",
-  "settings.section.display": "Configuración de visualización",
+  "settings.section.advanced": "Configuración avanzada",
   "settings.section.tagrules": "Reglas por etiqueta",
 
   "settings.item.viewPlacement.name": "Posición de visualización",
@@ -80,9 +80,9 @@ const es = {
   "settings.item.showCalendarButton.desc":
     "Muestra un icono de calendario en la barra de navegación. Al pulsarlo, podrás saltar directamente a la fecha que elijas.",
 
-  "settings.item.tagColorRules.name": "Colores personalizados por etiqueta",
+  "settings.item.tagColorRules.name": "Usar reglas por etiqueta",
   "settings.item.tagColorRules.desc":
-    "Cambia el color de los posts que contienen etiquetas específicas. Si coinciden varias, se aplicará la de la primera etiqueta encontrada.",
+    "Define reglas por etiqueta: colores para los posts que contienen etiquetas específicas y exclusión de la integración de etiquetas. Para los colores, si coinciden varias reglas, se aplicará la de la primera etiqueta encontrada.",
 
   "settings.tagRule.label": "Regla {n}",
   "settings.tagRule.tag.name": "Etiqueta",
@@ -114,6 +114,12 @@ const es = {
   "settings.tagRule.scope.ogp.name": "Aplicar color secundario a tarjetas OGP",
   "settings.tagRule.scope.ogp.desc":
     "Si se desactiva, se usará el color calculado automáticamente.",
+  "settings.item.graphTags.name": "Integración de etiquetas",
+  "settings.item.graphTags.desc":
+    "Integra las etiquetas de los memos con Obsidian.\nLas etiquetas dentro de los memos aparecen en la vista de gráfico y responden a la búsqueda por etiquetas (tag:), igual que las etiquetas normales.\nSi se desactiva, las etiquetas se quedan solo dentro de Wrot.",
+  "settings.tagRule.noIntegration.name": "Excluir de la integración de etiquetas",
+  "settings.tagRule.noIntegration.desc":
+    "Si se activa, la etiqueta de esta regla escrita dentro de los memos queda fuera de la integración de etiquetas y se queda solo dentro de Wrot.",
   "settings.tagRule.button.add": "Añadir regla",
 
   "view.formatMenu.code": "Código",

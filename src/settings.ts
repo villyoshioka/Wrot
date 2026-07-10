@@ -16,6 +16,9 @@ export interface TagColorRule {
   accentColor?: string;
   subColor?: string;
   subColorScope?: SubColorScope;
+  // このタグを本体統合(グラフ表示・タグとして検索)の対象から外す
+  // (メモ内タグは既定で全部統合対象になる)
+  noIntegration?: boolean;
 }
 
 export interface PinEntry {
@@ -39,6 +42,9 @@ export interface WrotSettings {
   enableOgpFetch: boolean;
   checkStrikethrough: boolean;
   tagSuggestEnabled: boolean;
+  // タグの本体統合。メタデータキャッシュへの注入により、グラフビュー表示と
+  // 純正タグ検索(tag:)の両方に効く(分離不可のため単一トグル)
+  graphTagsEnabled: boolean;
   tagColorRulesEnabled: boolean;
   tagColorRules: TagColorRule[];
   followObsidianFontSize: boolean;
@@ -65,6 +71,7 @@ export const DEFAULT_SETTINGS: WrotSettings = {
   enableOgpFetch: true,
   checkStrikethrough: false,
   tagSuggestEnabled: true,
+  graphTagsEnabled: true,
   tagColorRulesEnabled: false,
   tagColorRules: [],
   followObsidianFontSize: false,
@@ -391,7 +398,7 @@ export class WrotSettingTab extends PluginSettingTab {
         })
       );
 
-    new Setting(containerEl).setName(t("settings.section.display")).setHeading();
+    new Setting(containerEl).setName(t("settings.section.advanced")).setHeading();
 
     let submitText: TextComponent;
     new Setting(containerEl)
@@ -551,6 +558,22 @@ export class WrotSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
+      .setName(t("settings.item.graphTags.name"))
+      .setDesc(descWithBreaks(t("settings.item.graphTags.desc")))
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.graphTagsEnabled)
+          .onChange(async (value) => {
+            this.plugin.settings.graphTagsEnabled = value;
+            await this.plugin.saveSettings();
+            await this.plugin.graphTags.applyEnabled();
+            // タグルール内の「本体統合から除外」項目の表示/非表示を反映するため再構築
+            this.skipLockReset = true;
+            this.withScrollPreserved(() => this.render());
+          })
+      );
+
+    new Setting(containerEl)
       .setName(t("settings.item.ogp.name"))
       .setDesc(descWithBreaks(t("settings.item.ogp.desc")))
       .addToggle((toggle) =>
@@ -619,6 +642,8 @@ export class WrotSettingTab extends PluginSettingTab {
           await this.plugin.saveSettings();
           this.plugin.applyTagColorRules();
           this.plugin.refreshAllWrDecorations();
+          // ルール機能のON/OFFで「グラフにリンクさせない」除外の効きも変わる
+          this.plugin.graphTags.rebuild();
           // ルールが実質空の状態で機能をオンにしたら、最初のルールをアンロックして即編集可能にする
           const rules = this.plugin.settings.tagColorRules;
           const noMeaningfulRule =
@@ -687,6 +712,7 @@ export class WrotSettingTab extends PluginSettingTab {
         onAccentChange: (v: string | undefined) => Promise<void>,
         onSubChange: (v: string | undefined) => Promise<void>,
         onScopeChange: (key: keyof SubColorScope, value: boolean) => Promise<void>,
+        onNoIntegrationChange: (value: boolean) => Promise<void>,
         trailing: { kind: "delete"; handler: () => Promise<void> } | { kind: "reset"; handler: () => Promise<void> } | null
       ) => {
         if (!isFirst) {
@@ -835,6 +861,21 @@ export class WrotSettingTab extends PluginSettingTab {
         const scopeContainer = groupEl.createDiv({ cls: "wr-sub-color-scope" });
         const scopeToggleEls: HTMLElement[] = [];
 
+        // サブカラー詳細(scope)の下、グループ末尾に置く。
+        // 統合が無効のときは項目ごと出さない
+        let noIntegrationToggleEl: HTMLElement | null = null;
+        if (this.plugin.settings.graphTagsEnabled) {
+          new Setting(groupEl)
+            .setName(t("settings.tagRule.noIntegration.name"))
+            .setDesc(descWithBreaks(t("settings.tagRule.noIntegration.desc")))
+            .addToggle((tg) => {
+              noIntegrationToggleEl = tg.toggleEl;
+              tg.setValue(initial.noIntegration === true).onChange(async (v) => {
+                await onNoIntegrationChange(v);
+              });
+            });
+        }
+
         const isSubCustomized = (): boolean =>
           !!initial.subColor && /^#[0-9a-fA-F]{6}$/.test(initial.subColor);
 
@@ -892,6 +933,7 @@ export class WrotSettingTab extends PluginSettingTab {
           setDisabled(accentResetBtnEl, !unlocked);
           setDisabled(subPickerEl, !unlocked);
           setDisabled(subResetBtnEl, !unlocked);
+          setDisabled(noIntegrationToggleEl, !unlocked);
           setDisabled(trailingBtnEl, !unlocked);
           for (const el of scopeToggleEls) setDisabled(el, !unlocked);
           if (lockBtnEl) {
@@ -919,11 +961,13 @@ export class WrotSettingTab extends PluginSettingTab {
           const fgChanged = placeholder.textColor !== placeholderText;
           const accentChanged = placeholder.accentColor !== undefined;
           const subChanged = placeholder.subColor !== undefined;
-          if (hasTag || bgChanged || fgChanged || accentChanged || subChanged) {
+          const noIntegrationChanged = placeholder.noIntegration === true;
+          if (hasTag || bgChanged || fgChanged || accentChanged || subChanged || noIntegrationChanged) {
             this.plugin.settings.tagColorRules.push({ ...placeholder });
             await this.plugin.saveSettings();
             this.plugin.applyTagColorRules();
             this.plugin.refreshAllWrDecorations();
+            this.plugin.graphTags.rebuild();
             renderRules();
           }
         };
@@ -958,6 +1002,11 @@ export class WrotSettingTab extends PluginSettingTab {
             placeholder.subColorScope = current;
             await promoteIfNeeded();
           },
+          async (v) => {
+            if (v) placeholder.noIntegration = true;
+            else delete placeholder.noIntegration;
+            await promoteIfNeeded();
+          },
           null,
         );
 
@@ -978,9 +1027,11 @@ export class WrotSettingTab extends PluginSettingTab {
                   delete rule.accentColor;
                   delete rule.subColor;
                   delete rule.subColorScope;
+                  delete rule.noIntegration;
                   await this.plugin.saveSettings();
                   this.plugin.applyTagColorRules();
                   this.plugin.refreshAllWrDecorations();
+                  this.plugin.graphTags.rebuild();
                   renderRules();
                 },
               }
@@ -991,6 +1042,7 @@ export class WrotSettingTab extends PluginSettingTab {
                   await this.plugin.saveSettings();
                   this.plugin.applyTagColorRules();
                   this.plugin.refreshAllWrDecorations();
+                  this.plugin.graphTags.rebuild();
                   renderRules();
                 },
               };
@@ -1004,6 +1056,8 @@ export class WrotSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
             this.plugin.applyTagColorRules();
             this.plugin.refreshAllWrDecorations();
+            // 除外対象のタグ名が変わった可能性があるのでグラフ注入を組み直す
+            this.plugin.graphTags.rebuild();
           },
           async (v) => {
             rule.bgColor = v;
@@ -1042,6 +1096,12 @@ export class WrotSettingTab extends PluginSettingTab {
             rule.subColorScope = current;
             await this.plugin.saveSettings();
             this.plugin.applyTagColorRules();
+          },
+          async (v) => {
+            if (v) rule.noIntegration = true;
+            else delete rule.noIntegration;
+            await this.plugin.saveSettings();
+            this.plugin.graphTags.rebuild();
           },
           trailing,
         );

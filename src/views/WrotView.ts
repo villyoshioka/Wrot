@@ -1579,7 +1579,15 @@ export class WrotView extends ItemView {
       }
     ).internalPlugins?.getPluginById?.("global-search");
     if (searchPlugin?.instance) {
-      searchPlugin.instance.openGlobalSearch(`"${tag.replace(/"/g, '\\"')}"`);
+      // 統合が有効: グラフのタグノードをクリックしたときと同じ素のタグ検索
+      // (注入済みタグは純正の tag: 検索がそのまま拾う)。無効、またはルールで
+      // 本体統合から除外されたタグ: 従来の文字列検索
+      const useIntegrated =
+        this.plugin.graphTags.enabled && !this.plugin.graphTags.isExcludedTag(tag);
+      const query = useIntegrated
+        ? this.plugin.graphTags.buildTagSearchQuery(tag)
+        : `"${tag.replace(/"/g, '\\"')}"`;
+      searchPlugin.instance.openGlobalSearch(query);
     } else {
       new Notice(t("view.notice.searchPluginNotFound"));
     }

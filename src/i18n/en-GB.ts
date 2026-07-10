@@ -3,7 +3,7 @@ import type { Translations } from "./ja";
 // English (UK) translations. Translated via Nani.
 const enGB = {
   "settings.section.basic": "Basic Settings",
-  "settings.section.display": "Display Settings",
+  "settings.section.advanced": "Advanced Settings",
   "settings.section.tagrules": "Tag Rules",
 
   "settings.item.viewPlacement.name": "Display Position",
@@ -78,9 +78,9 @@ const enGB = {
   "settings.item.showCalendarButton.desc":
     "Add a calendar icon to the navigation bar so you can jump straight to any date.",
 
-  "settings.item.tagColorRules.name": "Colour by Tag",
+  "settings.item.tagColorRules.name": "Use Tag Rules",
   "settings.item.tagColorRules.desc":
-    "Change the background and text colour of posts containing specific tags. If multiple rules apply, the tag appearing first in the text takes priority.",
+    "Set per-tag rules: colours for posts containing specific tags, and exclusion from tag integration. For colours, if multiple rules apply, the tag appearing first in the text takes priority.",
 
   "settings.tagRule.label": "Rule {n}",
   "settings.tagRule.tag.name": "Tag",
@@ -106,6 +106,10 @@ const enGB = {
   "settings.tagRule.scope.list.desc": "When off, automatically assigned colours will be used.",
   "settings.tagRule.scope.ogp.name": "Apply Sub Colour to OGP Cards",
   "settings.tagRule.scope.ogp.desc": "When off, automatically assigned colours will be used.",
+  "settings.item.graphTags.name": "Tag Integration",
+  "settings.item.graphTags.desc": "Integrates memo tags with Obsidian.\nTags inside your memos appear in the graph view and match tag searches (tag:), just like regular tags.\nWhen off, tags stay inside Wrot.",
+  "settings.tagRule.noIntegration.name": "Exclude from Tag Integration",
+  "settings.tagRule.noIntegration.desc": "When on, this rule's tag written inside memos is left out of Tag Integration and stays inside Wrot.",
   "settings.tagRule.button.add": "Add Rule",
 
   "view.formatMenu.code": "Code",

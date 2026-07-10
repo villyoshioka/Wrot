@@ -46,7 +46,7 @@ Your usual post shortcut (Ctrl / Cmd + Enter) still works while suggestions are 
 
 ## Turning It Off & Clearing Suggestions
 
-Toggle **"Tag Autocomplete"** in the **Basic** section of Settings (on by default).
+Toggle **"Tag Autocomplete"** in the **Advanced** section of Settings (on by default).
 
 - When turned off, suggestions stop appearing and no new tags are remembered.
 - Your saved suggestions are kept. Turn it back on to pick up where you left off.

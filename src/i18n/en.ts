@@ -3,7 +3,7 @@ import type { Translations } from "./ja";
 // English (US-equivalent) translations. Translated via Nani.
 const en = {
   "settings.section.basic": "General",
-  "settings.section.display": "Appearance",
+  "settings.section.advanced": "Advanced",
   "settings.section.tagrules": "Tag Rules",
 
   "settings.item.viewPlacement.name": "Display Position",
@@ -79,9 +79,9 @@ const en = {
   "settings.item.showCalendarButton.desc":
     "Adds a calendar button to the date nav, letting you jump to any date with a quick tap.",
 
-  "settings.item.tagColorRules.name": "Change Color by Tag",
+  "settings.item.tagColorRules.name": "Use Tag Rules",
   "settings.item.tagColorRules.desc":
-    "Change the background and text color of posts containing specific tags. If multiple rules apply, the tag that appears first in the text takes priority.",
+    "Set per-tag rules: colors for posts containing specific tags, and exclusion from tag integration. For colors, if multiple rules apply, the tag that appears first in the text takes priority.",
 
   "settings.tagRule.label": "Rule {n}",
   "settings.tagRule.tag.name": "Tag",
@@ -113,6 +113,12 @@ const en = {
   "settings.tagRule.scope.ogp.name": "Apply Sub Color to OGP Cards",
   "settings.tagRule.scope.ogp.desc":
     "When off, automatically determined colors will be used.",
+  "settings.item.graphTags.name": "Tag Integration",
+  "settings.item.graphTags.desc":
+    "Integrates memo tags with Obsidian.\nTags inside your memos appear in the graph view and match tag searches (tag:), just like regular tags.\nWhen off, tags stay inside Wrot.",
+  "settings.tagRule.noIntegration.name": "Exclude from Tag Integration",
+  "settings.tagRule.noIntegration.desc":
+    "When on, this rule's tag written inside memos is left out of Tag Integration and stays inside Wrot.",
   "settings.tagRule.button.add": "Add Rule",
 
   "view.formatMenu.code": "Code",

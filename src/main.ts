@@ -5,6 +5,7 @@ import { WrotView } from "./views/WrotView";
 import { registerWrotPostProcessor } from "./postProcessor";
 import { createWrEditorExtension, tagRulesChanged, vaultFilesChanged } from "./editorExtension";
 import { OGPCache } from "./utils/ogpCache";
+import { GraphTagInjector } from "./utils/graphTags";
 import { initI18n, t, getActiveLocale } from "./i18n";
 
 const ATTACHMENT_EXT_RE = /^(png|jpe?g|gif|webp|svg|bmp)$/i;
@@ -12,6 +13,7 @@ const ATTACHMENT_EXT_RE = /^(png|jpe?g|gif|webp|svg|bmp)$/i;
 export default class WrotPlugin extends Plugin {
   settings!: WrotSettings;
   ogpCache!: OGPCache;
+  graphTags!: GraphTagInjector;
   // タグ補完の候補（先頭 # なし、新しい順）。設定とは別に tags.json へ永続化する。
   // 投稿のたびに自動で書き換わるデータなので、ユーザーが編集する設定(data.json)と混ぜない。
   recentTags: string[] = [];
@@ -28,6 +30,7 @@ export default class WrotPlugin extends Plugin {
     await loadMathJax();
     this.ogpCache = new OGPCache();
     this.ogpCache.enabled = this.settings.enableOgpFetch;
+    this.graphTags = new GraphTagInjector(this);
 
     this.registerView(
       VIEW_TYPE_WROT,
@@ -67,7 +70,28 @@ export default class WrotPlugin extends Plugin {
     this.app.workspace.onLayoutReady(() => {
       this.applyBgColor();
       this.applyTagColorRules();
+      // メモのタグを本体(グラフビュー・純正タグ検索)へ統合する。
+      // 対応表から即注入し、答え合わせは裏で差分だけ
+      void this.graphTags.start();
     });
+
+    // グラフ用タグ注入の増分更新。vault.on("modify")ではなく再パース完了後に
+    // 新しいキャッシュと本文が渡ってくる "changed" を使う(パースとの競合や二重読みを避ける)
+    this.registerEvent(
+      this.app.metadataCache.on("changed", (file, data, cache) => {
+        this.graphTags.onFileChanged(file, data, cache);
+      })
+    );
+    this.registerEvent(
+      this.app.metadataCache.on("deleted", (file) => {
+        this.graphTags.onFileDeleted(file.path);
+      })
+    );
+    this.registerEvent(
+      this.app.vault.on("rename", (file, oldPath) => {
+        if (file instanceof TFile) this.graphTags.onFileRenamed(file.path, oldPath);
+      })
+    );
 
     // 削除はvault.on("delete")だとmetadataCache更新前に発火するためmetadataCache側で監視
     const onAttachmentChange = (file: unknown) => {
@@ -232,6 +256,9 @@ export default class WrotPlugin extends Plugin {
         background: ${hoverColor};
         background-color: ${hoverColor};
       }
+      /* 本文の textColor スタンプ。 wr-check-done(チェック済みテキスト)は後段の
+         mutedColor ルールに任せるため除外する (RVはpre構造でこのルールが届かず
+         muted になるので、 LVも同じ色ソースに揃える) */
       body .wr-content,
       body .wr-textarea,
       body .wr-date-label,
@@ -240,11 +267,11 @@ export default class WrotPlugin extends Plugin {
       body .wr-calendar-year:not(.wr-calendar-day-selected):not(.wr-calendar-day-today),
       body .wr-inline-code,
       body .wr-plain-text,
-      body div.block-language-wr *:not(.wr-embed-missing):not(.wr-internal-link-unresolved):not(.wr-internal-link):not(.wr-tag):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-quote-card-slot):not(.wr-quote-card-slot *):not(.wr-codeblock-display):not(.wr-codeblock-display *),
+      body div.block-language-wr *:not(.wr-embed-missing):not(.wr-internal-link-unresolved):not(.wr-internal-link):not(.wr-tag):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-check-done):not(.wr-quote-card-slot):not(.wr-quote-card-slot *):not(.wr-codeblock-display):not(.wr-codeblock-display *),
       body .wr-codeblock-line,
-      body .wr-codeblock-line *:not(.wr-embed-missing):not(.wr-internal-link-unresolved):not(.wr-internal-link):not(.wr-tag):not(.wr-url):not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-url-highlight):not(.wr-quote-card-slot):not(.wr-quote-card-slot *):not(.wr-codeblock-display):not(.wr-codeblock-display *),
+      body .wr-codeblock-line *:not(.wr-embed-missing):not(.wr-internal-link-unresolved):not(.wr-internal-link):not(.wr-tag):not(.wr-url):not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-url-highlight):not(.wr-check-done):not(.wr-quote-card-slot):not(.wr-quote-card-slot *):not(.wr-codeblock-display):not(.wr-codeblock-display *),
       body .cm-line.wr-codeblock-line,
-      body .cm-line.wr-codeblock-line *:not(.wr-embed-missing):not(.wr-internal-link-unresolved):not(.wr-internal-link):not(.wr-tag):not(.wr-url):not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-url-highlight):not(.wr-quote-card-slot):not(.wr-quote-card-slot *):not(.wr-codeblock-display):not(.wr-codeblock-display *):not(.wr-lp-marker),
+      body .cm-line.wr-codeblock-line *:not(.wr-embed-missing):not(.wr-internal-link-unresolved):not(.wr-internal-link):not(.wr-tag):not(.wr-url):not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-url-highlight):not(.wr-check-done):not(.wr-quote-card-slot):not(.wr-quote-card-slot *):not(.wr-codeblock-display):not(.wr-codeblock-display *):not(.wr-lp-marker),
       body .wr-reading-list li,
       body .wr-bullet-list li,
       body .wr-ordered-list li {
@@ -661,17 +688,16 @@ export default class WrotPlugin extends Plugin {
       body .cm-line.wr-codeblock-line.${cls} .wr-list-highlight,
       body .cm-line.wr-codeblock-line.${cls} .wr-check-unchecked,
       body .cm-line.wr-codeblock-line.${cls} .wr-check-checked,
-      body .cm-line.wr-codeblock-line.${cls} .wr-check-done,
       body .cm-line.wr-codeblock-line.${cls} .wr-ol-highlight,
       body .cm-line.wr-codeblock-line.${cls} .wr-lp-marker {
         color: ${mList};
       }
-      /* LV内のWidget DOMでもタグルールのサブカラーが勝つように、IDセレクタ相当の特異度で再宣言 */
+      /* LV内のWidget DOMでもタグルールのサブカラーが勝つように、IDセレクタ相当の特異度で再宣言。
+         wr-check-done は対象外: RVでは静的CSSの muted が勝つため、LVも静的CSSに任せて色を揃える */
       body .cm-line.${cls} .wr-lp-marker:not(#x):not(#y):not(#z),
       body .cm-line.${cls} .wr-list-highlight:not(#x):not(#y):not(#z),
       body .cm-line.${cls} .wr-check-unchecked:not(#x):not(#y):not(#z),
       body .cm-line.${cls} .wr-check-checked:not(#x):not(#y):not(#z),
-      body .cm-line.${cls} .wr-check-done:not(#x):not(#y):not(#z),
       body .cm-line.${cls} .wr-ol-highlight:not(#x):not(#y):not(#z) {
         color: ${mList};
       }
@@ -1093,6 +1119,8 @@ export default class WrotPlugin extends Plugin {
   }
 
   onunload(): void {
+    // 本体統合用に注入したタグを痕跡なく取り除く
+    this.graphTags?.removeAll();
     this.bgStyleEl?.remove();
     this.bgStyleEl = null;
     this.tagRuleStyleEl?.remove();
@@ -1146,6 +1174,13 @@ export default class WrotPlugin extends Plugin {
         delete (raw as Record<string, unknown>)[key];
         dirty = true;
       }
+    }
+    // 未リリース期に4段階セレクトだった graphTagsMode からの移行。off 以外は有効として引き継ぐ
+    if ("graphTagsMode" in raw) {
+      const mode = (raw as { graphTagsMode?: unknown }).graphTagsMode;
+      (raw as Record<string, unknown>).graphTagsEnabled = mode !== "off";
+      delete (raw as Record<string, unknown>).graphTagsMode;
+      dirty = true;
     }
     // 新規インストール時のみ、言語依存デフォルトを採用する。
     // 既存ユーザーは保存済みの値が raw に入っているので、Object.assign で raw 側が勝つ。

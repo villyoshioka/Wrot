@@ -8,7 +8,7 @@ This page explains how to create tag rules and where each color is applied.
 
 ## Turn the Feature On
 
-Turn on **"Change Color by Tag"** in Settings to start using rules. You'll find it under the **Appearance** section.
+Turn on **"Use Tag Rules"** in Settings to start using rules. You'll find it under the **Tag Rules** section.
 
 - Once enabled, one rule is prepared and opened ready to edit.
 - When disabled, memos return to your standard theme colors (your rule settings are kept).

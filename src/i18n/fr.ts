@@ -3,7 +3,7 @@ import type { Translations } from "./ja";
 // French translations. Translated via Nani.
 const fr = {
   "settings.section.basic": "Paramètres de base",
-  "settings.section.display": "Paramètres d'affichage",
+  "settings.section.advanced": "Paramètres avancés",
   "settings.section.tagrules": "Règles par balise",
 
   "settings.item.viewPlacement.name": "Position d'affichage",
@@ -81,9 +81,9 @@ const fr = {
   "settings.item.showCalendarButton.desc":
     "Affiche un bouton calendrier dans la barre de navigation. Touchez-le pour accéder directement à n'importe quelle date.",
 
-  "settings.item.tagColorRules.name": "Coloration par étiquette",
+  "settings.item.tagColorRules.name": "Utiliser les règles par tag",
   "settings.item.tagColorRules.desc":
-    "Personnalise les couleurs des publications selon leurs étiquettes. En cas de conflit, la première étiquette du texte est prioritaire.",
+    "Définit des règles par tag : couleurs des publications contenant certains tags et exclusion de l'intégration des tags. Pour les couleurs, en cas de conflit, la première étiquette du texte est prioritaire.",
 
   "settings.tagRule.label": "Règle {n}",
   "settings.tagRule.tag.name": "Étiquette",
@@ -114,6 +114,12 @@ const fr = {
   "settings.tagRule.scope.ogp.name": "Appliquer aux cartes OGP",
   "settings.tagRule.scope.ogp.desc":
     "Si désactivé, utilise la couleur par défaut.",
+  "settings.item.graphTags.name": "Intégration des tags",
+  "settings.item.graphTags.desc":
+    "Intègre les tags des mémos à Obsidian.\nLes tags contenus dans les mémos apparaissent dans la vue graphique et répondent à la recherche par tag (tag:), comme les tags ordinaires.\nSi désactivé, les tags restent uniquement dans Wrot.",
+  "settings.tagRule.noIntegration.name": "Exclure de l'intégration des tags",
+  "settings.tagRule.noIntegration.desc":
+    "Si activé, le tag de cette règle écrit dans les mémos est exclu de l'intégration des tags et reste uniquement dans Wrot.",
   "settings.tagRule.button.add": "Ajouter une règle",
 
   "view.formatMenu.code": "Code",
