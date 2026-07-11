@@ -11,6 +11,7 @@ import type { App } from "obsidian";
 import { loadPrism } from "obsidian";
 import type WrotPlugin from "./main";
 import { findBlockRanges, type BlockRange } from "./utils/blockSegmenter";
+import { isMathJaxReady, requestMathJax } from "./utils/mathjax";
 
 const ogpFetched = StateEffect.define<null>();
 export const tagRulesChanged = StateEffect.define<null>();
@@ -133,6 +134,30 @@ class CheckboxWidget extends WidgetType {
   ignoreEvent(): boolean { return true; }
 }
 
+// 閲覧表示(カーソルがブロック外)のタグ。クリックでグローバル検索を開く。
+// mark装飾のままクリック対応すると mousedown の時点でカーソルがブロック内に入り、
+// ブロック全体が生テキスト表示に開いてしまう。CheckboxWidget と同じく
+// ignoreEvent な widget として置き、エディタ側にイベントを渡さない。
+// 編集中(showRaw)は widget にせず素の文字＋tagMark なので普通にカーソルを置ける
+class TagWidget extends WidgetType {
+  constructor(private tag: string, private plugin: WrotPlugin) { super(); }
+  toDOM(): HTMLElement {
+    const span = createSpan({ cls: "wr-tag-highlight wr-tag-clickable", text: this.tag });
+    span.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      // 押した感覚のフィードバック: クラスを外して reflow を挟み、連打でも毎回光らせ直す
+      span.classList.remove("wr-tag-flash");
+      void span.offsetWidth;
+      span.classList.add("wr-tag-flash");
+      this.plugin.openTagSearch(this.tag);
+    });
+    return span;
+  }
+  eq(other: TagWidget): boolean { return this.tag === other.tag; }
+  ignoreEvent(): boolean { return true; }
+}
+
 class OlMarkerWidget extends WidgetType {
   constructor(private label: string) { super(); }
   toDOM(): HTMLElement {
@@ -225,11 +250,17 @@ class EmbedMissingWidget extends WidgetType {
 }
 
 class MathWidget extends WidgetType {
+  // MathJaxは起動時に遅延読み込みされるため、生成時点で使える状態だったかを記録し
+  // eq()の比較に含める。読み込み完了後のdecoration再構築で、フォールバック
+  // 描画された旧ウィジェットとeq()が不一致になりDOMが作り直される
+  private hadMathJax = isMathJaxReady();
   constructor(private tex: string) { super(); }
   toDOM(): HTMLElement {
     const span = createSpan();
     span.className = "wr-math";
     try {
+      // MathJax未読み込み時のrenderMathの挙動(throwか空要素か)に依存しないよう明示的に分岐
+      if (!this.hadMathJax) throw new Error("MathJax not loaded yet");
       // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment, no-undef -- internal Obsidian/CodeMirror API or intentional pattern
       const { renderMath, finishRenderMath } = require("obsidian");
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call -- internal Obsidian/CodeMirror API or intentional pattern
@@ -238,11 +269,13 @@ class MathWidget extends WidgetType {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- call into untyped Obsidian/CodeMirror internal API
       finishRenderMath();
     } catch {
+      span.classList.add("wr-math-fallback");
       span.textContent = `$${this.tex}$`;
+      requestMathJax();
     }
     return span;
   }
-  eq(other: MathWidget): boolean { return this.tex === other.tex; }
+  eq(other: MathWidget): boolean { return this.tex === other.tex && this.hadMathJax === other.hadMathJax; }
 }
 
 class CodeBlockWidget extends WidgetType {
@@ -280,12 +313,16 @@ class CodeBlockWidget extends WidgetType {
 }
 
 class MathBlockWidget extends WidgetType {
+  // MathWidgetと同じく、MathJaxの遅延読み込み完了後に作り直されるようeq()の比較材料にする
+  private hadMathJax = isMathJaxReady();
   constructor(private tex: string, private ruleClass: string | null) { super(); }
   toDOM(): HTMLElement {
     const container = createDiv();
     container.className = "wr-math-display wr-lp-mathblock wr-codeblock-line";
     if (this.ruleClass) container.classList.add(this.ruleClass);
     try {
+      // MathJax未読み込み時のrenderMathの挙動(throwか空要素か)に依存しないよう明示的に分岐
+      if (!this.hadMathJax) throw new Error("MathJax not loaded yet");
       // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment, no-undef -- internal Obsidian/CodeMirror API or intentional pattern
       const { renderMath, finishRenderMath } = require("obsidian");
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call -- internal Obsidian/CodeMirror API or intentional pattern
@@ -294,12 +331,14 @@ class MathBlockWidget extends WidgetType {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- call into untyped Obsidian/CodeMirror internal API
       finishRenderMath();
     } catch {
+      container.classList.add("wr-math-fallback");
       container.textContent = this.tex;
+      requestMathJax();
     }
     return container;
   }
   eq(other: MathBlockWidget): boolean {
-    return this.tex === other.tex && this.ruleClass === other.ruleClass;
+    return this.tex === other.tex && this.ruleClass === other.ruleClass && this.hadMathJax === other.hadMathJax;
   }
   ignoreEvent(): boolean { return false; }
 }
@@ -839,7 +878,11 @@ function buildDecorations(
 
         const tagRegex = /#[^\s#]+/g;
         while ((match = tagRegex.exec(l.text)) !== null) {
-          entries.push({ from: l.from + match.index, to: l.from + match.index + match[0].length, deco: tagMark });
+          entries.push({
+            from: l.from + match.index,
+            to: l.from + match.index + match[0].length,
+            deco: showRaw ? tagMark : Decoration.replace({ widget: new TagWidget(match[0], plugin) }),
+          });
         }
 
         // 通常URLとの重複を避けるためmarkdownリンクを先に処理
@@ -1192,14 +1235,27 @@ export function createWrEditorExtension(ogpCache: OGPCache, app: App, plugin: Wr
         this.blocks = findWrBlocks(view, plugin);
         const built = buildDecorations(view, ogpCache, this.blocks, app, plugin, getCheckStrikethrough());
         this.decorations = built.decorations;
-        // 初回の hidden range 反映は次フレームで dispatch (constructor 内 dispatch は不可)
-        const initialRanges = built.hiddenRanges;
-        window.requestAnimationFrame(() => {
+        // hidden range の反映は同じ更新サイクル内では dispatch できないため後送りする。
+        // requestAnimationFrame だと畳み込み前の生の構造が1フレーム以上画面に出てしまう
+        // (遅い端末ほど顕著)ので、マイクロタスクで「描画前」に滑り込ませる
+        this.dispatchHiddenRanges(built.hiddenRanges);
+        queueMicrotask(() => this.fetchMissing());
+      }
+
+      // 直近に送った畳み込み範囲。同じ内容を重ねて dispatch すると
+      // 「畳み込み→高さ変化→再構築→また畳み込み」の連鎖がフレームをまたいで
+      // 続いてしまう(スマホで段階的なガタつきに見える)ため、変化があるときだけ送る
+      private lastHiddenKey: string | null = null;
+
+      private dispatchHiddenRanges(ranges: { from: number; to: number }[]): void {
+        const key = ranges.map((r) => `${r.from}-${r.to}`).join(",");
+        if (key === this.lastHiddenKey) return;
+        this.lastHiddenKey = key;
+        queueMicrotask(() => {
           try {
-            this.currentView.dispatch({ effects: setHiddenRanges.of(initialRanges) });
+            this.currentView.dispatch({ effects: setHiddenRanges.of(ranges) });
           // eslint-disable-next-line no-empty -- intentional no-op
           } catch {}
-          this.fetchMissing();
         });
       }
 
@@ -1230,15 +1286,7 @@ export function createWrEditorExtension(ogpCache: OGPCache, app: App, plugin: Wr
           }
           const built = buildDecorations(update.view, ogpCache, this.blocks, app, plugin, getCheckStrikethrough());
           this.decorations = built.decorations;
-          // hidden range の更新は同じトランザクションサイクル内では dispatch できないため、
-          // 次フレームに送る
-          const pendingRanges = built.hiddenRanges;
-          window.requestAnimationFrame(() => {
-            try {
-              this.currentView.dispatch({ effects: setHiddenRanges.of(pendingRanges) });
-            // eslint-disable-next-line no-empty -- intentional no-op
-            } catch {}
-          });
+          this.dispatchHiddenRanges(built.hiddenRanges);
           if (!hasOgpEffect) {
             this.fetchMissing();
           }

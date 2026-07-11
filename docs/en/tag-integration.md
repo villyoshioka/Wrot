@@ -20,7 +20,7 @@ Tags inside your memos show up as tag nodes in the graph view, connected to the 
 Searches in the form `tag:#tagname` now match notes containing memos with that tag, and the search results highlight where the tag appears in the memo.
 
 - Clicking a tag node in the graph view opens a search that finds your memos the same way.
-- Clicking or tapping a tag in the timeline opens the same kind of tag search.
+- Clicking or tapping a memo tag in the timeline, Reading View, or Live Preview opens the same kind of tag search.
 
 ---
 
@@ -36,7 +36,7 @@ Only tags that are displayed as tags on screen are included (the same rule as ta
 
 Toggle **"Tag Integration"** in the **Advanced** section of Settings (on by default).
 
-- When off, tags stay inside Wrot: they no longer appear in the graph or tag searches, and clicking a tag in the timeline falls back to a plain text search.
+- When off, tags stay inside Wrot: they no longer appear in the graph or tag searches, and clicking a memo tag falls back to a plain text search.
 
 ### Excluding specific tags
 

@@ -1,4 +1,4 @@
-import { Plugin, TFile, WorkspaceLeaf, loadMathJax, normalizePath, setIcon, MarkdownView } from "obsidian";
+import { Plugin, TFile, WorkspaceLeaf, Notice, normalizePath, setIcon, MarkdownView } from "obsidian";
 import { VIEW_TYPE_WROT } from "./constants";
 import { WrotSettings, DEFAULT_SETTINGS, WrotSettingTab, TagColorRule, SubColorScope } from "./settings";
 import { WrotView } from "./views/WrotView";
@@ -6,6 +6,7 @@ import { registerWrotPostProcessor } from "./postProcessor";
 import { createWrEditorExtension, tagRulesChanged, vaultFilesChanged } from "./editorExtension";
 import { OGPCache } from "./utils/ogpCache";
 import { GraphTagInjector } from "./utils/graphTags";
+import { setMathJaxReadyHandler, upgradeMathFallbacks } from "./utils/mathjax";
 import { initI18n, t, getActiveLocale } from "./i18n";
 
 const ATTACHMENT_EXT_RE = /^(png|jpe?g|gif|webp|svg|bmp)$/i;
@@ -22,12 +23,14 @@ export default class WrotPlugin extends Plugin {
   private bgStyleEl: HTMLStyleElement | null = null;
   private tagRuleStyleEl: HTMLStyleElement | null = null;
   private fontStyleEl: HTMLStyleElement | null = null;
+  // MathJax読み込み完了前にプラグインが無効化されたとき、完了コールバックが
+  // 登録解除済みのpostProcessorで再描画してwr装飾を剥がしてしまうのを防ぐ
+  private unloading = false;
 
   async onload(): Promise<void> {
     initI18n();
     await this.loadSettings();
     await this.loadRecentTags();
-    await loadMathJax();
     this.ogpCache = new OGPCache();
     this.ogpCache.enabled = this.settings.enableOgpFetch;
     this.graphTags = new GraphTagInjector(this);
@@ -67,6 +70,10 @@ export default class WrotPlugin extends Plugin {
     // !important を使わない方針のため、注入styleがテーマ・styles.cssより後ろ
     // (head末尾)にあることが同点時の勝敗を決める。起動時のCSS読み込み順に
     // 依存しないよう、レイアウト確定後にもう一度末尾へ入れ直す。
+    // 数式描画用のMathJaxは完全遅延読み込み(utils/mathjax.ts参照)。ここでは
+    // 読み込み完了時にフォールバック数式を描き直すハンドラの登録だけ行う
+    setMathJaxReadyHandler(() => this.onMathJaxReady());
+
     this.app.workspace.onLayoutReady(() => {
       this.applyBgColor();
       this.applyTagColorRules();
@@ -102,6 +109,52 @@ export default class WrotPlugin extends Plugin {
     this.registerEvent(this.app.metadataCache.on("deleted", onAttachmentChange));
     this.registerEvent(this.app.vault.on("create", onAttachmentChange));
     this.registerEvent(this.app.vault.on("rename", onAttachmentChange));
+  }
+
+  // タグをObsidianのグローバル検索で開く。タイムライン・Reading View・Live Preview の
+  // タグクリック共通の入り口。本体統合ONかつ除外されていないタグは、グラフの
+  // タグノードをクリックしたときと同じ純正の tag: 検索、それ以外は従来の文字列検索
+  openTagSearch(tag: string): void {
+    const searchPlugin = (
+      this.app as {
+        internalPlugins?: {
+          getPluginById?: (id: string) => { instance?: { openGlobalSearch: (query: string) => void } } | undefined;
+        };
+      }
+    ).internalPlugins?.getPluginById?.("global-search");
+    if (searchPlugin?.instance) {
+      const useIntegrated =
+        this.graphTags.enabled && !this.graphTags.isExcludedTag(tag);
+      const query = useIntegrated
+        ? this.graphTags.buildTagSearchQuery(tag)
+        : `"${tag.replace(/"/g, '\\"')}"`;
+      searchPlugin.instance.openGlobalSearch(query);
+    } else {
+      new Notice(t("view.notice.searchPluginNotFound"));
+    }
+  }
+
+  // MathJaxの遅延読み込みが完了したときに呼ばれる。
+  // プレーンテキストに落ちた数式(wr-math-fallback)だけをその場で差し替え、
+  // Live Previewには軽い通知だけ送る(hadMathJaxがeq()に入っているため、
+  // フォールバック描画された数式ウィジェットだけが作り直される)。
+  // ビュー全体の再描画はしないので、数式以外の内容はちらつかない
+  private onMathJaxReady(): void {
+    window.setTimeout(() => {
+      if (this.unloading) return;
+      upgradeMathFallbacks();
+      this.app.workspace.iterateAllLeaves((leaf) => {
+        const view = leaf.view;
+        if (!(view instanceof MarkdownView)) return;
+        const cm = (view.editor as { cm?: { dispatch?: (tr: { effects: unknown }) => void } })?.cm;
+        if (cm?.dispatch) {
+          try {
+            cm.dispatch({ effects: vaultFilesChanged.of(null) });
+          // eslint-disable-next-line no-empty -- intentional no-op
+          } catch {}
+        }
+      });
+    }, 100);
   }
 
   refreshAttachmentDecorations(): void {
@@ -1119,6 +1172,8 @@ export default class WrotPlugin extends Plugin {
   }
 
   onunload(): void {
+    this.unloading = true;
+    setMathJaxReadyHandler(null);
     // 本体統合用に注入したタグを痕跡なく取り除く
     this.graphTags?.removeAll();
     this.bgStyleEl?.remove();

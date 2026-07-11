@@ -1,5 +1,6 @@
 import type { OGPData, OGPCache } from "./ogpCache";
 import { segmentBlocks } from "./blockSegmenter";
+import { isMathJaxReady, requestMathJax } from "./mathjax";
 
 const IMAGE_EXTENSIONS = [
   ".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".bmp",
@@ -138,6 +139,9 @@ export function renderTextWithTagsAndUrls(
         callbacks.renderMathBlock(segment.tex, blockEl);
       } else {
         try {
+          // MathJaxは起動時に遅延読み込みされる。未読み込みならフォールバックへ直行し、
+          // wr-math-fallback を目印に読み込み完了後の再描画(onMathJaxReady)で描き直される
+          if (!isMathJaxReady()) throw new Error("MathJax not loaded yet");
           // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment, no-undef -- internal Obsidian/CodeMirror API or intentional pattern
           const { renderMath, finishRenderMath } = require("obsidian");
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call -- internal Obsidian/CodeMirror API or intentional pattern
@@ -146,7 +150,9 @@ export function renderTextWithTagsAndUrls(
           // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- call into untyped Obsidian/CodeMirror internal API
           finishRenderMath();
         } catch {
+          blockEl.classList.add("wr-math-fallback");
           blockEl.textContent = segment.tex;
+          requestMathJax();
         }
       }
       continue;
@@ -448,6 +454,11 @@ function renderInlineTokens(
         const cb = callbacks.onTagClick;
         tagEl.addEventListener("click", (e) => {
           e.stopPropagation();
+          // 押した感覚のフィードバック: クリックのたびにハイライトを光らせ直す。
+          // クラスを外して reflow を挟むことでアニメーションを毎回リスタートさせる
+          tagEl.classList.remove("wr-tag-flash");
+          void tagEl.offsetWidth;
+          tagEl.classList.add("wr-tag-flash");
           cb(part);
         });
       }
@@ -455,6 +466,9 @@ function renderInlineTokens(
       const mathContent = part.slice(1, -1);
       const mathEl = container.createSpan({ cls: "wr-math" });
       try {
+        // MathJaxは起動時に遅延読み込みされる。未読み込みならフォールバックへ直行し、
+        // wr-math-fallback を目印に読み込み完了後の再描画(onMathJaxReady)で描き直される
+        if (!isMathJaxReady()) throw new Error("MathJax not loaded yet");
         // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment, no-undef -- internal Obsidian/CodeMirror API or intentional pattern
         const { renderMath, finishRenderMath } = require("obsidian");
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call -- internal Obsidian/CodeMirror API or intentional pattern
@@ -463,7 +477,9 @@ function renderInlineTokens(
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- call into untyped Obsidian/CodeMirror internal API
         finishRenderMath();
       } catch {
+        mathEl.classList.add("wr-math-fallback");
         mathEl.textContent = part;
+        requestMathJax();
       }
     } else if (part.match(/^obsidian:\/\//)) {
       const url = cleanUrl(part);

@@ -708,14 +708,41 @@ body .wr-submit-btn.wr-submit-active {
   color: var(--text-muted);
 }
 
-/* Tags */
+/* Tags (timeline / Reading View / Live Preview while rendered) */
 .wr-tag {
   color: var(--text-accent);
+}
+
+.wr-tag,
+.wr-reading-tag,
+.wr-tag-clickable {
   cursor: pointer;
 }
 
 .wr-tag:hover {
   text-decoration: none;
+}
+
+/* Pressed feedback: dim while the finger/button is down... */
+.wr-tag:active,
+.wr-reading-tag:active,
+.wr-tag-clickable:active {
+  opacity: 0.55;
+}
+
+/* ...and let the glyphs themselves flash bright on click, settling back to
+   the normal accent color (re-triggered per tap). Text-only, no box. */
+.wr-tag-flash {
+  animation: wr-tag-flash 500ms ease-out;
+}
+
+@keyframes wr-tag-flash {
+  from {
+    filter: brightness(1.1);
+  }
+  to {
+    filter: brightness(1);
+  }
 }
 
 /* Live Preview: tag highlight in qm code blocks */
@@ -1060,6 +1087,15 @@ body .wr-math-highlight:not(#x) {
   margin: 0.5em 0;
   overflow-x: auto;
   text-align: center;
+}
+
+/* Math waiting for MathJax lazy-load: keep it invisible until the rendered
+   math is swapped in, so the raw TeX never flashes. visibility (not display)
+   preserves approximate layout space and avoids a double reflow. The class
+   is removed when the element is swapped to rendered math. MathJax is a
+   local app resource, so a permanent load failure is not a realistic case. */
+.wr-math-fallback {
+  visibility: hidden;
 }
 
 /* Fenced code block (Timeline / RV / LV) */

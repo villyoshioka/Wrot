@@ -1,5 +1,19 @@
 # Release Notes
 
+## 2.14.0 - 2026-07-11
+
+### Improvements
+
+- Tags inside memos can now be clicked (or tapped) to search, in Reading View and Live Preview as well.
+- Made it easier to tell when a tag has been pressed.
+- Changed the library loading order to improve plugin performance.
+
+### Notes
+
+- If you use math expressions, the first one after startup may take a moment to appear. Once loaded, rendering is immediate as before.
+
+---
+
 ## 2.13.0 - 2026-07-10
 
 ### New Features

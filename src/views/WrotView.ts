@@ -9,6 +9,7 @@ import { ensureBlockIdOnFence } from "../utils/memoWriter";
 import { isImageFile, saveImageToVault, buildEmbedLink } from "../utils/imageAttachment";
 import { openCalendarPopover, CalendarPopoverHandle } from "../utils/calendarPopover";
 import { TagSuggest, extractTagsForHistory, mergeRecentTags } from "../utils/tagSuggest";
+import { isMathJaxReady, requestMathJax } from "../utils/mathjax";
 import type WrotPlugin from "../main";
 import type { PinEntry } from "../settings";
 import { t } from "../i18n";
@@ -1146,12 +1147,17 @@ export class WrotView extends ItemView {
       },
       renderMathBlock: (tex, blockEl) => {
         try {
+          // MathJaxは数式が実際に描画されるまで読み込まない(utils/mathjax.ts参照)。
+          // 未読み込みならフォールバックへ直行し、読み込み完了後その要素だけ差し替えられる
+          if (!isMathJaxReady()) throw new Error("MathJax not loaded yet");
           const rendered = renderMath(tex, true);
           blockEl.appendChild(rendered);
           // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
           finishRenderMath();
         } catch {
+          blockEl.classList.add("wr-math-fallback");
           blockEl.textContent = tex;
+          requestMathJax();
         }
       },
     });
@@ -1571,26 +1577,7 @@ export class WrotView extends ItemView {
   }
 
   private openSearch(tag: string): void {
-    const searchPlugin = (
-      this.app as {
-        internalPlugins?: {
-          getPluginById?: (id: string) => { instance?: { openGlobalSearch: (query: string) => void } } | undefined;
-        };
-      }
-    ).internalPlugins?.getPluginById?.("global-search");
-    if (searchPlugin?.instance) {
-      // 統合が有効: グラフのタグノードをクリックしたときと同じ素のタグ検索
-      // (注入済みタグは純正の tag: 検索がそのまま拾う)。無効、またはルールで
-      // 本体統合から除外されたタグ: 従来の文字列検索
-      const useIntegrated =
-        this.plugin.graphTags.enabled && !this.plugin.graphTags.isExcludedTag(tag);
-      const query = useIntegrated
-        ? this.plugin.graphTags.buildTagSearchQuery(tag)
-        : `"${tag.replace(/"/g, '\\"')}"`;
-      searchPlugin.instance.openGlobalSearch(query);
-    } else {
-      new Notice(t("view.notice.searchPluginNotFound"));
-    }
+    this.plugin.openTagSearch(tag);
   }
 
   private insertMarkdownLink(): void {

@@ -3,6 +3,7 @@ import { extractUrls, renderUrlPreviews, isSafeUrl, QUOTE_LINK_RE } from "./util
 import { renderQuoteCard, invalidateMemoCache, refreshQuoteCardsForFile } from "./utils/quoteCard";
 import { toggleCheckbox } from "./utils/memoWriter";
 import { segmentBlocks, type Segment } from "./utils/blockSegmenter";
+import { isMathJaxReady, requestMathJax } from "./utils/mathjax";
 import type WrotPlugin from "./main";
 
 export function registerWrotPostProcessor(plugin: WrotPlugin): void {
@@ -379,6 +380,17 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
         const span = createSpan();
         span.className = "wr-reading-tag";
         span.textContent = part;
+        // タイムラインのタグと同じく、クリックでグローバル検索を開く。
+        // stopPropagation は同じ pre 内のチェックボックス等との干渉予防
+        span.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          // 押した感覚のフィードバック: クラスを外して reflow を挟み、連打でも毎回光らせ直す
+          span.classList.remove("wr-tag-flash");
+          void span.offsetWidth;
+          span.classList.add("wr-tag-flash");
+          plugin.openTagSearch(part);
+        });
         frag.appendChild(span);
         hasMatch = true;
       } else if (part.match(/^\$([^$]+)\$$/)) {
@@ -386,6 +398,10 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
         const mathEl = createSpan();
         mathEl.className = "wr-math";
         try {
+          // MathJaxは数式が実際に描画されるまで読み込まない(utils/mathjax.ts参照)。
+          // 未読み込みならフォールバックへ直行し、wr-math-fallback を目印に
+          // 読み込み完了後その要素だけ差し替えられる
+          if (!isMathJaxReady()) throw new Error("MathJax not loaded yet");
           // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment, no-undef -- internal Obsidian/CodeMirror API or intentional pattern
           const { renderMath, finishRenderMath } = require("obsidian");
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call -- internal Obsidian/CodeMirror API or intentional pattern
@@ -394,7 +410,9 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- call into untyped Obsidian/CodeMirror internal API
           finishRenderMath();
         } catch {
+          mathEl.classList.add("wr-math-fallback");
           mathEl.textContent = part;
+          requestMathJax();
         }
         frag.appendChild(mathEl);
         hasMatch = true;
@@ -530,12 +548,18 @@ function renderMathBlockFragment(segment: Extract<Segment, { kind: "mathblock" }
   const blockEl = createDiv();
   blockEl.className = "wr-math-display";
   try {
+    // MathJaxは数式が実際に描画されるまで読み込まない(utils/mathjax.ts参照)。
+    // 未読み込みならフォールバックへ直行し、wr-math-fallback を目印に
+    // 読み込み完了後その要素だけ差し替えられる
+    if (!isMathJaxReady()) throw new Error("MathJax not loaded yet");
     const rendered = renderMath(segment.tex, true);
     blockEl.appendChild(rendered);
     // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
     finishRenderMath();
   } catch {
+    blockEl.classList.add("wr-math-fallback");
     blockEl.textContent = segment.tex;
+    requestMathJax();
   }
   return blockEl;
 }
