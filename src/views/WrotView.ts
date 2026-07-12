@@ -16,10 +16,8 @@ import { t } from "../i18n";
 
 declare const moment: typeof import("moment");
 
-// 投稿保存時に画像 embed を bodyText に挿入するヘルパー。
-// 末尾が「引用カードマーカー [[X#^wr-T]]」または「Markdown引用ブロック (> 行) の連続」なら
-// その直前に embed を挟む（引用は常に投稿の最下部）。
-// それ以外（手動介入: 引用の後にテキストや別行がある等）は末尾追加。
+// Inserts an image embed above a trailing quote-card marker or Markdown "> " block
+// (quotes always stay at the bottom of a post); otherwise appends at the end.
 function insertEmbedAboveBottomBlock(bodyText: string, embed: string): string {
   if (!bodyText) return embed;
 
@@ -58,7 +56,7 @@ function insertEmbedAboveBottomBlock(bodyText: string, embed: string): string {
 export class WrotView extends ItemView {
   plugin: WrotPlugin;
   private currentDate: ReturnType<typeof moment>;
-  // 「今日」追従中フラグ。trueのときだけ日付変更を跨いで自動更新する
+  // While true, the view auto-follows the date rollover to today.
   private anchoredToToday: boolean = true;
   private listContainer!: HTMLElement;
   private pinnedContainer: HTMLElement | null = null;
@@ -76,16 +74,12 @@ export class WrotView extends ItemView {
   private ignoreNextModify = false;
   private ignoreModifyUntil = 0;
   private activeFormatMode: "bold" | "italic" | null = null;
-  // 装飾ボタン click から ta.focus() を呼ぶと、textarea にフォーカスが無かった場合に
-  // focus イベントが発火して validateActiveFormatMode が走り、せっかく立てた予告モードが
-  // 「カーソル手前に記号がない」と判定されて即座に潰される。
-  // 予告モードを立てた瞬間にこのフラグを立て、直後の focus 検証 1 回だけスキップする。
+  // Calling focus() from a format-button click fires a focus event whose validation would
+  // instantly clear the just-set pending format mode; skip exactly one focus validation.
   private skipNextFocusValidation = false;
-  // IME入力中は太字/斜体ボタンを薄くしてクリックを抑止する。
-  // iOS WebKit では IME 未確定中に textarea 外をタップしても装飾ボタン側に
-  // pointer/click イベントが届かないため、ボタン側でのガードは効かない。
-  // 代わりに「textarea の blur 直後に来た input は強制確定起因」とみなして
-  // 解錠を抑止する。blur からごく短時間だけ抑止フラグを立てる。
+  // Dims bold/italic buttons during IME composition. On iOS WebKit, tapping outside mid-IME
+  // never delivers pointer/click to the buttons, so treat input right after blur as a forced
+  // commit and briefly suppress unlocking instead.
   private imeLocked = false;
   private imeComposing = false;
   private imeValueAtStart = "";
@@ -139,7 +133,7 @@ export class WrotView extends ItemView {
 
     await this.refresh();
 
-    // 初回描画後に登録（競合回避のため）
+    // Register after the initial render to avoid refresh races.
     this.registerFileWatcher();
 
     this.registerEvent(
@@ -185,7 +179,7 @@ export class WrotView extends ItemView {
         this.refresh();
       }
     });
-    // 削除はvault.on("delete")だとmetadataCache更新前に発火するためmetadataCache側で監視
+    // vault "delete" fires before metadataCache updates, so watch metadataCache "deleted" instead.
     const TRIGGER_EXT = /^(md|png|jpe?g|gif|webp|svg|bmp)$/i;
     this.fileDeleteRef = this.app.metadataCache.on("deleted", (file) => {
       if (!(file instanceof TFile)) return;
@@ -216,7 +210,6 @@ export class WrotView extends ItemView {
     }
   }
 
-  // 「今日」追従中のみ、現在日付を最新の今日へ更新する
   private async maybeRollToToday(): Promise<void> {
     if (!this.anchoredToToday) return;
     const now = moment();
@@ -225,8 +218,7 @@ export class WrotView extends ItemView {
     await this.refresh();
   }
 
-  // 既に開かれているタブがあればそこへフォーカスし、なければ新規タブで開く。
-  // 既存タブのビューモードは保持し、新規タブは Obsidian のデフォルト挙動に従う。
+  // Focus an existing tab showing the file (keeping its view mode) or open a new tab.
   private async openOrFocusFile(file: TFile): Promise<WorkspaceLeaf> {
     let existingLeaf: WorkspaceLeaf | null = null;
     this.app.workspace.iterateAllLeaves((leaf) => {
@@ -291,8 +283,8 @@ export class WrotView extends ItemView {
     this.updateCalendarButton();
   }
 
-  // 設定の showCalendarButton に応じてカレンダーボタンを生成/削除する。
-  // 設定画面でトグル変更された直後にも呼べるよう独立した関数にしている。
+  // Creates/removes the calendar button per showCalendarButton; kept standalone so the
+  // settings tab can call it right after the toggle changes.
   updateCalendarButton(): void {
     if (!this.dateNavEl) return;
     if (!this.plugin.settings.showCalendarButton) {
@@ -302,20 +294,17 @@ export class WrotView extends ItemView {
       return;
     }
     if (this.calendarBtnEl) return;
-    // カレンダーピッカー: 任意の日付へジャンプする自作カレンダー UI を出す。
-    // OS 標準の input[type=date] は見た目・操作感がプラットフォームごとに
-    // バラバラなため使わず、全環境で同一の見た目になる自作ポップオーバー
-    // (calendarPopover) をボタン位置基準で開く。
+    // Custom calendar popover instead of native input[type=date], whose look and
+    // behavior differ per platform.
     const calendarBtn = this.dateNavEl.createEl("button", { cls: "wr-nav-btn wr-calendar-btn" });
     setIcon(calendarBtn, "calendar-1");
     calendarBtn.setAttr("aria-label", t("view.dateNav.today"));
     calendarBtn.addEventListener("click", () => {
-      // すでに開いていれば閉じる (トグル)。
       if (this.calendarPopover) {
         this.closeCalendarPopover();
         return;
       }
-      // ポップオーバーが開いている間はボタンのホバー風スタイルを維持する。
+      // Keep the hover-like style while the popover is open.
       calendarBtn.toggleClass("wr-toolbar-active", true);
       this.calendarPopover = openCalendarPopover({
         anchor: calendarBtn,
@@ -368,8 +357,7 @@ export class WrotView extends ItemView {
     };
     this.textarea.addEventListener("input", autoGrow);
 
-    // タグ補完。container(wr-container)内にドロップダウンを配置する。
-    // 有効/無効は毎回設定値を見るので、トグル変更が即座に反映される。
+    // Enablement is read per call, so the settings toggle takes effect immediately.
     this.tagSuggest = new TagSuggest({
       textarea: this.textarea,
       container,
@@ -379,8 +367,8 @@ export class WrotView extends ItemView {
 
     this.textarea.addEventListener("keydown", (e: KeyboardEvent) => {
       if (e.isComposing) return;
-      // ドロップダウン表示中は候補操作（矢印/Enter/Tab/Esc）を最優先で処理する。
-      // Mod+Enter は内部で閉じるだけで消費しないため、下の投稿処理へそのまま流れる。
+      // Suggest dropdown handles navigation keys first; Mod+Enter only closes it
+      // without being consumed, so it falls through to the submit handling below.
       if (this.tagSuggest?.handleKeydown(e)) return;
       if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
         return;
@@ -462,8 +450,8 @@ export class WrotView extends ItemView {
 
     const toolbar = inputArea.createDiv({ cls: "wr-input-toolbar" });
 
-    // タグ補完の候補リストは件数によってツールバーに重なる。表示中（およびタップ確定
-    // 直後のゴーストクリック期間）はツールバーの各ボタンを反応させない（見た目は変えない）。
+    // The suggest dropdown can overlap the toolbar; while it is shown (and during the
+    // ghost-click window right after a tap-commit) toolbar buttons must not react.
     const toolbarSuppressed = () => this.tagSuggest?.isSuppressingUi() ?? false;
 
     const imageAddBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn" });
@@ -516,11 +504,10 @@ export class WrotView extends ItemView {
       const italicActive = this.activeFormatMode === "italic" || insideItalic;
       boldBtn.toggleClass("wr-toolbar-active", boldActive);
       italicBtn.toggleClass("wr-toolbar-active", italicActive);
-      // 排他: 予告モード中 or 選択が既に他方装飾済みなら他方ボタンを無効化
+      // Bold/italic are mutually exclusive: disable the other while one is pending or applied.
       boldBtn.toggleClass("wr-toolbar-disabled", this.activeFormatMode === "italic" || insideItalic);
       italicBtn.toggleClass("wr-toolbar-disabled", this.activeFormatMode === "bold" || insideBold);
-      // IME入力中で、かつそのボタンが active のときだけミュート。
-      // 装飾予告中(または選択が装飾内)に IME 入力を始めて、うっかり押す事故を防ぐ。
+      // Mute only the active button during IME composition to prevent accidental presses.
       boldBtn.toggleClass("wr-toolbar-ime-muted", this.imeLocked && boldActive);
       italicBtn.toggleClass("wr-toolbar-ime-muted", this.imeLocked && italicActive);
     };
@@ -545,7 +532,7 @@ export class WrotView extends ItemView {
 
     boldBtn.addEventListener("click", () => {
       if (toolbarSuppressed()) return;
-      // IME中はボタンが active な時だけ無効化 (updateFormatBtns と条件を揃える)
+      // During IME, block only when active (condition must match updateFormatBtns).
       if (this.imeLocked && (this.activeFormatMode === "bold" || this.isInsideMarker("**"))) return;
       if (this.activeFormatMode === "italic" || this.isInsideMarker("*")) return;
       const ta = this.textarea;
@@ -577,7 +564,7 @@ export class WrotView extends ItemView {
     });
     italicBtn.addEventListener("click", () => {
       if (toolbarSuppressed()) return;
-      // IME中はボタンが active な時だけ無効化 (updateFormatBtns と条件を揃える)
+      // During IME, block only when active (condition must match updateFormatBtns).
       if (this.imeLocked && (this.activeFormatMode === "italic" || this.isInsideMarker("*"))) return;
       if (this.activeFormatMode === "bold" || this.isInsideMarker("**")) return;
       const ta = this.textarea;
@@ -681,21 +668,19 @@ export class WrotView extends ItemView {
       updateFormatBtns();
       this.updateSubmitBtnState();
     };
-    // 選択範囲・カーソル位置変更はdocumentのselectionchangeで網羅的に拾う。
-    // input/keyup/click/selectは取りこぼし(シフト+矢印など)が出るため不採用。
-    // textareaフォーカス中のみ実行して無駄を抑える。
+    // document selectionchange catches every caret/selection move; input/keyup/click/select
+    // miss cases like Shift+Arrow. Runs only while the textarea is focused.
     this.registerDomEvent(activeDocument, "selectionchange", () => {
       if (activeDocument.activeElement === this.textarea) {
         updateActive();
-        // カーソル移動でタグから離れたらドロップダウンを閉じる/追従させる
+        // Close or reposition the tag dropdown when the caret moves off the tag.
         this.tagSuggest?.refresh();
       }
     });
-    // フォーカス取得直後はselectionchangeが発火しないため明示同期
+    // selectionchange does not fire on focus gain, so sync explicitly.
     this.textarea.addEventListener("focus", () => {
-      // 装飾ボタンclickで予告モードを立てた直後の ta.focus() による検証は、
-      // まだ装飾記号がカーソル手前にないため誤って予告モードを潰してしまう。
-      // フラグが立っている場合は validateActiveFormatMode をスキップする。
+      // The focus() triggered by a format-button click must skip validation: the marker
+      // is not before the caret yet and validation would clear the pending mode.
       if (this.skipNextFocusValidation) {
         this.skipNextFocusValidation = false;
         this.updateToolbarActive(listBtn, checkBtn, olBtn);
@@ -706,12 +691,10 @@ export class WrotView extends ItemView {
       }
       updateActive();
     });
-    // IME確定・ペースト等の値変更を拾う(updateActiveは冪等なので二重発火OK)
+    // Catches IME commits and pastes; updateActive is idempotent, double firing is fine.
     this.textarea.addEventListener("input", updateActive);
-    // IME入力が始まったらロック。確定判定は compositionend ではなく、
-    // 「IME が終わった後の input で value が伸びた」ことを確認した時のみ。
-    // (compositionend はボタンタップで誘発されることがあり信用できないため、
-    //  本物の確定だけが残す痕跡=textareaへの確定文字挿入を見る)
+    // Lock on compositionstart. Unlock only once a post-IME input shows the value grew:
+    // compositionend can be spuriously triggered by button taps, so only a real commit counts.
     this.textarea.addEventListener("compositionstart", () => {
       this.imeLocked = true;
       this.imeComposing = true;
@@ -720,9 +703,8 @@ export class WrotView extends ItemView {
     });
     this.textarea.addEventListener("compositionend", () => {
       this.imeComposing = false;
-      // PCでは確定後の input が valueLen を変えずに来ない/同値で来るため、
-      // compositionend 時点で value 伸長を確認できれば解錠する。
-      // blur 直後の強制確定はここに来る前に imeSuppressUntil で抑止されている。
+      // On desktop the post-commit input may not arrive, so unlock here if the value grew.
+      // Forced commits right after blur are already suppressed via imeSuppressUntil.
       if (!this.imeLocked) return;
       if (Date.now() < this.imeSuppressUntil) return;
       if (this.textarea.value.length > this.imeValueAtStart.length) {
@@ -730,39 +712,39 @@ export class WrotView extends ItemView {
         updateFormatBtns();
       }
     });
-    // iOSでは IME中に外をタップすると blur→input(縮小)→input(復元)→compositionend
-    // の順で強制確定が走る。blur 直後の input は強制確定起因とみなして解錠抑止する。
+    // On iOS, tapping outside mid-IME forces a commit as blur -> input(shrink) ->
+    // input(restore) -> compositionend; treat input right after blur as forced and keep the lock.
     this.textarea.addEventListener("blur", () => {
       if (this.imeLocked) this.imeSuppressUntil = Date.now() + 400;
     });
     this.textarea.addEventListener("input", () => {
       if (!this.imeLocked) return;
-      // 強制確定起因の input は解錠の根拠にしない
+      // Inputs caused by a forced commit are not grounds for unlocking.
       if (Date.now() < this.imeSuppressUntil) return;
       const len = this.textarea.value.length;
       const baseLen = this.imeValueAtStart.length;
       if (this.imeComposing) {
-        // IME未確定中: 未確定文字を全部消して開始時点と同じ長さに戻ったら解錠
+        // Still composing: unlock if all uncommitted text was deleted (back to start length).
         if (len <= baseLen) {
           this.imeLocked = false;
           updateFormatBtns();
         }
         return;
       }
-      // IME終了後: 確定文字が実際に入っていれば解錠
+      // After IME ended: unlock only if committed text was actually inserted.
       if (len > baseLen) {
         this.imeLocked = false;
         updateFormatBtns();
       }
     });
 
-    // タグ補完の開閉判定。値の変化(input)と IME 確定(compositionend)の両方で更新する。
-    // IME 変換中の input でも refresh する（未確定文字での絞り込みを効かせるため）。
+    // Refresh on both input and compositionend so uncommitted IME text also filters candidates.
     this.textarea.addEventListener("input", () => this.tagSuggest?.refresh());
     this.textarea.addEventListener("compositionend", () => this.tagSuggest?.refresh());
     this.textarea.addEventListener("blur", () => this.tagSuggest?.notifyBlur());
 
-    // ツールバーの折り返し検出。offsetTopはpadding変更の影響を受けないためResizeObserverでループしない
+    // Wrap detection via offsetTop, which padding changes don't affect, so the
+    // ResizeObserver cannot loop.
     const updateToolbarWrapped = () => {
       const buttons = toolbar.querySelectorAll<HTMLElement>(".wr-toolbar-btn");
       if (buttons.length < 2) return;
@@ -779,10 +761,8 @@ export class WrotView extends ItemView {
       this.toolbarResizeObserver.observe(toolbar);
     }
 
-    // モバイル/Obsidian 起動直後や LV カードに focus がある状態でパネルを開くと、
-    // 投稿フォーム領域 (.wr-input-area) の初期レイアウトが Electron 側で保留され
-    // 真っ白のまま放置されることがある。 タップや数秒の待機で復帰するが体験を損ねるため、
-    // 次フレームで明示的に強制 reflow を発生させてレイアウトを確定させる。
+    // On mobile/startup Electron can leave the input area's initial layout pending
+    // (blank until a tap); force a reflow on the next frame to settle it.
     window.requestAnimationFrame(() => {
       inputArea.getBoundingClientRect();
       this.textarea?.getBoundingClientRect();
@@ -881,7 +861,8 @@ export class WrotView extends ItemView {
     const rawText = this.textarea.value.trim().replace(/＃/g, "#");
     if (!rawText && !this.pendingImage) return;
 
-    // 投稿先を確定する直前に「今日」へ再追従する（週次/月次の集約フォーマット対策）
+    // Re-anchor to today just before resolving the target file (matters for
+    // weekly/monthly aggregate note formats).
     if (this.anchoredToToday && !this.currentDate.isSame(moment(), "day")) {
       this.currentDate = moment();
     }
@@ -902,8 +883,8 @@ export class WrotView extends ItemView {
       this.ignoreNextModify = true;
       await appendMemo(this.app, file, bodyText);
 
-      // 投稿が成功したときだけ、本文で使われたタグを補完候補として記録する。
-      // rawText は全角＃→# 正規化済み。抽出は表示側と同じ判定に揃えてある。
+      // Record used tags only after a successful post. rawText already has fullwidth #
+      // normalized; extraction matches the display-side tag rules.
       if (this.plugin.settings.tagSuggestEnabled) {
         const usedTags = extractTagsForHistory(rawText);
         if (usedTags.length > 0) {
@@ -925,7 +906,7 @@ export class WrotView extends ItemView {
 
   async refresh(): Promise<void> {
     if (this.refreshing) return;
-    // チェックボックストグル直後など短期間に起きる連発 modify は描画ごとスキップする
+    // Skip renders entirely during the modify-suppression window (e.g. right after a checkbox toggle).
     if (Date.now() < this.ignoreModifyUntil) return;
     this.refreshing = true;
     try {
@@ -936,7 +917,7 @@ export class WrotView extends ItemView {
       this.listContainer.empty();
       this.clearPinnedContainer();
 
-      // \u30d4\u30f3\u7559\u3081\u306f\u73fe\u5728\u65e5\u4ed8\u3068\u72ec\u7acb\u3057\u3066\u30bf\u30a4\u30e0\u30e9\u30a4\u30f3\u5148\u982d\u306b\u8868\u793a\u3059\u308b\u305f\u3081\u5148\u306b\u89e3\u6c7a
+      // Resolve pins first; they render at the top independent of the current date.
       const pinnedResolved = await this.resolvePinnedMemos();
       const pinnedTimestamps = new Set(pinnedResolved.map((p) => p.memo.time));
       for (const { memo, filePath } of pinnedResolved) {
@@ -993,7 +974,7 @@ export class WrotView extends ItemView {
     return container;
   }
 
-  // \u30d4\u30f3\u8a2d\u5b9a\u304b\u3089\u5b9f\u4f53\u30e1\u30e2\u3092\u89e3\u6c7a\u3059\u308b\uff08\u8a2d\u5b9a\u306e\u6574\u7406\u306f\u30d4\u30f3\u8ffd\u52a0/\u524a\u9664\u5074\u3067\u884c\u3046\uff09
+  // Resolves pinned memos from settings; orphan cleanup happens on pin add/remove.
   private async resolvePinnedMemos(): Promise<{ memo: Memo; filePath: string }[]> {
     const pins = this.plugin.settings.pins;
     if (!pins || pins.length === 0) return [];
@@ -1110,12 +1091,11 @@ export class WrotView extends ItemView {
         const file = getDailyNoteFile(this.app, this.currentDate);
         if (!file) return;
         const fileLine = memo.lineStart + 1 + lineIndex;
-        // 連発・遅延発火する modify イベントを抑止して、カード全体の再描画によるチラつきを防ぐ
+        // Suppress the burst of modify events so full re-renders don't flicker the cards.
         this.ignoreModifyUntil = Date.now() + 500;
         await toggleCheckbox(this.app, file, fileLine);
-        // 書き込み完了が遅れると modify が抑止窓の外に届いて全カード再描画の
-        // かくつきになるため、完了時点からもう一度窓を張り直す。
-        // 取り消し線はクリック時にクラス切替で即時反映済みなので再描画は不要。
+        // Re-arm after the write: a slow write can land modify past the first window and jank.
+        // The strikethrough was already applied via class toggle, so no re-render is needed.
         this.ignoreModifyUntil = Date.now() + 500;
       },
       onInternalLinkClick: (linkName) => {
@@ -1147,8 +1127,8 @@ export class WrotView extends ItemView {
       },
       renderMathBlock: (tex, blockEl) => {
         try {
-          // MathJaxは数式が実際に描画されるまで読み込まない(utils/mathjax.ts参照)。
-          // 未読み込みならフォールバックへ直行し、読み込み完了後その要素だけ差し替えられる
+          // MathJax loads lazily (see utils/mathjax.ts): fall back until loaded, then
+          // only the fallback elements get swapped in place.
           if (!isMathJaxReady()) throw new Error("MathJax not loaded yet");
           const rendered = renderMath(tex, true);
           blockEl.appendChild(rendered);
@@ -1162,9 +1142,8 @@ export class WrotView extends ItemView {
       },
     });
 
-    // 末尾メディアエリア: 画像以外の OGPカード/Twitter埋め込み URL を集約。
-    // 引用マーカーがある投稿では「引用は底」原則を維持するため、
-    // 引用カード slot の直前に挿入する
+    // Trailing media area for OGP/Twitter URL cards; inserted just before the
+    // quote-card slot so quotes stay at the bottom.
     const previewUrls = urls.filter(
       (pu) => pu.type === "image" || !pu.url.startsWith("obsidian://")
     );
@@ -1180,7 +1159,8 @@ export class WrotView extends ItemView {
       renderUrlPreviews(mediaEl, previewUrls, this.plugin.ogpCache, resolveImagePath);
     }
 
-    // ピン表示は3点メニューの位置/当たり判定に影響しないようフッター外に配置
+    // The pin indicator lives outside the footer so it can't shift the menu button's
+    // position or hit area.
     const footer = card.createDiv({ cls: "wr-card-footer" });
 
     const fmt = this.plugin.settings.timestampFormat || "YYYY/MM/DD HH:mm:ss";
@@ -1191,7 +1171,7 @@ export class WrotView extends ItemView {
     setIcon(menuBtn, "ellipsis");
     // eslint-disable-next-line @typescript-eslint/no-misused-promises -- async handler intentionally used as a callback
     menuBtn.addEventListener("click", async (e) => {
-      // ピン上限の判定前に、実体が消えたピンを除去する
+      // Drop orphaned pins before evaluating the pin limit.
       await this.cleanupOrphanPins();
       const pinned = this.isPinned(memo);
       const pinLimit = this.plugin.settings.pinLimit;
@@ -1302,7 +1282,7 @@ export class WrotView extends ItemView {
       cursorPos = 0;
     } else {
       next = `${existing}\n\n${marker}`;
-      cursorPos = existing.length + 1; // existing\n の直後 = 空行の先頭
+      cursorPos = existing.length + 1; // start of the blank line after existing text
     }
     ta.value = next;
     ta.selectionStart = ta.selectionEnd = cursorPos;
@@ -1336,8 +1316,8 @@ export class WrotView extends ItemView {
       after = "\n" + after;
     }
 
-    // ブロックと after の間: after が空 or 空白のみなら区切り不要、
-    // 何かテキスト/引用マーカーがあるなら改行1個で区切る
+    // No separator if the remainder is empty/whitespace; one newline before any
+    // following text or quote marker.
     const afterStripped = after.replace(/^\n+/, "");
     let separator = "";
     if (afterStripped.length > 0) {
@@ -1345,7 +1325,7 @@ export class WrotView extends ItemView {
       after = afterStripped;
     }
 
-    const cursorOffset = before.length + 3; // "~~~" or "$$\n" の中、空行頭
+    const cursorOffset = before.length + 3; // inside the fence, at the empty line
 
     ta.value = before + insert + separator + after;
     ta.selectionStart = ta.selectionEnd = cursorOffset;
@@ -1370,8 +1350,8 @@ export class WrotView extends ItemView {
     olBtn.toggleClass("wr-toolbar-active", isOl);
   }
 
-  // 選択範囲が指定マーカー(**または*)で完全に囲まれているか判定する。
-  // 選択なし時は常にfalse(カーソル移動でボタン状態が揺れるUXを避けるため)
+  // True if the selection is fully wrapped by the marker. Always false with no
+  // selection, so button state doesn't flicker while the caret moves.
   private isInsideMarker(marker: "**" | "*"): boolean {
     const ta = this.textarea;
     const start = ta.selectionStart;
@@ -1382,7 +1362,7 @@ export class WrotView extends ItemView {
       return /^\*\*[\s\S]+\*\*$/.test(selected);
     }
     if (!/^\*[\s\S]+\*$/.test(selected)) return false;
-    // **xxx** を斜体として誤判定しないよう除外
+    // Don't misread **bold** as italic.
     if (selected.startsWith("**") || selected.endsWith("**")) return false;
     return true;
   }
@@ -1466,7 +1446,7 @@ export class WrotView extends ItemView {
 
     const markers = ["**", "*", "~~", "==", "$"];
 
-    // 太字/斜体の混同を避けるため open に近い種別を優先
+    // Check the marker matching `open` first to avoid bold/italic confusion.
     const orderedForInner = open === "*"
       ? ["*", "**", "~~", "==", "$"]
       : open === "**"
@@ -1474,7 +1454,7 @@ export class WrotView extends ItemView {
         : markers;
     for (const m of orderedForInner) {
       const selected = val.slice(start, end);
-      // *単体マッチで両端が**なら太字扱いでスキップ
+      // Skip the "*" match when the edges are "**" (that's bold).
       if (m === "*" && (selected.startsWith("**") || selected.endsWith("**"))) continue;
       if (selected.length >= m.length * 2 && selected.startsWith(m) && selected.endsWith(m)) {
         const inner = selected.slice(m.length, selected.length - m.length);
@@ -1517,7 +1497,7 @@ export class WrotView extends ItemView {
     ta.dispatchEvent(new Event("input"));
   }
 
-  // 選択範囲を `![[...]]` で挟む。既に挟まれていれば外す。入れ子になる場合は何もしない
+  // Wrap the selection in ![[...]], unwrap if already wrapped; no-op if it would nest.
   private wrapSelectionWithEmbedBrackets(): void {
     const ta = this.textarea;
     const start = ta.selectionStart;
@@ -1594,8 +1574,8 @@ export class WrotView extends ItemView {
     ta.dispatchEvent(new Event("input"));
   }
 
-  // メニューは同時に1つだけ開く。トリガーボタンには開いている間 active クラスを付与
-  // yOffset: メニュー縦位置の微調整（正=下方向、負=上方向）
+  // Only one menu open at a time; the trigger keeps an active class while open.
+  // yOffset nudges the menu vertically (positive = down).
   openMenu(trigger: HTMLElement, buildMenu: (m: Menu) => void, evt: MouseEvent, yOffset = 0): void {
     if (this.currentMenu) {
       this.currentMenu.hide();
@@ -1617,7 +1597,7 @@ export class WrotView extends ItemView {
       }
     });
 
-    // メニュー展開位置をボタン基準で固定化: ボタンの左端から右方向へ展開
+    // Anchor the menu to the button's left edge, opening rightward.
     const rect = trigger.getBoundingClientRect();
     const doc = trigger.ownerDocument ?? activeDocument;
     menu.showAtPosition({ x: rect.left, y: rect.bottom + yOffset }, doc);

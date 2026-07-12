@@ -12,9 +12,9 @@ interface NotePathInfo {
   format: string;
 }
 
-// obsidian-daily-notes-interfaceのgetDailyNoteは日次以外のフォーマット（週次/月次等）で
-// 既存ファイルを検出できないため、自前でフォルダ・日付フォーマットからパスを組み立てる。
-// テンプレート展開で再利用するためformat/filenameも一緒に返す
+// getDailyNote from obsidian-daily-notes-interface misses existing files for
+// non-daily formats (weekly/monthly), so build the path ourselves.
+// format/filename are returned for reuse in template expansion.
 function buildNotePath(date: ReturnType<typeof moment>): NotePathInfo {
   const settings = getDailyNoteSettings();
   const format = settings?.format || "YYYY-MM-DD";

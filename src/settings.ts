@@ -16,8 +16,8 @@ export interface TagColorRule {
   accentColor?: string;
   subColor?: string;
   subColorScope?: SubColorScope;
-  // このタグを本体統合(グラフ表示・タグとして検索)の対象から外す
-  // (メモ内タグは既定で全部統合対象になる)
+  // Excludes this tag from core integration (graph view / native tag search);
+  // all memo tags are integrated by default.
   noIntegration?: boolean;
 }
 
@@ -42,8 +42,8 @@ export interface WrotSettings {
   enableOgpFetch: boolean;
   checkStrikethrough: boolean;
   tagSuggestEnabled: boolean;
-  // タグの本体統合。メタデータキャッシュへの注入により、グラフビュー表示と
-  // 純正タグ検索(tag:)の両方に効く(分離不可のため単一トグル)
+  // Metadata-cache injection affects both graph view and native tag: search;
+  // the two cannot be separated, hence a single toggle.
   graphTagsEnabled: boolean;
   tagColorRulesEnabled: boolean;
   tagColorRules: TagColorRule[];
@@ -52,8 +52,8 @@ export interface WrotSettings {
   calendarDayShape: "circle" | "rounded" | "square";
   pins: PinEntry[];
   pinLimit: PinLimit;
-  // 起動時に Obsidian の言語が変わったかを検知するための「前回保存時のロケール」記録。
-  // 未設定（既存ユーザーで初出のとき）は loadSettings で現在ロケールを採用するだけで、リセットは走らせない。
+  // Locale at last save, used to detect an Obsidian language change on startup.
+  // When absent (pre-existing users), loadSettings adopts the current locale without resetting.
   lastLocale?: string;
 }
 
@@ -83,9 +83,8 @@ export const DEFAULT_SETTINGS: WrotSettings = {
 
 const SETTINGS_NARROW_THRESHOLD_PX = 600;
 
-// 翻訳文中の "\n" を説明文の改行として `target` に流し込む。
-// この改行は PC 向けの整形で、モバイルでは CSS(.wr-pc-break) で無効化して
-// 通常の折り返しに任せる。
+// Turns "\n" in translated text into <br class="wr-pc-break">. These breaks are
+// PC-only formatting; mobile CSS disables them and relies on normal wrapping.
 function appendWithBreaks(target: DocumentFragment | HTMLElement, text: string): void {
   text.split("\n").forEach((part, i) => {
     if (i > 0) target.createEl("br", { cls: "wr-pc-break" });
@@ -93,7 +92,6 @@ function appendWithBreaks(target: DocumentFragment | HTMLElement, text: string):
   });
 }
 
-// setDesc 用ラッパー。"\n" を含まない文はそのまま文字列で返す。
 function descWithBreaks(text: string): string | DocumentFragment {
   if (!text.includes("\n")) return text;
   return createFragment((frag) => appendWithBreaks(frag, text));
@@ -101,11 +99,11 @@ function descWithBreaks(text: string): string | DocumentFragment {
 export class WrotSettingTab extends PluginSettingTab {
   plugin: WrotPlugin;
   private narrowObserver: ResizeObserver | null = null;
-  // .setting-item の追加/削除を検知して状態クラスを再走査するための監視
+  // Re-scans state classes when .setting-item nodes are added or removed.
   private settingItemObserver: MutationObserver | null = null;
-  // メモリ上のみ。設定タブを開き直すたびに全ルールがロック状態に戻る
+  // In-memory only: all rules relock whenever the settings tab is reopened.
   private unlockedRules: Set<number> = new Set();
-  // display()内部からの再構築でロック状態を保持したい場合にtrueにする
+  // Set to preserve lock state across an internal rebuild from display().
   private skipLockReset = false;
 
   constructor(app: App, plugin: WrotPlugin) {
@@ -125,8 +123,8 @@ export class WrotSettingTab extends PluginSettingTab {
     super.hide();
   }
 
-  // CSS `:has()` 警告回避用: 各 .setting-item に「テキスト入力 / セレクトを含むか」の
-  // 状態クラスを付与する。CSS 側は `:has(...)` の代わりに通常のクラスセレクタで判定する。
+  // :has() workaround: tag each .setting-item with state classes so the CSS
+  // can use plain class selectors instead of :has().
   private applySettingItemStateClasses(containerEl: HTMLElement): void {
     const items = containerEl.querySelectorAll<HTMLElement>(".setting-item");
     items.forEach((item) => {
@@ -137,7 +135,7 @@ export class WrotSettingTab extends PluginSettingTab {
     });
   }
 
-  // Obsidianのバージョン/プラットフォーム差を吸収するためスクロール対象候補を網羅的に収集する
+  // Collects every plausible scroll container to absorb Obsidian version/platform differences.
   private collectScrollCandidates(): HTMLElement[] {
     const list: HTMLElement[] = [];
     if (this.containerEl.scrollHeight > this.containerEl.clientHeight) {
@@ -150,7 +148,7 @@ export class WrotSettingTab extends PluginSettingTab {
       const scrolls =
         (overflowY === "auto" || overflowY === "scroll" || overflowY === "overlay") &&
         el.scrollHeight > el.clientHeight;
-      // overflowがvisibleでもscrollTopが0でない要素を拾う（WebView対策）
+      // WebView quirk: also catch elements with nonzero scrollTop even when overflow is visible.
       if (scrolls || el.scrollTop > 0) {
         list.push(el);
       }
@@ -160,7 +158,6 @@ export class WrotSettingTab extends PluginSettingTab {
     return list;
   }
 
-  // 設定タブのスクロール位置を保ったまま `work` を実行する
   private withScrollPreserved(work: () => void): void {
     const before = this.collectScrollCandidates().map((el) => ({ el, top: el.scrollTop }));
     work();
@@ -169,7 +166,7 @@ export class WrotSettingTab extends PluginSettingTab {
         if (el.scrollTop !== top) el.scrollTop = top;
       }
     };
-    // 同期/次フレーム/フォールバックの3段階で復元を試行
+    // Restore in stages (sync / next frame / timeouts) since re-render timing varies.
     restore();
     window.requestAnimationFrame(restore);
     window.setTimeout(restore, 0);
@@ -185,7 +182,6 @@ export class WrotSettingTab extends PluginSettingTab {
     containerEl.empty();
     containerEl.addClass("wr-settings");
 
-    // 設定タブの開き直し時はロック状態をリセット（内部再構築時はskipLockResetで保持）
     if (this.skipLockReset) {
       this.skipLockReset = false;
     } else {
@@ -212,7 +208,7 @@ export class WrotSettingTab extends PluginSettingTab {
       });
       this.narrowObserver.observe(containerEl);
     }
-    // タグルール add/remove などの部分更新時にも .setting-item の状態クラスを追従させる
+    // Keep .setting-item state classes in sync on partial updates (e.g. tag rule add/remove).
     if (typeof MutationObserver !== "undefined") {
       this.settingItemObserver = new MutationObserver(() => {
         this.applySettingItemStateClasses(containerEl);
@@ -282,7 +278,7 @@ export class WrotSettingTab extends PluginSettingTab {
       .setDesc(descWithBreaks(t("settings.item.timestampFormat.desc")))
       .addText((text) => {
         tsText = text;
-        // 日付フォーマットのトークン例（大文字小文字に意味があるため表記を変えない）
+        // Format tokens are case-sensitive; keep the casing as is.
         const tsFormatPlaceholder = "YYYY/MM/DD HH:mm:ss";
         text
           .setPlaceholder(tsFormatPlaceholder)
@@ -430,7 +426,6 @@ export class WrotSettingTab extends PluginSettingTab {
     const iconSetting = new Setting(containerEl)
       .setName(t("settings.item.submitIcon.name"));
     const descEl = iconSetting.descEl;
-    // 「{linkOpen}こちら{linkClose}」を中央のアンカー要素に置き換えて挿入する
     const descTemplate = t("settings.item.submitIcon.desc");
     const linkOpenIdx = descTemplate.indexOf("{linkOpen}");
     const linkCloseIdx = descTemplate.indexOf("{linkClose}");
@@ -443,13 +438,12 @@ export class WrotSettingTab extends PluginSettingTab {
       link.setAttr("target", "_blank");
       appendWithBreaks(descEl, suffix);
     } else {
-      // プレースホルダが含まれない辞書のときは素のテキストとして表示
       appendWithBreaks(descEl, descTemplate);
     }
     iconSetting
       .addText((text) => {
         iconText = text;
-        // Lucide アイコンID（小文字固定のため表記を変えない）
+        // Lucide icon IDs are lowercase-only; keep as is.
         const iconNamePlaceholder = "send";
         text
           .setPlaceholder(iconNamePlaceholder)
@@ -518,11 +512,8 @@ export class WrotSettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName(t("settings.item.tagSuggest.name"))
       .setDesc(descWithBreaks(t("settings.item.tagSuggest.desc")))
-      // 補完候補の削除はトグルの副作用にせず、専用アイコンとして併置する。
-      // 見た目はリセット等と同じ素のアイコン。誤操作ガードは BRAT の削除ボタンと
-      // 同じ2度押し方式で、1度目でアイコンが「もう一度押して確定」の警告表示に
-      // 変わり、2度目で削除を実行する。確定表示のまま数秒置くと自動キャンセルして
-      // アイコンに戻る。
+      // Clearing suggestions is its own icon, not a toggle side effect. Guarded BRAT-style:
+      // first press arms a confirm label, second press deletes; auto-disarms after a delay.
       .addExtraButton((btn) => {
         let armTimer: number | null = null;
         const disarm = () => {
@@ -567,7 +558,7 @@ export class WrotSettingTab extends PluginSettingTab {
             this.plugin.settings.graphTagsEnabled = value;
             await this.plugin.saveSettings();
             await this.plugin.graphTags.applyEnabled();
-            // タグルール内の「本体統合から除外」項目の表示/非表示を反映するため再構築
+            // Rebuild so the per-rule "exclude from integration" item shows/hides accordingly.
             this.skipLockReset = true;
             this.withScrollPreserved(() => this.render());
           })
@@ -642,16 +633,16 @@ export class WrotSettingTab extends PluginSettingTab {
           await this.plugin.saveSettings();
           this.plugin.applyTagColorRules();
           this.plugin.refreshAllWrDecorations();
-          // ルール機能のON/OFFで「グラフにリンクさせない」除外の効きも変わる
+          // Toggling rules also changes whether the "no integration" exclusion applies.
           this.plugin.graphTags.rebuild();
-          // ルールが実質空の状態で機能をオンにしたら、最初のルールをアンロックして即編集可能にする
+          // When enabling with no meaningful rule, unlock the first rule so it is editable right away.
           const rules = this.plugin.settings.tagColorRules;
           const noMeaningfulRule =
             rules.length === 0 || (rules.length === 1 && rules[0].tag.trim() === "");
           if (v && noMeaningfulRule) {
             this.unlockedRules.add(0);
           }
-          // ルールブロックの表示/非表示を切り替えるため設定タブ全体を再構築
+          // Rebuild the whole tab to toggle the rules block visibility.
           this.skipLockReset = true;
           this.withScrollPreserved(() => this.render());
         })
@@ -727,7 +718,6 @@ export class WrotSettingTab extends PluginSettingTab {
           .setName(t("settings.tagRule.label", { n: ruleNumber }))
           .setClass("wr-tag-rule-label-setting");
 
-        // ルールラベル右の鍵アイコン。タップでロック/アンロックを切り替え（メモリ上のみ）
         let lockBtnEl: HTMLElement | null = null;
         labelSetting.addExtraButton((btn) => {
           lockBtnEl = btn.extraSettingsEl;
@@ -861,8 +851,7 @@ export class WrotSettingTab extends PluginSettingTab {
         const scopeContainer = groupEl.createDiv({ cls: "wr-sub-color-scope" });
         const scopeToggleEls: HTMLElement[] = [];
 
-        // サブカラー詳細(scope)の下、グループ末尾に置く。
-        // 統合が無効のときは項目ごと出さない
+        // Placed at the end of the group, below the sub-color scope block.
         let noIntegrationToggleEl: HTMLElement | null = null;
         if (this.plugin.settings.graphTagsEnabled) {
           new Setting(groupEl)
@@ -1056,7 +1045,7 @@ export class WrotSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
             this.plugin.applyTagColorRules();
             this.plugin.refreshAllWrDecorations();
-            // 除外対象のタグ名が変わった可能性があるのでグラフ注入を組み直す
+            // The excluded tag name may have changed; rebuild the graph injection.
             this.plugin.graphTags.rebuild();
           },
           async (v) => {
@@ -1119,7 +1108,6 @@ export class WrotSettingTab extends PluginSettingTab {
               bgColor: DEFAULT_SETTINGS.bgColorLight,
               textColor: DEFAULT_SETTINGS.textColorLight,
             });
-            // 新規ルールを追加したら既存ルールはロックし直し、新ルールだけアンロック状態にする
             this.unlockedRules.clear();
             this.unlockedRules.add(newIndex);
             await this.plugin.saveSettings();

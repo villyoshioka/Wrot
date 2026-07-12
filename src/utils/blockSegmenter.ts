@@ -1,4 +1,4 @@
-// バッククォート```はWrotの外側フェンスに予約されているため、内部コードはチルダ~~~を使う。
+// Backtick fences are reserved for Wrot's outer block, so inner code blocks use tilde (~~~) fences.
 
 export type Segment =
   | { kind: "text"; text: string; startLine: number }
@@ -197,7 +197,7 @@ export function segmentBlocks(text: string): Segment[] {
   return segments;
 }
 
-// CodeMirror座標で動くライブプレビュー用の行レンジ取得（呼び出し側でwrブロック内部に切り出して渡す）
+// Line ranges for Live Preview (CodeMirror coordinates); caller passes lines already sliced to the wr block interior.
 export function findBlockRanges(lines: string[]): BlockRange[] {
   const blocks = parseBlocks(lines);
   return blocks.map((b) => {
@@ -211,7 +211,7 @@ export function findBlockRanges(lines: string[]): BlockRange[] {
   });
 }
 
-// メモ本文から非ブロック部分のテキストのみ抽出する（コード/数式内の#tagを除外するため）
+// Text outside code/math blocks only, so #tags inside them are excluded.
 export function extractNonBlockText(text: string): string {
   const segments = segmentBlocks(text);
   return segments

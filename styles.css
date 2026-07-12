@@ -1,21 +1,15 @@
-/* ========================================
-   Wrot - Plugin View Styles
+/* Wrot - Plugin View Styles
 
-   Specificity note: a trailing :not(#x) on a selector is an ID-level
-   specificity boost used to beat Obsidian core / theme rules without the
-   priority flag (themes never use ID selectors, so this reliably wins).
-   This stylesheet and the CSS injected at runtime by main.ts carry no
-   priority flags at all. The cascade is organized as an ID-level ladder:
-     0-1 IDs  this stylesheet's normal rules (theme-var defaults)
-     2 IDs    injected bg/text color stamps (settings colors; added
-              automatically by boostSelectors() in main.ts)
-     3 IDs    the few rules here that must beat the stamps (RV copy button)
+   Specificity: a trailing :not(#x) is an ID-level boost to beat Obsidian
+   core / theme rules without the priority flag (themes never use ID
+   selectors). No priority flags anywhere, here or in the CSS injected by
+   main.ts. The cascade is an ID-level ladder:
+     0-1 IDs  normal rules here (theme-var defaults)
+     2 IDs    injected bg/text color stamps (boostSelectors() in main.ts)
+     3 IDs    rules here that must beat the stamps (RV copy button)
      4 IDs    injected tag-rule CSS (always on top)
-   The injected sheets are also kept at the end of <head> so equal
-   specificity resolves in their favor. Opponents that use the priority
-   flag themselves (some themes, possibly the mobile app) win by design -
-   that trade-off is accepted.
-   ======================================== */
+   Injected sheets sit at the end of <head> so ties resolve in their favor.
+   Priority-flag opponents (some themes / mobile app) win by design. */
 
 .wr-container {
   padding: 12px 12px 0;
@@ -27,15 +21,14 @@
   position: relative;
 }
 
-/* メインエリア（タブ）配置時に際限なく広がるのを防ぐ: 固定幅で中央寄せ。
-   margin-inline のみ指定して上下マージンは親 flex 計算に委ねることで、
-   モバイルのメインエリアでコンテンツが上に寄る崩れを防ぐ。 */
+/* Cap width and center when placed in the main area (tab). Only margin-inline
+   is set: vertical margins stay with the parent flex, or mobile main-area
+   content drifts upward. */
 .workspace-split.mod-root .workspace-leaf-content[data-type="wrot-view"] .wr-container {
   max-width: 760px;
   margin-inline: auto;
 }
 
-/* Date Navigation */
 .wr-date-nav {
   display: flex;
   align-items: center;
@@ -64,16 +57,14 @@
   height: 20px;
 }
 
-/* Follow Obsidian's UI font size when enabled, but never shrink below the default.
-   Ratio: 20px icon / 14px text-baseline = 1.429 */
+/* Follow Obsidian's UI font size but never shrink below default (20px / 14px baseline = 1.429) */
 body.wr-font-follow .wr-nav-btn .svg-icon {
   width: max(20px, calc(var(--wr-font-text) * 1.429));
   height: max(20px, calc(var(--wr-font-text) * 1.429));
 }
 
-/* Suppress Obsidian's default button:focus-visible background that lingers
-   after a click. Placed before the :hover rule so that while hovering,
-   :hover (later in source) still shows its background. */
+/* Suppress Obsidian's button:focus-visible background lingering after a click.
+   Placed before :hover so the later hover rule still wins while hovering. */
 .workspace-leaf-content[data-type="wrot-view"] .wr-nav-btn:focus,
 .workspace-leaf-content[data-type="wrot-view"] .wr-nav-btn:focus-visible {
   background: none;
@@ -138,21 +129,15 @@ body.wr-font-follow .wr-nav-btn .svg-icon {
   color: var(--text-accent);
 }
 
-/* Calendar Button: jump to an arbitrary date.
-   Normally appears as a plain button with the Lucide calendar icon.
-   On click, a custom-built calendar (.wr-calendar-popover) opens with
-   absolute positioning anchored to the button. The native input[type=date]
-   is not used (to keep the look identical across all platforms).
-   The Today button (.wr-today-btn) is pushed right via margin-left: auto,
-   so this button sits paired immediately to its right. */
+/* Calendar button: opens the custom popover; native input[type=date] is
+   avoided so the look matches across platforms. Sits right of the Today
+   button (which is pushed right via margin-left: auto). */
 .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-btn {
   margin-left: 2px;
   position: relative;
 }
-/* Keep the hover-like style on the button while the calendar is open.
-   Even if :active/:hover land on it (e.g. arrow taps) while open, pin the
-   background to the light tint so the darker :active color (0.08) cannot
-   cut in and cause flicker. */
+/* While the calendar is open, pin the light hover tint so the darker :active
+   color (0.08) cannot cut in on arrow taps and flicker. */
 .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-btn.wr-toolbar-active,
 .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-btn.wr-toolbar-active:hover,
 .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-btn.wr-toolbar-active:active {
@@ -160,14 +145,10 @@ body.wr-font-follow .wr-nav-btn .svg-icon {
 }
 
 /* ===== Custom calendar popover =====
-   Date picker UI opened with absolute positioning inside the view body
-   (wr-container). The position (top/left) is computed in JS so it sits
-   right below the button and stays within the container (preventing the
-   calendar from overflowing off-screen at the right edge of the sidebar).
-   Drawn entirely by us so it looks identical on every platform. The
-   background uses Wrot's configured background color (--wr-bg-color) to
-   blend with the memo cards and input area, and the text color follows
-   the Wrot-configured text color applied by applyBgColor. */
+   Absolutely positioned inside wr-container; top/left computed in JS to sit
+   below the button and stay inside the container (no overflow at the sidebar
+   edge). Custom-drawn for cross-platform consistency; colors follow the
+   Wrot-configured bg/text colors. */
 .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-popover {
   position: absolute;
   z-index: 50;
@@ -205,8 +186,7 @@ body.wr-font-follow .wr-nav-btn .svg-icon {
   min-height: 0;
 }
 
-/* Match the date label (.wr-date-label) convention:
-   no background box on hover; only lower opacity while pressed to convey the press. */
+/* Match .wr-date-label: no hover box, only lower opacity while pressed */
 .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-month-label:hover,
 .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-month-label:focus,
 .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-month-label:focus-visible {
@@ -232,16 +212,14 @@ body.wr-font-follow .wr-nav-btn .svg-icon {
   justify-content: center;
 }
 
-/* Suppress the focus background lingering after a click (Obsidian's default
-   button:focus-visible). Placed before the :hover rule so that while
-   hovering, :hover (later in source) still shows its background. */
+/* Suppress the lingering focus background after a click; placed before :hover
+   so the later hover rule still wins while hovering. */
 .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-nav-btn:focus,
 .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-nav-btn:focus-visible {
   background: none;
 }
 
-/* Follows the main date controls (prev/next day buttons):
-   hover is just a faint glow (color stays muted), accent color while pressed. */
+/* Same hover/pressed convention as the main prev/next day buttons */
 .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-nav-btn:hover {
   background: rgba(var(--mono-rgb-100), 0.05);
 }
@@ -256,8 +234,7 @@ body.wr-font-follow .wr-nav-btn .svg-icon {
   height: 16px;
 }
 
-/* Follow Obsidian's UI font size when enabled, but never shrink below the default.
-   Ratio: 16px icon / 14px text-baseline = 1.143 */
+/* Follow Obsidian's UI font size but never shrink below default (16px / 14px baseline = 1.143) */
 body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
   width: max(16px, calc(var(--wr-font-text) * 1.143));
   height: max(16px, calc(var(--wr-font-text) * 1.143));
@@ -282,7 +259,6 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
   gap: 1px;
 }
 
-/* Year mode: lay out 12 years in 3 columns */
 .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-grid.wr-calendar-grid-years {
   grid-template-columns: repeat(3, 1fr);
   gap: 4px;
@@ -346,18 +322,16 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
   background: rgba(var(--mono-rgb-100), 0.05);
 }
 
-/* Cells from the previous/next month are toned down to distinguish them from the current month */
 .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-outside {
   color: var(--text-faint);
 }
 
-/* Today: shown with accent-colored text (unless selected) */
 .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-today {
   color: var(--text-accent);
   font-weight: 600;
 }
 
-/* Selected date: circular accent-background highlight. Takes precedence over the today highlight */
+/* Selected beats the today highlight (hence the compound selector) */
 .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-selected,
 .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-selected.wr-calendar-day-today {
   background: var(--interactive-accent);
@@ -370,11 +344,9 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
 }
 
 /* ===== Tag suggestion dropdown =====
-   Autocomplete for #tags in the post form. Opened with absolute positioning
-   inside the view body (wr-container), right below the tag being typed.
-   The position (top/left) is computed in JS from a hidden mirror element
-   (.wr-tag-suggest-mirror) that replicates the textarea's text layout.
-   Follows the calendar popover conventions (background, border, shadow). */
+   #tag autocomplete; top/left computed in JS from a hidden mirror element
+   (.wr-tag-suggest-mirror) replicating the textarea's text layout. Follows
+   the calendar popover look. */
 .workspace-leaf-content[data-type="wrot-view"] .wr-tag-suggest {
   position: absolute;
   z-index: 50;
@@ -441,7 +413,6 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
   pointer-events: none;
 }
 
-/* Input Area */
 .wr-input-area {
   margin-bottom: 8px;
   background: var(--wr-bg-color, #f8f8f8);
@@ -479,10 +450,8 @@ body .wr-textarea:not(#x) {
   outline: none;
 }
 
-/* Obsidian core paints form-field backgrounds on textarea (incl. :hover) and
-   themes may raise specificity further, so win by ID-level specificity
-   instead of the priority flag. Opponents that themselves use the priority
-   flag (if any) will win; that trade-off is intentional. */
+/* Obsidian core paints textarea backgrounds (incl. :hover) and themes may go
+   higher, so win with 3 ID levels; priority-flag opponents win by design. */
 body .wr-textarea:not(#x):not(#y):not(#z) {
   background: transparent;
 }
@@ -522,13 +491,10 @@ body .wr-toolbar-btn:not(#x) {
   background: none;
 }
 
-/* Width-affecting metrics are pinned at ID level in BOTH wrap modes.
-   The wrap detection (WrotView updateToolbarWrapped) compares button
-   offsetTop, so the normal and wrapped modes must agree on button widths.
-   When a theme overrode the normal-mode metrics while the higher-specificity
-   wrapped-mode rule kept winning, the two modes disagreed on whether one row
-   fits and the ResizeObserver re-toggled the class every frame - the
-   "twitching form" seen with some themes (Primary / Mado 11 / Kakano). */
+/* Width metrics pinned at ID level in BOTH wrap modes: wrap detection compares
+   button offsetTop, so the modes must agree on widths. If a theme overrides
+   only normal mode, the ResizeObserver re-toggles the class every frame — the
+   "twitching form" seen with Primary / Mado 11 / Kakano. */
 body .wr-toolbar-btn:not(#x):not(#y):not(#z) {
   border: none;
   padding: 2px;
@@ -571,8 +537,7 @@ body .wr-input-toolbar.wr-toolbar-wrapped .wr-toolbar-btn:not(#x):not(#y):not(#z
   height: 18px;
 }
 
-/* Follow Obsidian's UI font size when enabled, but never shrink below the default.
-   Ratio: 18px icon / 14px text-baseline = 1.286 */
+/* Follow Obsidian's UI font size but never shrink below default (18px / 14px baseline = 1.286) */
 body.wr-font-follow .wr-toolbar-btn .svg-icon {
   width: max(18px, calc(var(--wr-font-text) * 1.286));
   height: max(18px, calc(var(--wr-font-text) * 1.286));
@@ -660,7 +625,7 @@ body .wr-submit-btn.wr-submit-active {
   color: var(--text-on-accent);
 }
 
-/* Pinned Section (独立コンテナ・禅モード連携) */
+/* Pinned section: independent container, tied into zen mode */
 .wr-pinned-section {
   display: flex;
   flex-direction: column;
@@ -668,7 +633,6 @@ body .wr-submit-btn.wr-submit-active {
   margin-bottom: 8px;
 }
 
-/* Memo Card List */
 .wr-list {
   display: flex;
   flex-direction: column;
@@ -686,7 +650,6 @@ body .wr-submit-btn.wr-submit-active {
   font-size: var(--wr-font-text);
 }
 
-/* Memo Card */
 .wr-card {
   background: var(--wr-bg-color, #f8f8f8);
   border-radius: 10px;
@@ -891,7 +854,6 @@ body .wr-ol-highlight:not(#x) {
   color: var(--text-muted);
 }
 
-/* Internal links */
 .wr-internal-link {
   color: var(--text-accent);
   cursor: pointer;
@@ -906,7 +868,6 @@ body .wr-internal-link-highlight:not(#x) {
   color: var(--text-accent);
 }
 
-/* Embedded images */
 .wr-embed-img {
   max-width: 100%;
   border-radius: 8px;
@@ -914,21 +875,17 @@ body .wr-internal-link-highlight:not(#x) {
   display: block;
 }
 
-/* RV: images aggregated at the tail of a normal post. The copy button's
-   position creates natural spacing above, but below, block padding plus
-   image margin alone leaves the vertical balance lopsided.
-   Implementation-wise, RV appendChilds the image directly under
-   pre.language-wr, so we target pre.language-wr's direct child rather
-   than block-language-wr's. */
+/* RV: tail images of a normal post. Extra bottom margin balances the space
+   the copy button creates above. RV appends the image directly under
+   pre.language-wr (not .block-language-wr), hence both parent selectors. */
 pre.language-wr > .wr-embed-img,
 .block-language-wr > .wr-embed-img {
   margin-bottom: 24px;
 }
 
-/* Spacing fix for posts with a quote marker where the image sits inline.
-   The wrapper's padding-right shrinks the "available width" for the image,
-   producing a right margin aligned with the wr block's right padding.
-   Left padding respects the natural cm-line / code block padding as is. */
+/* Quote-marker posts with an inline image: the wrapper's padding-right shrinks
+   the image's available width so its right edge aligns with the wr block's
+   right padding; the left side keeps the natural cm-line padding. */
 .wr-lp-inline-img-wrapper {
   display: block;
   box-sizing: border-box;
@@ -941,10 +898,8 @@ pre.language-wr > .wr-embed-img,
   max-width: 100%;
 }
 
-/* In posts with a quote marker, an image placed directly under <code> gets
-   overlapped by the copy button. margin-top pushes the image's top down so
-   the copy button stays outside the image.
-   Normal posts never get the wr-rv-inline-img class, so they are unaffected. */
+/* Quote-marker posts: an image directly under <code> is overlapped by the copy
+   button; margin-top pushes it clear. Normal posts never get this class. */
 .wr-embed-img.wr-rv-inline-img {
   display: block;
   margin: 32px 0 4px 0;
@@ -961,7 +916,6 @@ body .wr-internal-link-unresolved {
   font-style: italic;
 }
 
-/* Inline code */
 body .wr-inline-code {
   background: rgba(var(--mono-rgb-100), 0.08);
   padding: 2px 5px;
@@ -994,22 +948,15 @@ body code.language-wr span.wr-inline-code:not(#x) {
   font-size: 0.85em;
 }
 
-/*
- * For inline code `xxx` in LV (CodeMirror), CodeMirror generates either
- * 1 span (cursor outside: hidden backticks + content) or 3 spans (cursor
- * inside: left backtick / content / right backtick) depending on cursor
- * position. Fully erasing the seams in the 3-span case is hard in CSS due
- * to the combination of semi-transparent backgrounds and subpixel
- * boundaries, so we never use rounded corners and render a flat,
- * perfectly square band instead.
- */
+/* LV inline code: CodeMirror emits 1 span (cursor outside) or 3 spans (cursor
+   inside: backtick / content / backtick). Seams in the 3-span case cannot be
+   erased in CSS (semi-transparent backgrounds + subpixel boundaries), so no
+   rounded corners — always a flat square band. */
 body .wr-inline-code-highlight {
   background: rgba(var(--mono-rgb-100), 0.08);
   border-radius: 0;
-  /* The middle span (the content) carries horizontal padding so that it and
-   * the adjacent outer spans meet "padding against padding". We avoid the
-   * negative-margin overlap approach because stacking semi-transparent
-   * backgrounds makes the seams look darker. */
+  /* Middle span carries the horizontal padding so spans meet padding-to-padding;
+     negative-margin overlap would stack translucent backgrounds and darken seams. */
   padding: 1px 4px;
   /* Align the vertical position and height of the three spans. */
   vertical-align: baseline;
@@ -1022,19 +969,9 @@ body .wr-inline-code-highlight:not(#x) {
   font-family: var(--font-monospace);
 }
 
-/* For inline code inside a wr block in LV, the DOM structure CodeMirror
- * generates changes with cursor position (cursor outside: 1 span /
- * cursor inside: 3 spans). With rounded corners, the 3-span state shows
- * visibly split seams due to subpixel boundaries plus stacked
- * semi-transparent backgrounds, and fully fixing that proved infeasible
- * in CSS. By giving up rounded corners and always rendering a perfectly
- * square band, it reads as a visually consistent "flat background band"
- * regardless of cursor state. */
-
-/* When the cursor is inside (= multiple wr-inline-code-highlight spans
- * within the same .cm-hmd-codeblock), the backtick spans at both ends are
- * direct children of .cm-hmd-codeblock. Zero the inner padding to avoid
- * doubled padding where they join the middle span. */
+/* Cursor-inside state: the end backtick spans are direct children of
+   .cm-hmd-codeblock; zero their inner padding to avoid doubling against the
+   middle span. */
 .cm-hmd-codeblock > .wr-inline-code-highlight:first-child {
   padding-right: 0;
 }
@@ -1065,14 +1002,12 @@ body code.wr-code-hidden:not(#x) {
   line-height: var(--line-height-normal);
 }
 
-/* Format styles */
 body .wr-highlight {
   background: var(--text-highlight-bg);
   padding: 1px 2px;
   border-radius: 2px;
 }
 
-/* Inline math */
 .wr-math {
   display: inline;
 }
@@ -1081,7 +1016,6 @@ body .wr-math-highlight:not(#x) {
   color: var(--text-accent);
 }
 
-/* Display math block */
 .wr-math-display {
   display: block;
   margin: 0.5em 0;
@@ -1089,11 +1023,9 @@ body .wr-math-highlight:not(#x) {
   text-align: center;
 }
 
-/* Math waiting for MathJax lazy-load: keep it invisible until the rendered
-   math is swapped in, so the raw TeX never flashes. visibility (not display)
-   preserves approximate layout space and avoids a double reflow. The class
-   is removed when the element is swapped to rendered math. MathJax is a
-   local app resource, so a permanent load failure is not a realistic case. */
+/* Hide raw TeX until MathJax lazy-load swaps in the rendered math. visibility
+   (not display) keeps approximate layout and avoids a double reflow. MathJax
+   is a local app resource, so permanent load failure is not a real case. */
 .wr-math-fallback {
   visibility: hidden;
 }
@@ -1145,9 +1077,8 @@ body .wr-codeblock-display pre:not(#x) {
   padding: 0;
 }
 
-/* Nested code blocks inside a Wrot memo should not show Obsidian's
-   auto-generated copy / flair buttons, since the outer memo already has its
-   own copy button in the footer. */
+/* Hide Obsidian's auto copy/flair buttons on nested code blocks; the memo
+   already has its own copy button in the footer. */
 body .wr-codeblock-display .copy-code-button:not(#x),
 body .wr-codeblock-display .code-block-flair:not(#x),
 body .wr-codeblock-display .edit-block-button:not(#x) {
@@ -1164,7 +1095,6 @@ body .wr-obsidian-url-line:not(#x) {
   overflow: hidden;
 }
 
-/* Blockquote */
 /* Blockquote (shared) */
 body .wr-blockquote {
   border-left: 3px solid var(--text-muted);
@@ -1201,10 +1131,9 @@ body pre > .wr-blockquote:not(#x) {
   font-family: var(--font-monospace);
 }
 
-/* Blockquote: inside the quote-card body preview (shared by LV/RV/timeline).
-   Where the rules under .wr-content or .block-language-wr do not apply,
-   padding-left collapses to 0 and the bar-to-text gap looks different
-   between LV and RV, so align it explicitly here. */
+/* Blockquote inside the quote-card body preview: outside .wr-content /
+   .block-language-wr the padding-left collapses to 0 and LV/RV bar-to-text
+   gaps diverge, so state it explicitly. */
 body .wr-quote-card-body .wr-blockquote {
   padding-left: 10px;
 }
@@ -1214,31 +1143,25 @@ body .wr-quote-highlight:not(#x) {
 }
 
 
-/* Keep copy button clickable above Wrot's list/quote elements (do not
-   touch position/opacity so Obsidian's hover-to-show behavior stays intact).
-   In RV (Reading View) the .copy-code-button is placed directly under
-   pre.language-wr, not inside .block-language-wr, so cover both parent
-   patterns. ID-level specificity ensures no other rule can reset this
-   back to z-index: auto. */
+/* Keep the copy button clickable above Wrot's list/quote elements without
+   touching position/opacity (Obsidian's hover-to-show must survive). RV puts
+   it directly under pre.language-wr, hence both parents; ID-level specificity
+   stops any reset back to z-index: auto. */
 body pre.language-wr .copy-code-button:not(#x):not(#y):not(#z),
 body .block-language-wr .copy-code-button:not(#x):not(#y):not(#z) {
   z-index: 100;
 }
 
-/* RV: button sits above card content; card background makes it look odd.
-   3 ID levels: above the injected bg stamps (2) and Obsidian core's
-   ".markdown-rendered button.copy-code-button:hover", below the tag-rule
-   CSS (4) so with a tag rule active the button still gets the card color
-   (established behavior). */
+/* RV: transparent button over card content. 3 ID levels — above the injected
+   bg stamps (2) and core's ".markdown-rendered button.copy-code-button:hover",
+   below tag-rule CSS (4) so rule-colored cards still tint the button. */
 body pre.language-wr .copy-code-button:not(#x):not(#y):not(#z) {
   background: transparent;
 }
 
-/* With a tag rule active, .copy-code-button.wr-flair-bg gets the card
-   background color, and in some cases it also lands on the inner SVG and
-   blots out the icon. Make sure the SVG alone stays transparent.
-   3 ID levels: outranks the injected bg stamps (2), stays below the
-   tag-rule CSS (4). */
+/* With a tag rule active the card color can land on the button's inner SVG and
+   blot out the icon; keep the SVG transparent. 3 ID levels: above the bg
+   stamps (2), below tag-rule CSS (4). */
 pre.language-wr .copy-code-button svg:not(#x):not(#y):not(#z),
 pre.language-wr .copy-code-button svg :not(#x):not(#y):not(#z),
 .block-language-wr .copy-code-button svg:not(#x):not(#y):not(#z),
@@ -1250,17 +1173,14 @@ pre.language-wr .copy-code-button svg :not(#x):not(#y):not(#z),
   height: 1em;
 }
 
-/* Format menu button spacing */
-/* Separator gap between the insert-type buttons and the format menu button.
-   Pinned at the same ID level as the toolbar metric rules (and one class
-   stronger than their margin: 0) so it survives them and stays identical in
-   both wrap modes - a mode-independent margin cannot re-trigger the wrap
-   oscillation those rules guard against. */
+/* Separator gap before the format menu button. Same ID level as the toolbar
+   metric rules (one class stronger than their margin: 0) so it survives them
+   in both wrap modes; a mode-independent margin cannot re-trigger the wrap
+   oscillation. */
 body .wr-toolbar-btn.wr-format-btn:not(#x):not(#y):not(#z) {
   margin-left: 8px;
 }
 
-/* Toolbar button disabled state */
 body .wr-toolbar-disabled {
   opacity: 0.3;
   cursor: default;
@@ -1395,7 +1315,6 @@ body .wr-lp-marker:not(#x) {
   inset-inline-start: -2px;
 }
 
-/* Content */
 .wr-content {
   font-size: var(--wr-font-text);
   line-height: 1.5;
@@ -1404,7 +1323,6 @@ body .wr-lp-marker:not(#x) {
   word-break: break-word;
 }
 
-/* Copy Button (inline in footer) */
 .wr-copy-btn {
   display: inline-flex;
   align-items: center;
@@ -1434,7 +1352,6 @@ body .wr-copy-btn.wr-copy-done .svg-icon {
   stroke: var(--text-accent);
 }
 
-/* Per-memo 3-dot menu button (replaces the old copy-only button). */
 .wr-menu-btn {
   display: inline-flex;
   align-items: center;
@@ -1467,9 +1384,7 @@ body .wr-copy-btn.wr-copy-done .svg-icon {
   stroke: var(--text-muted);
 }
 
-/* Follow Obsidian's UI font size when enabled, keep the 14px baseline otherwise.
-   Use max() so icons never shrink below their default 14px.
-   Ratio: 14px icon / 14px text-baseline = 1.0 */
+/* Follow Obsidian's UI font size but never shrink below default (14px / 14px baseline = 1.0) */
 body.wr-font-follow .wr-menu-btn .svg-icon {
   width: max(14px, var(--wr-font-text));
   height: max(14px, var(--wr-font-text));
@@ -1481,10 +1396,8 @@ body .wr-menu-btn.wr-toolbar-active .svg-icon:not(#x) {
   stroke: var(--text-accent);
 }
 
-/* Pin indicator lives outside the footer and is absolute-positioned to
-   the card's bottom-right corner, at the same vertical level as the
-   footer. Rendered only when the memo is pinned — no slot reserved
-   otherwise, since the indicator does not affect the footer layout. */
+/* Pin indicator: absolute-positioned at the card's bottom-right on the footer
+   row; rendered only when pinned, so no slot is reserved otherwise. */
 .wr-pin-indicator {
   position: absolute;
   right: 14px;
@@ -1517,11 +1430,9 @@ body.wr-font-follow .wr-pin-indicator .svg-icon {
   padding-top: 0;
 }
 
-/* Disable the tap highlight and focus background when a disabled menu item
-   is tapped on mobile. Obsidian's Menu adds the is-disabled class, but the
-   -webkit-tap-highlight-color and :active backgrounds come through other
-   paths, so kill them explicitly here. To beat Obsidian's default menu-item
-   rules, use the body prefix and spell out every state selector. */
+/* Mobile: Obsidian's Menu adds is-disabled, but tap-highlight and :active
+   backgrounds arrive via other paths; kill every state explicitly, with the
+   body prefix to beat the default menu-item rules. */
 body .wr-menu .menu-item.is-disabled:not(#x),
 body .wr-menu .menu-item.is-disabled:hover:not(#x),
 body .wr-menu .menu-item.is-disabled:active:not(#x),
@@ -1535,9 +1446,7 @@ body .wr-menu .menu-item.is-disabled.is-focused:not(#x) {
   pointer-events: none;
 }
 
-/* ========================================
-   Reading View & Live Preview - qm code block card
-   ======================================== */
+/* ===== Reading View & Live Preview: wr code block card ===== */
 
 /* Parent element of the code block processor output + Reading View */
 body div.block-language-wr,
@@ -1545,7 +1454,7 @@ body .language-wr {
   background: var(--wr-bg-color, #f8f8f8);
 }
 
-/* Live Preview: qm code block lines */
+/* Live Preview: code block lines */
 body .wr-codeblock-line {
   background-color: var(--wr-bg-color, #f8f8f8);
 }
@@ -1583,9 +1492,8 @@ body .wr-flair-bg:not(svg):not(svg *) {
   background: var(--wr-bg-color, #f8f8f8);
 }
 
-/* LV: .code-block-flair doubles as the copy button in Live Preview. Its hit area
-   extends leftward across the memo text, so we must not fill it with the card
-   background color. Force transparent so the memo text shows through. */
+/* LV: .code-block-flair doubles as the copy button and its hit area extends
+   across the memo text — never fill it with the card color; keep transparent. */
 body .wr-codeblock-line .code-block-flair:not(#x) {
   background: transparent;
 }
@@ -1613,26 +1521,22 @@ body pre.language-wr:not(#x) {
   padding-right: 16px;
 }
 
-/* The button background is transparent in RV, so wide horizontal padding
-   (theme/app default can be 20px per side) makes the visible icon float
-   ~26px away from the block's right edge. Narrow it so the icon hugs the
-   top-right corner. */
+/* RV button is transparent, so the default wide padding (~20px/side) makes the
+   icon float away from the block edge; narrow it so it hugs the corner. */
 body pre.language-wr .copy-code-button:not(#x) {
   right: 0px;
   padding-left: 6px;
   padding-right: 6px;
 }
 
-/* RV: quotes/images/URL cards have their own spacing; revert to Obsidian default bottom padding.
-   wr-rv-rich-tail is set in postProcessor when the block contains a quote card or ends with media
-   (replaces the former :has() selector to avoid the performance warning). */
+/* RV: quotes/images/URL cards bring their own spacing; revert to the default
+   bottom padding. wr-rv-rich-tail is set in postProcessor (a :has() selector
+   here triggered the performance warning). */
 body pre.language-wr.wr-rv-rich-tail:not(#x) {
   padding-bottom: 12px;
 }
 
-/* ========================================
-   URL & Rich Preview Styles
-   ======================================== */
+/* ===== URL & rich preview ===== */
 
 /* Inline URL links (sidebar + reading view) */
 .wr-url,
@@ -1653,19 +1557,15 @@ body pre.language-wr.wr-rv-rich-tail:not(#x) {
   text-decoration: underline;
 }
 
-/* When CodeMirror overlays wr-url-highlight and wr-blockquote-wrap on the
-   same range, posts after the first can get their inner/outer nesting
-   inverted, and the inner wr-blockquote-wrap's muted color cancels the
-   URL's accent color via inheritance. Force the accent color on every
-   element under wr-url-highlight so URLs always render in accent color
-   regardless of nesting order. */
+/* CodeMirror can invert the nesting of wr-url-highlight / wr-blockquote-wrap
+   on posts after the first, letting the muted quote color override the URL
+   accent by inheritance; force accent on everything under wr-url-highlight. */
 body .wr-url-highlight:not(#x),
 body .wr-url-highlight *:not(#x) {
   color: var(--text-accent);
   -webkit-text-fill-color: var(--text-accent);
 }
 
-/* Media area below memo content */
 body .wr-media-area {
   margin-top: 8px;
   overflow: hidden;
@@ -1680,8 +1580,7 @@ body .wr-media-area:not(#x) {
   gap: 8px;
 }
 
-/* When the OGP card is not rendered (cache miss or fetch failure),
-   wr-media-area can be left empty, so use :empty to collapse all spacing */
+/* OGP cache miss / fetch failure can leave the area empty; collapse all spacing */
 body .wr-media-area:empty:not(#x) {
   margin: 0;
   padding: 0;
@@ -1689,32 +1588,26 @@ body .wr-media-area:empty:not(#x) {
   height: 0;
 }
 
-/* LV: when an empty wr-media-area widget lands on the wr fence's closing
-   line (HyperMD-codeblock-end), the widget adds extra vertical height
-   (line break + widgetBuffer). The line itself must stay visible to show
-   the ``` fence characters, so only the empty widget inside is taken out
-   of layout with position: absolute so it cannot affect line height. */
+/* LV: an empty media widget on the closing fence line adds height (line break
+   + widgetBuffer). The line must stay visible for the fence characters, so
+   only the empty widget is pulled out of layout. */
 .cm-line.wr-codeblock-line.HyperMD-codeblock-end > .wr-media-area:empty:not(#x) {
   position: absolute;
   width: 0;
 }
 
-/* Reading View: media area inside block-language-wr */
 body .block-language-wr > .wr-media-area {
   padding: 0 16px 12px;
 }
 
-/* RV image-URL posts (those containing wr-media-link) get the same generous
-   bottom spacing as normal images (wr-embed-img directly under pre) so the
-   "image post" experience matches.
-   In RV the wr-media-area is also placed directly under pre.language-wr
-   by the implementation, so target both. */
+/* RV image-URL posts get the same bottom spacing as normal images so the
+   "image post" experience matches; wr-media-area may sit directly under
+   pre.language-wr, so target both parents. */
 body pre.language-wr > .wr-media-area.wr-has-link,
 body .block-language-wr > .wr-media-area.wr-has-link {
   padding-bottom: 28px;
 }
 
-/* Inline image preview */
 body .wr-media-link {
   max-width: 100%;
 }
@@ -1736,7 +1629,6 @@ body .wr-inline-img:not(#x) {
   display: block;
 }
 
-/* OGP Card */
 body .wr-ogp-card {
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 8px;
@@ -1763,10 +1655,9 @@ body .wr-ogp-card:not(#x) {
 }
 
 body .wr-ogp-card:hover {
-  /* RV OGP card hover with a tag color configured is a long-known bug
-     (the tag-rule CSS injected by main.ts wins on specificity). Deferred as
-     out of scope for v2.2.0. The same hover color is also stamped by the
-     injected bg CSS, which sits later in <head> and enforces the value. */
+  /* Known issue: with a tag color configured, the injected tag-rule CSS wins
+     over this hover. The same hover color is also stamped by the injected bg
+     CSS later in <head>, which enforces the value. */
   background: var(--wr-bg-hover, #e8e6e1);
   border-color: rgba(0, 0, 0, 0.2);
 }
@@ -1832,21 +1723,18 @@ body .wr-ogp-site {
   margin-top: 4px;
 }
 
-/* Twitter/X Card */
 .wr-twitter-card {
   border-left: 3px solid #1da1f2;
 }
 
-/* OGP loading placeholder */
 .wr-ogp-loading {
   font-size: var(--wr-font-ui-smaller);
   color: var(--text-muted);
   padding: 4px 0;
 }
 
-/* Live Preview: widget preview area.
-   Cancel wr-media-area's margin-top: 8px in LV; vertical spacing is
-   controlled by the child elements instead */
+/* LV widget preview area: cancel wr-media-area's margin-top; vertical spacing
+   is owned by the children instead */
 body .wr-lp-media {
   padding: 0 16px 0 2px;
   white-space: normal;
@@ -1858,20 +1746,15 @@ body .wr-lp-media:not(#x) {
   font-size: var(--wr-font-text);
 }
 
-/* wr-lp-media containing an image gets thicker padding-bottom to visually
-   balance the ~25px gap that the cm-widgetBuffer/noun spans on the wr
-   fence's closing line create above the image.
-   A normal image (wr-embed-img) and an image URL (wr-media-link) are the
-   same "image" experience to the user, so both get the same bottom spacing.
-   wr-lp-media with only URL cards (OGP cards etc.) does not get this extra spacing */
+/* Images get thicker padding-bottom to balance the ~25px gap the widgetBuffer
+   spans create above them on the closing fence line. Normal images and image
+   URLs read the same to the user, so both get it; URL-card-only areas do not */
 body .wr-lp-media.wr-has-img,
 body .wr-lp-media.wr-has-link {
   padding-bottom: 24px;
 }
 
-/* ========================================
-   Mobile adjustments
-   ======================================== */
+/* ===== Mobile adjustments ===== */
 .is-mobile .wr-container {
   padding: 6px 12px;
 }
@@ -1889,12 +1772,9 @@ body.is-mobile .wr-today-btn {
   padding: 2px 8px;
 }
 
-/* Prevent lingering :hover background on mobile (iOS/Android).
-   Keep :active feedback while the finger is down.
-   Obsidian mobile defaults sometimes apply :focus-visible / :hover
-   backgrounds; win by ID-level specificity (:not(#x) x3) instead of the
-   priority flag. If the mobile app states these with the priority flag,
-   this loses - accepted trade-off of the no-priority-flag design. */
+/* Mobile: kill lingering :hover/:focus backgrounds, keep :active feedback.
+   Obsidian mobile sometimes applies these; win with 3 ID levels. If the app
+   ever uses the priority flag here, losing is the accepted trade-off. */
 body.is-mobile .wr-nav-btn:focus:not(.wr-toolbar-active):not(#x):not(#y):not(#z),
 body.is-mobile .wr-nav-btn:focus-visible:not(.wr-toolbar-active):not(#x):not(#y):not(#z),
 body.is-mobile .wr-today-btn:focus:not(#x):not(#y):not(#z),
@@ -1907,19 +1787,16 @@ body.is-mobile .wr-today-btn:hover:not(#x):not(#y):not(#z) {
   background: transparent;
 }
 
-/* Press feedback must outrank the hover/focus resets above and any mobile
-   pseudo-class backgrounds; same ID-level boost keeps the relative order.
-   No color declaration here: the text color during a press stays on the
-   injected muted stamp, matching the pre-experiment behavior. */
+/* Press feedback must outrank the resets above; the same ID boost keeps source
+   order decisive. No color here: press text color stays on the injected stamp. */
 body.is-mobile .wr-nav-btn:active:not(.wr-toolbar-active):not(#x):not(#y):not(#z),
 body.is-mobile .wr-today-btn:active:not(#x):not(#y):not(#z) {
   background: rgba(var(--mono-rgb-100), 0.08);
 }
 
-/* While the calendar is open, pin the button to the faint glow the whole
-   time. Our mobile :active 0.08 rule above would otherwise cut in on arrow
-   taps and cause flicker; the extra class in the compound plus the same
-   ID-level boost reliably holds the light tint (0.05). */
+/* While the calendar is open, pin the faint glow: the mobile :active rule
+   above would flicker on arrow taps; the extra class + same ID boost holds
+   the light tint. */
 body.is-mobile .wr-calendar-btn.wr-toolbar-active:not(#x):not(#y):not(#z),
 body.is-mobile .wr-calendar-btn.wr-toolbar-active:active:not(#x):not(#y):not(#z),
 body.is-mobile .wr-calendar-btn.wr-toolbar-active:hover:not(#x):not(#y):not(#z) {
@@ -1933,35 +1810,29 @@ body.is-mobile .wr-calendar-btn.wr-toolbar-active:hover:not(#x):not(#y):not(#z) 
   white-space: nowrap;
 }
 
-/* Mobile: calendar day cells sized for easy finger taps.
-   Widen the cap a bit while keeping aspect-ratio; max-height lids the vertical size. */
+/* Mobile: finger-sized day cells; wider cap, max-height lids the vertical size */
 body.is-mobile .wr-calendar-day {
   max-width: 42px;
   max-height: 34px;
 }
 
-/* Mobile: kill the lingering :hover background on day/year cells.
-   On touch, :hover sticks until the next tap, so after switching from year
-   to month mode, the day cell that happens to sit under the tap coordinates
-   would keep a faint background — prevent that
-   (the selected highlight .wr-calendar-day-selected is preserved by a separate rule). */
+/* Mobile: on touch :hover sticks until the next tap, so after switching from
+   year to month mode the cell under the tap point would keep a faint
+   background; kill it (selected highlight preserved separately). */
 body.is-mobile .wr-calendar-day:hover:not(.wr-calendar-day-selected),
 body.is-mobile .wr-calendar-year:hover {
   background: none;
 }
 
-/* Mobile: while killing the hover residue, still show press feedback at the
-   moment of the tap. Same convention as the arrow buttons
-   (.wr-calendar-nav-btn) so it is clear which cell was pressed.
-   The selected highlight (.wr-calendar-day-selected) keeps its priority. */
+/* Mobile: still show press feedback at tap time (same convention as the arrow
+   buttons); the selected highlight keeps its priority. */
 body.is-mobile .wr-calendar-day:active:not(.wr-calendar-day-selected),
 body.is-mobile .wr-calendar-year:active {
   background: rgba(var(--mono-rgb-100), 0.08);
 }
 
-/* Mobile: kill the :hover/:focus background lingering after arrow-button taps.
-   Same convention as the prev-day/today buttons (keep only :active feedback).
-   ID-level specificity boost instead of the priority flag, same as above. */
+/* Mobile: arrow buttons — kill lingering :hover/:focus, keep :active only;
+   same ID-level boost as above. */
 body.is-mobile .wr-calendar-nav-btn:focus:not(#x):not(#y):not(#z),
 body.is-mobile .wr-calendar-nav-btn:focus-visible:not(#x):not(#y):not(#z),
 body.is-mobile .wr-calendar-nav-btn:hover:not(#x):not(#y):not(#z) {
@@ -2049,10 +1920,8 @@ body.is-mobile .wr-input-toolbar.wr-toolbar-wrapped .wr-toolbar-btn:not(#x):not(
   gap: 6px;
 }
 
-/* The pin indicator's absolute offsets mirror the card padding so it sits
-   on the same row as the footer (timestamp / 3-dot). The mobile card
-   shrinks its padding (10px sides, 6px bottom), so mirror that here too;
-   without this the pin floats up-right, off the footer row. */
+/* Pin indicator offsets mirror the card padding; the mobile card shrinks its
+   padding, so mirror that here or the pin floats off the footer row. */
 .is-mobile .wr-pin-indicator {
   right: 10px;
   bottom: 6px;
@@ -2087,18 +1956,14 @@ body:not(.wr-font-follow).is-mobile .wr-timestamp {
   padding-bottom: 16px;
 }
 
-/* Mobile: match the URL card (OGP) glow to the PC hover.
-   On touch, :hover sticks after a tap until the next one, so disable it and
-   show the PC hover color only while pressed (:active).
-   The OS tap highlight would double the glow, so disable it. */
+/* Mobile OGP card: :hover sticks after a tap, so show the PC hover color only
+   while pressed (:active); the OS tap highlight would double the glow, disable it. */
 body.is-mobile .wr-ogp-card {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* The same values are also stamped by the injected bg CSS from main.ts,
-   which sits later in <head> and enforces them; these copies keep the
-   behavior when the injected sheet is absent. Specificity is intentionally
-   kept below the tag-rule CSS so rule-colored cards keep their color. */
+/* Duplicated by the injected bg CSS (later in <head>); these copies cover the
+   sheet-absent case. Kept below tag-rule CSS so rule-colored cards keep their color. */
 body.is-mobile .wr-ogp-card:hover {
   background: var(--wr-bg-color, #f8f8f8);
   border-color: rgba(0, 0, 0, 0.1);
@@ -2109,10 +1974,9 @@ body.is-mobile .wr-ogp-card:active {
   border-color: rgba(0, 0, 0, 0.2);
 }
 
-/* Settings: color picker fix for mobile.
-   Obsidian mobile styles input[type="color"] (appearance reset, width: 100%,
-   --swatch-* metrics) with normal-priority rules only, so plugin CSS wins by
-   load order + specificity without the priority flag. */
+/* Settings color picker: Obsidian mobile styles input[type="color"] with
+   normal-priority rules only, so load order + specificity wins without the
+   priority flag. */
 body.is-mobile .wr-settings input[type="color"] {
   --swatch-width: 48px;
   --swatch-height: 48px;
@@ -2151,9 +2015,7 @@ body.is-mobile .wr-settings input[type="color"]::-webkit-color-swatch {
   height: 48px;
 }
 
-/* ========================================
-   iPad (tablet) adjustments
-   ======================================== */
+/* ===== iPad (tablet) adjustments ===== */
 @media (min-width: 768px) {
   .is-mobile .wr-input-area {
     overflow-x: hidden;
@@ -2165,16 +2027,14 @@ body.is-mobile .wr-settings input[type="color"]::-webkit-color-swatch {
   }
 }
 
-/* Settings: tag rule separator between rules */
 .wr-settings .wr-tag-rule-separator {
   border: none;
   border-top: 1px solid var(--background-modifier-border);
   margin: 14px 0;
 }
 
-/* Settings: locked tag rule — visual grayout for the editable fields only.
-   The rule label row (which holds the lock toggle itself) stays at full
-   opacity so the unlock affordance remains clearly tappable. */
+/* Locked tag rule: gray out editable fields only; the label row holding the
+   lock toggle stays full-opacity so the unlock affordance is clear. */
 .wr-settings .wr-tag-rule-group.wr-tag-rule-locked
   .setting-item:not(.wr-tag-rule-label-setting) {
   opacity: 0.55;
@@ -2205,19 +2065,17 @@ body.is-mobile .wr-settings .setting-item:not(.wr-setting-has-text-input):not(.w
   flex: 0 0 auto;
   justify-content: flex-end;
   width: auto;
-  /* Reserve the same control-column width on every single-row item so the
-     descriptions all wrap at the same edge, BRAT-style. The widest cluster is
-     extra icon (~36px) + 8px gap + toggle, hence the +44px. --toggle-width
-     follows the per-platform value from Obsidian (62px on iOS, 52px elsewhere). */
+  /* Same control-column width on every single-row item so descriptions wrap at
+     one edge. Widest cluster = extra icon (~36px) + 8px gap + toggle → +44px;
+     --toggle-width is per-platform (62px iOS, 52px elsewhere). */
   min-width: calc(var(--toggle-width) + 44px);
   max-width: none;
   margin: 0;
   padding: 0;
 }
 
-/* Settings: reverse visual order of control row (color picker + reset button)
-   so the reset ends up on the left of the picker. Uses `order` instead of
-   `row-reverse` to avoid changing the flex main-axis layout behaviour. */
+/* Reverse the control row visually (reset left of the picker) via `order`;
+   row-reverse would change the flex main-axis behaviour. */
 .wr-settings .setting-item.wr-reverse-controls .setting-item-control > :first-child {
   order: 2;
 }
@@ -2225,10 +2083,8 @@ body.is-mobile .wr-settings .setting-item:not(.wr-setting-has-text-input):not(.w
   order: 1;
 }
 
-/* Settings: narrow layout (e.g. iPad mini portrait). Stack label above
-   control full-width ONLY for rows containing a text input, since those are
-   the rows that get cramped. Color pickers, toggles, dropdowns, and
-   delete/reset buttons stay on a single line. */
+/* Narrow layout (e.g. iPad mini portrait): stack label above control ONLY for
+   text-input rows (the ones that cramp); everything else stays single-line. */
 body .wr-settings.wr-settings-narrow .setting-item.wr-setting-has-text-input:not(#x) {
   display: flex;
   flex-direction: column;
@@ -2250,15 +2106,13 @@ body .wr-settings.wr-settings-narrow .setting-item.wr-setting-has-text-input > .
   padding: 0;
 }
 
-/* Narrow-layout text inputs should fill the row. */
 .wr-settings.wr-settings-narrow .setting-item.wr-setting-has-text-input .setting-item-control input[type="text"] {
   flex: 1 1 auto;
   min-width: 0;
 }
 
-/* Manual breaks in setting descriptions (from "\n" in locale strings) are a
-   desktop-only refinement; on mobile the columns are narrow enough that
-   natural wrapping does the job, so the forced breaks are disabled there. */
+/* Manual description breaks ("\n" in locale strings) are desktop-only; mobile
+   columns are narrow enough that natural wrapping suffices. */
 body.is-mobile .wr-settings .wr-pc-break {
   display: none;
 }
@@ -2277,8 +2131,7 @@ body.is-mobile .wr-settings .wr-pc-break {
   margin: 6px 0 0 0;
 }
 
-/* LV: when the quote-card slot is placed as a child of wr-quote-block, no
-   negative margin is needed. Under wr-quote-block, lay it flat with margin: 0 */
+/* LV: under wr-quote-block no negative margin is needed; lay it flat */
 .cm-line .wr-quote-card-slot.wr-lp-quote-card {
   display: block;
   margin: 0 var(--size-4-4, 16px) 0 0;
@@ -2315,13 +2168,9 @@ body.is-mobile .wr-settings .wr-pc-break {
 .wr-quote-card-body {
   font-size: 0.9em;
   color: var(--text-muted);
-  /* Line limiting is already done on the JS side (PREVIEW_MAX_LINES = 3 in
-     renderPreviewLines) on a logical-line basis. Applying -webkit-line-clamp
-     in CSS would cut on visual lines (after wrapping), leaving effectively
-     only 1-2 logical lines visible in narrow environments like mobile, plus
-     the side effect of the "..." becoming a native interactive expansion
-     trigger. The visual clip is removed; the 3 logical lines grow naturally
-     including their wraps. */
+  /* Line limiting happens in JS on logical lines (PREVIEW_MAX_LINES = 3).
+     -webkit-line-clamp would cut on visual lines — 1-2 logical lines on narrow
+     mobile — and its "..." becomes a native expansion trigger, so no CSS clip. */
   line-height: 1.5;
   margin-bottom: 4px;
   letter-spacing: normal;
@@ -2329,12 +2178,9 @@ body.is-mobile .wr-settings .wr-pc-break {
   font-family: var(--font-text, var(--default-font));
 }
 
-/* main.ts applies textColor to every element inside the wr block, so the
-   quote card body, meta, and border raise their specificity to a winning
-   level before applying the muted color.
-   To beat main.ts's selector "body .cm-line.wr-codeblock-line *"
-   (specificity 0,0,2,1) we need more classes; including wr-quote-card-slot
-   makes it 0,0,3,1 and wins */
+/* main.ts stamps textColor on everything in the wr block via
+   "body .cm-line.wr-codeblock-line *" (0,0,2,1); including wr-quote-card-slot
+   lifts these to 0,0,3,1 so the muted color wins */
 body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body,
 body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body *:not(.wr-tag):not(.wr-url):not(.wr-internal-link):not(.wr-nested-quote-marker):not(.wr-tag *):not(.wr-url *):not(.wr-internal-link *):not(.wr-quote-image-marker):not(.wr-quote-math-marker):not(.wr-quote-code-marker):not(.wr-quote-image-marker *):not(.wr-quote-math-marker *):not(.wr-quote-code-marker *),
 body .wr-quote-card-slot .wr-quote-card .wr-quote-card-meta {
@@ -2346,18 +2192,16 @@ body .wr-quote-card-slot .wr-quote-card {
   border-color: var(--text-muted);
 }
 
-/* Accent targets inside the quote card body (tags / URLs / internal links /
-   QT markers) override back to accent color with even stronger specificity */
+/* Accent targets inside the quote card body (tags / URLs / internal links)
+   override back to accent color with even stronger specificity */
 body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-tag,
 body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-url,
-body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-internal-link,
-body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-nested-quote-marker {
+body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-internal-link {
   color: var(--text-accent);
 }
 
-/* The preview card renders as a flat "one line = one block" structure.
-   Placing the bullet / "1." / checkbox inline at the start of the line
-   instead of using ul/ol/li keeps the 3-line max-height clip stable */
+/* Flat "one line = one block" preview: inline markers instead of ul/ol/li
+   keep the 3-line clip stable */
 .wr-quote-card-line {
   display: flex;
   align-items: baseline;
@@ -2370,10 +2214,8 @@ body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-nested-quote-mar
   min-width: 0;
 }
 
-/* Line-start marker slot. Bullet / "1." / circle check all share a fixed
-   width so the following text starts at the same position. Combining text
-   glyphs (bullet / "1.") with CSS-drawn markers (circle check) completely
-   avoids theme-dependent <input type="checkbox"> style interference */
+/* Marker slot: bullet / "1." / circle check share a fixed width so text aligns.
+   Text glyphs + CSS-drawn check avoid theme checkbox style interference */
 .wr-quote-card-marker-slot {
   flex: 0 0 1.4em;
   display: inline-flex;
@@ -2424,9 +2266,8 @@ body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-nested-quote-mar
    inline widget at endLine.to in posts that contain a quote */
 .wr-quote-block {
   display: block;
-  /* Cancel the ~16px top gap created by the cm-widgetBuffer / noun spans on
-     the HyperMD-codeblock-end line, bringing the body and the quote card to
-     a natural distance */
+  /* Cancel the ~16px top gap from the widgetBuffer spans on the closing fence
+     line so the body and quote card sit at a natural distance */
   margin: -16px 0 0 0;
 }
 
@@ -2441,9 +2282,8 @@ body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-nested-quote-mar
   margin-top: 25px;
 }
 
-/* wr-lp-media under wr-quote-block has the quote card hanging right below,
-   so the padding-bottom: 24px meant for tail placement is unnecessary.
-   Spacing is controlled by wr-quote-block's margin-bottom instead */
+/* Under wr-quote-block the quote card hangs right below, so the tail
+   padding-bottom is unnecessary; wr-quote-block's margin owns the spacing */
 .wr-quote-block > .wr-lp-media.wr-has-img,
 .wr-quote-block > .wr-lp-media.wr-has-link {
   padding-bottom: 0;
@@ -2453,11 +2293,8 @@ body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-nested-quote-mar
   margin-top: 0;
 }
 
-/* Image embed / math / code block markers inside the quote-card body
-   preview (Obsidian image / sigma / code icon + label text).
-   inline-flex would drift off the text baseline, so build it as plain
-   inline and give the svg itself a height and vertical-align so it lines
-   up with the text */
+/* Image / math / code markers in the quote-card preview: inline-flex drifts
+   off the text baseline, so use plain inline and align the svg itself */
 .wr-quote-image-marker,
 .wr-quote-math-marker,
 .wr-quote-code-marker {
@@ -2481,9 +2318,9 @@ body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-nested-quote-mar
 }
 
 
-/* Nested-quote marker (X-style "QT: ...") stands out in accent color */
+/* Nested-quote marker (X-style "QT: ...") */
 .wr-nested-quote-marker {
-  color: var(--text-accent);
+  color: var(--text-muted);
 }
 
 .wr-quote-card-meta {
@@ -2501,15 +2338,10 @@ body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-nested-quote-mar
   border-color: var(--text-muted);
 }
 
-/* When clicking a quote card jumps to the source post, gently flash the
-   whole target block. If the source post matches a tag rule (has an
-   accent), JS sets --wr-flash-color on the element so it glows in that
-   accent. If unset, the Obsidian theme's accent color is used.
-   The glow is painted only on an ::after overlay so the block's own
-   background color stays intact underneath. (An older variant animated the
-   element's background-color directly; it must not come back - animations
-   beat normal declarations regardless of specificity, so it would blank
-   the card background during the flash.) */
+/* Quote-card jump flash. JS sets --wr-flash-color for tag-rule accents; theme
+   accent otherwise. Painted only on an ::after overlay so the block's own
+   background stays intact — never animate background-color directly: animations
+   beat normal declarations regardless of specificity and blank the card. */
 .cm-line.wr-codeblock-line.wr-quote-jump-flash,
 .block-language-wr.wr-quote-jump-flash,
 pre.wr-quote-jump-flash,

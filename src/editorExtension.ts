@@ -17,8 +17,8 @@ const ogpFetched = StateEffect.define<null>();
 export const tagRulesChanged = StateEffect.define<null>();
 export const vaultFilesChanged = StateEffect.define<null>();
 
-// ViewPlugin からは block decoration を出せないため、隠したい行範囲を
-// StateField 側に渡して block:true の replace で実際に高さを 0 にする。
+// ViewPlugin cannot emit block decorations, so line ranges to hide are passed to
+// this StateField, which collapses them with a block:true replace.
 const setHiddenRanges = StateEffect.define<{ from: number; to: number }[]>();
 
 const hiddenBlockReplace = Decoration.replace({ block: true });
@@ -100,27 +100,23 @@ class CheckboxWidget extends WidgetType {
     cb.type = "checkbox";
     cb.checked = this.checked;
     cb.addEventListener("click", (e) => {
-      // updateDOM のDOM再利用でリスナーが古いWidgetインスタンスに残り続けるため、
-      // 生成時の checked/pos は使わず、クリック時点の実位置と本文から状態を導く。
-      // preventDefault はしない: キャンセルするとイベント処理後にブラウザが checked を
-      // クリック前の値へ巻き戻すため、下の明示代入ごと打ち消されてボックス表示だけ
-      // 古いまま残る (本文と打ち消し線は新状態なのにボックスが変わらない症状になる)
+      // updateDOM reuses DOM, so derive state from the doc at click time (listener may be stale).
+      // No preventDefault: the browser would roll checked back afterward, leaving the box stale.
       const pos = view.posAtDOM(wrap);
       if (!/^- \[[ x]\] /.test(view.state.doc.sliceString(pos, pos + 6))) {
-        // 位置が特定できないときは本文に書き込まず、ボックスもクリック前の状態へ戻す
+        // Position not identifiable: skip the doc write and revert the box.
         e.preventDefault();
         return;
       }
-      // "- [" の直後、[ ] 内の文字は pos+3
+      // The char inside "[ ]" is at pos+3.
       const next = view.state.doc.sliceString(pos + 3, pos + 4) === " ";
-      // 本文から導いた状態をボックスへ明示反映し、万一のズレもここで同期する
       cb.checked = next;
       view.dispatch({ changes: { from: pos + 3, to: pos + 4, insert: next ? "x" : " " } });
     });
     wrap.appendChild(cb);
     return wrap;
   }
-  // 同じ位置のcheckboxはWidget差し替えではなくDOM再利用で更新する。checked状態だけ差分反映する
+  // Reuse the DOM instead of replacing the widget; only diff the checked state.
   updateDOM(dom: HTMLElement): boolean {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- assertion needed for cross-version Obsidian typings
     const cb = dom.querySelector("input[type=\"checkbox\"]") as HTMLInputElement | null;
@@ -129,16 +125,13 @@ class CheckboxWidget extends WidgetType {
     return true;
   }
   eq(other: CheckboxWidget): boolean { return this.checked === other.checked; }
-  // エディタ側にイベントを渡さない(CM6デフォルト)。渡すとmousedownでカーソルが
-  // ブロック内に入り、ブロック全体が生テキスト表示に開いてRVと体感がずれる
+  // Keep events from the editor: a mousedown would move the cursor into the block,
+  // opening it as raw text and diverging from RV.
   ignoreEvent(): boolean { return true; }
 }
 
-// 閲覧表示(カーソルがブロック外)のタグ。クリックでグローバル検索を開く。
-// mark装飾のままクリック対応すると mousedown の時点でカーソルがブロック内に入り、
-// ブロック全体が生テキスト表示に開いてしまう。CheckboxWidget と同じく
-// ignoreEvent な widget として置き、エディタ側にイベントを渡さない。
-// 編集中(showRaw)は widget にせず素の文字＋tagMark なので普通にカーソルを置ける
+// Read-mode tag; click opens global search. A clickable mark would open the block raw
+// on mousedown, so use an ignoreEvent widget. While editing it stays plain text + tagMark.
 class TagWidget extends WidgetType {
   constructor(private tag: string, private plugin: WrotPlugin) { super(); }
   toDOM(): HTMLElement {
@@ -146,7 +139,7 @@ class TagWidget extends WidgetType {
     span.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      // 押した感覚のフィードバック: クラスを外して reflow を挟み、連打でも毎回光らせ直す
+      // Press feedback: remove class and force reflow so rapid clicks re-trigger the flash.
       span.classList.remove("wr-tag-flash");
       void span.offsetWidth;
       span.classList.add("wr-tag-flash");
@@ -250,16 +243,15 @@ class EmbedMissingWidget extends WidgetType {
 }
 
 class MathWidget extends WidgetType {
-  // MathJaxは起動時に遅延読み込みされるため、生成時点で使える状態だったかを記録し
-  // eq()の比較に含める。読み込み完了後のdecoration再構築で、フォールバック
-  // 描画された旧ウィジェットとeq()が不一致になりDOMが作り直される
+  // MathJax loads lazily; including readiness in eq() makes post-load rebuilds
+  // replace fallback-rendered widgets.
   private hadMathJax = isMathJaxReady();
   constructor(private tex: string) { super(); }
   toDOM(): HTMLElement {
     const span = createSpan();
     span.className = "wr-math";
     try {
-      // MathJax未読み込み時のrenderMathの挙動(throwか空要素か)に依存しないよう明示的に分岐
+      // Branch explicitly instead of relying on renderMath's behavior when MathJax is missing.
       if (!this.hadMathJax) throw new Error("MathJax not loaded yet");
       // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment, no-undef -- internal Obsidian/CodeMirror API or intentional pattern
       const { renderMath, finishRenderMath } = require("obsidian");
@@ -297,7 +289,7 @@ class CodeBlockWidget extends WidgetType {
     if (this.lang) codeEl.className = `language-${this.lang}`;
     codeEl.textContent = this.code;
 
-    // Obsidian の loadPrism() で構文ハイライトを適用（Prismのトークン色は app.css で定義済み）
+    // Prism token colors are already defined in Obsidian's app.css.
     if (this.lang) {
       loadPrism().then((Prism: { highlightElement: (el: HTMLElement) => void }) => {
         Prism.highlightElement(codeEl);
@@ -313,7 +305,7 @@ class CodeBlockWidget extends WidgetType {
 }
 
 class MathBlockWidget extends WidgetType {
-  // MathWidgetと同じく、MathJaxの遅延読み込み完了後に作り直されるようeq()の比較材料にする
+  // As in MathWidget: eq() includes MathJax readiness so lazy-load rebuilds the DOM.
   private hadMathJax = isMathJaxReady();
   constructor(private tex: string, private ruleClass: string | null) { super(); }
   toDOM(): HTMLElement {
@@ -321,7 +313,7 @@ class MathBlockWidget extends WidgetType {
     container.className = "wr-math-display wr-lp-mathblock wr-codeblock-line";
     if (this.ruleClass) container.classList.add(this.ruleClass);
     try {
-      // MathJax未読み込み時のrenderMathの挙動(throwか空要素か)に依存しないよう明示的に分岐
+      // Branch explicitly instead of relying on renderMath's behavior when MathJax is missing.
       if (!this.hadMathJax) throw new Error("MathJax not loaded yet");
       // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment, no-undef -- internal Obsidian/CodeMirror API or intentional pattern
       const { renderMath, finishRenderMath } = require("obsidian");
@@ -352,7 +344,7 @@ class EmbedImageWidget extends WidgetType {
   ) { super(); }
   toDOM(): HTMLElement {
     const container = createDiv();
-    // CSS `:has()` 警告回避: 子に必ず wr-embed-img を持つので状態クラスを直接付与
+    // Avoids CSS :has(): children always contain wr-embed-img, so set the state class directly.
     container.className = "wr-media-area wr-lp-media wr-has-img";
     if (this.ruleClass) container.classList.add(this.ruleClass);
     for (const { src, alt } of this.images) {
@@ -373,7 +365,7 @@ class EmbedImageWidget extends WidgetType {
   ignoreEvent(): boolean { return true; }
 }
 
-// 引用マーカーありの投稿で画像をインライン位置にその場で表示する単発 widget
+// Inline image for quote-marker posts, rendered at its written position.
 class InlineEmbedImageWidget extends WidgetType {
   constructor(private src: string, private alt: string) { super(); }
   toDOM(): HTMLElement {
@@ -451,9 +443,8 @@ class UrlPreviewWidget extends WidgetType {
   }
 }
 
-// 引用マーカーありの投稿で endLine.to に block widget としてまとめて出す。
-// 「引用は底」原則を維持するため、 内側で URL プレビュー → 引用カードの順で構築する。
-// 本文中の引用マーカーは別途 replaceHidden 化することで二重描画を防ぐ
+// Block widget at endLine.to for quote-marker posts: URL previews first, quote card last
+// ("quote at the bottom"). The in-body marker is hidden separately to avoid double rendering.
 class QuoteBlockWidget extends WidgetType {
   private cachedSnapshot: boolean[];
 
@@ -521,7 +512,7 @@ class QuoteBlockWidget extends WidgetType {
       if (hasContent) container.appendChild(mediaArea);
     }
 
-    // 引用は底
+    // Quote card always goes at the bottom.
     const slot = createSpan();
     slot.className = "wr-quote-card-slot wr-lp-quote-card";
     if (this.ruleClass) slot.classList.add(this.ruleClass);
@@ -536,8 +527,8 @@ class QuoteBlockWidget extends WidgetType {
     return container;
   }
 
-  // widget 内部の <a>/quote-card のクリックを CodeMirror に奪われないよう true。
-  // これがないと URL カード/画像URL クリックが空振る (引用カードは元から addEventListener なので両方助かる)
+  // true so CodeMirror doesn't swallow clicks on <a>/quote-card inside the widget;
+  // without it URL-card and image-URL clicks are lost.
   ignoreEvent(): boolean { return true; }
 }
 
@@ -549,7 +540,7 @@ interface WrBlock {
   innerBlocks: BlockRange[];
   blockId: string | null;
   hasQuoteMarker: boolean;
-  // 引用マーカー [[X#^wr-T]] が初めて現れる行のドキュメント全体での行番号 (1-based)。-1 ならなし
+  // 1-based doc line of the first quote marker [[X#^wr-T]]; -1 if none.
   quoteLineIdx: number;
 }
 
@@ -608,12 +599,11 @@ function findWrBlocks(view: EditorView, plugin: WrotPlugin | null): WrBlock[] {
       }
     }
 
-    // 開始フェンス行から ^wr-T ブロックID を抽出（点滅対象特定用）
+    // Block ID (^wr-T) from the opening fence, used to target the flash highlight.
     const fenceLine = doc.line(startLn).text;
     const blockIdMatch = fenceLine.match(/\^(wr-\d{17})/);
     const blockId = blockIdMatch ? blockIdMatch[1] : null;
 
-    // 本文に引用カードマーカー [[X#^wr-T]] が含まれているか、 含むなら最初の出現行を記録
     let hasQuoteMarker = false;
     let quoteLineIdx = -1;
     for (let j = startLn + 1; j < endLn; j++) {
@@ -644,7 +634,7 @@ function buildDecorations(
   const hiddenRanges: { from: number; to: number }[] = [];
   const doc = view.state.doc;
 
-  // ソースモードでは置換装飾を行わず、生のmarkdownをすべて表示する
+  // Source mode shows raw markdown with no replace decorations.
   const isSourceMode = !view.contentDOM.closest(".is-live-preview");
 
   const cursorLineNums = new Set<number>();
@@ -666,12 +656,12 @@ function buildDecorations(
       const openLine = doc.line(block.startLn);
       builder.add(openLine.from, openLine.from, makeLineDeco(["wr-codeblock-line", block.ruleClass, block.blockId ? `wr-block-id-${block.blockId}` : null]));
 
-      // ライブプレビュー: カーソルがブロック内のどこかにあれば生表示する
+      // Live preview: cursor anywhere in the block shows it raw.
       const blockHasCursor = cursorInBlock(block);
 
       const embedImages: { src: string; alt: string }[] = [];
 
-      // 内側ブロック: 開始行のみにウィジェットを描画、それ以外の行は背景クラスのみ
+      // Inner blocks: widget on the start line only; other lines get background classes.
       const innerBlockStartByDocLine = new Map<number, { range: BlockRange; docStart: number; docEnd: number }>();
       const innerBlockInsideDocLines = new Set<number>();
       for (const br of block.innerBlocks) {
@@ -689,7 +679,7 @@ function buildDecorations(
 
         const innerStart = innerBlockStartByDocLine.get(j);
 
-        // 編集中（生表示）はネストブロックも含めて生のテキストを保つ
+        // Raw view keeps nested blocks as plain text too.
         if (showRaw && innerBlockInsideDocLines.has(j)) {
           builder.add(l.from, l.from, makeLineDeco(["wr-codeblock-line", block.ruleClass, block.blockId ? `wr-block-id-${block.blockId}` : null]));
           continue;
@@ -704,7 +694,7 @@ function buildDecorations(
           for (let k = bodyStart; k <= bodyEnd; k++) {
             innerBodyLines.push(doc.line(k).text);
           }
-          // 1行$$x$$や未閉じブロック（docStart === docEnd）に対応
+          // Handles single-line $$x$$ and unclosed blocks (docStart === docEnd).
           let widgetContent: string;
           if (range.kind === "mathblock" && docStart === docEnd) {
             const lineText = doc.line(docStart).text.trim();
@@ -718,14 +708,14 @@ function buildDecorations(
 
           builder.add(l.from, l.from, makeLineDeco(["wr-codeblock-line", block.ruleClass, block.blockId ? `wr-block-id-${block.blockId}` : null]));
 
-          // ViewPluginからは inline replace のみ可能（block replace は不可）
+          // ViewPlugin can only emit inline replace, not block replace.
           const startLine = doc.line(docStart);
           const widget = range.kind === "codeblock"
             ? Decoration.replace({ widget: new CodeBlockWidget(widgetContent, range.lang || "", app, plugin, block.ruleClass) })
             : Decoration.replace({ widget: new MathBlockWidget(widgetContent, block.ruleClass) });
           builder.add(startLine.from, startLine.to, widget);
 
-          // 残りの行は block:true replace で CodeMirror の行高モデルごと潰す
+          // Collapse remaining lines via block:true replace so CM drops their line height.
           if (docEnd > docStart) {
             const tailStart = doc.line(docStart + 1).from;
             const tailEnd = doc.line(docEnd).to;
@@ -749,7 +739,7 @@ function buildDecorations(
         const hasObsidianUrl = !showRaw && /obsidian:\/\//.test(l.text);
         const isEmbedOnlyLine = (() => {
           if (showRaw) return false;
-          // 引用マーカーがある投稿では画像はインライン描画するため、行を隠さない
+          // Quote-marker posts render images inline, so keep the line visible.
           if (block.hasQuoteMarker) return false;
           const trimmed = l.text.trim();
           if (!/^!\[\[[^\]]+\]\]$/.test(trimmed)) return false;
@@ -757,7 +747,7 @@ function buildDecorations(
           if (!IMAGE_EXT_RE.test(innerName)) return false;
           return app.metadataCache.getFirstLinkpathDest(innerName, "") !== null;
         })();
-        // 引用マーカー単独の行は QuoteBlockWidget で末尾に再描画するため、行ごと隠す
+        // Marker-only lines are re-rendered at the end by QuoteBlockWidget, so hide them entirely.
         const isQuoteMarkerOnlyLine = (() => {
           if (showRaw) return false;
           if (!block.hasQuoteMarker) return false;
@@ -778,7 +768,7 @@ function buildDecorations(
         }
 
         const entries: { from: number; to: number; deco: Decoration }[] = [];
-        // インラインコード内をformat判定から除外するためのレンジ
+        // Ranges excluded from format detection (inline code).
         const codeRanges: { from: number; to: number }[] = [];
 
         const checkMatch = l.text.match(/^- \[([ x])\] /);
@@ -885,7 +875,7 @@ function buildDecorations(
           });
         }
 
-        // 通常URLとの重複を避けるためmarkdownリンクを先に処理
+        // Process markdown links first to avoid overlapping the bare-URL pass.
         const mdLinkRanges: { from: number; to: number }[] = [];
         // eslint-disable-next-line no-useless-escape -- escape kept for regex readability
         const mdLinkRegex = /\[([^\[\]\n]+)\]\(((?:https?|obsidian):\/\/[^\s)]+)\)/g;
@@ -957,14 +947,14 @@ function buildDecorations(
               if (file) {
                 const src = app.vault.getResourcePath(file);
                 if (block.hasQuoteMarker) {
-                  // 引用マーカーがある投稿: インライン img widget で画像をその場（書かれた位置）に表示
+                  // Quote-marker post: render the image inline where it is written.
                   entries.push({
                     from,
                     to,
                     deco: Decoration.replace({ widget: new InlineEmbedImageWidget(src, innerName) }),
                   });
                 } else {
-                  // 引用マーカーがない投稿: 末尾メディアエリアに集約
+                  // No quote marker: collect into the trailing media area.
                   entries.push({ from, to, deco: replaceHidden });
                   embedImages.push({ src, alt: innerName });
                 }
@@ -977,8 +967,8 @@ function buildDecorations(
               });
               continue;
             }
-            // 通常 [[...]] リンク。引用カードマーカー [[fileName#^wr-T]] なら本文位置では非表示にし、
-            // 引用カードは endLine.to の QuoteBlockWidget に「引用は底」で再構築する
+            // Quote-card markers [[file#^wr-T]] are hidden in place; the card is rebuilt
+            // by QuoteBlockWidget at endLine.to ("quote at the bottom").
             if (!isEmbed) {
               const quoteMatch = innerName.match(QUOTE_LINK_RE);
               if (quoteMatch) {
@@ -993,7 +983,7 @@ function buildDecorations(
             });
             continue;
           }
-          // showRaw時は記号を残しつつ色付けのみ行う
+          // Raw view keeps the brackets and only colors them.
           entries.push({ from, to, deco: resolved ? internalLinkMark : internalLinkUnresolvedMark });
         }
 
@@ -1048,7 +1038,7 @@ function buildDecorations(
           }
         }
 
-        // Italic: bold箇所をマスクしてから *...* を検出
+        // Italic: mask bold ranges first so ** delimiters aren't matched as *.
         {
           const chars = [...l.text];
           for (const br of boldRanges) {
@@ -1100,15 +1090,11 @@ function buildDecorations(
           }
         }
 
-        // 同じ位置に Decoration.replace と Decoration.mark が並ぶと
-        // RangeSetBuilder が startSide 順序エラーで全装飾を弾くため、
-        // replace を先にソートしておく
+        // A replace and a mark at the same position trip RangeSetBuilder's startSide
+        // ordering and drop every decoration, so sort replaces first.
         const isReplace = (d: Decoration): boolean => (d as { point?: boolean }).point === true;
-        // 引用行の wr-blockquote-wrap mark は引用全体（行末まで）を覆う mark。
-        // URL ハイライト等のインラインmarkと同じ範囲になったとき、後勝ち（外側）に
-        // 配置されないと <wr-url-highlight><wr-blockquote-wrap>... の入れ子になり、
-        // 子の wr-blockquote-wrap の muted color が URL のアクセント色を打ち消す。
-        // wr-blockquote-wrap は常に後勝ち（外側）に来るよう明示的に並べる。
+        // wr-blockquote-wrap must sort last among same-range marks so it nests outside;
+        // as the inner span its muted color would cancel e.g. the URL accent color.
         const isBlockquoteWrap = (d: Decoration): boolean => {
           const spec = (d as { spec?: { class?: string } }).spec;
           return !!spec && typeof spec.class === "string" && spec.class.includes("wr-blockquote-wrap");
@@ -1119,7 +1105,6 @@ function buildDecorations(
           const br = isReplace(b.deco) ? 0 : 1;
           if (ar !== br) return ar - br;
           if (a.to !== b.to) return a.to - b.to;
-          // 同 from / 同 to / 同種別 (mark) の場合、wr-blockquote-wrap を後ろに
           const aw = isBlockquoteWrap(a.deco) ? 1 : 0;
           const bw = isBlockquoteWrap(b.deco) ? 1 : 0;
           return aw - bw;
@@ -1151,11 +1136,9 @@ function buildDecorations(
         return file ? app.vault.getResourcePath(file) : null;
       };
 
-      // 引用マーカーありの投稿: 非編集時に endLine.to に block widget でまとめて出す。
-      // 内部で URL プレビュー → 引用カードの順で構築し、「引用は底」原則を維持する。
-      // 編集時 (blockHasCursor) は本文中の引用マーカーを生で表示するためここはスキップ
-      if (block.hasQuoteMarker && !blockHasCursor) {
-        // 投稿本文中の最初の引用マーカーから fileName と blockId を取り出す
+      // Quote-marker posts: one block widget at endLine.to (URL previews, then quote card —
+      // "quote at the bottom"). Skipped while editing and in source mode, which show raw markers.
+      if (block.hasQuoteMarker && !blockHasCursor && !isSourceMode) {
         let quoteFileName: string | null = null;
         let quoteBlockId: string | null = null;
         for (let j = block.startLn + 1; j < block.endLn; j++) {
@@ -1196,8 +1179,8 @@ function buildDecorations(
             })
           );
         }
-      } else if (!block.hasQuoteMarker && block.urlTexts.length > 0) {
-        // 引用マーカーなし投稿の URL プレビュー (従来通り末尾)
+      } else if (!block.hasQuoteMarker && block.urlTexts.length > 0 && !isSourceMode) {
+        // URL previews for posts without a quote marker (trailing); not in source mode.
         const parsedUrls = extractUrls(block.urlTexts.join(" ")).filter(
           (pu) => pu.type === "image" || !pu.url.startsWith("obsidian://")
         );
@@ -1212,8 +1195,7 @@ function buildDecorations(
           );
         }
       }
-      // 引用マーカーあり + カーソル中 (blockHasCursor) は URL プレビューも出さない:
-      // 編集中は本文の引用マーカー生表示のみで、 プレビュー類は非表示にして編集に集中させる
+      // Quote marker + cursor in block: no previews at all; editing shows only raw markers.
     }
   } catch (e) {
     console.debug("Wrot: decoration skipped", e);
@@ -1235,16 +1217,14 @@ export function createWrEditorExtension(ogpCache: OGPCache, app: App, plugin: Wr
         this.blocks = findWrBlocks(view, plugin);
         const built = buildDecorations(view, ogpCache, this.blocks, app, plugin, getCheckStrikethrough());
         this.decorations = built.decorations;
-        // hidden range の反映は同じ更新サイクル内では dispatch できないため後送りする。
-        // requestAnimationFrame だと畳み込み前の生の構造が1フレーム以上画面に出てしまう
-        // (遅い端末ほど顕著)ので、マイクロタスクで「描画前」に滑り込ませる
+        // Hidden ranges cannot be dispatched in the same update cycle. rAF would flash the
+        // uncollapsed structure for a frame (worse on slow devices); a microtask lands pre-paint.
         this.dispatchHiddenRanges(built.hiddenRanges);
         queueMicrotask(() => this.fetchMissing());
       }
 
-      // 直近に送った畳み込み範囲。同じ内容を重ねて dispatch すると
-      // 「畳み込み→高さ変化→再構築→また畳み込み」の連鎖がフレームをまたいで
-      // 続いてしまう(スマホで段階的なガタつきに見える)ため、変化があるときだけ送る
+      // Re-dispatching identical ranges chains collapse -> height change -> rebuild across
+      // frames (stepwise jank on mobile), so dispatch only when the ranges change.
       private lastHiddenKey: string | null = null;
 
       private dispatchHiddenRanges(ranges: { from: number; to: number }[]): void {
@@ -1272,9 +1252,8 @@ export function createWrEditorExtension(ogpCache: OGPCache, app: App, plugin: Wr
         );
 
         if (update.docChanged || update.viewportChanged || update.selectionSet || hasOgpEffect || hasTagRulesEffect || hasVaultFilesEffect) {
-          // カーソル移動だけの update では doc 内のブロック構造は変わらないため、
-          // キャッシュ済み blocks を再利用して全行スキャンを回避する。
-          // decoration 自体は cursorInBlock 判定が変わるので再構築する。
+          // Cursor-only updates cannot change block structure: reuse cached blocks to skip
+          // the full doc scan. Decorations still rebuild since cursorInBlock may change.
           const structureMayChange =
             update.docChanged ||
             update.viewportChanged ||
@@ -1301,7 +1280,7 @@ export function createWrEditorExtension(ogpCache: OGPCache, app: App, plugin: Wr
             if (ogpCache.get(pu.url)) continue;
             // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
             ogpCache.fetchOGP(pu.url).then(() => {
-              // フェッチ完了時点で最新のview参照を使う
+              // Use the view reference that is current when the fetch completes.
               try {
                 this.currentView.dispatch({ effects: ogpFetched.of(null) });
               // eslint-disable-next-line no-empty -- intentional no-op
@@ -1314,14 +1293,14 @@ export function createWrEditorExtension(ogpCache: OGPCache, app: App, plugin: Wr
     {
       decorations: (v) => v.decorations,
       eventHandlers: {
-        // wr ブロック内の URL ハイライト要素をクリックしたらブラウザで開く
-        // (LV では Cmd+クリックの Obsidian 標準動作も効かないため、 シングルクリックで対応)
+        // Single click opens URL highlights in the browser; in LV even Obsidian's
+        // standard Cmd+click doesn't work here.
         click(this: { decorations: DecorationSet }, e: MouseEvent) {
           const target = e.target;
           if (!(target instanceof HTMLElement)) return false;
           const urlEl = target.closest(".wr-url-highlight");
           if (!urlEl) return false;
-          // wr フェンスブロック内に居る URL のみ対象 (誤発火防止)
+          // Only URLs inside a wr fence block, to avoid false triggers.
           if (!urlEl.closest(".wr-codeblock-line, .HyperMD-codeblock")) return false;
           const url = urlEl.textContent?.trim();
           if (!url) return false;

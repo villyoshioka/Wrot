@@ -27,12 +27,10 @@ type LocaleCode =
   | "zh-CN"
   | "zh";
 
-// 完全一致を試す辞書セット。en-GB 等のサブタグ付きをここに登録する
-// Obsidian は簡体中国語選択時に "zh" だけを返す（"zh-TW" のような明示形ではない）ため、
-// "zh" を簡体中国語のエイリアスとして "zh-CN" と並列で登録する
+// Exact-match locale set; subtagged codes (en-GB etc.) must be listed here.
+// Obsidian reports Simplified Chinese as bare "zh", so "zh" aliases "zh-CN".
 const SUPPORTED_LOCALES: ReadonlyArray<LocaleCode> = ["ja", "en", "en-GB", "es", "ko", "pt", "fr", "de", "it", "ru", "zh-TW", "zh-CN", "zh"];
 
-// 各ロケールの辞書本体。 satisfies により ja のキー構造から外れたものはビルド時に弾く
 const DICTIONARIES: Partial<Record<LocaleCode, Translations>> = {
   ja,
   en,
@@ -54,7 +52,7 @@ const FALLBACK_LOCALE: LocaleCode = "en";
 let activeLocale: LocaleCode = FALLBACK_LOCALE;
 let activeDict: Translations = en;
 
-// 言語コードを解決: 完全一致 → ベース言語縮退 → en にフォールバック
+// Resolution order: exact match → base-language fallback → en.
 function resolveLocale(raw: string | undefined | null): LocaleCode {
   if (!raw) return FALLBACK_LOCALE;
   const normalized = raw.trim();
@@ -88,7 +86,6 @@ export function getActiveLocale(): LocaleCode {
   return activeLocale;
 }
 
-// プレースホルダ `{name}` を params の対応値で置換する単純実装
 function applyParams(text: string, params: Record<string, string | number> | undefined): string {
   if (!params) return text;
   return text.replace(/\{(\w+)\}/g, (match, key) => {
@@ -106,6 +103,6 @@ export function t(
 ): string {
   const value = activeDict[key];
   if (typeof value === "string") return applyParams(value, params);
-  // 万一辞書にキーが欠落した場合は壊さずにキー文字列をそのまま返す
+  // Missing dictionary key: return the key itself instead of breaking.
   return applyParams(String(key), params);
 }

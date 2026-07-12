@@ -6,54 +6,48 @@ declare const moment: typeof import("moment");
 type Moment = ReturnType<typeof moment>;
 
 export interface CalendarPopoverOptions {
-  // ポップオーバーの位置を合わせる基準要素（カレンダーボタン）。
+  // Element the popover aligns to (the calendar button).
   anchor: HTMLElement;
-  // ポップオーバーを実際に配置する親要素（ビュー本体 = wr-container）。
-  // anchor の中に置くと、ボタンが右端にあるレイアウトで右基準に開いた際に
-  // ビュー（サイドバー）外へはみ出すため、コンテナ内に収めて位置計算する。
+  // Parent that actually hosts the popover (view body = wr-container). Placed inside
+  // the anchor it would overflow the sidebar when the button sits at the right edge.
   container: HTMLElement;
-  // 初期表示・選択ハイライトの基準になる現在の日付。
+  // Date used for the initial view and the selected-day highlight.
   initialDate: Moment;
-  // 日付マスがクリックされたときに呼ぶ。引数はその日の moment（00:00）。
+  // Called with the tapped day as a moment at 00:00.
   onSelect: (date: Moment) => void;
-  // 閉じたとき（選択・外クリック・Esc いずれでも）に呼ぶ後始末。
+  // Cleanup, called on any close (select, outside click, Esc).
   onClose: () => void;
 }
 
-// 開いているポップオーバーを外から閉じる/破棄するためのハンドル。
 export interface CalendarPopoverHandle {
   close: () => void;
 }
 
-const GRID_CELLS = 6 * 7; // 6週固定。月によって高さが変わらずレイアウトが安定する
+const GRID_CELLS = 6 * 7; // fixed 6 weeks so the height never changes per month
 
-// 任意の日付へジャンプするための自作カレンダーポップオーバーを開く。
-// OS 標準の input[type=date] ピッカーに代わり、全プラットフォームで同一の
-// 見た目・操作感を提供する。日付計算は Obsidian 同梱の moment に委ねる。
+// Custom calendar popover for jumping to a date. Replaces the OS input[type=date]
+// picker for a consistent look on all platforms; date math uses Obsidian's bundled moment.
 export function openCalendarPopover(
   opts: CalendarPopoverOptions
 ): CalendarPopoverHandle {
   const { anchor, container, initialDate, onSelect, onClose } = opts;
 
-  // 表示中の月（その月初に正規化）。月送りで前後する。
+  // Month being shown, normalized to its first day.
   let viewMonth = initialDate.clone().startOf("month");
 
   const popover = container.createDiv({ cls: "wr-calendar-popover" });
 
-  // ボタンの真下・コンテナ内に収まる位置へ配置する。
-  // 右端は anchor の右に揃えたいが、コンテナ左端を割り込まないようクランプする。
-  const GAP = 4; // ボタンとカレンダーの間隔
-  const EDGE = 8; // コンテナ端からの最小余白
+  // Place below the button, inside the container: right edge aligns to the anchor
+  // but is clamped so it never crosses the container's left edge.
+  const GAP = 4; // gap between button and calendar
+  const EDGE = 8; // min margin from container edges
   const positionPopover = () => {
     const a = anchor.getBoundingClientRect();
     const c = container.getBoundingClientRect();
-    // 横幅がコンテナ（サイドバー）に収まりきらない場合は、カレンダー自体を
-    // コンテナ幅 - 左右余白 まで縮める。マスは CSS のグリッド均等割りで伸縮する。
+    // If wider than the container, shrink the popover itself; cells stretch via CSS grid.
     popover.style.maxWidth = `${c.width - EDGE * 2}px`;
     const w = popover.offsetWidth;
-    // 縦: ボタンの下に GAP だけ空けて出す（コンテナ内座標）。
     const top = a.bottom - c.top + GAP;
-    // 横: ボタン右端に揃える → コンテナ内座標へ。左右どちらもはみ出さないよう収める。
     const maxLeft = c.width - w - EDGE;
     let left = a.right - c.left - w;
     if (left > maxLeft) left = maxLeft;
@@ -61,21 +55,20 @@ export function openCalendarPopover(
     popover.style.top = `${top}px`;
     popover.style.left = `${left}px`;
   };
-  // ポップオーバー内のクリックはアンカー(カレンダーボタン)まで伝播させない。
-  // 伝播するとボタンのトグルハンドラが「すでに開いている → 閉じる」を誤発火し、
-  // 月送り矢印を押しただけで閉じてしまう。閉じる契機は日付選択・外クリック・Esc のみ。
+  // Don't let clicks bubble to the anchor: its toggle handler would see "already
+  // open → close", so pressing a nav arrow would close the popover.
   popover.addEventListener("click", (e) => e.stopPropagation());
 
-  // 表示モード: 月日のカレンダー or 年の一覧。月ラベルを押すと年モードへ、
-  // 年を選ぶと月モードへ戻る (年だけジャンプ、月日は据え置き)。
+  // Display modes: month grid or year list. The month label toggles year mode;
+  // picking a year returns to month mode (year jumps, month/day preserved).
   type Mode = "month" | "year";
   let mode: Mode = "month";
-  const YEARS_PER_PAGE = 12; // 年一覧 1 ページの年数 (グリッドに収まる数)
+  const YEARS_PER_PAGE = 12; // years per page in year mode (fits the grid)
 
   const header = popover.createDiv({ cls: "wr-calendar-header" });
   const prevBtn = header.createEl("button", { cls: "wr-calendar-nav-btn" });
   setIcon(prevBtn, "chevron-left");
-  // 月ラベルはボタンとして押せる (押すと年モードへ切り替え)。
+  // The month label is a button: pressing it opens year mode.
   const monthLabel = header.createEl("button", { cls: "wr-calendar-month-label" });
   const nextBtn = header.createEl("button", { cls: "wr-calendar-nav-btn" });
   setIcon(nextBtn, "chevron-right");
@@ -94,8 +87,8 @@ export function openCalendarPopover(
     onClose();
   };
 
-  // ポップオーバー外を押したら閉じる。capture 段階で拾って、
-  // 日付マスのクリックより先に閉じてしまわないよう内部判定で除外する。
+  // Close on outside press. Captured early, so exclude inside targets to avoid
+  // closing before a day cell's click lands.
   const onOutside = (e: PointerEvent) => {
     const target = e.target as Node | null;
     if (target && (popover.contains(target) || anchor.contains(target))) {
@@ -112,9 +105,9 @@ export function openCalendarPopover(
     }
   };
 
-  // 週開始曜日（ロケール追従。日本語=日曜始まり、欧州系=月曜始まり等）。
+  // Week start follows locale (e.g. ja = Sunday, most of Europe = Monday).
   const weekStart = moment.localeData().firstDayOfWeek();
-  const weekdaysMin = moment.localeData().weekdaysMin(); // 日曜起点の7要素
+  const weekdaysMin = moment.localeData().weekdaysMin(); // 7 entries, Sunday-first
 
   const renderWeekdays = () => {
     weekdaysRow.empty();
@@ -127,7 +120,6 @@ export function openCalendarPopover(
     }
   };
 
-  // 月モード: 月日のカレンダーを描画する。
   const renderMonth = () => {
     monthLabel.setText(viewMonth.format(t("calendar.monthYearFormat")));
     weekdaysRow.setCssStyles({ display: "" });
@@ -136,7 +128,7 @@ export function openCalendarPopover(
 
     const today = moment();
     const monthStart = viewMonth.clone().startOf("month");
-    // グリッド先頭まで戻す日数（週開始曜日を起点に揃える）。
+    // Days to rewind so the grid starts on the locale's first weekday.
     const lead = (monthStart.day() - weekStart + 7) % 7;
     const gridStart = monthStart.clone().subtract(lead, "day");
 
@@ -162,11 +154,11 @@ export function openCalendarPopover(
     }
   };
 
-  // 年モード: viewMonth の年を含むページの年一覧を描画する。
+  // Year mode: the page of years containing viewMonth's year.
   const renderYears = () => {
     const today = moment();
     const cur = viewMonth.year();
-    // viewMonth の年がページ内に収まるよう、ページ先頭年を算出する。
+    // Page start year such that viewMonth's year falls within the page.
     const start = cur - (((cur % YEARS_PER_PAGE) + YEARS_PER_PAGE) % YEARS_PER_PAGE);
     monthLabel.setText(`${start} – ${start + YEARS_PER_PAGE - 1}`);
     weekdaysRow.setCssStyles({ display: "none" });
@@ -179,18 +171,17 @@ export function openCalendarPopover(
         cls: "wr-calendar-year",
         text: String(year),
       });
-      // タップ後、月モードへ戻って再描画した日付マスにフォーカスが移って
-      // うっすら残るのを防ぐため、フォーカス移動自体を起こさせない。
+      // Prevent the focus move: after returning to month mode, focus would land on a
+      // re-rendered day cell and leave a faint highlight.
       cell.addEventListener("pointerdown", (e) => e.preventDefault());
       if (year === today.year()) {
         cell.addClass("wr-calendar-day-today");
       }
-      // 今いる年（今カレンダーで見ている年）をオレンジ四角でハイライトする。
+      // Highlight the year currently being viewed in the calendar.
       if (year === viewMonth.year()) {
         cell.addClass("wr-calendar-day-selected");
       }
       cell.addEventListener("click", () => {
-        // 年だけ変更し、月日は据え置きで月モードに戻る。
         viewMonth = viewMonth.clone().year(year);
         mode = "month";
         render();
@@ -204,14 +195,13 @@ export function openCalendarPopover(
     else renderMonth();
   };
 
-  // 矢印を押すとフォーカスが矢印 → アンカー(カレンダーボタン)へ一瞬移動し、
-  // その focus 出入りで Obsidian 標準の focus 背景がチラッと出る。
-  // pointerdown を preventDefault してフォーカス移動自体を起こさせない。
+  // Pressing an arrow briefly moves focus arrow → anchor, flashing Obsidian's focus
+  // background; preventDefault on pointerdown stops the focus move entirely.
   prevBtn.addEventListener("pointerdown", (e) => e.preventDefault());
   nextBtn.addEventListener("pointerdown", (e) => e.preventDefault());
   monthLabel.addEventListener("pointerdown", (e) => e.preventDefault());
 
-  // 矢印の意味はモードで変わる: 月モードは月送り、年モードは年ページ送り。
+  // Arrows page by month in month mode, by YEARS_PER_PAGE years in year mode.
   prevBtn.addEventListener("click", () => {
     const unit = mode === "year" ? YEARS_PER_PAGE : 1;
     viewMonth = viewMonth.clone().subtract(unit, mode === "year" ? "year" : "month");
@@ -223,7 +213,6 @@ export function openCalendarPopover(
     render();
   });
 
-  // 月ラベルを押すと年モードへ切り替え (年モード中に押しても月モードへ戻る)。
   monthLabel.addEventListener("click", () => {
     mode = mode === "year" ? "month" : "year";
     render();

@@ -3,25 +3,20 @@ import { parseMemos } from "./memoParser";
 import { extractTagsForHistory } from "./tagSuggest";
 import type WrotPlugin from "../main";
 
-// メタデータキャッシュへ実行時にタグを書き足し、Wrotメモのタグを Obsidian 本体へ
-// 統合する。ファイル(ノート)には一切書き込まない。
-// 純正のグラフビューはこのキャッシュからタグノードを描き、純正検索の tag: 演算子も
-// 同じキャッシュを突き合わせるため、注入ひとつで「グラフ表示」と「タグとして検索」の
-// 両方が成立する(実機確認済み)。
-// 注入エントリの位置情報には、タグが実際に書かれているファイル内の実座標を入れること。
-// 幅ゼロのダミー位置だと、検索の判定はマッチを返しても結果表示の段階で実体のない
-// マッチとして捨てられ、ヒットなしに見える(実機確認済み)。
-// キャッシュの構造(CachedMetadata.tags / Events.trigger)は公開型の範囲で扱うが、
-// 「書き足したエントリをグラフや検索が拾う」こと自体は非公式な挙動なので、
-// 壊れた場合は「タグが表示されない/検索に載らないだけ」に収まる設計を守ること。
-//
-// パフォーマンス方針: vault全体を舐めるのは避ける(Thino型の比例コストを持ち込まない)。
-// ノート→タグの対応表を tag-integration.json に永続化し、起動時はファイルを読まずに
-// 対応表から即注入する。答え合わせは mtime 比較だけで済ませ、実際に本文を
-// 読み直すのは「前回から変わったノート」だけに絞る。
+// Injects tags into the metadata cache at runtime (never writes to note files) so the
+// native graph view and native tag: search both pick up Wrot memo tags from one
+// injection (verified in app).
+// Injected positions must be the tag's real file coordinates: zero-width dummies match
+// in search but are discarded when results render, showing no hits (verified in app).
+// The cache shape (CachedMetadata.tags / Events.trigger) is public API, but graph/search
+// picking up injected entries is unofficial behavior — keep the failure mode limited to
+// "tags just don't show / aren't searchable".
+// Perf: never scan the whole vault (no Thino-style proportional cost). A note→tags index
+// persisted in tag-integration.json is injected at startup without file reads; only
+// mtime-changed notes are re-read to reconcile.
 
-// 注入エントリの目印。キャッシュオブジェクトの共有や永続化残留があっても、
-// 自分が入れた分だけを冪等に除去できるようにする
+// Marker for injected entries so only our own can be removed idempotently, even with
+// shared cache objects or persistence leftovers.
 interface WrTagCache extends TagCache {
   wrGraph: true;
 }
@@ -34,9 +29,8 @@ function normalizeTag(tag: string): string {
   return tag.replace(/^#/, "").toLowerCase().trim();
 }
 
-// タグ1出現分。tag は #付き・除外フィルタ前の生タグ、位置はファイル内の実座標。
-// 同じタグ名でも出現ごとに1件持つ(純正のタグキャッシュと同じ粒度。
-// 検索結果のハイライトが出現ごとに出る)
+// One tag occurrence: tag keeps its # and is pre-exclusion; position is the real file
+// coordinate. One record per occurrence (native cache granularity; search highlights each).
 interface TagOccurrence {
   tag: string;
   line: number;
@@ -44,21 +38,19 @@ interface TagOccurrence {
   offset: number;
 }
 
-// 対応表の1件。tags は除外フィルタ前の全出現を持ち、
-// 「本体統合から除外」の除外は注入時に都度適用する
-// (ルール変更時にファイルを読み直さなくて済むようにするため)
+// One index entry. tags holds all occurrences pre-exclusion; the "exclude from
+// integration" filter is applied at inject time so rule changes need no file re-read.
 interface GraphTagIndexEntry {
   tags: TagOccurrence[];
   mtime: number;
 }
 
-// 永続化形式。出現ごとに1レコードを律儀に書くとファイルが肥大するため
-// (ヘビーな使い方の長期運用でMB級になる試算)、ディスク上ではタグ名ごとに
-// 出現位置 [line, col, offset] の配列へ畳む。実行時は扱いやすい
-// TagOccurrence[] に展開し、この変換は loadIndex / saveIndex に閉じ込める
+// Persisted format: occurrences are packed per tag name to keep the file small
+// (per-occurrence records could reach MBs long-term). Runtime uses TagOccurrence[];
+// the conversion lives only in loadIndex / saveIndex.
 interface PersistedEntry {
   m: number; // mtime
-  t: Record<string, [number, number, number][]>; // "#タグ" → [line, col, offset][]
+  t: Record<string, [number, number, number][]>; // "#tag" → [line, col, offset][]
 }
 
 function packEntry(entry: GraphTagIndexEntry): PersistedEntry {
@@ -69,8 +61,8 @@ function packEntry(entry: GraphTagIndexEntry): PersistedEntry {
   return { m: entry.mtime, t };
 }
 
-// 形が合わないエントリ(旧形式含む)は null を返して捨てる。
-// 捨てられたノートは reconcile が読み直して作り直すため致命的でない
+// Malformed entries (incl. old formats) return null and are dropped; reconcile
+// re-reads those notes and rebuilds them, so this is non-fatal.
 function unpackEntry(v: unknown): GraphTagIndexEntry | null {
   if (typeof v !== "object" || v === null) return null;
   const e = v as { m?: unknown; t?: unknown };
@@ -89,9 +81,9 @@ function unpackEntry(v: unknown): GraphTagIndexEntry | null {
 }
 
 export class GraphTagInjector {
-  // ノートパス → タグ対応表(永続化対象)
+  // Note path → tag entry (persisted).
   private index = new Map<string, GraphTagIndexEntry>();
-  // 注入済みノートのパス。unload時のクリーンアップ対象を覚えておく
+  // Paths with injected entries; the cleanup targets on unload.
   private trackedPaths = new Set<string>();
   private requestRefresh: () => void;
   private requestIndexSave: () => void;
@@ -101,15 +93,13 @@ export class GraphTagInjector {
     this.requestIndexSave = debounce(() => void this.saveIndex(), 2000, true);
   }
 
-  // 本体統合(グラフ表示・タグとして検索)のスイッチ。
-  // どちらも同じキャッシュ注入ひとつで成立するため、軸は分かれない
+  // Single switch for graph display and tag: search — one cache injection covers both.
   get enabled(): boolean {
     return this.plugin.settings.graphTagsEnabled;
   }
 
-  // 起動フロー:
-  // 1) 対応表を読み、ファイルを一切読まずに即注入してグラフ・検索に反映
-  // 2) 裏で mtime を突き合わせ、前回から変わったノートだけ本文を読み直して答え合わせ
+  // Startup: inject from the persisted index without any file reads, then reconcile
+  // in the background (only mtime-changed notes get re-read).
   async start(): Promise<void> {
     if (!this.enabled) return;
     await this.loadIndex();
@@ -118,7 +108,7 @@ export class GraphTagInjector {
     await this.reconcile();
   }
 
-  // 統合ON/OFFの変更時に呼ぶ。注入状態を新しい設定へ合わせ直す
+  // Called when the integration toggle changes; realigns injection state.
   async applyEnabled(): Promise<void> {
     if (!this.enabled) {
       this.removeAll();
@@ -136,7 +126,7 @@ export class GraphTagInjector {
     for (const [path, entry] of this.index) {
       const file = vault.getAbstractFileByPath(path);
       if (!(file instanceof TFile)) {
-        // プラグイン停止中に消えたノートの残骸は対応表から落とす
+        // Drop leftovers for notes deleted while the plugin was off.
         this.index.delete(path);
         this.requestIndexSave();
         continue;
@@ -147,8 +137,7 @@ export class GraphTagInjector {
     }
   }
 
-  // mtime が対応表と一致するノートはスキップ。読み直すのは変わった分だけなので、
-  // 何も変わっていない起動ではファイル読み込みゼロで終わる
+  // Notes whose mtime matches the index are skipped; an unchanged startup reads zero files.
   private async reconcile(): Promise<void> {
     const { vault, metadataCache } = this.plugin.app;
     let tagsChanged = false;
@@ -169,8 +158,8 @@ export class GraphTagInjector {
     if (tagsChanged) this.requestRefresh();
   }
 
-  // metadataCache "changed" 用。再パース直後の生きたキャッシュと本文が渡ってくるので
-  // 追加のファイル読みなしで増分更新できる
+  // For metadataCache "changed": the fresh cache and content are handed in, so the
+  // incremental update needs no extra file read.
   onFileChanged(file: TFile, content: string, cache: CachedMetadata): void {
     if (!this.enabled) return;
     const tags = this.collectTagEntries(content);
@@ -182,7 +171,7 @@ export class GraphTagInjector {
 
   onFileDeleted(path: string): void {
     if (!this.enabled) return;
-    // キャッシュはファイルと一緒に消えるので追跡と対応表だけ整理する
+    // The cache dies with the file; only tracking and the index need cleanup.
     this.trackedPaths.delete(path);
     if (this.index.delete(path)) {
       this.requestIndexSave();
@@ -192,7 +181,7 @@ export class GraphTagInjector {
 
   onFileRenamed(newPath: string, oldPath: string): void {
     if (!this.enabled) return;
-    // 注入エントリはキャッシュオブジェクトごとファイルに追従するため、キーの付け替えだけでよい
+    // Injected entries follow the cache object across the rename; only keys need re-mapping.
     if (this.trackedPaths.delete(oldPath)) {
       this.trackedPaths.add(newPath);
     }
@@ -204,8 +193,8 @@ export class GraphTagInjector {
     }
   }
 
-  // タグルールの「本体統合から除外」変更時に呼ぶ。
-  // 対応表には生タグを持っているので、ファイルを読み直さず注入だけやり直す
+  // Called when "exclude from integration" rules change. The index holds raw tags,
+  // so re-inject without re-reading files.
   rebuild(): void {
     if (!this.enabled) return;
     const { vault, metadataCache } = this.plugin.app;
@@ -219,7 +208,7 @@ export class GraphTagInjector {
     this.requestRefresh();
   }
 
-  // unload時: 注入エントリを全除去して素の状態へ戻す(対応表ファイルは次回起動用に残す)
+  // Unload: strip all injected entries (the index file stays for next startup).
   removeAll(): void {
     const { vault, metadataCache } = this.plugin.app;
     for (const path of this.trackedPaths) {
@@ -235,9 +224,9 @@ export class GraphTagInjector {
     this.refresh();
   }
 
-  // 単一ノートのキャッシュへ注入エントリを反映する(冪等: 既存の注入分を外してから入れ直す)。
-  // 「本体統合から除外」の除外はここで適用する。
-  // 統合が無効のときは注入対象を空にし、既存の注入痕の除去だけが働く
+  // Apply injected entries to one note's cache (idempotent: previous injections are
+  // stripped first). Exclusion rules apply here. When disabled, injects nothing so
+  // only leftover removal takes effect.
   private applyToCache(path: string, cache: CachedMetadata, occurrences: TagOccurrence[]): void {
     const excluded = this.excludedTagSet();
     const tags = this.enabled
@@ -264,8 +253,8 @@ export class GraphTagInjector {
     this.trackedPaths.add(path);
   }
 
-  // 対応表を更新し、タグの顔ぶれが前回から変わったかを返す(位置や mtime だけの
-  // 更新は false。グラフの再描画はタグの増減時だけで足りる)
+  // Update the index and return whether the set of tag names changed (position/mtime-only
+  // updates return false — the graph only needs redrawing when tags come or go).
   private updateIndexEntry(path: string, tags: TagOccurrence[], mtime: number): boolean {
     const prev = this.index.get(path);
     const names = (list: TagOccurrence[]) => list.map((t) => t.tag).sort().join("\n");
@@ -278,16 +267,15 @@ export class GraphTagInjector {
     return changed;
   }
 
-  // メモ本文からタグを全出現分、位置つきで集める(生タグ・除外フィルタ前)。
-  // どのタグを載せるかは表示と同じトークン規則(extractTagsForHistory)に一本化する:
-  // 引用カード(> ![[...]])・内部リンク・インラインコード・URL などの内側にある # は
-  // 画面上タグとして扱われないため、グラフにも検索にも載せない。
-  // 位置はメモ本文の行を直接走査して求める。行頭または空白直後の #トークンだけを
-  // 拾うことで、URLフラグメントやリンク内アンカー等への誤ヒットを避ける
+  // Collect every tag occurrence with positions (raw, pre-exclusion). What counts as a
+  // tag follows the display token rules (extractTagsForHistory): # inside quote cards,
+  // links, inline code, URLs, etc. is not a tag on screen, so not in graph/search either.
+  // Positions come from a line scan; only # at line start or after whitespace counts,
+  // avoiding URL fragments and in-link anchors.
   private collectTagEntries(content: string): TagOccurrence[] {
     if (!content.includes("```wr")) return [];
     const lines = content.split("\n");
-    // 各行のファイル先頭からのオフセット(+1 は改行文字の分)
+    // Offset of each line from file start (+1 for the newline).
     const lineOffsets: number[] = new Array<number>(lines.length);
     let acc = 0;
     for (let i = 0; i < lines.length; i++) {
@@ -299,7 +287,7 @@ export class GraphTagInjector {
       const names = new Set(extractTagsForHistory(memo.content));
       if (names.size === 0) continue;
       const found = new Set<string>();
-      // lineStart/lineEnd は開始・終了フェンスの行。本文はその間
+      // lineStart/lineEnd are the fence lines; the body sits between them.
       const bodyFrom = memo.lineStart + 1;
       const bodyTo = Math.min(memo.lineEnd - 1, lines.length - 1);
       for (let line = bodyFrom; line <= bodyTo; line++) {
@@ -319,8 +307,8 @@ export class GraphTagInjector {
           });
         }
       }
-      // 表示規則ではタグ扱いなのに行走査で位置が取れなかったもの(#a#b の後続など)は、
-      // 最初の出現箇所を素朴に探して最低1件は注入する(グラフから欠けさせないため)
+      // Tags valid by display rules but missed by the line scan (e.g. the tail of #a#b)
+      // get at least one occurrence injected so they don't vanish from the graph.
       for (const name of names) {
         if (found.has(name)) continue;
         for (let line = bodyFrom; line <= bodyTo; line++) {
@@ -334,9 +322,8 @@ export class GraphTagInjector {
     return out;
   }
 
-  // ルールで「本体統合から除外」されたタグの集合。注入対象から外れることで、
-  // グラフにも純正のタグ検索にも載らなくなる。
-  // 除外はタグルール機能が有効なときだけ効かせる(色ルールと同じ発動条件に揃える)
+  // Tags excluded from integration by rules (kept off the graph and native tag search).
+  // Only active while tag rules are enabled — same gate as color rules.
   private excludedTagSet(): Set<string> {
     const excluded = new Set<string>();
     if (!this.plugin.settings.tagColorRulesEnabled) return excluded;
@@ -348,26 +335,25 @@ export class GraphTagInjector {
     return excluded;
   }
 
-  // このタグがルールで本体統合から除外されているか(タイムラインの検索形式判定にも使う)
+  // Whether a rule excludes this tag from integration (also drives the timeline's search form).
   isExcludedTag(tag: string): boolean {
     return this.excludedTagSet().has(normalizeTag(tag));
   }
 
-  // グラフビューへ再描画を促す。"resolved" はリンク解決完了の通知イベントで、
-  // グラフはこれを受けてデータを組み直す
+  // Nudge the graph view to redraw: "resolved" is the link-resolution-complete event
+  // the graph rebuilds its data on.
   private refresh(): void {
     this.plugin.app.metadataCache.trigger("resolved");
   }
 
-  // タグクリック時に開く検索クエリ。注入済みタグは純正のタグ検索がそのまま拾うため、
-  // 素の tag: クエリ1本でよい。本体側のタグ(プロパティ含む)もWrotのメモも同じ
-  // タグ検索でヒットし、検索欄にも純正と同じ見た目のクエリが入る。
-  // タイムラインのタグクリック(WrotView.openSearch)がここを通して検索体験を揃える
+  // Search query for tag clicks. Injected tags are matched by native tag search, so a
+  // plain tag: query hits native tags (incl. properties) and Wrot memos alike, and
+  // looks native in the search bar. Timeline tag clicks (WrotView.openSearch) route here.
   buildTagSearchQuery(tag: string): string {
     return `tag:#${tag.replace(/^#/, "")}`;
   }
 
-  // ── 対応表の永続化(tags.json と同じ流儀: プラグインフォルダ直下・失敗は無視) ──
+  // ── Index persistence (same conventions as tags.json: plugin dir, failures ignored) ──
 
   private indexPath(): string | null {
     const dir = this.plugin.manifest.dir;
@@ -386,7 +372,7 @@ export class GraphTagInjector {
         if (entry) this.index.set(notePath, entry);
       }
     } catch {
-      // 読めない場合は空から再スタート(reconcileが読み直して作り直すため致命的でない)
+      // Unreadable index: restart empty; reconcile re-reads and rebuilds it.
       this.index.clear();
     }
   }
@@ -401,7 +387,7 @@ export class GraphTagInjector {
       }
       await this.plugin.app.vault.adapter.write(path, JSON.stringify(packed));
     } catch {
-      // 保存失敗は致命的でないため無視する(次回起動時にreconcileが差分を埋め直す)
+      // Save failures are non-fatal; reconcile fills the gap next startup.
     }
   }
 }

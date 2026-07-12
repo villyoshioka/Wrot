@@ -1,32 +1,26 @@
-// 日本語訳（原本）。他言語ファイルはこのキー構造を `satisfies` で型一致させる。
+// Japanese translations (source of truth). Other locale files match this key structure via `satisfies`.
 const ja = {
-  // ─── settings: section ─────────────────────────────────────────────
   "settings.section.basic": "基本設定",
   "settings.section.advanced": "詳細設定",
   "settings.section.tagrules": "タグ別ルール設定",
 
-  // ─── settings: 表示位置 ────────────────────────────────────────────
   "settings.item.viewPlacement.name": "表示位置",
   "settings.item.viewPlacement.desc": "Wrotパネルの表示位置を選びます。",
   "settings.option.viewPlacement.left": "左サイドバー",
   "settings.option.viewPlacement.right": "右サイドバー",
   "settings.option.viewPlacement.main": "メインエリア",
 
-  // ─── settings: フォントサイズ追従 ───────────────────────────────────
   "settings.item.followFontSize.name": "Obsidianのフォントサイズに追従",
   "settings.item.followFontSize.desc": "Obsidianの外観設定にWrotの文字サイズを合わせます。",
 
-  // ─── settings: ヘッダー日付表示形式 ─────────────────────────────────
   "settings.item.headerDateFormat.name": "ヘッダー日付表示形式",
   "settings.item.headerDateFormat.desc":
     "日付ナビのフォーマットを指定します。（YYYY, MM, DD などが使えます）\n空欄で初期値に戻ります。",
 
-  // ─── settings: タイムスタンプ表示形式 ───────────────────────────────
   "settings.item.timestampFormat.name": "タイムスタンプ表示形式",
   "settings.item.timestampFormat.desc":
     "投稿の日時フォーマットを指定します。（YYYY, MM, DD, HH, mm, ss が使えます）",
 
-  // ─── settings: 背景色・文字色 ──────────────────────────────────────
   "settings.item.bgColorLight.name": "背景色（ライトモード）",
   "settings.item.bgColorLight.desc": "ライトテーマでの投稿・投稿フォームの背景色を設定します。",
   "settings.item.textColorLight.name": "文字色（ライトモード）",
@@ -36,12 +30,10 @@ const ja = {
   "settings.item.textColorDark.name": "文字色（ダークモード）",
   "settings.item.textColorDark.desc": "ダークテーマでのテキスト・アイコンの色を設定します。",
 
-  // ─── settings: 投稿ボタン ──────────────────────────────────────────
   "settings.item.submitLabel.name": "投稿ボタンのテキスト",
   "settings.item.submitLabel.desc": "投稿ボタンに表示するテキストを変更できます。",
   "settings.item.submitIcon.name": "投稿ボタンのアイコン",
-  // 「投稿ボタンのアイコンを変更できます。アイコン名は [こちら](Lucide) からコピーしてください。空欄にするとアイコンを非表示にできます。」
-  // を {linkOpen}/{linkClose} プレースホルダで分割し、リンク部分だけアンカー要素で挟む
+  // {linkOpen}/{linkClose} placeholders mark the part wrapped in an anchor element.
   "settings.item.submitIcon.desc": "投稿ボタンのアイコンを変更できます。アイコン名は {linkOpen}こちら{linkClose} からコピーしてください。\n空欄にするとアイコンを非表示にできます。",
   "settings.item.inputPlaceholder.name": "投稿フォームの空欄メッセージ",
   "settings.item.inputPlaceholder.desc":
@@ -54,23 +46,19 @@ const ja = {
   "settings.notice.tagSuggestCleared": "タグの補完候補を削除しました",
   "settings.item.tagSuggestClear.confirmLabel": "もう一度押して確定",
 
-  // ─── settings: ピン留めの上限 ──────────────────────────────────────
   "settings.item.pinLimit.name": "ピン留めの上限",
   "settings.item.pinLimit.desc": "タイムラインに固定できるメモの上限を設定します。",
   "settings.option.pinLimit.1": "1 件",
   "settings.option.pinLimit.3": "3 件",
   "settings.option.pinLimit.5": "5 件",
 
-  // ─── settings: URLプレビュー ────────────────────────────────────────
   "settings.item.ogp.name": "URLプレビュー",
   "settings.item.ogp.desc":
     "メモ内のURLからOGP情報を自動取得して表示します。\nオフにすると外部通信を行いません。",
 
-  // ─── settings: チェック済みの取り消し線 ────────────────────────────
   "settings.item.checkStrikethrough.name": "チェック済みの取り消し線",
   "settings.item.checkStrikethrough.desc": "チェックボックスがONの項目に取り消し線を表示します。",
 
-  // ─── settings: カレンダーボタン ─────────────────────────────────────
   "settings.item.calendarDayShape.name": "日付ボタンの形",
   "settings.item.calendarDayShape.desc": "カレンダーの日付ボタンの形を選びます。",
   "settings.option.calendarDayShape.circle": "円形",
@@ -81,12 +69,10 @@ const ja = {
   "settings.item.showCalendarButton.desc":
     "日付ナビにカレンダーボタンを表示します。\nタップで任意の日付へジャンプできます。",
 
-  // ─── settings: タグ別に色を変える ───────────────────────────────────
   "settings.item.tagColorRules.name": "タグ別ルールを使う",
   "settings.item.tagColorRules.desc":
     "指定タグを含む投稿の色変更や、本体統合からの除外をタグ別に設定します。\n色は複数ルールに該当する場合、本文で先に出たタグが優先されます。",
 
-  // ─── settings: タグルール内 ─────────────────────────────────────────
   "settings.tagRule.label": "ルール {n}",
   "settings.tagRule.tag.name": "タグ",
   "settings.tagRule.tag.desc": "色を変えたいタグ名を入力します。（# は省略できます）",
@@ -116,7 +102,6 @@ const ja = {
   "settings.tagRule.noIntegration.desc": "オンにすると、メモ内に書いたこのルールのタグは本体統合の対象から外れ、Wrotの中だけのものになります。",
   "settings.tagRule.button.add": "ルールを追加",
 
-  // ─── view: 書式メニュー（書いてる途中のテキストに対する書式操作） ──
   "view.formatMenu.code": "コード",
   "view.formatMenu.math": "数式",
   "view.formatMenu.quote": "引用",
@@ -125,45 +110,35 @@ const ja = {
   "view.formatMenu.highlight": "ハイライト",
   "view.formatMenu.settings": "設定",
 
-  // ─── view: 投稿の3点メニュー ───────────────────────────────────────
   "view.postMenu.copy": "コピー",
-  // 書式メニュー側「引用」と区別するため「投稿を引用」にリネーム
   "view.postMenu.quotePost": "投稿を引用",
   "view.postMenu.unpin": "ピンを外す",
   "view.postMenu.pin": "ピン留め",
   "view.postMenu.pinLimitHint": "ピン留めは{limit}件までです。",
 
-  // ─── view: 日付ナビ ────────────────────────────────────────────────
   "view.dateNav.today": "今日",
-  // 日付ラベル末尾に付く「（今日）」。括弧ごとロケール側で自由に変えられるようにキー化
+  // Suffix appended to the date label; keyed so each locale can restyle it, brackets included.
   "view.dateNav.todaySuffix": "（今日）",
 
-  // ─── view: 空状態・通知 ────────────────────────────────────────────
   "view.empty.noMemos": "メモはありません",
   "view.notice.saveFailed": "メモの保存に失敗しました: {error}",
   "view.notice.searchPluginNotFound": "検索プラグインが見つかりません",
 
-  // ─── view: その他 UI ──────────────────────────────────────────────
   "view.image.removeAria": "画像を削除",
 
-  // ─── settings: 投稿アイコン Lucide リンク URL (ロケール側で切替可) ──
   "settings.item.submitIcon.lucideUrl": "https://lucide.dev/icons/",
 
-  // ─── カレンダー: 月年ラベルの表示形式 ──────────────────────────────
-  // カレンダーポップオーバー最上部の「2026年5月」相当のラベル。moment の
-  // format トークンで記述し、ロケールごとに自然な月年の並びにする。
-  // 「年」「月」は角括弧でリテラル扱いにして moment のトークン誤解釈を防ぐ。
+  // Month/year label atop the calendar popover, as moment format tokens.
+  // Literal chars (年/月) must be bracketed so moment does not parse them as tokens.
   "calendar.monthYearFormat": "YYYY[年]M[月]",
 
-  // ─── 言語依存のデフォルト設定値 ────────────────────────────────────
-  // DEFAULT_SETTINGS の代わりに、新規インストール時にこれらを採用する
+  // Locale-dependent defaults adopted on fresh install instead of DEFAULT_SETTINGS.
   "defaults.headerDateFormat": "YYYY年MM月DD日",
   "defaults.submitLabel": "投稿",
   "defaults.inputPlaceholder": "あなたが書くのを待っています...",
 };
 
-// 他言語ファイルから使う型。キー構造だけ ja に揃え、値は string であれば何でも良い。
-// `Record<keyof typeof ja, string>` にすることで「キーの過不足」はビルド時に弾きつつ、
-// 値は各言語の翻訳文を自由に入れられる。
+// Type for other locale files: enforces the exact key set at build time
+// while leaving the values free-form.
 export type Translations = Record<keyof typeof ja, string>;
 export default ja;

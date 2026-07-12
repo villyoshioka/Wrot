@@ -38,7 +38,7 @@ function isSafeImageUrl(url: string): boolean {
 }
 
 function cleanUrl(raw: string): string {
-  // 末尾の句読点はURLの一部ではないとして除去
+  // Trailing punctuation is not considered part of the URL.
   return raw.replace(/[.,;:!?)]+$/, "");
 }
 
@@ -104,8 +104,7 @@ export interface RenderTextCallbacks {
   checkStrikethrough?: boolean;
   renderCodeBlock?: (code: string, lang: string, container: HTMLElement, fenceTildes: number) => void;
   renderMathBlock?: (tex: string, container: HTMLElement) => void;
-  // 引用カードマーカー [[fileName#^wr-T]] を検出した時に呼ばれる。呼び出し側で
-  // 引用カード DOM を slot に描画する
+  // Called when a quote-card marker [[fileName#^wr-T]] is found; the caller renders the card into slot.
   renderQuoteCard?: (slot: HTMLElement, fileName: string, blockId: string) => void;
 }
 
@@ -139,8 +138,8 @@ export function renderTextWithTagsAndUrls(
         callbacks.renderMathBlock(segment.tex, blockEl);
       } else {
         try {
-          // MathJaxは起動時に遅延読み込みされる。未読み込みならフォールバックへ直行し、
-          // wr-math-fallback を目印に読み込み完了後の再描画(onMathJaxReady)で描き直される
+          // MathJax loads lazily. If not ready, fall through to the fallback;
+          // wr-math-fallback marks the element for re-render once onMathJaxReady fires.
           if (!isMathJaxReady()) throw new Error("MathJax not loaded yet");
           // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment, no-undef -- internal Obsidian/CodeMirror API or intentional pattern
           const { renderMath, finishRenderMath } = require("obsidian");
@@ -216,9 +215,8 @@ function renderTextSegment(
           li.addClass("wr-check-item");
           const checkbox = li.createEl("input", { attr: { type: "checkbox" } });
           if (innerCheck[1] === "x") checkbox.checked = true;
-          // テキストは常に span に包む。チェック切替時に再描画せず（カードの
-          // チラつき防止で modify 再描画は抑止される）、この span のクラスだけ
-          // 付け外しして取り消し線を即時反映するため。
+          // Always wrap the text in a span: modify-driven re-render is suppressed to prevent
+          // card flicker, so strikethrough is toggled instantly via this span's class instead.
           const textContainer = li.createSpan(
             innerCheck[1] === "x" && callbacks.checkStrikethrough ? { cls: "wr-check-done" } : {}
           );
@@ -249,9 +247,8 @@ function renderTextSegment(
       } else {
         quoteList = null;
         quoteListType = null;
-        // 直前の子が入れ子引用やリストの箱 (block 要素) のときは、箱自体が行を
-        // 変えるため <br> を足すと空行が 1 行余分に生まれる (例: ">> a" の直後の
-        // "> b")。テキスト行の継続時だけ改行を挟む。
+        // Skip <br> after a nested blockquote/list box: the block already breaks the line,
+        // so adding one creates an extra blank line. Break only between text lines.
         const last = target.lastChild;
         const lastTag =
           last && last.nodeType === Node.ELEMENT_NODE ? (last as Element).tagName : "";
@@ -279,7 +276,7 @@ function renderTextSegment(
         li.addClass("wr-check-item");
         const checkbox = li.createEl("input", { attr: { type: "checkbox" } });
         if (checkMatch[1] === "x") checkbox.checked = true;
-        // テキストは常に span に包む（理由は上の引用内チェックと同じ）
+        // Always wrap in a span (same reason as the quote-inner checkbox above).
         const textContainer = li.createSpan(
           checkMatch[1] === "x" && callbacks.checkStrikethrough ? { cls: "wr-check-done" } : {}
         );
@@ -427,7 +424,6 @@ function renderInlineTokens(
       }
     } else if (linkMatch) {
       const linkName = linkMatch[1];
-      // 引用カードマーカー [[fileName#^wr-T]] の検出を優先
       const quoteMatch = linkName.match(QUOTE_LINK_RE);
       if (quoteMatch && callbacks.renderQuoteCard) {
         const slot = container.createSpan({ cls: "wr-quote-card-slot" });
@@ -454,8 +450,7 @@ function renderInlineTokens(
         const cb = callbacks.onTagClick;
         tagEl.addEventListener("click", (e) => {
           e.stopPropagation();
-          // 押した感覚のフィードバック: クリックのたびにハイライトを光らせ直す。
-          // クラスを外して reflow を挟むことでアニメーションを毎回リスタートさせる
+          // Remove the class and force a reflow so the flash animation restarts on every click.
           tagEl.classList.remove("wr-tag-flash");
           void tagEl.offsetWidth;
           tagEl.classList.add("wr-tag-flash");
@@ -466,8 +461,8 @@ function renderInlineTokens(
       const mathContent = part.slice(1, -1);
       const mathEl = container.createSpan({ cls: "wr-math" });
       try {
-        // MathJaxは起動時に遅延読み込みされる。未読み込みならフォールバックへ直行し、
-        // wr-math-fallback を目印に読み込み完了後の再描画(onMathJaxReady)で描き直される
+        // MathJax loads lazily. If not ready, fall through to the fallback;
+        // wr-math-fallback marks the element for re-render once onMathJaxReady fires.
         if (!isMathJaxReady()) throw new Error("MathJax not loaded yet");
         // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment, no-undef -- internal Obsidian/CodeMirror API or intentional pattern
         const { renderMath, finishRenderMath } = require("obsidian");
@@ -544,7 +539,7 @@ function renderInlineTokens(
   }
 }
 
-// Obsidianのビューでも CodeMirror ウィジェット内でも動くよう vanilla DOM API のみを使う
+// Vanilla DOM only, so this works both in Obsidian views and inside CodeMirror widgets.
 function el<K extends keyof HTMLElementTagNameMap>(
   tag: K,
   cls?: string,
@@ -586,7 +581,7 @@ export function renderImagePreview(
   img.loading = "lazy";
   wrapper.appendChild(img);
   container.appendChild(wrapper);
-  // CSS `:has()` 警告回避: 親 container に状態クラスを付与し、CSS 側は通常セレクタで判定する
+  // :has() workaround: add a state class to the container so CSS can use a plain selector.
   container.classList.add("wr-has-link");
 }
 

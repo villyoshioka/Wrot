@@ -15,16 +15,16 @@ export default class WrotPlugin extends Plugin {
   settings!: WrotSettings;
   ogpCache!: OGPCache;
   graphTags!: GraphTagInjector;
-  // タグ補完の候補（先頭 # なし、新しい順）。設定とは別に tags.json へ永続化する。
-  // 投稿のたびに自動で書き換わるデータなので、ユーザーが編集する設定(data.json)と混ぜない。
+  // Tag-completion candidates (no leading #, newest first). Persisted to tags.json,
+  // not data.json, because they are rewritten automatically on every post.
   recentTags: string[] = [];
-  // 旧バージョンで settings(data.json) に保持していた候補の移行用。loadSettings が拾う。
+  // Migration buffer for candidates once stored in data.json; populated by loadSettings.
   private legacyRecentTags: string[] | null = null;
   private bgStyleEl: HTMLStyleElement | null = null;
   private tagRuleStyleEl: HTMLStyleElement | null = null;
   private fontStyleEl: HTMLStyleElement | null = null;
-  // MathJax読み込み完了前にプラグインが無効化されたとき、完了コールバックが
-  // 登録解除済みのpostProcessorで再描画してwr装飾を剥がしてしまうのを防ぐ
+  // Guards against the MathJax-ready callback re-rendering through an already
+  // unregistered postProcessor (stripping wr decorations) after the plugin is disabled.
   private unloading = false;
 
   async onload(): Promise<void> {
@@ -67,23 +67,22 @@ export default class WrotPlugin extends Plugin {
         this.applyTagColorRules();
       })
     );
-    // !important を使わない方針のため、注入styleがテーマ・styles.cssより後ろ
-    // (head末尾)にあることが同点時の勝敗を決める。起動時のCSS読み込み順に
-    // 依存しないよう、レイアウト確定後にもう一度末尾へ入れ直す。
-    // 数式描画用のMathJaxは完全遅延読み込み(utils/mathjax.ts参照)。ここでは
-    // 読み込み完了時にフォールバック数式を描き直すハンドラの登録だけ行う
+    // MathJax is fully lazy-loaded (see utils/mathjax.ts); only register the
+    // handler that redraws fallback math once loading completes.
     setMathJaxReadyHandler(() => this.onMathJaxReady());
 
+    // No-!important policy: injected styles win specificity ties by sitting last in
+    // <head>. Re-append after layout so startup CSS load order doesn't matter.
     this.app.workspace.onLayoutReady(() => {
       this.applyBgColor();
       this.applyTagColorRules();
-      // メモのタグを本体(グラフビュー・純正タグ検索)へ統合する。
-      // 対応表から即注入し、答え合わせは裏で差分だけ
+      // Integrate memo tags into the core graph view / native tag search:
+      // inject from the cached map immediately, reconcile diffs in the background.
       void this.graphTags.start();
     });
 
-    // グラフ用タグ注入の増分更新。vault.on("modify")ではなく再パース完了後に
-    // 新しいキャッシュと本文が渡ってくる "changed" を使う(パースとの競合や二重読みを避ける)
+    // Incremental graph-tag updates use metadataCache "changed" (fires after re-parse, with
+    // fresh cache and content) instead of vault "modify", avoiding parser races and double reads.
     this.registerEvent(
       this.app.metadataCache.on("changed", (file, data, cache) => {
         this.graphTags.onFileChanged(file, data, cache);
@@ -100,7 +99,7 @@ export default class WrotPlugin extends Plugin {
       })
     );
 
-    // 削除はvault.on("delete")だとmetadataCache更新前に発火するためmetadataCache側で監視
+    // Deletions are watched via metadataCache: vault "delete" fires before the cache updates.
     const onAttachmentChange = (file: unknown) => {
       if (!(file instanceof TFile)) return;
       if (!ATTACHMENT_EXT_RE.test(file.extension)) return;
@@ -111,9 +110,8 @@ export default class WrotPlugin extends Plugin {
     this.registerEvent(this.app.vault.on("rename", onAttachmentChange));
   }
 
-  // タグをObsidianのグローバル検索で開く。タイムライン・Reading View・Live Preview の
-  // タグクリック共通の入り口。本体統合ONかつ除外されていないタグは、グラフの
-  // タグノードをクリックしたときと同じ純正の tag: 検索、それ以外は従来の文字列検索
+  // Shared entry point for tag clicks (timeline/RV/LV). Integrated, non-excluded tags use the
+  // native tag: query (same as clicking a graph tag node); others fall back to plain string search.
   openTagSearch(tag: string): void {
     const searchPlugin = (
       this.app as {
@@ -134,11 +132,8 @@ export default class WrotPlugin extends Plugin {
     }
   }
 
-  // MathJaxの遅延読み込みが完了したときに呼ばれる。
-  // プレーンテキストに落ちた数式(wr-math-fallback)だけをその場で差し替え、
-  // Live Previewには軽い通知だけ送る(hadMathJaxがeq()に入っているため、
-  // フォールバック描画された数式ウィジェットだけが作り直される)。
-  // ビュー全体の再描画はしないので、数式以外の内容はちらつかない
+  // On MathJax lazy-load completion: upgrade fallback-rendered math in place and nudge Live
+  // Preview (hadMathJax is part of widget eq(), so only fallback math widgets rebuild — no flicker).
   private onMathJaxReady(): void {
     window.setTimeout(() => {
       if (this.unloading) return;
@@ -185,14 +180,14 @@ export default class WrotPlugin extends Plugin {
     if (this.fontStyleEl) {
       this.fontStyleEl.remove();
     }
-    // NOTE: createEl("style") にすると no-forbidden-elements がエラーになるため createElement を維持する。
-    // 動的なユーザー設定色を反映する手段として style 要素の注入が必要（styles.css では表現できない）。
+    // createElement, not createEl("style"): the latter trips the no-forbidden-elements lint.
+    // Style injection is required for dynamic user colors that styles.css cannot express.
     this.fontStyleEl = activeDocument.createElement("style");
     this.fontStyleEl.id = "wr-font-override";
     activeDocument.head.appendChild(this.fontStyleEl);
 
     if (this.settings.followObsidianFontSize) {
-      // 14:13:12 の比率を保つため --font-text-size を基準にスケールする
+      // Scale from --font-text-size to preserve the 14:13:12 size ratio.
       this.fontStyleEl.textContent = `/* @css */
         body {
           --wr-font-text: var(--font-text-size);
@@ -217,12 +212,10 @@ export default class WrotPlugin extends Plugin {
     return /^#[0-9a-fA-F]{6}$/.test(hex) ? hex : fallback;
   }
 
-  // 注入CSSの全セレクタに :not(#...) を付けてIDレベルの詳細度を底上げする。
-  // !important を使わずに styles.css・テーマの通常ルールへ確実に勝つための仕組み。
-  // 段数のラダー: styles.css 通常ルール(ID 0〜1段) < 背景/文字色スタンプ(2段)
-  // < styles.css 側の上書き(3段: RVコピーボタン等) < タグルールCSS(4段)。
-  // 疑似要素(::before 等)は末尾必須のためその手前に挿入する。
-  // コメントはセレクタ検出の邪魔になるため出力から除去する。
+  // Adds :not(#...) to every selector for ID-level specificity, beating styles.css/theme rules
+  // without !important. Ladder: styles.css base (0-1 IDs) < bg/text stamp (2) < styles.css
+  // overrides, e.g. RV copy button (3) < tag-rule CSS (4). The boost is inserted before "::"
+  // (pseudo-elements must stay last); comments are stripped as they break selector detection.
   private boostSelectors(css: string, idLevels: number): string {
     let boost = "";
     for (let i = 1; i <= idLevels; i++) boost += `:not(#wr-boost-${i})`;
@@ -253,11 +246,11 @@ export default class WrotPlugin extends Plugin {
     const faintColor = this.blendColor(textColor, bgColor, 0.6);
     const unresolvedLinkColor = this.blendColor(textColor, bgColor, 0.3);
 
-    // <head>末尾を維持するため一度remove → append し直す
+    // Remove and re-append to keep this style element last in <head>.
     if (this.bgStyleEl) {
       this.bgStyleEl.remove();
     }
-    // NOTE: createEl("style") にすると no-forbidden-elements がエラーになるため createElement を維持する。
+    // createElement, not createEl("style"): avoids the no-forbidden-elements lint error.
     this.bgStyleEl = activeDocument.createElement("style");
     this.bgStyleEl.id = "wr-bg-override";
     activeDocument.head.appendChild(this.bgStyleEl);
@@ -290,7 +283,7 @@ export default class WrotPlugin extends Plugin {
       body div.block-language-wr .wr-highlight {
         background: var(--text-highlight-bg);
       }
-      /* LV: code-block-flair はコピーボタンを兼ねる。当たり判定がメモ末尾を覆うため透過させる */
+      /* LV: code-block-flair doubles as the copy button; its hit area covers the memo tail, so keep it transparent */
       body .wr-codeblock-line .code-block-flair {
         background: transparent;
         background-color: transparent;
@@ -299,8 +292,7 @@ export default class WrotPlugin extends Plugin {
         background: ${hoverColor};
         background-color: ${hoverColor};
       }
-      /* モバイル: タップ後に貼りつく :hover を無効化し、押している間 (:active) だけ
-         PC の hover と同じ色を出す (光り方を PC に揃える) */
+      /* Mobile: neutralize the sticky post-tap :hover; show the PC hover color only while :active */
       body.is-mobile .wr-ogp-card:hover {
         background: ${bgColor};
         background-color: ${bgColor};
@@ -309,9 +301,8 @@ export default class WrotPlugin extends Plugin {
         background: ${hoverColor};
         background-color: ${hoverColor};
       }
-      /* 本文の textColor スタンプ。 wr-check-done(チェック済みテキスト)は後段の
-         mutedColor ルールに任せるため除外する (RVはpre構造でこのルールが届かず
-         muted になるので、 LVも同じ色ソースに揃える) */
+      /* Body textColor stamp. wr-check-done is excluded so the later mutedColor rule wins:
+         RV's pre structure never receives this rule, so LV must use the same color source */
       body .wr-content,
       body .wr-textarea,
       body .wr-date-label,
@@ -330,9 +321,6 @@ export default class WrotPlugin extends Plugin {
       body .wr-ordered-list li {
         color: ${textColor};
       }
-      /* カレンダー: 曜日見出し・月送り矢印は設定文字色の薄いバリエーション、
-         前後月のマスはさらに薄い faint に乗せる
-         (当月の日・月ラベルは上の textColor ルールで濃い設定色) */
       body .wr-calendar-weekday,
       body .wr-calendar-nav-btn {
         color: ${mutedColor};
@@ -340,7 +328,7 @@ export default class WrotPlugin extends Plugin {
       body .wr-calendar-day-outside {
         color: ${faintColor};
       }
-      /* ネストコードブロック内でPrismトークン色を復元する */
+      /* Restore Prism token colors inside nested code blocks */
       body .wr-codeblock-display code[class*="language-"],
       body .wr-codeblock-display pre[class*="language-"] {
         color: var(--code-normal);
@@ -408,7 +396,8 @@ export default class WrotPlugin extends Plugin {
       body .wr-quote-card-slot .wr-quote-card .wr-quote-card-meta,
       body .wr-quote-card-slot .wr-quote-card .wr-quote-image-marker,
       body .wr-quote-card-slot .wr-quote-card .wr-quote-math-marker,
-      body .wr-quote-card-slot .wr-quote-card .wr-quote-code-marker {
+      body .wr-quote-card-slot .wr-quote-card .wr-quote-code-marker,
+      body .wr-quote-card-slot .wr-quote-card .wr-nested-quote-marker {
         color: ${mutedColor};
       }
       body .wr-quote-card-slot .wr-quote-card {
@@ -420,7 +409,7 @@ export default class WrotPlugin extends Plugin {
       body .wr-ogp-card {
         border-color: ${mutedColor};
       }
-      /* LV内のWidget DOMでも確実にマーカー色を当てるため、上記より高い特異度で再宣言 */
+      /* Re-declared at higher specificity so marker colors also reach LV widget DOM */
       body .cm-line .wr-lp-marker:not(#x):not(#y):not(#z),
       body .cm-line .wr-list-highlight:not(#x):not(#y):not(#z),
       body .cm-line .wr-check-unchecked:not(#x):not(#y):not(#z),
@@ -436,7 +425,7 @@ export default class WrotPlugin extends Plugin {
       body .cm-line .wr-ogp-loading:not(#x):not(#y):not(#z) {
         color: ${mutedColor};
       }
-      /* チェックボックス(input)の枠線はサブカラー、チェック済み塗りつぶしはテーマのアクセントカラー */
+      /* Checkbox border uses the sub color; checked fill uses the theme accent */
       body .wr-check-item input[type="checkbox"],
       body .wr-bullet-list .wr-check-item input[type="checkbox"],
       body .wr-reading-list .wr-check-item input[type="checkbox"],
@@ -453,8 +442,8 @@ export default class WrotPlugin extends Plugin {
       body .wr-toolbar-btn.wr-toolbar-active {
         color: var(--text-accent);
       }
-      /* メニュー表示中の 3点ボタン。 上の muted ルール (0,2,1) より高い特異度 (0,3,1) で
-         必ず勝たせる。 静的CSS側の同等ルールに依存せず、 ここでも明示して光らせる */
+      /* Menu-open 3-dot button: (0,3,1) beats the muted rule above (0,2,1);
+         declared here rather than relying on the static CSS equivalent */
       body .wr-menu-btn.wr-toolbar-active .svg-icon {
         color: var(--text-accent);
         stroke: var(--text-accent);
@@ -473,9 +462,8 @@ export default class WrotPlugin extends Plugin {
       body .wr-blockquote-wrap {
         border-left-color: ${mutedColor};
       }
-      /* LVの引用縦バー(::before)とネスト分(box-shadow)。RVの border-left-color と
-         同じ mutedColor で塗り、ビュー間で引用バーの色ソースを揃える。
-         タグルールCSS(4段)は同セレクタをより高い段で持つため、そちらが優先される */
+      /* LV quote bars (::before, nested via box-shadow) use the same mutedColor as RV's
+         border-left so both views share one color source; tag-rule CSS (tier 4) still wins */
       body .cm-line.wr-blockquote-line::before {
         background-color: ${mutedColor};
       }
@@ -652,13 +640,11 @@ export default class WrotPlugin extends Plugin {
       const mQuote = pickMuted("quote");
       const mList = pickMuted("list");
       const mOgp = pickMuted("ogp");
-      // 未解決リンク・未解決埋め込みの色。 ベース (line 138) は textColor/bgColor の
-      // blend で計算してるので、 タグルールごとも同じロジックで rule の fg/bg から計算する。
+      // Unresolved link/embed color: same blend logic as the base palette, from this rule's fg/bg.
       const mUnresolved = this.blendColor(fg, bg, 0.3);
       const cls = `wr-tag-rule-${i}`;
 
       parts.push(`/* @css */
-      /* Rule ${i}: 背景 */
       body .wr-card.${cls},
       body div.block-language-wr.${cls},
       body pre.${cls},
@@ -669,7 +655,7 @@ export default class WrotPlugin extends Plugin {
         background: ${bg};
         background-color: ${bg};
       }
-      /* 引用カードは引用先 bg を遮断 (引用元のルールに任せる) */
+      /* Quote cards block the quoting memo's bg; the quoted memo's own rule paints them */
       body .wr-card.${cls} .wr-quote-card:not([class*="wr-tag-rule-"]),
       body div.block-language-wr.${cls} .wr-quote-card:not([class*="wr-tag-rule-"]),
       body pre.${cls} .wr-quote-card:not([class*="wr-tag-rule-"]),
@@ -683,9 +669,6 @@ export default class WrotPlugin extends Plugin {
         background-color: ${bg};
       }
 
-      /* Rule ${i}: 文字色（タグ/リンク/URL/引用ブロック/引用カード除く）。
-         引用カード以下は slot 単位で除外し、外枠＝引用先 / 中身＝引用元 の境界線を
-         祖先カラーが越えて子孫に降りないようにする。 */
       body .wr-card.${cls} .wr-content,
       body .wr-card.${cls} .wr-content *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-blockquote):not(.wr-quote-card-slot):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-blockquote *):not(.wr-quote-card-slot *) {
         color: ${fg};
@@ -701,7 +684,6 @@ export default class WrotPlugin extends Plugin {
         color: ${fg};
       }
 
-      /* Rule ${i}: サブ要素 - タイムスタンプ・メニュー・ピン・コピー */
       body .wr-card.${cls} .wr-timestamp,
       body .wr-card.${cls} .wr-copy-btn,
       body .wr-card.${cls} .wr-copy-btn .svg-icon,
@@ -715,8 +697,6 @@ export default class WrotPlugin extends Plugin {
       body div.block-language-wr.${cls} .copy-code-button .svg-icon {
         color: ${mButtons};
       }
-      /* Rule ${i}: サブ要素 - 引用 (引用カード内のブロック引用は除外。
-         カードの中身は「引用元」扱いなので外側=引用先の mQuote を巻き込ませない) */
       body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote),
       body .wr-card.${cls} .wr-blockquote-wrap:not(.wr-quote-card-slot .wr-blockquote-wrap),
       body .wr-card.${cls} .wr-quote-highlight,
@@ -726,7 +706,6 @@ export default class WrotPlugin extends Plugin {
       body .cm-line.wr-codeblock-line.${cls} .wr-blockquote-wrap {
         color: ${mQuote};
       }
-      /* Rule ${i}: サブ要素 - リスト・チェックボックス */
       body .wr-card.${cls} .wr-bullet-list > li:not(.wr-check-item)::before,
       body .wr-card.${cls} .wr-ordered-list > li::before,
       body .wr-card.${cls} .wr-check-done,
@@ -745,8 +724,8 @@ export default class WrotPlugin extends Plugin {
       body .cm-line.wr-codeblock-line.${cls} .wr-lp-marker {
         color: ${mList};
       }
-      /* LV内のWidget DOMでもタグルールのサブカラーが勝つように、IDセレクタ相当の特異度で再宣言。
-         wr-check-done は対象外: RVでは静的CSSの muted が勝つため、LVも静的CSSに任せて色を揃える */
+      /* Re-declared at ID-equivalent specificity so tag-rule sub colors win in LV widget DOM.
+         wr-check-done excluded: static CSS muted wins in RV, so LV defers to static CSS too */
       body .cm-line.${cls} .wr-lp-marker:not(#x):not(#y):not(#z),
       body .cm-line.${cls} .wr-list-highlight:not(#x):not(#y):not(#z),
       body .cm-line.${cls} .wr-check-unchecked:not(#x):not(#y):not(#z),
@@ -754,14 +733,14 @@ export default class WrotPlugin extends Plugin {
       body .cm-line.${cls} .wr-ol-highlight:not(#x):not(#y):not(#z) {
         color: ${mList};
       }
-      /* LV内のWidget DOMでも引用の本文・縦線がタグルールのquote色になるよう、IDセレクタ相当の特異度で再宣言 */
+      /* ID-equivalent specificity so quote text and bars take the rule's quote color in LV widget DOM */
       body .cm-line.${cls}.wr-blockquote-line:not(#x):not(#y):not(#z),
       body .cm-line.${cls} .wr-blockquote-wrap:not(#x):not(#y):not(#z),
       body .cm-line.${cls} .wr-blockquote-wrap:not(#x):not(#y):not(#z) *,
       body .cm-line.${cls} .wr-quote-highlight:not(#x):not(#y):not(#z) {
         color: ${mQuote};
       }
-      /* チェックボックス(input)の枠線はサブカラー、チェック済み塗りつぶしはアクセントカラー */
+      /* Checkbox border uses the sub color; checked fill uses the rule accent */
       body .wr-card.${cls} .wr-check-item input[type="checkbox"],
       body div.block-language-wr.${cls} .wr-check-item input[type="checkbox"],
       body pre.${cls} .wr-check-item input[type="checkbox"],
@@ -772,14 +751,14 @@ export default class WrotPlugin extends Plugin {
         --checkbox-color-hover: ${accent ?? "var(--text-accent)"};
         accent-color: ${accent ?? "var(--text-accent)"};
       }
-      /* 引用カード内のブロック引用は「カードの中身=引用元」のサブカラーで塗るため、
-         祖先=引用先の mQuote で塗るルールから除外する (slot 配下は対象外)。 */
+      /* Blockquotes inside quote cards belong to the quoted memo, so they are
+         excluded from the ancestor (quoting) rule's mQuote */
       body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-tag *):not(.wr-reading-url *),
       body div.block-language-wr.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-tag *):not(.wr-reading-url *),
       body pre.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-tag *):not(.wr-reading-url *) {
         color: ${mQuote};
       }
-      /* 492行などの文字色当てに特異度で負ける環境向けに、 ID相当の特異度で再宣言 (引用カード内は除外) */
+      /* ID-equivalent re-declaration in case the text-color stamp wins on specificity (quote-card content excluded) */
       body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote):not(#x):not(#y):not(#z),
       body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote):not(#x):not(#y):not(#z) *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url),
       body div.block-language-wr.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote):not(#x):not(#y):not(#z),
@@ -796,10 +775,6 @@ export default class WrotPlugin extends Plugin {
       body .cm-line.wr-codeblock-line.${cls} .wr-url .wr-blockquote-wrap {
         color: ${accent ?? "var(--text-accent)"};
       }
-      /* Rule ${i}: ブロック引用内のリンク・タグは「その場のアクセント」で塗る。
-         引用カードと同じく「引用コンテキスト = アクセントで強調」する統一原則。
-         ブロック引用は元先関係を持たないため、その場（このルール）のアクセントを使う。
-         引用カード内のブロック引用は「カードの中身=引用元」扱いのため、ここでは除外する。 */
       body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-tag,
       body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-internal-link,
       body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-url,
@@ -817,15 +792,14 @@ export default class WrotPlugin extends Plugin {
       body pre.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) .wr-reading-url {
         color: ${accent ?? "var(--text-accent)"};
       }
-      /* 枠線色も同様、引用カード内のブロック引用は除外 (カードの中身=引用元扱い) */
+      /* Border color likewise; blockquotes inside quote cards excluded (card content = quoted memo) */
       body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote),
       body .wr-card.${cls} .wr-blockquote-wrap:not(.wr-quote-card-slot .wr-blockquote-wrap),
       body div.block-language-wr.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote),
       body pre.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote) {
         border-left-color: ${mQuote};
       }
-      /* Rule ${i}: 引用カード自身にルールクラスが付いた = 引用元のルール */
-      /* 枠線色は引用先(=表示する側)の見た目に合わせるため、ここでは上書きしない */
+      /* Border color follows the quoting side's look, so it is not overridden here */
       body .wr-quote-card-slot .wr-quote-card.${cls} {
         background: ${bg};
         background-color: ${bg};
@@ -834,7 +808,7 @@ export default class WrotPlugin extends Plugin {
         background: ${hoverBg};
         background-color: ${hoverBg};
       }
-      /* このルールクラスが祖先カードに付いている場合、配下の引用カードの枠線も自分のサブカラーに揃える */
+      /* When this rule class sits on the ancestor card, nested quote-card borders follow its sub color */
       body .wr-card.${cls} .wr-quote-card-slot .wr-quote-card,
       body div.block-language-wr.${cls} .wr-quote-card-slot .wr-quote-card,
       body pre.${cls} .wr-quote-card-slot .wr-quote-card,
@@ -848,21 +822,22 @@ export default class WrotPlugin extends Plugin {
       body .wr-quote-card-slot .wr-quote-card.${cls} .wr-quote-card-body .wr-blockquote * {
         color: ${mQuote};
       }
-      /* ベースの引用カード本文 mutedColor ルールに特異度負けする環境向けに、ID相当の特異度で再宣言 */
+      /* ID-equivalent re-declaration against the base quote-card mutedColor rule */
       body .wr-quote-card-slot .wr-quote-card.${cls}:not(#x):not(#y):not(#z) .wr-quote-card-body .wr-blockquote,
       body .wr-quote-card-slot .wr-quote-card.${cls}:not(#x):not(#y):not(#z) .wr-quote-card-body .wr-blockquote * {
         color: ${mQuote};
       }
-      /* マーカーは標準 muted ルールの :not() 列に specificity 負けするため同列で揃える */
+      /* Markers mirror the base muted rule's :not() chain to avoid losing on specificity */
       body .wr-quote-card-slot .wr-quote-card.${cls} .wr-quote-card-body .wr-quote-image-marker:not(.wr-tag):not(.wr-url):not(.wr-internal-link):not(.wr-nested-quote-marker):not(.wr-tag *):not(.wr-url *):not(.wr-internal-link *),
       body .wr-quote-card-slot .wr-quote-card.${cls} .wr-quote-card-body .wr-quote-math-marker:not(.wr-tag):not(.wr-url):not(.wr-internal-link):not(.wr-nested-quote-marker):not(.wr-tag *):not(.wr-url *):not(.wr-internal-link *),
-      body .wr-quote-card-slot .wr-quote-card.${cls} .wr-quote-card-body .wr-quote-code-marker:not(.wr-tag):not(.wr-url):not(.wr-internal-link):not(.wr-nested-quote-marker):not(.wr-tag *):not(.wr-url *):not(.wr-internal-link *) {
+      body .wr-quote-card-slot .wr-quote-card.${cls} .wr-quote-card-body .wr-quote-code-marker:not(.wr-tag):not(.wr-url):not(.wr-internal-link):not(.wr-nested-quote-marker):not(.wr-tag *):not(.wr-url *):not(.wr-internal-link *),
+      body .wr-quote-card-slot .wr-quote-card.${cls} .wr-quote-card-body .wr-nested-quote-marker:not(.wr-tag):not(.wr-url):not(.wr-internal-link):not(.wr-quote-image-marker):not(.wr-tag *):not(.wr-url *):not(.wr-internal-link *) {
         color: ${mQuote};
       }
       body .wr-quote-card-slot .wr-quote-card.${cls} .wr-quote-card-body .wr-blockquote {
         border-left-color: ${mQuote};
       }
-      /* 引用カード内チェックボックス(独自スパン): カード本体と色揃え */
+      /* Quote-card checkboxes (custom spans) match the card body color */
       body .wr-quote-card-slot .wr-quote-card.${cls} .wr-quote-card-check {
         border-color: ${mQuote};
       }
@@ -870,15 +845,9 @@ export default class WrotPlugin extends Plugin {
         background-color: ${mQuote};
         border-color: ${mQuote};
       }
-      /* 引用カード内のリンク・タグ・省略QT（ネスト引用マーカー）の色は
-         「引用元 (カードの中身＝元ネタ) のアクセント」で塗る。
-         引用カード自身に setupClick で付与される wr-tag-rule-* は引用元の
-         ルールクラスなので、 .wr-quote-card.${cls} を起点にすれば1系統で
-         3ビュー (タイムライン/RV/LV) を一括カバーできる。 */
       body .wr-quote-card-slot .wr-quote-card.${cls} .wr-quote-card-body .wr-tag,
       body .wr-quote-card-slot .wr-quote-card.${cls} .wr-quote-card-body .wr-internal-link,
-      body .wr-quote-card-slot .wr-quote-card.${cls} .wr-quote-card-body .wr-url,
-      body .wr-quote-card-slot .wr-quote-card.${cls} .wr-quote-card-body .wr-nested-quote-marker {
+      body .wr-quote-card-slot .wr-quote-card.${cls} .wr-quote-card-body .wr-url {
         color: ${accent ?? "var(--text-accent)"};
       }
       body .cm-line.wr-codeblock-line.wr-blockquote-line.${cls}::before {
@@ -914,17 +883,13 @@ export default class WrotPlugin extends Plugin {
         color: ${accent ?? "var(--text-accent)"};
         stroke: ${accent ?? "var(--text-accent)"};
       }
-      /* メニュー表示中の 3点ボタン。 上の mButtons ルール (specificity 0,4,1) に
-         静的CSSの active ルール (0,3,1) が負けるため、 アクセント未設定でも
-         ここで必ず上書きして光らせる */
+      /* Menu-open 3-dot button: the static CSS active rule (0,3,1) loses to the mButtons
+         rule above (0,4,1), so override here even when no custom accent is set */
       body .wr-card.${cls} .wr-menu-btn.wr-toolbar-active .svg-icon {
         color: ${accent ?? "var(--text-accent)"};
         stroke: ${accent ?? "var(--text-accent)"};
       }
       ${accent ? `
-      /* Rule ${i}: アクセント色（引用カード以下は slot 単位で除外。
-         引用カード内のリンク・タグは「引用元のアクセント」で別途塗るため、
-         ここで引用先のアクセントを巻き込まない） */
       body .wr-card.${cls} .wr-tag:not(.wr-quote-card-slot *),
       body .wr-card.${cls} .wr-internal-link:not(.wr-quote-card-slot *),
       body .wr-card.${cls} .wr-url:not(.wr-quote-card-slot *),
@@ -945,9 +910,6 @@ export default class WrotPlugin extends Plugin {
       }
       ` : ""}
 
-      /* Rule ${i}: 未解決の内部リンク・埋め込み (アクセント注入より specificity が
-         同等以上になるよう .wr-internal-link-unresolved / .wr-embed-missing をクラスに
-         追加することで勝ち、 タグルールのトーンに馴染んだ薄色で表示する) */
       body .wr-card.${cls} .wr-internal-link.wr-internal-link-unresolved:not(.wr-quote-card-slot *),
       body .wr-card.${cls} .wr-embed-missing:not(.wr-quote-card-slot *),
       body div.block-language-wr.${cls} .wr-internal-link.wr-internal-link-unresolved:not(.wr-quote-card-slot *),
@@ -961,7 +923,6 @@ export default class WrotPlugin extends Plugin {
         color: ${mUnresolved};
       }
 
-      /* Rule ${i}: OGP/Twitterカード */
       body .wr-card.${cls} .wr-ogp-card,
       body div.block-language-wr.${cls} .wr-ogp-card,
       body pre.${cls} .wr-ogp-card,
@@ -977,7 +938,7 @@ export default class WrotPlugin extends Plugin {
         background: ${hoverBg};
         background-color: ${hoverBg};
       }
-      /* モバイル: タップ後に貼りつく :hover を無効化し、押している間だけ hover 色を出す */
+      /* Mobile: neutralize the sticky post-tap :hover; hover color only while :active */
       body.is-mobile .wr-card.${cls} .wr-ogp-card:hover,
       body.is-mobile div.block-language-wr.${cls} .wr-ogp-card:hover,
       body.is-mobile pre.${cls} .wr-ogp-card:hover,
@@ -1010,7 +971,7 @@ export default class WrotPlugin extends Plugin {
       body .wr-lp-media.${cls} .wr-ogp-loading {
         color: ${mOgp};
       }
-      /* 親要素の文字色当てに特異度負けする環境向けに、 ID相当の特異度で再宣言 */
+      /* ID-equivalent re-declaration in case the parent text-color stamp wins on specificity */
       body .wr-card.${cls} .wr-ogp-title:not(#x):not(#y):not(#z),
       body .wr-card.${cls} .wr-ogp-desc:not(#x):not(#y):not(#z),
       body .wr-card.${cls} .wr-ogp-site:not(#x):not(#y):not(#z),
@@ -1034,7 +995,7 @@ export default class WrotPlugin extends Plugin {
 
     if (parts.length === 0) return;
 
-    // NOTE: createEl("style") にすると no-forbidden-elements がエラーになるため createElement を維持する。
+    // createElement, not createEl("style"): avoids the no-forbidden-elements lint error.
     this.tagRuleStyleEl = activeDocument.createElement("style");
     this.tagRuleStyleEl.id = "wr-tag-rule-override";
     this.tagRuleStyleEl.textContent = this.boostSelectors(parts.join(""), 4);
@@ -1042,7 +1003,7 @@ export default class WrotPlugin extends Plugin {
   }
 
   refreshReadingViews(): void {
-    // 既存blockに残ったwr-tag-rule-数字クラスを掃除する。設定UIのクラスは末尾数字でないため対象外
+    // Sweep stale wr-tag-rule-<n> classes off existing blocks; settings-UI classes lack the numeric suffix.
     const sweepSelector =
       '.wr-card[class*="wr-tag-rule-"], ' +
       'div.block-language-wr[class*="wr-tag-rule-"], ' +
@@ -1174,7 +1135,7 @@ export default class WrotPlugin extends Plugin {
   onunload(): void {
     this.unloading = true;
     setMathJaxReadyHandler(null);
-    // 本体統合用に注入したタグを痕跡なく取り除く
+    // Remove every tag injected for the core integration, leaving no trace.
     this.graphTags?.removeAll();
     this.bgStyleEl?.remove();
     this.bgStyleEl = null;
@@ -1218,8 +1179,8 @@ export default class WrotPlugin extends Plugin {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- value from untyped Obsidian/CodeMirror internal API
     const raw = (await this.loadData()) ?? {};
     let dirty = false;
-    // 補完候補を data.json に保持していた時期からの移行。値を退避してからキーを消す
-    // （実際の書き出しは loadRecentTags が tags.json 未作成のときのみ行う）。
+    // Migrate completion candidates once stored in data.json: stash the value, drop the key.
+    // loadRecentTags writes tags.json only when it doesn't exist yet.
     const rawRecentTags = (raw as { recentTags?: unknown }).recentTags;
     if (Array.isArray(rawRecentTags)) {
       this.legacyRecentTags = rawRecentTags.filter((v): v is string => typeof v === "string");
@@ -1230,15 +1191,15 @@ export default class WrotPlugin extends Plugin {
         dirty = true;
       }
     }
-    // 未リリース期に4段階セレクトだった graphTagsMode からの移行。off 以外は有効として引き継ぐ
+    // Migrate the pre-release 4-value graphTagsMode: anything except "off" carries over as enabled.
     if ("graphTagsMode" in raw) {
       const mode = (raw as { graphTagsMode?: unknown }).graphTagsMode;
       (raw as Record<string, unknown>).graphTagsEnabled = mode !== "off";
       delete (raw as Record<string, unknown>).graphTagsMode;
       dirty = true;
     }
-    // 新規インストール時のみ、言語依存デフォルトを採用する。
-    // 既存ユーザーは保存済みの値が raw に入っているので、Object.assign で raw 側が勝つ。
+    // Locale-dependent defaults apply only to fresh installs; existing users'
+    // saved values arrive in raw and win via Object.assign.
     const localizedDefaults: WrotSettings = {
       ...DEFAULT_SETTINGS,
       headerDateFormat: t("defaults.headerDateFormat"),
@@ -1248,16 +1209,15 @@ export default class WrotPlugin extends Plugin {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- value from untyped Obsidian/CodeMirror internal API
     this.settings = Object.assign({}, localizedDefaults, raw);
 
-    // calendarDayShape 未記録の場合：新規インストールは "rounded"、既存ユーザーは "circle" を維持。
-    // viewPlacement の有無で新規/既存を判別する（最初期からある設定キーのため）。
+    // Missing calendarDayShape: fresh installs get "rounded", existing users keep "circle".
+    // Presence of viewPlacement (a day-one settings key) tells the two apart.
     if (!("calendarDayShape" in raw)) {
       this.settings.calendarDayShape = ("viewPlacement" in raw) ? "circle" : "rounded";
       dirty = true;
     }
 
-    // 起動時に Obsidian の言語が前回と変わっていたら、テキスト系3項目を現在言語のデフォルトに上書きする。
-    // 言語体系が変わるとカスタム値そのものの意味が成立しなくなるため、問答無用でリセットする方針。
-    // lastLocale 未記録（i18n 導入前から使っているユーザーの初回）は記録だけ行い、リセットは走らせない。
+    // If Obsidian's language changed since last run, force-reset the three text settings to the new
+    // locale's defaults (custom values lose meaning across languages). Missing lastLocale (pre-i18n users): record only, no reset.
     const currentLocale = getActiveLocale();
     const previousLocale = (raw as { lastLocale?: string }).lastLocale;
     if (previousLocale !== undefined && previousLocale !== currentLocale) {
@@ -1283,7 +1243,7 @@ export default class WrotPlugin extends Plugin {
     }
   }
 
-  // タグ補完候補の保存先。設定(data.json)とは別ファイルに分離する。
+  // Tag-completion history lives in tags.json, kept separate from settings (data.json).
   private tagHistoryPath(): string | null {
     const dir = this.manifest.dir;
     return dir ? normalizePath(`${dir}/tags.json`) : null;
@@ -1299,12 +1259,12 @@ export default class WrotPlugin extends Plugin {
           ? parsed.filter((v): v is string => typeof v === "string")
           : [];
       } else if (this.legacyRecentTags) {
-        // data.json 保持時代からの移行: 初回だけ引き継いで tags.json を作る
+        // One-time migration from the data.json era: adopt the values and create tags.json.
         this.recentTags = this.legacyRecentTags;
         await this.saveRecentTags();
       }
     } catch {
-      // 読めない場合は空から再スタート（候補は投稿でまた貯まるため致命的でない）
+      // Unreadable file: restart empty; candidates re-accumulate with each post.
       this.recentTags = [];
     }
     this.legacyRecentTags = null;
@@ -1316,7 +1276,7 @@ export default class WrotPlugin extends Plugin {
     try {
       await this.app.vault.adapter.write(path, JSON.stringify(this.recentTags));
     } catch {
-      // 保存失敗は致命的でないため無視する（次の投稿時に再試行される）
+      // Save failure is non-fatal; retried on the next post.
     }
   }
 }

@@ -24,7 +24,6 @@ export function registerWrotPostProcessor(plugin: WrotPlugin): void {
     })
   );
 
-  // 元投稿が変更されたら memo キャッシュを無効化し、参照カードを document 全体で再描画
   plugin.registerEvent(
     plugin.app.vault.on("modify", (file) => {
       if (!(file instanceof TFile)) return;
@@ -98,12 +97,9 @@ async function applyBlockIdClasses(el: HTMLElement, plugin: WrotPlugin, sourcePa
   } catch {
     return;
   }
-  // ノート上のフェンスと memos を「上から下の出現順」で 1対1 ペアリングする。
-  // 本文一致で memo を探すアプローチは「同本文の別投稿」が複数あると
-  // 全部同じ memo に紐づいてしまうため使わない。
-  // memos は parseMemos で reverse 済み（新しい順）なので lineStart 昇順に並べ直す。
+  // Pair fences and memos 1:1 by top-to-bottom order; matching by body text would bind
+  // duplicate posts to the same memo. parseMemos returns newest-first, so re-sort by lineStart.
   const sortedMemos = [...memos].sort((a, b) => a.lineStart - b.lineStart);
-  // ノート全体の wr フェンスを DOM 出現順で取得
   const doc = (codeEls[0] as HTMLElement).ownerDocument || activeDocument;
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- assertion needed for cross-version Obsidian typings
   const allCodeEls = Array.from(
@@ -188,7 +184,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
           svg.setAttribute("color", successColor);
         });
       };
-      // Obsidianがアイコン差し替えた後にも再適用するため複数回呼ぶ
+      // Obsidian swaps the icon after click; re-apply a few times to cover that.
       applySvgColor();
       window.setTimeout(applySvgColor, 50);
       window.setTimeout(applySvgColor, 150);
@@ -202,8 +198,8 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
     return file ? plugin.app.vault.getResourcePath(file) : null;
   };
 
-  // 引用カードマーカー [[X#^wr-T]] が含まれてる投稿は画像をインライン描画（末尾集約しない）。
-  // これにより画像は元投稿の書かれた位置（=引用カードの上）に表示される
+  // Posts containing a quote-card marker [[X#^wr-T]] render images inline instead of
+  // collecting them at the tail, so images stay at their written position above the card.
   const blockFullText = code.textContent || "";
   // eslint-disable-next-line no-useless-escape -- escape kept for regex readability
   const hasQuoteMarker = /\[\[[^\[\]]+#\^wr-\d{17}\]\]/.test(blockFullText);
@@ -380,12 +376,12 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
         const span = createSpan();
         span.className = "wr-reading-tag";
         span.textContent = part;
-        // タイムラインのタグと同じく、クリックでグローバル検索を開く。
-        // stopPropagation は同じ pre 内のチェックボックス等との干渉予防
+        // Click opens global tag search; stopPropagation avoids interfering with
+        // checkboxes etc. inside the same pre.
         span.addEventListener("click", (e) => {
           e.preventDefault();
           e.stopPropagation();
-          // 押した感覚のフィードバック: クラスを外して reflow を挟み、連打でも毎回光らせ直す
+          // Remove the class and force a reflow so the flash restarts on rapid clicks.
           span.classList.remove("wr-tag-flash");
           void span.offsetWidth;
           span.classList.add("wr-tag-flash");
@@ -398,9 +394,8 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
         const mathEl = createSpan();
         mathEl.className = "wr-math";
         try {
-          // MathJaxは数式が実際に描画されるまで読み込まない(utils/mathjax.ts参照)。
-          // 未読み込みならフォールバックへ直行し、wr-math-fallback を目印に
-          // 読み込み完了後その要素だけ差し替えられる
+          // MathJax loads lazily (see utils/mathjax.ts). If not ready, fall through to the
+          // fallback; wr-math-fallback marks the element for in-place replacement once loaded.
           if (!isMathJaxReady()) throw new Error("MathJax not loaded yet");
           // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment, no-undef -- internal Obsidian/CodeMirror API or intentional pattern
           const { renderMath, finishRenderMath } = require("obsidian");
@@ -487,8 +482,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
   }
   }
 
-  // 引用マーカーがある投稿では「引用は底」原則を維持するため、
-  // 末尾メディアを引用カード slot の直前に挿入する
+  // Keep the quote card at the bottom: insert tail media just before the quote-card slot.
   const blockEl = code.closest(".block-language-wr") || code.closest("pre");
   if (blockEl) {
     const quoteSlot = hasQuoteMarker
@@ -517,8 +511,8 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
         renderUrlPreviews(mediaEl, parsedUrls, plugin.ogpCache, resolveImagePath);
       }
     }
-    // CSS :has() 回避: 「引用カードを含む」「末尾が埋め込み画像/メディアエリア」のブロックに
-    // 状態クラスを直付けし、styles.css 側はこのクラスで padding-bottom を詰める
+    // :has() workaround: mark blocks with a quote card or an image/media tail with a
+    // state class; styles.css tightens padding-bottom via this class.
     const lastChild = blockEl.lastElementChild;
     const hasRichTail =
       !!blockEl.querySelector(".wr-quote-card-slot") ||
@@ -548,9 +542,8 @@ function renderMathBlockFragment(segment: Extract<Segment, { kind: "mathblock" }
   const blockEl = createDiv();
   blockEl.className = "wr-math-display";
   try {
-    // MathJaxは数式が実際に描画されるまで読み込まない(utils/mathjax.ts参照)。
-    // 未読み込みならフォールバックへ直行し、wr-math-fallback を目印に
-    // 読み込み完了後その要素だけ差し替えられる
+    // MathJax loads lazily (see utils/mathjax.ts). If not ready, fall through to the
+    // fallback; wr-math-fallback marks the element for in-place replacement once loaded.
     if (!isMathJaxReady()) throw new Error("MathJax not loaded yet");
     const rendered = renderMath(segment.tex, true);
     blockEl.appendChild(rendered);
@@ -574,7 +567,7 @@ function convertListLines(
   const block = code.closest(".block-language-wr") || code.closest("pre");
   if (!block) return;
 
-  // 再構築: 非リストはcode内、リストは親側に配置する
+  // Rebuild: non-list content stays inside code; lists are placed on the parent block.
   code.textContent = "";
   const fragments: (string | HTMLElement)[] = [];
   let currentListEl: HTMLElement | null = null;
@@ -748,7 +741,7 @@ function convertListLines(
           if (!file) return;
           const data = await plugin.app.vault.read(file);
           const fileLines = data.split("\n");
-          // 重複避けにブロック全文で一致判定する
+          // Match by the full block text to avoid hitting a duplicate block.
           const blockContent = fullText.trim();
           for (let f = 0; f < fileLines.length; f++) {
             if (fileLines[f].match(/^```wr\s+/)) {
@@ -808,14 +801,14 @@ function convertListLines(
   if (currentListEl) fragments.push(currentListEl);
   flushPlain();
 
-  // コピーボタン用に元テキストを保持
+  // Preserve the original text for the copy button.
   code.setAttribute("data-wr-original", fullText);
 
   while (fragments.length > 0 && fragments[fragments.length - 1] === "") {
     fragments.pop();
   }
 
-  // コピーボタンの動作を残すためcodeは非表示にして保持
+  // Keep code hidden rather than removed so the copy button still works.
   code.classList.add("wr-code-hidden");
 
   let hasContent = false;

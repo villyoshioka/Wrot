@@ -35,7 +35,7 @@ export class OGPCache {
     const cached = this.get(url);
     if (cached) return cached;
 
-    // 同一URLへの並行リクエストをまとめる
+    // Coalesce concurrent requests for the same URL
     const inflight = this.pending.get(url);
     if (inflight) return inflight;
 
@@ -85,7 +85,7 @@ export class OGPCache {
 
   private parseOGP(html: string, url: string): OGPData {
     const get = (prop: string): string | undefined => {
-      // property=/name= 両対応、シングル/ダブルクォート両対応
+      // Match property= or name=, single or double quotes
       const re = new RegExp(
         `<meta[^>]*(?:property|name)=["']og:${prop}["'][^>]*content=["']([^"']*)["']`,
         "i"
@@ -93,7 +93,7 @@ export class OGPCache {
       const match = html.match(re);
       if (match) return match[1];
 
-      // 属性順が content → property の場合に対応
+      // Handle reversed attribute order (content before property)
       const re2 = new RegExp(
         `<meta[^>]*content=["']([^"']*)["'][^>]*(?:property|name)=["']og:${prop}["']`,
         "i"

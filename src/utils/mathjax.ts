@@ -1,24 +1,17 @@
 import { loadMathJax, renderMath, finishRenderMath } from "obsidian";
 
-// MathJax の完全遅延読み込み。
-//
-// 起動時に読み込むと、ライブラリ本体のスクリプト評価(メインスレッド数十ms級)が
-// 起動計測の枠内やレイアウト確定直後の描画に重なってしまう(計測のブレ・ちらつきの原因)。
-// そのため数式が実際に描画されるまで一切読み込まず、フォールバック描画が起きた
-// 場所から requestMathJax() で初回だけ読み込みを開始する。数式を使わない vault では
-// MathJax は永遠に読み込まれない。
+// Fully lazy MathJax: eager loading costs tens of ms of main-thread script evaluation at
+// startup (measurement jitter, flicker). Nothing loads until a formula actually renders,
+// so math-free vaults never load MathJax at all.
 
-// MathJax が実際に描画へ使える状態かどうか。
-// Obsidian の loadMathJax() は呼び出した瞬間に設定用スタブを window.MathJax へ
-// 置いてからスクリプトを非同期読み込みするため、window.MathJax の存在チェックでは
-// 「読み込み完了」を判定できない(スタブ段階でも true になってしまう)。
-// renderMath が内部で呼ぶ tex2chtml が生えているかどうかで判定する。
+// Obsidian's loadMathJax() installs a config stub on window.MathJax before the async script
+// load, so its mere presence does not mean "loaded". Probe tex2chtml (used by renderMath) instead.
 export function isMathJaxReady(): boolean {
   const mj = (window as { MathJax?: { tex2chtml?: unknown } }).MathJax;
   return typeof mj?.tex2chtml === "function";
 }
 
-// 読み込み完了時(=フォールバックを描き直すべきタイミング)の通知先。プラグイン本体が登録する
+// Notified on load completion (time to re-render fallbacks); registered by the plugin.
 let readyHandler: (() => void) | null = null;
 let requested = false;
 
@@ -26,9 +19,8 @@ export function setMathJaxReadyHandler(handler: (() => void) | null): void {
   readyHandler = handler;
 }
 
-// 数式のフォールバック描画が起きた場所から呼ぶ。初回だけ読み込みを開始し、
-// 完了したらハンドラへ通知する。読み込み済みの状態でフォールバックが起きた場合
-// (判定と完了がすれ違った稀なケース)も通知して描き直しの機会を作る
+// Called from fallback render sites; starts the load only once. Also notifies when already
+// ready (the ready check and load completion can race) so fallbacks get a re-render chance.
 export function requestMathJax(): void {
   if (isMathJaxReady()) {
     readyHandler?.();
@@ -43,15 +35,14 @@ export function requestMathJax(): void {
     });
 }
 
-// プレーンテキストにフォールバックした数式要素(.wr-math-fallback)だけを、
-// その場で数式描画に差し替える。ビュー全体の再描画はしないので他の内容は動かない
+// Upgrades only .wr-math-fallback elements in place; no full view re-render, so nothing else moves.
 export function upgradeMathFallbacks(): void {
   if (!isMathJaxReady()) return;
   const els = Array.from(activeDocument.querySelectorAll<HTMLElement>(".wr-math-fallback"));
   if (els.length === 0) return;
   let patched = false;
   for (const el of els) {
-    // インライン(.wr-math)は "$tex$"、ブロック(.wr-math-display)は生のtexが入っている
+    // Inline (.wr-math) holds "$tex$"; block (.wr-math-display) holds raw tex.
     const isBlock = el.classList.contains("wr-math-display");
     const raw = el.textContent ?? "";
     const tex = isBlock ? raw : raw.replace(/^\$/, "").replace(/\$$/, "");

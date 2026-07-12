@@ -4,7 +4,7 @@ import { renderTextWithTagsAndUrls } from "./urlRenderer";
 
 declare const moment: typeof import("moment");
 
-// 同一ファイルの parseMemos 結果をモジュール内 LRU でキャッシュ（最大8ファイル）
+// LRU cache (Map insertion order) of parseMemos results per file.
 const MEMO_CACHE = new Map<string, Memo[]>();
 const MEMO_CACHE_MAX = 8;
 
@@ -26,17 +26,12 @@ export function invalidateMemoCache(filePath: string): void {
   MEMO_CACHE.delete(filePath);
 }
 
-// カードDOM → 引用元メモの対応。クリックハンドラのジャンプ先行番号の参照元。
-// クロージャ変数ではなく WeakMap に持つことで、カードを作り直さない
-// インプレース更新でもジャンプ先を最新のメモに差し替えられる。
+// Card DOM -> source memo, read by click handlers for the jump target. A WeakMap
+// (not a closure) lets in-place updates swap the memo without rebuilding the card.
 const CARD_MEMO = new WeakMap<HTMLElement, Memo>();
 
-// ファイル変更時に「そのファイルを参照してる引用カード」を全部更新する。
-// RV/LV/Wrotタイムライン どこにあっても data-quote-file/data-quote-block で特定できる。
-// fileName はリンクパス表記 (例: "2026年05月08日") なので、変更されたファイルのベース名と照合する。
-// カードを作り直すとプレースホルダが一瞬挟まってちらつくため、枠とクリック
-// ハンドラを保ったまま中身だけ差し替えるインプレース更新を基本とし、
-// 構造が想定外のときだけ作り直しにフォールバックする。
+// Refresh quote cards referencing the changed file (data-quote-file holds a link path, matched by basename).
+// In-place update avoids the placeholder flicker of a rebuild; rebuild only on unexpected structure.
 export function refreshQuoteCardsForFile(
   app: App,
   file: TFile,
@@ -78,11 +73,9 @@ export function refreshQuoteCardsForFile(
   });
 }
 
-// 既存カードの枠・クリックハンドラ・data属性を保ったまま、本文と時刻だけ
-// 差し替える。差し替え完了までは古い中身が表示され続けるので、作り直し方式の
-// 「…」プレースホルダによるちらつきが出ない。
-// 戻り値 false は「このカードはインプレース更新できない構造」の意味で、
-// 呼び出し側が作り直しにフォールバックする。
+// Swaps only body/timestamp while keeping frame, handlers, and data attrs, so the rebuild
+// path's "…" placeholder flicker never shows. Returns false when the card structure cannot
+// be updated in place (caller rebuilds).
 function updateQuoteCardInPlace(
   card: HTMLElement,
   app: App,
@@ -115,7 +108,6 @@ function updateQuoteCardInPlace(
     }
     card.classList.remove("wr-quote-card-dead");
     fillCardBody(card, bodyEl, metaEl, found, app, opts.timestampFormat, opts.checkStrikethrough);
-    // 引用元のタグルールクラスも最新の内容に合わせて当て直す
     Array.from(card.classList)
       .filter((c) => /^wr-tag-rule-\d+$/.test(c))
       .forEach((c) => card.classList.remove(c));
@@ -123,7 +115,7 @@ function updateQuoteCardInPlace(
       const cls = opts.resolveRuleClass(found.content);
       if (cls) card.classList.add(cls);
     }
-    // ジャンプ先の行番号も最新化する (クリックハンドラは CARD_MEMO を参照)
+    // The click handler reads CARD_MEMO, so refresh the jump target too.
     CARD_MEMO.set(card, found);
   };
 
@@ -156,7 +148,7 @@ function formatMemoTimestamp(time: string, format?: string): string {
   return moment(time).format(format || DEFAULT_TIMESTAMP_FORMAT);
 }
 
-// 入れ子引用マーカーは再帰展開せず "QT:" 化 (マトリョーシカ防止)
+// Nested quote markers are flattened to "QT:" instead of expanded, preventing recursive nesting.
 // eslint-disable-next-line no-useless-escape -- escape kept for regex readability
 const NESTED_QUOTE_RE_INLINE = /[\s]*\[\[[^\[\]]+#\^wr-\d{17}\]\][\s]*/g;
 
@@ -167,7 +159,7 @@ function sanitizeNestedQuotes(text: string): string {
   return text.replace(NESTED_QUOTE_RE_INLINE, ` ${NESTED_QUOTE_PLACEHOLDER}`);
 }
 
-// プレビュー幅を圧迫する 画像/数式/コード ブロックは アイコン+ラベル のサマリに置換
+// Image/math/code blocks would crowd the preview; replaced with icon+label summaries.
 // eslint-disable-next-line no-useless-escape -- escape kept for regex readability
 const IMAGE_EMBED_RE = /!\[\[[^\[\]]+\.(?:png|jpe?g|gif|webp|svg|bmp)\]\]/gi;
 const IMAGE_EMBED_PLACEHOLDER = "@@WR_IMAGE_EMBED@@";
@@ -313,7 +305,7 @@ function decorateNestedQuoteMarkers(root: HTMLElement): void {
 const PREVIEW_MAX_LINES = 3;
 const PREVIEW_MAX_CHARS_PER_LINE = 200;
 
-// 1行=1ブロック要素のフラット構造で描画。 max-height による 3行クリップを安定させるため
+// One block element per line (flat structure) keeps the max-height 3-line clipping stable.
 function renderPreviewLines(
   bodyEl: HTMLElement,
   content: string,
@@ -406,21 +398,21 @@ function markDead(card: HTMLElement, bodyEl: HTMLElement, metaEl: HTMLElement): 
   metaEl.textContent = "";
 }
 
-// RV 専用のジャンプ後処理。LV のように「時刻リストで対象を探しに行く」のではなく、
-// MutationObserver で「対象 DOM が現れた事実」をトリガーにして中央寄せ＋点滅する。
-// RV では行番号と画面位置の対応関係が壊れているため、時計ベースのポーリングだと
-// 「光らない・画面の縁ギリで止まる」揺らぎが構造的に発生していた問題への対策。
+// RV-only jump handling: waits for the target DOM via MutationObserver instead of time-based
+// polling. In RV, line numbers don't map to screen positions, so polling could miss the flash or stop at the viewport edge.
 function flashJumpTargetReadingView(
   blockId: string,
   app: App,
   resolveRuleAccent?: (ruleClass: string) => string | null,
-  targetView?: import("obsidian").MarkdownView | null
+  targetView?: import("obsidian").MarkdownView | null,
+  // See flashJumpTarget: flash in place without moving the view.
+  skipScroll?: boolean
 ): void {
-  // 異常系フェイルセーフ。正常系の上限ではなく「来ない場合に永遠に観測し続けない」ための保険。
+  // Failsafe only, not a normal-path limit: stops observing forever if the target never appears.
   const overallTimeoutMs = 10000;
-  // ResizeObserver の収束判定。サイズ変化が止まってから一定時間経ったら確定とみなす。
+  // Size changes must stay quiet for this long to count as settled.
   const resizeSettleMs = 200;
-  // 中央寄せ完了から点滅開始までの間（スクロールが視覚的に落ち着くまで）。
+  // Gap between centering and flash so the scroll visually settles.
   const scrollSettleDelay = 120;
   const flashDuration = 1600;
 
@@ -466,7 +458,6 @@ function flashJumpTargetReadingView(
     pendingTimeouts.clear();
     stopMutationWatch();
     stopResizeWatch();
-    // 走り出してる点滅クラスも即時除去
     const targets = collectFlashTargets(blockId, app);
     for (const el of targets) {
       el.classList.remove("wr-quote-jump-flash");
@@ -474,11 +465,8 @@ function flashJumpTargetReadingView(
     }
     removeInterruptListeners();
   };
-  // ユーザー操作による中断リスナーの登録は「中央寄せが始まったあと」まで遅延する。
-  // 理由: 対象がまだ DOM に来ていない（仮想スクロールで未マウントなど）状態で
-  // タップ余韻の touchstart や iOS の遅延 mousedown を拾うと、観測自体が死んで
-  // 「正しい位置には飛ぶのに光らない」症状になる。中央寄せまで来てしまえば
-  // ユーザーには「ちゃんと辿り着いた」体感があるので、その後のキャンセルは意味が出る。
+  // Attach interrupt listeners only after centering starts: while the target is still unmounted
+  // (virtual scroll), a lingering touchstart or iOS delayed mousedown would cancel the watch and the jump would land without flashing.
   const attachInterruptListenersOnce = () => {
     if (interruptListenersAttached) return;
     interruptListenersAttached = true;
@@ -523,22 +511,18 @@ function flashJumpTargetReadingView(
     }
   };
 
-  // 対象が現れた瞬間に呼ばれる確定処理。中央寄せ → 遅延描画の収束を待って点滅。
+  // Runs once the target appears: center, let late renders (OGP/MathJax) settle, then flash.
   const onTargetAppeared = (target: HTMLElement) => {
     if (canceled || centeredOnce) return;
     centeredOnce = true;
     currentTarget = target;
-    // ここで初めて中断リスナーを購読開始する。これより前は touchstart 余韻などで
-    // 自爆 cancel しないようにするため、何も購読しない。
     attachInterruptListenersOnce();
-    // ここでまず一度中央寄せ。OGP/数式の遅延描画は ResizeObserver で追っかける。
-    scrollElementIntoCenter(target);
-    // サイズ変化を観測。変化が来るたびに収束タイマーをリセット、止まったら最終調整＋点滅。
+    if (!skipScroll) scrollElementIntoCenter(target);
     let firstObservation = true;
     let flashed_once = false;
     const finalizeIfQuiet = () => {
       if (canceled) return;
-      if (currentTarget) scrollElementIntoCenter(currentTarget);
+      if (currentTarget && !skipScroll) scrollElementIntoCenter(currentTarget);
       if (!flashed_once) {
         flashed_once = true;
         schedule(flashAll, scrollSettleDelay);
@@ -564,18 +548,12 @@ function flashJumpTargetReadingView(
       });
       resizeObserver.observe(target);
     }
-    // 初回サイズ変化が一切来ない（=既に静止）ケースでも点滅させるため、
-    // 短い猶予を置いて点滅をキックする。サイズ変化が先に来たらそちらが先に走る。
+    // Kick the flash even if no resize ever fires (layout already settled).
     schedule(finalizeIfQuiet, resizeSettleMs);
   };
 
-  // RV パスでは、ジャンプ先 RV の「実際に画面に表示されている」要素を選ぶ。
-  // Obsidian は同一ノートの LV コンテナと RV コンテナを両方 DOM に持つことがあり
-  // (モード切替時に両方残る)、単純な「アクティブビュー containerEl 配下」絞り込みでは
-  // 非表示の LV 側要素を掴んでしまい、スクロールも点滅も画面に出ない症状になる。
-  // 判定基準:
-  //   1. 祖先に .markdown-reading-view があり、かつ .markdown-source-view が無いこと
-  //   2. offsetParent !== null (display:none やそれに準じた非表示状態でないこと)
+  // Obsidian can keep both LV and RV containers of the same note in the DOM; grabbing the hidden
+  // LV-side match makes scroll/flash invisible. Require a visible element (offsetParent !== null) under .markdown-reading-view with no .markdown-source-view ancestor.
   const pickVisibleReadingViewTarget = (): HTMLElement | null => {
     const all = collectFlashTargets(blockId, app);
     if (all.length === 0) return null;
@@ -592,20 +570,15 @@ function flashJumpTargetReadingView(
       return foundRV && !foundLV;
     });
     if (visibleRV.length > 0) return visibleRV[0];
-    // 見える RV 側要素が見つからない場合は null を返す。
-    // 「LV 側の非表示要素」や「offsetParent が null の要素」を掴んでも
-    // 中央寄せ・点滅が画面に出ないため、観測継続（MutationObserver の待機）を選ぶ。
+    // No visible RV match: return null and keep observing rather than grab a hidden element.
     return null;
   };
 
-  // 既に対象が現れている場合は即時で処理。観測は不要。
   const initialPreferred = pickVisibleReadingViewTarget();
   if (initialPreferred) {
     onTargetAppeared(initialPreferred);
   } else {
-    // まだ現れていない → MutationObserver で出現を待ち受ける。
-    // 観測範囲は document 全体（RV のコンテナがどこに生えるか保証しにくいため）。
-    // 出現判定は wr-block-id-{blockId} クラスを持つ要素の追加で行う。
+    // Not mounted yet: observe the whole document, since where the RV container mounts is not guaranteed.
     const pickPreferred = pickVisibleReadingViewTarget;
     mutationObserver = new MutationObserver(() => {
       if (canceled || centeredOnce) {
@@ -626,10 +599,8 @@ function flashJumpTargetReadingView(
     });
   }
 
-  // 異常系フェイルセーフ。対象が10秒経っても来なければ観測を畳む。
-  // RV の仮想スクロール仕様上、画面外に深く埋もれたブロックは Obsidian 自身がマウントしない
-  // ため、ここまで来てしまうケースは Obsidian の構造的制約として受容する（プラグイン側で
-  // 強制マウントするとスクロール位置のガタつきが発生し、ジャンプ体感を損なうため）。
+  // Failsafe: RV virtual scrolling never mounts deeply off-screen blocks, so this can fire
+  // legitimately. Accepted as an Obsidian constraint — forcing a mount would jitter the scroll.
   const overallId = window.setTimeout(() => {
     pendingTimeouts.delete(overallId);
     stopMutationWatch();
@@ -639,28 +610,25 @@ function flashJumpTargetReadingView(
   pendingTimeouts.add(overallId);
 }
 
-// 元投稿に飛んだ後、対象の投稿ブロック全体を緩く点滅させる
 export function flashJumpTarget(
   blockId: string,
   app: App,
   resolveRuleAccent?: (ruleClass: string) => string | null,
-  // ジャンプ先のビュー。呼び出し側（クリックハンドラ）で確定したものを渡す。
-  // 「アクティブビュー」での判定だと、押した起点が Wrot タイムラインや別ノートだったときに
-  // ジャンプ先と無関係なビューを見て LV/RV 判定が揺らぐ。
-  targetView?: import("obsidian").MarkdownView | null
+  // Resolved by the caller: deriving it from the active view misclassifies LV/RV
+  // when the jump starts from the Wrot timeline or another note.
+  targetView?: import("obsidian").MarkdownView | null,
+  // Target was already fully on screen at click time: flash in place, never scroll.
+  skipScroll?: boolean
 ): void {
-  // RV では「行番号」と画面位置の対応関係が壊れる（画像/数式/OGP で行高が膨らむ）ため、
-  // LV と同じ時刻ベースのポーリングでは「光らない・縁ギリで止まる」揺らぎが出る。
-  // RV のときだけ「DOM 出現を観測する」方式に分岐させる。LV のパスは触らない。
+  // In RV, images/math/OGP inflate line heights and break the line-to-position mapping,
+  // so time-based polling misses; branch to the DOM-observation approach instead.
   const isReadingView = targetView?.getMode?.() === "preview";
   if (isReadingView) {
-    flashJumpTargetReadingView(blockId, app, resolveRuleAccent, targetView);
+    flashJumpTargetReadingView(blockId, app, resolveRuleAccent, targetView, skipScroll);
     return;
   }
 
-  // 以下、LV (Live Preview / source mode) 用の既存ロジック。手は入れない。
-  // 流れ: 対象要素出現を待つ → 見つかったらスクロール → スクロール完了後に点滅
-  // 中断: ユーザー操作があったらスクロールも点滅も両方やめる
+  // LV path: poll for the target, center it, then flash; any user input cancels both.
   const searchAt = [80, 250, 500, 900, 1500, 2200];
   const scrollSettleDelay = 200;
   const flashDuration = 1600;
@@ -668,9 +636,8 @@ export function flashJumpTarget(
   let scrolled = false;
   const pendingTimeouts = new Set<number>();
   const flashed = new WeakSet<HTMLElement>();
-  // URL カード (OGP) / 数式 (MathJax) のように遅延描画される子を含む対象は
-  // ジャンプ直後の中央寄せ後にサイズが膨らみ目的位置がズレる。
-  // 対象要素のサイズ変化を観測して、変化のたびに中央寄せをやり直す。
+  // OGP cards and MathJax render late and inflate the target after centering;
+  // observe size changes and re-center each time.
   let resizeObserver: ResizeObserver | null = null;
   let resizeSettleTimeout: number | null = null;
   const stopResizeWatch = () => {
@@ -696,7 +663,6 @@ export function flashJumpTarget(
     for (const id of pendingTimeouts) window.clearTimeout(id);
     pendingTimeouts.clear();
     stopResizeWatch();
-    // 走り出してる点滅クラスも即時除去
     const targets = collectFlashTargets(blockId, app);
     for (const el of targets) {
       el.classList.remove("wr-quote-jump-flash");
@@ -704,10 +670,8 @@ export function flashJumpTarget(
     }
     removeInterruptListeners();
   };
-  // スマホでは click を生んだタップの touchend 直後にも touchstart の
-  // 余韻イベントが発火することがある（特に iOS）。同じシーケンス内で
-  // リスナー登録すると自分のタップで cancel が誘発されてジャンプが空振りする。
-  // 次フレームに送ってシーケンスをまたいでから購読開始する。
+  // On mobile (esp. iOS) a lingering touchstart can fire right after the tap that produced
+  // the click; subscribing in the same event sequence would self-cancel the jump, so defer to the next frame.
   window.requestAnimationFrame(() => {
     if (canceled) return;
     activeDocument.addEventListener("keydown", cancel, true);
@@ -733,7 +697,6 @@ export function flashJumpTarget(
       flashed.add(el);
       el.classList.remove("wr-quote-jump-flash");
       void el.offsetWidth;
-      // 元投稿のタグルールに accent があれば そのカラーで光らせる
       const ruleClass = Array.from(el.classList).find((c) => /^wr-tag-rule-\d+$/.test(c));
       const accent = ruleClass && resolveRuleAccent ? resolveRuleAccent(ruleClass) : null;
       if (accent) {
@@ -752,31 +715,28 @@ export function flashJumpTarget(
     }
   };
 
-  // applyScroll / openLinkText のスクロールは「行数換算」のため、画像/数式など
-  // 行高が大きく変動するブロックがあると目的位置が大きくズレることがある。
-  // 対象要素が DOM に現れたら、ここで実 DOM 座標で改めて中央寄せに微調整する。
-  // その後、スクロールが落ち着いてから点滅させる。
+  // applyScroll/openLinkText scroll by line count, which drifts badly when images/math inflate
+  // line heights; once the target is in the DOM, re-center using real DOM coordinates.
   const tryFlash = (): boolean => {
     if (canceled || scrolled) return false;
     const targets = collectFlashTargets(blockId, app);
     if (targets.length === 0) return false;
     scrolled = true;
-    // 代表として先頭ターゲットを中央寄せ。同一 blockId の点滅対象は LV/RV/タイムライン
-    // を横断しうるが、ジャンプ位置は「アクティブビュー内の対象」基準にしたいので、
-    // アクティブビューに含まれる要素を優先的に選ぶ
+    if (skipScroll) {
+      schedule(flashAll, scrollSettleDelay);
+      return true;
+    }
+    // Targets may span LV/RV/timeline; center on the one inside the active view when possible.
     const activeContainer = getActiveViewContainer(app);
     const preferred = activeContainer
       ? targets.find((el) => activeContainer.contains(el)) ?? targets[0]
       : targets[0];
     scrollElementIntoCenter(preferred);
-    // OGP カードや数式 (MathJax) の遅延描画でサイズが膨らむと、初回中央寄せ後に
-    // 目的位置がズレる。ResizeObserver で対象のサイズ変化を観測し、変化のたびに
-    // 一定時間後に再度中央寄せをやり直す。一定時間サイズ変化が止まったら監視終了。
     if (typeof ResizeObserver !== "undefined") {
       stopResizeWatch();
       let firstObservation = true;
       resizeObserver = new ResizeObserver(() => {
-        // observe() 直後の初回コールバックは現状サイズ通知なので無視する
+        // ResizeObserver fires once on observe() with the current size; skip it.
         if (firstObservation) {
           firstObservation = false;
           return;
@@ -792,8 +752,7 @@ export function flashJumpTarget(
         }, 80);
       });
       resizeObserver.observe(preferred);
-      // 描画安定までの上限。遅延描画が永遠に発火し続ける状況を避けるため
-      // searchAt の最後＋少しの猶予で確実に監視を切る
+      // Hard stop so endless late renders cannot keep the observer alive.
       const stopId = window.setTimeout(() => {
         pendingTimeouts.delete(stopId);
         stopResizeWatch();
@@ -810,7 +769,7 @@ export function flashJumpTarget(
       tryFlash();
     }, ms);
   }
-  // 最後の試行後、検知リスナーだけクリーンアップ（点滅自体は止めない）
+  // After the last attempt, remove only the interrupt listeners; an in-flight flash keeps running.
   const cleanupId = window.setTimeout(() => {
     pendingTimeouts.delete(cleanupId);
     removeInterruptListeners();
@@ -818,8 +777,7 @@ export function flashJumpTarget(
   pendingTimeouts.add(cleanupId);
 }
 
-// 現在アクティブな MarkdownView のコンテナ要素を返す。
-// 同じファイルが LV/RV で並行して開かれている場合の、対象要素の絞り込みに使う。
+// Used to disambiguate targets when the same file is open in both LV and RV.
 function getActiveViewContainer(app: App): HTMLElement | null {
   // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef -- internal Obsidian/CodeMirror API or intentional pattern
   const obs = require("obsidian") as typeof import("obsidian");
@@ -827,10 +785,8 @@ function getActiveViewContainer(app: App): HTMLElement | null {
   return view?.containerEl ?? null;
 }
 
-// 対象要素を「対象が属する単一のスクロールコンテナ内で中央に来る」位置までスクロールする。
-// scrollIntoView は要素を含む全スクロール可能祖先を巻き込んでスクロールするため、
-// 特に RV では外側コンテナまで動いてビュー全体が先頭に戻ってしまう症状が出る。
-// 対象に最も近いスクロール可能祖先を1つだけ特定し、その scrollTop を直接調整する。
+// scrollIntoView scrolls every scrollable ancestor; in RV that can drag the outer container
+// and reset the whole view to the top. Adjust only the nearest scrollable ancestor's scrollTop.
 function findNearestScrollableAncestor(el: HTMLElement): HTMLElement | null {
   let cur: HTMLElement | null = el.parentElement;
   while (cur) {
@@ -845,30 +801,40 @@ function findNearestScrollableAncestor(el: HTMLElement): HTMLElement | null {
   return null;
 }
 
+// Jumps to a target already fully on screen must not move the view (flash only).
+function isFullyVisibleInScroller(el: HTMLElement): boolean {
+  const rect = el.getBoundingClientRect();
+  if (rect.height === 0) return false;
+  const scroller = findNearestScrollableAncestor(el);
+  if (!scroller) {
+    const viewportH = window.innerHeight || activeDocument.documentElement.clientHeight;
+    return rect.top >= 0 && rect.bottom <= viewportH;
+  }
+  const scrollerRect = scroller.getBoundingClientRect();
+  return rect.top >= scrollerRect.top && rect.bottom <= scrollerRect.bottom;
+}
+
 function scrollElementIntoCenter(el: HTMLElement): void {
   const scroller = findNearestScrollableAncestor(el);
   if (!scroller) {
-    // 例外: スクロール可能祖先が見つからないときだけ scrollIntoView にフォールバック
     el.scrollIntoView({ block: "center", behavior: "auto" });
     return;
   }
   const apply = () => {
     const scrollerRect = scroller.getBoundingClientRect();
     const elRect = el.getBoundingClientRect();
-    // 対象要素の中心が scroller の中央に来るように scrollTop を調整
     const offsetWithinScroller = elRect.top - scrollerRect.top + scroller.scrollTop;
     const desiredTop = offsetWithinScroller - (scroller.clientHeight - elRect.height) / 2;
     const maxTop = scroller.scrollHeight - scroller.clientHeight;
     scroller.scrollTop = Math.max(0, Math.min(desiredTop, maxTop));
   };
   apply();
-  // モバイル（特に iOS）では1度の代入だと慣性処理に上書きされる場合があるため、
-  // 次フレームでもう一度同じ計算で書き直して確実に反映させる
+  // On mobile (esp. iOS) a single scrollTop write can be overridden by momentum
+  // scrolling; re-apply on the next frame.
   window.requestAnimationFrame(apply);
 }
 
-// LV/RV/タイムライン全てから wr-block-id-{blockId} 付き要素を収集。
-// モバイルでタイムラインが一時表示ドロワーの時だけ除外
+// Collect block-id matches across LV/RV/timeline; on mobile, timeline cards in a transient drawer are excluded.
 function collectFlashTargets(blockId: string, app: App): HTMLElement[] {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- assertion needed for cross-version Obsidian typings
   const all = Array.from(
@@ -877,21 +843,18 @@ function collectFlashTargets(blockId: string, app: App): HTMLElement[] {
 
   if (!Platform.isMobile) return all;
 
-  // モバイル: スマホは Wrot タイムラインのカードを除外
   if (Platform.isPhone) {
     return all.filter((el) => !el.classList.contains("wr-card"));
   }
 
-  // タブレット: Wrot ビューがサイドバー固定モード（is-pinned）かどうかをDOM祖先で判定。
-  // 固定モード: .workspace-drawer.is-pinned の中にいる → 点灯OK
-  // 一時ドロワー: .workspace-drawer の中だが is-pinned が無い → 点灯NG
+  // Tablets: include timeline cards only when the Wrot view is in a pinned sidebar
+  // (.workspace-drawer.is-pinned); an unpinned (transient) drawer is excluded.
   const wrCardEls = all.filter((el) => el.classList.contains("wr-card"));
   const isUnpinnedDrawer = wrCardEls.some((el) => {
     const drawer = el.closest(".workspace-drawer");
     return drawer !== null && !drawer.classList.contains("is-pinned");
   });
   if (isUnpinnedDrawer) {
-    // 一時ドロワーモード時は Wrot タイムラインのカードを除外
     return all.filter((el) => !el.classList.contains("wr-card"));
   }
   return all;
@@ -906,12 +869,11 @@ export function renderQuoteCard(
   options?: {
     localMemos?: Memo[];
     timestampFormat?: string;
-    // 元投稿のタグからタグルールクラスを判定する関数。
-    // 引用カードを「引用元のルール」で独立して染めるために、 memo 取得後に呼び出す。
+    // Colors the card by the source post's tag rule, independent of the quoting post's rule.
     resolveRuleClass?: (content: string) => string | null;
-    // ルールクラス → アクセント色 (hex) を返す関数。 ジャンプ後の点滅色に使う
+    // Rule class -> accent hex; used for the post-jump flash color.
     resolveRuleAccent?: (ruleClass: string) => string | null;
-    // チェック済み項目のテキストに取り消し線を引く (本体リストの設定と同じ値を渡す)
+    // Strike through checked items (pass the same value as the main list setting).
     checkStrikethrough?: boolean;
   }
 ): void {
@@ -920,9 +882,8 @@ export function renderQuoteCard(
   const resolveRuleClass = options?.resolveRuleClass;
   const resolveRuleAccent = options?.resolveRuleAccent;
   const checkStrikethrough = options?.checkStrikethrough ?? false;
-  // <a href> だと Obsidian の内部リンク処理が mousedown/mouseup を奪い、
-  // クリックイベントが届かないことがある（特に <a> 要素本体をクリックした時）。
-  // <div> + role="link" で代替し、自前の click ハンドラに任せる。
+  // An <a href> lets Obsidian's internal link handling swallow mousedown/mouseup so the
+  // click may never arrive; use <div role="link"> with our own click handler instead.
   const card = slot.createDiv({ cls: "wr-quote-card" });
   card.setAttr("role", "link");
   card.setAttr("tabindex", "0");
@@ -930,7 +891,7 @@ export function renderQuoteCard(
   card.dataset.quoteBlock = blockId;
   card.dataset.quoteContext = currentFilePath;
   if (timestampFormat) card.dataset.quoteTsFormat = timestampFormat;
-  // refreshQuoteCardsForFile での再描画時に設定値を引き継ぐため dataset に保存する
+  // Stored in dataset so refreshQuoteCardsForFile can carry the setting over.
   if (checkStrikethrough) card.dataset.quoteStrike = "1";
   const bodyEl = card.createDiv({ cls: "wr-quote-card-body", text: "…" });
   const metaEl = card.createDiv({ cls: "wr-quote-card-meta" });
@@ -941,9 +902,8 @@ export function renderQuoteCard(
     return;
   }
 
-  // メモが非同期で揃う前にユーザーがクリックすると、ハンドラ未登録のまま
-  // <a href> のデフォルト遷移が走って中途半端な状態になり、ホバー残り＋
-  // 2回押し問題を生む。メモ準備状態(CARD_MEMO)を使った eager ハンドラで先に防ぐ。
+  // Register the handler eagerly: a click before the memo loads would otherwise fall through to
+  // default navigation, leaving stuck hover and a double-press bug. CARD_MEMO gates readiness.
   // eslint-disable-next-line @typescript-eslint/no-misused-promises -- async handler intentionally used as a callback
   card.addEventListener("click", async (e) => {
     e.preventDefault();
@@ -955,45 +915,44 @@ export function renderQuoteCard(
     const activeView = app.workspace.getActiveViewOfType(obs.MarkdownView);
     const activeFilePath = activeView?.file?.path;
     const isSameFile = !!activeFilePath && activeFilePath === file.path;
-    // 同ファイル / 別ファイル / Wrotビュー（タイムライン）からのジャンプを統一処理：
-    // 1. 必要なら openLinkText でファイルを開いてビューをアクティブ化
-    // 2. アクティブ化された MarkdownView の applyScroll で対象行を中央寄せでスクロール
-    //    (openLinkText だけだと「もう開いてる」判定で動かないケースがあるため)
+    // Unified jump for same-file / cross-file / timeline origins: open via openLinkText if
+    // needed, then applyScroll — openLinkText alone can no-op when the file is already open.
     let targetView: import("obsidian").MarkdownView | null = activeView;
     if (!isSameFile) {
-      // 別ファイル or activeView 無し
       const recent = app.workspace.getMostRecentLeaf();
       const useRecent = !activeView && recent && recent.view instanceof obs.MarkdownView;
       if (useRecent && recent) {
         app.workspace.setActiveLeaf(recent, { focus: true });
       }
-      // recent も無い場合は新規 leaf
       const openInNew = !activeView && !useRecent;
       await app.workspace.openLinkText(`${fileName}#^${blockId}`, currentFilePath, openInNew);
       targetView = app.workspace.getActiveViewOfType(obs.MarkdownView);
     }
+    // Decide before any scrolling whether the target is already fully on screen;
+    // if so, skip both the line-based scroll and the later centering (no view hop).
+    let alreadyVisible = false;
     if (targetView) {
-      // applyScroll は指定行を画面上端付近に運ぶ。中央寄せは flashJumpTarget の中で
-      // 対象要素の実 DOM 座標を使って改めて行うため、ここではざっくり目的行まで運ぶだけ。
-      // 旧実装は viewportH ÷ approxLineHeight ÷ 2 で「画面半分の行数」を引いて中央化していたが、
-      // contentEl.clientHeight が「中身全体の高さ」を返すケースがあり halfLines が targetLine を
-      // 上回ると scrollLine が 0 に丸められて先頭に飛ぶ症状が出ていた。
-      const targetLine = memoReady.lineStart;
-      const mode = (targetView as { currentMode?: { applyScroll?: (line: number) => void } }).currentMode;
-      if (mode && typeof mode.applyScroll === "function") {
-        mode.applyScroll(targetLine);
+      const container = targetView.containerEl;
+      const mounted = collectFlashTargets(blockId, app).find(
+        (el) => el.offsetParent !== null && container.contains(el)
+      );
+      alreadyVisible = !!mounted && isFullyVisibleInScroller(mounted);
+      if (!alreadyVisible) {
+        // applyScroll only lands the line near the top; flashJumpTarget re-centers later
+        // using real DOM coordinates.
+        const targetLine = memoReady.lineStart;
+        const mode = (targetView as { currentMode?: { applyScroll?: (line: number) => void } }).currentMode;
+        if (mode && typeof mode.applyScroll === "function") {
+          mode.applyScroll(targetLine);
+        }
       }
     }
-    // Obsidian がスクロール+実体化を済ませた後で点滅させる。
-    // ジャンプ先のビューを明示的に渡すことで、LV/RV 判定が「アクティブビュー」のブレに左右されないようにする。
-    flashJumpTarget(blockId, app, resolveRuleAccent, targetView);
+    flashJumpTarget(blockId, app, resolveRuleAccent, targetView, alreadyVisible);
   });
 
   const setupClick = (memo: Memo) => {
     fillCardBody(card, bodyEl, metaEl, memo, app, timestampFormat, checkStrikethrough);
-    // 引用元のタグルールクラスを引用カード自身に当てる (引用先の親投稿のルールとは独立)
     if (resolveRuleClass) {
-      // 既存のルールクラスは念のため削除
       Array.from(card.classList)
         .filter((c) => /^wr-tag-rule-\d+$/.test(c))
         .forEach((c) => card.classList.remove(c));

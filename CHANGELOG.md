@@ -1,5 +1,15 @@
 # Release Notes
 
+## 2.14.1 - 2026-07-12
+
+### Bug Fixes
+
+- Fixed an issue where quote cards and URL previews were rendered in source mode.
+- Fixed an issue where the nested quote marker "QT:" inside quote cards appeared in the same accent color as links.
+- Fixed an issue where the screen briefly shifted up and down when jumping to a quoted post under certain conditions.
+
+---
+
 ## 2.14.0 - 2026-07-11
 
 ### Improvements

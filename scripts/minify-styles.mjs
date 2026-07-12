@@ -1,10 +1,7 @@
-// リリース用に styles.css をその場で圧縮する。リポジトリの styles.css は
-// 非圧縮（人間が読む版・残置 !important の理由コメント込み）のまま管理し、
-// このスクリプトは GitHub Actions のリリースワークフローがアセット添付の
-// 直前に実行する。ローカルでは実行不要。コメントは配布物では全削除する。
-// + や - はセレクタ結合子としても使われるが、calc(a + b) などの値式でも
-// 使われる。値式での前後の空白を潰すと calc が無効化されてルール全体が
-// 破棄されるため、+ - はここでは詰めない (esbuild.config.mjs の minifyCss と同じ方針)。
+// Minifies styles.css in place; run by the release workflow just before asset
+// upload (the repo copy stays unminified — do not run locally).
+// Whitespace around + / - is preserved: collapsing it inside calc() drops the
+// whole rule (same policy as minifyCss in esbuild.config.mjs).
 import fs from "fs";
 
 function minifyCss(css) {

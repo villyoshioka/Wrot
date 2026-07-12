@@ -22,8 +22,7 @@ export function parseMemos(fileContent: string): Memo[] {
       const lineStart = i;
       const rawLines = [lines[i]];
 
-      // openMatch[1] にはタイムスタンプの後にブロックID `^wr-T` が含まれる場合があるため、
-      // 最初の空白までを timestamp として取る
+      // openMatch[1] may carry a block ID (^wr-T) after the timestamp; take up to the first whitespace
       const time = openMatch[1].split(/\s/)[0];
 
       i++;

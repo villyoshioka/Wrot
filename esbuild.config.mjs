@@ -5,9 +5,8 @@ import fs from "fs";
 const prod = process.argv[2] === "production";
 
 function minifyCss(css) {
-  // + や - はセレクタ結合子としても使われるが、 calc(a + b) などの値式でも
-  // 使われる。値式での前後の空白を潰すと calc が無効化されてルール全体が
-  // 破棄されるため、 + - はここでは詰めない。
+  // Whitespace around + and - is preserved: collapsing it inside calc()
+  // invalidates the expression and drops the whole rule.
   return css
     .replace(/\/\*[\s\S]*?\*\//g, "")
     .replace(/\s+/g, " ")
@@ -17,14 +16,11 @@ function minifyCss(css) {
     .trim();
 }
 
-// styles.css はリポジトリ直下の非圧縮版をそのまま管理する（人間が直接編集する）。
-// リリース時の圧縮は GitHub Actions が scripts/minify-styles.mjs で行うため、
-// このビルドでは styles.css に触らない。上の minifyCss は main.ts 内の
-// `/* @css */` テンプレートリテラル圧縮 (cssEvalPlugin) 専用。
+// Repo-root styles.css stays unminified (hand-edited; CI minifies it at release
+// via scripts/minify-styles.mjs), so this build never touches it.
 
-// `/* @css */` マーカー付き template literal をビルド時にミニファイする esbuild プラグイン。
-// 例: `` `/* @css */ body { color: ${c}; } ` `` の中身を圧縮する。
-// バックティック内の `${...}` プレースホルダは保持して、その周辺の空白だけ詰める。
+// esbuild plugin: minifies template literals starting with a `/* @css */` marker,
+// preserving `${...}` placeholders while collapsing the CSS around them.
 const cssEvalPlugin = {
   name: "wr-css-eval",
   setup(build) {
@@ -111,8 +107,8 @@ function minifyTemplateBody(body) {
   return minified.replace(/__WR_CSS_PH_(\d+)__/g, (_, idx) => placeholders[Number(idx)]);
 }
 
-// プレースホルダ内のコードに含まれるネスト template literal も圧縮する。
-// 親が `/* @css */` の中にある以上、入れ子のテンプレートも CSS とみなして再帰処理する。
+// Templates nested inside placeholders are still CSS (the parent is `/* @css */`),
+// so minify them recursively.
 function minifyNestedTemplates(code) {
   let out = "";
   let i = 0;
@@ -160,8 +156,8 @@ const baseBuildOptions = {
 };
 
 if (prod) {
-  // 完全圧縮版（リリースアセット兼リポジトリ追跡用）:
-  // JS圧縮 + 動的CSS(@cssマーカー)も圧縮 → ルート直下の main.js に直接書き出す
+  // Full minified build (tracked in repo, doubles as the release asset):
+  // JS plus dynamic `/* @css */` templates.
   await esbuild.build({
     ...baseBuildOptions,
     outfile: "main.js",
@@ -169,17 +165,15 @@ if (prod) {
     sourcemap: false,
     plugins: [cssEvalPlugin],
   });
-  // リリース3点セットをローカル確認・手動コピー用に dist/ へ揃える（git管理外）。
-  // styles.css の圧縮は CI (scripts/minify-styles.mjs) と同じ処理なので、
-  // dist/ の中身はリリースアセットと同一内容になる。
+  // Mirror the release trio into dist/ (untracked) for local checks; the CSS
+  // minifier matches CI, so dist/ contents equal the release assets.
   fs.mkdirSync("dist", { recursive: true });
   fs.writeFileSync("dist/styles.css", minifyCss(fs.readFileSync("styles.css", "utf8")));
   fs.copyFileSync("main.js", "dist/main.js");
   fs.copyFileSync("manifest.json", "dist/manifest.json");
   process.exit(0);
 } else {
-  // watch モード（dev）: JSは圧縮、動的CSSテンプレートリテラルは元のまま残す
-  // （開発中の差分追跡・デバッグ用）
+  // Dev watch: JS minified, dynamic CSS template literals left intact for debugging.
   const context = await esbuild.context({
     ...baseBuildOptions,
     outfile: "main.js",
