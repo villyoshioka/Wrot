@@ -376,11 +376,12 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
   background: rgba(var(--mono-rgb-100), 0.05);
 }
 
-/* Keyboard-selected candidate. Takes precedence over the hover tint. */
+/* Keyboard-selected candidate. A neutral tint (same mono-rgb family as hover,
+   just stronger) marks "current keyboard focus," not "the recommended pick" —
+   the user can keep typing past it. Takes precedence over the hover tint. */
 .workspace-leaf-content[data-type="wrot-view"] .wr-tag-suggest-item-selected,
 .workspace-leaf-content[data-type="wrot-view"] .wr-tag-suggest-item-selected:hover {
-  background: var(--interactive-accent);
-  color: var(--text-on-accent);
+  background: rgba(var(--mono-rgb-100), 0.05);
 }
 
 /* Invisible focusable input used to rebuild the iOS input session after a
@@ -1866,6 +1867,12 @@ body.is-mobile .wr-submit-btn {
   height: auto;
   max-height: none;
   line-height: 1.4;
+}
+
+body.is-mobile .wr-submit-btn.wr-submit-icon-only {
+  padding: 0;
+  height: calc(var(--input-height) * 0.72);
+  width: calc(var(--input-height) * 0.9);
 }
 
 .is-mobile .wr-textarea {

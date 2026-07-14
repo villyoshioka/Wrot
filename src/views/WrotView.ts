@@ -330,6 +330,26 @@ export class WrotView extends ItemView {
     this.calendarPopover = null;
   }
 
+  // Recomputes the submit button's label/icon/aria-label together so the two settings
+  // never combine into a fully blank button: an empty label only renders as icon-only
+  // when an icon is actually set, otherwise it falls back to the default label text.
+  refreshSubmitButton(): void {
+    if (!this.submitBtnEl) return;
+    const { submitLabel, submitIcon } = this.plugin.settings;
+    const label = submitLabel || (submitIcon ? "" : t("defaults.submitLabel"));
+    this.submitLabelEl.textContent = label ? `${label} ` : "";
+    this.submitBtnEl.toggleClass("wr-submit-icon-only", !label);
+    if (label) {
+      this.submitBtnEl.removeAttribute("aria-label");
+    } else {
+      this.submitBtnEl.setAttr("aria-label", t("defaults.submitLabel"));
+    }
+    this.submitIconEl.empty();
+    if (submitIcon) {
+      setIcon(this.submitIconEl, submitIcon);
+    }
+  }
+
   private buildInputArea(container: HTMLElement): void {
     const inputArea = container.createDiv({ cls: "wr-input-area" });
 
@@ -337,14 +357,12 @@ export class WrotView extends ItemView {
     const submitBtn = header.createEl("button", {
       cls: "wr-submit-btn",
     });
-    this.submitLabelEl = submitBtn.createSpan({ text: `${this.plugin.settings.submitLabel} ` });
+    this.submitLabelEl = submitBtn.createSpan();
     this.submitIconEl = submitBtn.createSpan({ cls: "wr-submit-icon" });
-    if (this.plugin.settings.submitIcon) {
-      setIcon(this.submitIconEl, this.plugin.settings.submitIcon);
-    }
+    this.submitBtnEl = submitBtn;
+    this.refreshSubmitButton();
     // eslint-disable-next-line @typescript-eslint/no-misused-promises -- async handler intentionally used as a callback
     submitBtn.addEventListener("click", () => this.submitMemo());
-    this.submitBtnEl = submitBtn;
 
     this.textarea = inputArea.createEl("textarea", {
       cls: "wr-textarea",

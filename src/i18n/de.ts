@@ -39,7 +39,7 @@ const de = {
 
   "settings.item.submitLabel.name": "Text der Posten-Schaltfläche",
   "settings.item.submitLabel.desc":
-    "Sie können den Text ändern, der auf der Posten-Schaltfläche angezeigt wird.",
+    "Sie können den Text ändern, der auf der Posten-Schaltfläche angezeigt wird. Leer lassen für eine reine Symbol-Schaltfläche (nur wenn ein Symbol festgelegt ist).",
   "settings.item.submitIcon.name": "Symbol der Posten-Schaltfläche",
   "settings.item.submitIcon.desc":
     "Sie können das Symbol der Posten-Schaltfläche ändern. Kopieren Sie den Symbolnamen von {linkOpen}hier{linkClose}. Lassen Sie das Feld leer, um das Symbol auszublenden.",

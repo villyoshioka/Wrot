@@ -44,7 +44,6 @@ By adjusting the date format in Obsidian's "Daily Notes" settings (e.g., `GGGG-[
 
 ## Requirements
 
-- **Minimum Obsidian version**: 1.5.0
 - Works on all platforms supported by [Obsidian](https://obsidian.md/):
   - macOS
   - iOS / iPadOS

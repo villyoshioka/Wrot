@@ -39,7 +39,7 @@ const zhTW = {
 
   "settings.item.submitLabel.name": "發佈按鈕文字",
   "settings.item.submitLabel.desc":
-    "可以更改發佈按鈕上顯示的文字。",
+    "可以更改發佈按鈕上顯示的文字。留空可僅顯示圖示(僅當已設定圖示時)。",
   "settings.item.submitIcon.name": "發佈按鈕圖示",
   "settings.item.submitIcon.desc":
     "可以更改發佈按鈕的圖示。請從 {linkOpen}這裡{linkClose} 複製圖示名稱。留空則隱藏圖示。",

@@ -31,7 +31,7 @@ const ja = {
   "settings.item.textColorDark.desc": "ダークテーマでのテキスト・アイコンの色を設定します。",
 
   "settings.item.submitLabel.name": "投稿ボタンのテキスト",
-  "settings.item.submitLabel.desc": "投稿ボタンに表示するテキストを変更できます。",
+  "settings.item.submitLabel.desc": "投稿ボタンに表示するテキストを変更できます。\n空欄にするとアイコンのみの表示にできます(アイコン設定時のみ)。",
   "settings.item.submitIcon.name": "投稿ボタンのアイコン",
   // {linkOpen}/{linkClose} placeholders mark the part wrapped in an anchor element.
   "settings.item.submitIcon.desc": "投稿ボタンのアイコンを変更できます。アイコン名は {linkOpen}こちら{linkClose} からコピーしてください。\n空欄にするとアイコンを非表示にできます。",

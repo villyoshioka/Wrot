@@ -1,5 +1,14 @@
 # Release Notes
 
+## 2.15.0 - 2026-07-14
+
+### Improvements
+
+- The post button text can now be left blank for an icon-only button when an icon is set.
+- Made some changes to the colors used while tag autocomplete is active.
+
+---
+
 ## 2.14.1 - 2026-07-12
 
 ### Bug Fixes

@@ -39,7 +39,7 @@ const en = {
 
   "settings.item.submitLabel.name": "Post Button Text",
   "settings.item.submitLabel.desc":
-    "Change the text displayed on the post button.",
+    "Change the text displayed on the post button. Leave blank for an icon-only button (shown only if an icon is set).",
   "settings.item.submitIcon.name": "Post Button Icon",
   "settings.item.submitIcon.desc":
     "Change the icon of the post button. Copy the icon name from {linkOpen}here{linkClose}. Leave blank to hide the icon.",

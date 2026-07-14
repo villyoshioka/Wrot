@@ -39,7 +39,7 @@ const pt = {
     "Define a cor do texto e dos ícones no tema escuro.",
 
   "settings.item.submitLabel.name": "Texto do botão de postagem",
-  "settings.item.submitLabel.desc": "Altera o texto exibido no botão de postagem.",
+  "settings.item.submitLabel.desc": "Altera o texto exibido no botão de postagem. Deixe em branco para um botão somente com ícone (apenas se houver um definido).",
   "settings.item.submitIcon.name": "Ícone do botão de postagem",
   "settings.item.submitIcon.desc":
     "Altera o ícone do botão. Copie o nome do ícone de {linkOpen}aqui{linkClose}. Deixe em branco para ocultar.",

@@ -407,7 +407,7 @@ export class WrotSettingTab extends PluginSettingTab {
           .setPlaceholder(localizedDefault)
           .setValue(this.plugin.settings.submitLabel)
           .onChange(async (value) => {
-            this.plugin.settings.submitLabel = value || localizedDefault;
+            this.plugin.settings.submitLabel = value.trim();
             await this.plugin.saveSettings();
             this.plugin.updateSubmitLabel();
           });

@@ -1,4 +1,4 @@
-import { Plugin, TFile, WorkspaceLeaf, Notice, normalizePath, setIcon, MarkdownView } from "obsidian";
+import { Plugin, TFile, WorkspaceLeaf, Notice, normalizePath, MarkdownView } from "obsidian";
 import { VIEW_TYPE_WROT } from "./constants";
 import { WrotSettings, DEFAULT_SETTINGS, WrotSettingTab, TagColorRule, SubColorScope } from "./settings";
 import { WrotView } from "./views/WrotView";
@@ -1095,23 +1095,14 @@ export default class WrotPlugin extends Plugin {
   updateSubmitLabel(): void {
     const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_WROT);
     for (const leaf of leaves) {
-      const view = leaf.view as WrotView;
-      if (view.submitLabelEl) {
-        view.submitLabelEl.textContent = `${this.settings.submitLabel} `;
-      }
+      (leaf.view as WrotView).refreshSubmitButton();
     }
   }
 
   updateSubmitIcon(): void {
     const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_WROT);
     for (const leaf of leaves) {
-      const view = leaf.view as WrotView;
-      if (view.submitIconEl) {
-        view.submitIconEl.empty();
-        if (this.settings.submitIcon) {
-          setIcon(view.submitIconEl, this.settings.submitIcon);
-        }
-      }
+      (leaf.view as WrotView).refreshSubmitButton();
     }
   }
 

@@ -40,7 +40,7 @@ const es = {
 
   "settings.item.submitLabel.name": "Texto del botón de postear",
   "settings.item.submitLabel.desc":
-    "Cambia el texto que se muestra en el botón de postear.",
+    "Cambia el texto que se muestra en el botón de postear. Déjalo en blanco para un botón solo con icono (solo si hay uno configurado).",
   "settings.item.submitIcon.name": "Icono del botón de postear",
   "settings.item.submitIcon.desc":
     "Cambia el icono del botón de postear. Copia el nombre del icono desde {linkOpen}aquí{linkClose}. Si se deja en blanco, el icono se ocultará.",

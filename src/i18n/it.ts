@@ -41,7 +41,7 @@ const it = {
 
   "settings.item.submitLabel.name": "Testo del pulsante Posta",
   "settings.item.submitLabel.desc":
-    "Puoi modificare il testo visualizzato sul pulsante Posta.",
+    "Puoi modificare il testo visualizzato sul pulsante Posta. Lascia vuoto per un pulsante con la sola icona (solo se è impostata un'icona).",
   "settings.item.submitIcon.name": "Icona del pulsante Posta",
   "settings.item.submitIcon.desc":
     "Puoi modificare l'icona del pulsante Posta. Copia il nome dell'icona da {linkOpen}qui{linkClose}. Lascia vuoto per nasconderla.",

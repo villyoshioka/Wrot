@@ -39,7 +39,7 @@ const ko = {
 
   "settings.item.submitLabel.name": "게시 버튼 텍스트",
   "settings.item.submitLabel.desc":
-    "게시 버튼에 표시될 문구를 변경할 수 있습니다.",
+    "게시 버튼에 표시될 문구를 변경할 수 있습니다. 아이콘이 설정된 경우에 한해 비워두면 아이콘만 표시됩니다.",
   "settings.item.submitIcon.name": "게시 버튼 아이콘",
   "settings.item.submitIcon.desc":
     "게시 버튼의 아이콘을 변경할 수 있습니다. 아이콘 이름은 {linkOpen}여기{linkClose}에서 복사해 주세요. 비워두면 아이콘이 숨겨집니다.",

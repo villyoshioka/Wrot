@@ -41,7 +41,7 @@ const fr = {
 
   "settings.item.submitLabel.name": "Libellé du bouton Poster",
   "settings.item.submitLabel.desc":
-    "Personnalisez le texte affiché sur le bouton Poster.",
+    "Personnalisez le texte affiché sur le bouton Poster. Laissez vide pour un bouton avec seulement l'icône (uniquement si une icône est définie).",
   "settings.item.submitIcon.name": "Icône du bouton Poster",
   "settings.item.submitIcon.desc":
     "Modifiez l'icône du bouton. Copiez le nom de l'icône depuis {linkOpen}ici{linkClose}. Laissez vide pour la masquer.",

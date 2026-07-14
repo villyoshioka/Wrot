@@ -39,7 +39,7 @@ const zhCN = {
 
   "settings.item.submitLabel.name": "发布按钮文本",
   "settings.item.submitLabel.desc":
-    "自定义发布按钮上显示的文字。",
+    "自定义发布按钮上显示的文字。留空可仅显示图标(仅当已设置图标时)。",
   "settings.item.submitIcon.name": "发布按钮图标",
   "settings.item.submitIcon.desc":
     "自定义发布按钮的图标。请从 {linkOpen}此处{linkClose} 复制图标名称。留空则隐藏图标。",

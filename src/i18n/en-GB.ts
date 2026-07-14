@@ -38,7 +38,7 @@ const enGB = {
     "Set the colour for text and icons in dark theme.",
 
   "settings.item.submitLabel.name": "Post Button Text",
-  "settings.item.submitLabel.desc": "Customise the text displayed on the post button.",
+  "settings.item.submitLabel.desc": "Customise the text displayed on the post button. Leave blank for an icon-only button (shown only if an icon is set).",
   "settings.item.submitIcon.name": "Post Button Icon",
   "settings.item.submitIcon.desc":
     "Customise the icon for the post button. Copy icon names from {linkOpen}here{linkClose}. Leave blank to hide the icon.",
