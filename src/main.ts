@@ -8,7 +8,7 @@ import { OGPCache } from "./utils/ogpCache";
 import { GraphTagInjector } from "./utils/graphTags";
 import { ATTACHMENT_EXT_RE, matchTags, tagPattern } from "./utils/patterns";
 import { blendColor, darkenColor, validHex } from "./utils/color";
-import { boostSelectors, replaceStyleEl } from "./styles/styleInjector";
+import { boostSelectors, WrStyleSheet } from "./styles/styleInjector";
 import { buildPaletteCss } from "./styles/paletteCss";
 import { buildTagRuleCss } from "./styles/tagRuleCss";
 import { setMathJaxReadyHandler, upgradeMathFallbacks } from "./utils/mathjax";
@@ -24,9 +24,9 @@ export default class WrotPlugin extends Plugin {
   recentTags: string[] = [];
   // Migration buffer for candidates once stored in data.json; populated by loadSettings.
   private legacyRecentTags: string[] | null = null;
-  private bgStyleEl: HTMLStyleElement | null = null;
-  private tagRuleStyleEl: HTMLStyleElement | null = null;
-  private fontStyleEl: HTMLStyleElement | null = null;
+  private bgSheet = new WrStyleSheet("wr-bg-override");
+  private tagRuleSheet = new WrStyleSheet("wr-tag-rule-override");
+  private fontSheet = new WrStyleSheet("wr-font-override");
   // Guards against the MathJax-ready callback re-rendering through an already
   // unregistered postProcessor (stripping wr decorations) after the plugin is disabled.
   private unloading = false;
@@ -181,34 +181,25 @@ export default class WrotPlugin extends Plugin {
 
   applyFontFollow(): void {
     activeDocument.body.classList.toggle("wr-font-follow", this.settings.followObsidianFontSize);
-    if (this.fontStyleEl) {
-      this.fontStyleEl.remove();
-    }
-    // createElement, not createEl("style"): the latter trips the no-forbidden-elements lint.
-    // Style injection is required for dynamic user colors that styles.css cannot express.
-    this.fontStyleEl = activeDocument.createElement("style");
-    this.fontStyleEl.id = "wr-font-override";
-    activeDocument.head.appendChild(this.fontStyleEl);
-
     if (this.settings.followObsidianFontSize) {
       // Scale from --font-text-size to preserve the 14:13:12 size ratio.
-      this.fontStyleEl.textContent = `/* @css */
+      this.fontSheet.apply(`/* @css */
         body {
           --wr-font-text: var(--font-text-size);
           --wr-font-ui-small: calc(var(--font-text-size) * 0.929);
           --wr-font-ui-smaller: calc(var(--font-text-size) * 0.857);
           --wr-font-date: min(var(--font-text-size), 24px);
         }
-      `;
+      `);
     } else {
-      this.fontStyleEl.textContent = `/* @css */
+      this.fontSheet.apply(`/* @css */
         body {
           --wr-font-text: 14px;
           --wr-font-ui-small: 13px;
           --wr-font-ui-smaller: 12px;
           --wr-font-date: 14px;
         }
-      `;
+      `);
     }
   }
 
@@ -230,7 +221,7 @@ export default class WrotPlugin extends Plugin {
       faintColor: blendColor(textColor, bgColor, 0.6),
       unresolvedLinkColor: blendColor(textColor, bgColor, 0.3),
     });
-    this.bgStyleEl = replaceStyleEl(this.bgStyleEl, "wr-bg-override", boostSelectors(css, 2));
+    this.bgSheet.apply(boostSelectors(css, 2));
   }
 
   findTagColorRule(memoTags: string[]): TagColorRule | null {
@@ -278,10 +269,7 @@ export default class WrotPlugin extends Plugin {
   }
 
   applyTagColorRules(): void {
-    if (this.tagRuleStyleEl) {
-      this.tagRuleStyleEl.remove();
-      this.tagRuleStyleEl = null;
-    }
+    this.tagRuleSheet.remove();
     if (!this.settings.tagColorRulesEnabled) return;
     const rules = this.settings.tagColorRules || [];
     if (rules.length === 0) return;
@@ -289,7 +277,7 @@ export default class WrotPlugin extends Plugin {
     const css = buildTagRuleCss(rules);
     if (css.length === 0) return;
 
-    this.tagRuleStyleEl = replaceStyleEl(null, "wr-tag-rule-override", boostSelectors(css, 4));
+    this.tagRuleSheet.apply(boostSelectors(css, 4));
   }
 
   refreshReadingViews(): void {
@@ -400,12 +388,9 @@ export default class WrotPlugin extends Plugin {
     this.graphTags?.stop();
     // Remove every tag injected for the core integration, leaving no trace.
     this.graphTags?.removeAll();
-    this.bgStyleEl?.remove();
-    this.bgStyleEl = null;
-    this.tagRuleStyleEl?.remove();
-    this.tagRuleStyleEl = null;
-    this.fontStyleEl?.remove();
-    this.fontStyleEl = null;
+    this.bgSheet.remove();
+    this.tagRuleSheet.remove();
+    this.fontSheet.remove();
     activeDocument.body.classList.remove("wr-font-follow");
   }
 

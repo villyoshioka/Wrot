@@ -1,7 +1,7 @@
 {
   "name": "wrot",
-  "version": "2.15.1",
-  "description": "An Obsidian plugin for micro-journaling your day, one \"tweet\" at a time.",
+  "version": "2.15.2",
+  "description": "Micro-journal your day in a timeline, one \"tweet\" at a time.",
   "type": "module",
   "scripts": {
     "dev": "node esbuild.config.mjs",

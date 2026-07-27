@@ -29,20 +29,39 @@ export function boostSelectors(css: string, idLevels: number): string {
 }
 
 /**
- * Replaces a previously injected stylesheet with fresh content, re-appending it so it stays last
- * in <head>. Returns the new element.
+ * A runtime stylesheet, adopted into the active document rather than injected as a <style> tag.
  *
- * createElement rather than createEl("style"): the latter trips the no-forbidden-elements lint.
+ * Adopted sheets sort after every document stylesheet, so these rules keep the last word without
+ * needing to be re-appended on every update. The sheet belongs to the realm it was constructed in,
+ * hence the re-adoption when the active document changes (popout windows).
  */
-export function replaceStyleEl(
-  previous: HTMLStyleElement | null,
-  id: string,
-  css: string
-): HTMLStyleElement {
-  previous?.remove();
-  const el = activeDocument.createElement("style");
-  el.id = id;
-  el.textContent = css;
-  activeDocument.head.appendChild(el);
-  return el;
+export class WrStyleSheet {
+  private sheet: CSSStyleSheet | null = null;
+  private doc: Document | null = null;
+
+  /** `marker` is emitted as a custom property so the sheet stays identifiable in DevTools. */
+  constructor(private readonly marker: string) {}
+
+  apply(css: string): void {
+    const doc = activeDocument;
+    if (this.doc !== doc) this.remove();
+    const win = doc.defaultView;
+    if (!win) return;
+    const sheet = this.sheet ?? new win.CSSStyleSheet();
+    sheet.replaceSync(`:root { --${this.marker}: 1; }\n${css}`);
+    if (this.doc === null) {
+      doc.adoptedStyleSheets = [...doc.adoptedStyleSheets, sheet];
+      this.doc = doc;
+      this.sheet = sheet;
+    }
+  }
+
+  remove(): void {
+    const sheet = this.sheet;
+    if (this.doc && sheet) {
+      this.doc.adoptedStyleSheets = this.doc.adoptedStyleSheets.filter((s) => s !== sheet);
+    }
+    this.sheet = null;
+    this.doc = null;
+  }
 }

@@ -1,5 +1,13 @@
 # Release Notes
 
+## 2.15.2 - 2026-07-27
+
+### Improvements
+
+- Improved internal structure.
+
+---
+
 ## 2.15.1 - 2026-07-27
 
 ### Bug Fixes
