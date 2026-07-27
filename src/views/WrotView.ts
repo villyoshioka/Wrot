@@ -10,6 +10,19 @@ import { isImageFile, saveImageToVault, buildEmbedLink } from "../utils/imageAtt
 import { openCalendarPopover, CalendarPopoverHandle } from "../utils/calendarPopover";
 import { TagSuggest, extractTagsForHistory, mergeRecentTags } from "../utils/tagSuggest";
 import { isMathJaxReady, requestMathJax } from "../utils/mathjax";
+import { quoteMarkerPattern } from "../utils/patterns";
+import {
+  insertAtLineStart,
+  insertFenceBlock,
+  insertMarkdownLink,
+  isInsideEmbed,
+  isInsideMarker,
+  lineMarkerState,
+  toggleBlockPrefix,
+  toggleInlineWrap,
+  wrapSelection,
+  wrapSelectionWithEmbedBrackets,
+} from "../utils/textareaEditor";
 import type WrotPlugin from "../main";
 import type { PinEntry } from "../settings";
 import { t } from "../i18n";
@@ -85,6 +98,8 @@ export class WrotView extends ItemView {
   private imeValueAtStart = "";
   private imeSuppressUntil = 0;
   private refreshing = false;
+  // A change that arrived while a render was in flight; replayed once the render finishes.
+  private refreshQueued = false;
   private toolbarResizeObserver: ResizeObserver | null = null;
   private currentMenu: Menu | null = null;
   private pendingImage: File | null = null;
@@ -145,7 +160,7 @@ export class WrotView extends ItemView {
     );
   }
 
-  async onClose(): Promise<void> {
+  onClose(): Promise<void> {
     this.tagSuggest?.destroy();
     this.tagSuggest = null;
     this.closeCalendarPopover();
@@ -157,6 +172,7 @@ export class WrotView extends ItemView {
     this.clearPendingImage();
     this.clearPinnedContainer();
     this.contentEl.empty();
+    return Promise.resolve();
   }
 
   private registerFileWatcher(): void {
@@ -180,19 +196,34 @@ export class WrotView extends ItemView {
       }
     });
     // vault "delete" fires before metadataCache updates, so watch metadataCache "deleted" instead.
-    const TRIGGER_EXT = /^(md|png|jpe?g|gif|webp|svg|bmp)$/i;
     this.fileDeleteRef = this.app.metadataCache.on("deleted", (file) => {
       if (!(file instanceof TFile)) return;
-      if (!TRIGGER_EXT.test(file.extension)) return;
+      if (!this.affectsCurrentView(file)) return;
       // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
       this.refresh();
     });
     this.fileCreateRef = this.app.vault.on("create", (file) => {
       if (!(file instanceof TFile)) return;
-      if (!TRIGGER_EXT.test(file.extension)) return;
+      if (!this.affectsCurrentView(file)) return;
       // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
       this.refresh();
     });
+  }
+
+  /**
+   * Whether creating or deleting this file can change what the timeline shows.
+   *
+   * Notes only matter when they are the note being displayed -- without this, a bulk operation
+   * (first sync, a plugin generating notes) triggers one full re-render per unrelated file.
+   * Images stay in scope regardless: an attachment embedded in a memo can appear or disappear
+   * without its note being touched.
+   */
+  private affectsCurrentView(file: TFile): boolean {
+    const IMAGE_EXT = /^(png|jpe?g|gif|webp|svg|bmp)$/i;
+    if (IMAGE_EXT.test(file.extension)) return true;
+    if (file.extension.toLowerCase() !== "md") return false;
+    const currentFile = getDailyNoteFile(this.app, this.currentDate);
+    return currentFile !== null && file.path === currentFile.path;
   }
 
   private unregisterFileWatcher(): void {
@@ -809,12 +840,19 @@ export class WrotView extends ItemView {
     window.addEventListener("focus", deactivate);
     window.addEventListener("pointerdown", onUserTap, true);
 
+    // Dismissing the dialog fires "cancel" but never "change", so without this the hidden input
+    // stays in the document for the rest of the session.
+    input.addEventListener("cancel", () => {
+      input.remove();
+      deactivate();
+    });
+
     input.addEventListener("change", () => {
       const file = input.files?.[0];
       if (file) {
         this.setPendingImage(file);
       }
-      activeDocument.body.removeChild(input);
+      input.remove();
       deactivate();
     });
     input.click();
@@ -923,7 +961,12 @@ export class WrotView extends ItemView {
   }
 
   async refresh(): Promise<void> {
-    if (this.refreshing) return;
+    // Changes can land while an earlier render is awaiting a file read. Remember that and
+    // replay once, instead of dropping the change and leaving stale content on screen.
+    if (this.refreshing) {
+      this.refreshQueued = true;
+      return;
+    }
     // Skip renders entirely during the modify-suppression window (e.g. right after a checkbox toggle).
     if (Date.now() < this.ignoreModifyUntil) return;
     this.refreshing = true;
@@ -976,6 +1019,11 @@ export class WrotView extends ItemView {
       }
     } finally {
       this.refreshing = false;
+      if (this.refreshQueued) {
+        this.refreshQueued = false;
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises -- replay must not alter this call's result
+        this.refresh();
+      }
     }
   }
 
@@ -1242,39 +1290,7 @@ export class WrotView extends ItemView {
 
 
   private insertAtLineStart(prefix: string): void {
-    const ta = this.textarea;
-    const pos = ta.selectionStart;
-    const val = ta.value;
-    const lineStart = pos > 0 ? val.lastIndexOf("\n", pos - 1) + 1 : 0;
-    const lineText = val.slice(lineStart, val.indexOf("\n", lineStart) === -1 ? undefined : val.indexOf("\n", lineStart));
-
-    const prefixes = ["- [ ] ", "- [x] ", "- "];
-    let existingPrefix = "";
-    for (const p of prefixes) {
-      if (lineText.startsWith(p)) {
-        existingPrefix = p;
-        break;
-      }
-    }
-    if (!existingPrefix) {
-      const olMatch = lineText.match(/^\d+\.\s?/);
-      if (olMatch) existingPrefix = olMatch[0];
-    }
-
-    const isSameType = existingPrefix === prefix ||
-      (prefix === "1. " && existingPrefix.match(/^\d+\. $/));
-    if (isSameType) {
-      ta.value = val.slice(0, lineStart) + val.slice(lineStart + existingPrefix.length);
-      ta.selectionStart = ta.selectionEnd = lineStart;
-    } else if (existingPrefix) {
-      ta.value = val.slice(0, lineStart) + prefix + val.slice(lineStart + existingPrefix.length);
-      ta.selectionStart = ta.selectionEnd = lineStart + prefix.length;
-    } else {
-      ta.value = val.slice(0, lineStart) + prefix + val.slice(lineStart);
-      ta.selectionStart = ta.selectionEnd = lineStart + prefix.length;
-    }
-    ta.focus();
-    ta.dispatchEvent(new Event("input"));
+    insertAtLineStart(this.textarea, prefix);
   }
 
   private async insertQuoteToForm(memo: Memo, srcFilePath: string): Promise<void> {
@@ -1287,8 +1303,7 @@ export class WrotView extends ItemView {
     const fileBaseName = srcFile.basename;
     const marker = `[[${fileBaseName}#^${blockId}]]`;
     const ta = this.textarea;
-    // eslint-disable-next-line no-useless-escape -- escape kept for regex readability
-    const QUOTE_RE = /\[\[[^\[\]]+#\^wr-\d{17}\]\]/g;
+    const QUOTE_RE = quoteMarkerPattern();
     const existing = ta.value;
     let next: string;
     let cursorPos: number;
@@ -1309,269 +1324,42 @@ export class WrotView extends ItemView {
   }
 
   private insertCodeBlock(): void {
-    this.insertFenceBlock("~~~\n\n~~~");
+    insertFenceBlock(this.textarea, "~~~\n\n~~~");
   }
 
   private insertMathBlock(): void {
-    this.insertFenceBlock("$$\n\n$$");
-  }
-
-  private insertFenceBlock(insert: string): void {
-    const ta = this.textarea;
-    const pos = ta.selectionStart;
-    const val = ta.value;
-
-    const lineStart = pos > 0 ? val.lastIndexOf("\n", pos - 1) + 1 : 0;
-    const currentLineIsEmpty = val.slice(lineStart, pos).trim() === "" &&
-      (val.indexOf("\n", pos) === -1 || val.slice(pos, val.indexOf("\n", pos)).trim() === "");
-
-    let before = val.slice(0, lineStart);
-    let after = val.slice(lineStart);
-
-    if (!currentLineIsEmpty) {
-      const needsLeadingNewline = before.length > 0 && !before.endsWith("\n\n");
-      if (needsLeadingNewline) before += before.endsWith("\n") ? "\n" : "\n\n";
-      after = "\n" + after;
-    }
-
-    // No separator if the remainder is empty/whitespace; one newline before any
-    // following text or quote marker.
-    const afterStripped = after.replace(/^\n+/, "");
-    let separator = "";
-    if (afterStripped.length > 0) {
-      separator = "\n";
-      after = afterStripped;
-    }
-
-    const cursorOffset = before.length + 3; // inside the fence, at the empty line
-
-    ta.value = before + insert + separator + after;
-    ta.selectionStart = ta.selectionEnd = cursorOffset;
-    ta.focus();
-    ta.dispatchEvent(new Event("input"));
+    insertFenceBlock(this.textarea, "$$\n\n$$");
   }
 
   private updateToolbarActive(listBtn: HTMLElement, checkBtn: HTMLElement, olBtn: HTMLElement): void {
-    const ta = this.textarea;
-    const pos = ta.selectionStart;
-    const val = ta.value;
-    const lineStart = val.lastIndexOf("\n", pos - 1) + 1;
-    const lineEnd = val.indexOf("\n", lineStart);
-    const line = val.slice(lineStart, lineEnd === -1 ? undefined : lineEnd);
-
-    const isList = line.startsWith("- ") && !line.match(/^- \[[ x]\] /);
-    const isCheck = !!line.match(/^- \[[ x]\] /);
-    const isOl = !!line.match(/^\d+\.\s?/);
-
+    const { isList, isCheck, isOl } = lineMarkerState(this.textarea);
     listBtn.toggleClass("wr-toolbar-active", isList);
     checkBtn.toggleClass("wr-toolbar-active", isCheck);
     olBtn.toggleClass("wr-toolbar-active", isOl);
   }
 
-  // True if the selection is fully wrapped by the marker. Always false with no
-  // selection, so button state doesn't flicker while the caret moves.
   private isInsideMarker(marker: "**" | "*"): boolean {
-    const ta = this.textarea;
-    const start = ta.selectionStart;
-    const end = ta.selectionEnd;
-    if (start === end) return false;
-    const selected = ta.value.slice(start, end);
-    if (marker === "**") {
-      return /^\*\*[\s\S]+\*\*$/.test(selected);
-    }
-    if (!/^\*[\s\S]+\*$/.test(selected)) return false;
-    // Don't misread **bold** as italic.
-    if (selected.startsWith("**") || selected.endsWith("**")) return false;
-    return true;
+    return isInsideMarker(this.textarea, marker);
   }
 
   private updateEmbedBtnActive(embedBtn: HTMLElement): void {
-    const ta = this.textarea;
-    const start = ta.selectionStart;
-    const end = ta.selectionEnd;
-    const val = ta.value;
-
-    let isEmbed = false;
-    if (start !== end) {
-      isEmbed = /^!?\[\[[^\]]*\]\]$/.test(val.slice(start, end));
-    } else {
-      const before = val.slice(Math.max(0, start - 100), start);
-      const after = val.slice(start, start + 100);
-      isEmbed = !!before.match(/!\[\[([^\]]*?)$/) && !!after.match(/^([^\]]*?)\]\]/);
-    }
-
-    embedBtn.toggleClass("wr-toolbar-active", isEmbed);
+    embedBtn.toggleClass("wr-toolbar-active", isInsideEmbed(this.textarea));
   }
 
   private toggleInlineWrap(open: string, close: string): void {
-    const ta = this.textarea;
-    const pos = ta.selectionStart;
-    const val = ta.value;
-    const before = val.slice(Math.max(0, pos - 100), pos);
-    const after = val.slice(pos, pos + 100);
-
-    const wrapTypes: [string, string, RegExp, RegExp][] = [
-      ["![[", "]]", /!\[\[([^\]]*?)$/, /^([^\]]*?)\]\]/],
-      ["`", "`", /`([^`]*?)$/, /^([^`]*?)`/],
-      ["$", "$", /\$([^$]*?)$/, /^([^$]*?)\$/],
-    ];
-
-    let currentType: [string, string] | null = null;
-    let currentBefore: RegExpMatchArray | null = null;
-    let currentAfter: RegExpMatchArray | null = null;
-
-    for (const [wo, wc, beforeRe, afterRe] of wrapTypes) {
-      const bm = before.match(beforeRe);
-      const am = after.match(afterRe);
-      if (bm && am) {
-        currentType = [wo, wc];
-        currentBefore = bm;
-        currentAfter = am;
-        break;
-      }
-    }
-
-    if (!currentType || !currentBefore || !currentAfter) {
-      const insert = open + close;
-      ta.value = val.slice(0, pos) + insert + val.slice(pos);
-      ta.selectionStart = ta.selectionEnd = pos + open.length;
-      ta.focus();
-      ta.dispatchEvent(new Event("input"));
-      return;
-    }
-
-    const start = pos - currentBefore[0].length;
-    const end = pos + currentAfter[0].length;
-    const content = currentBefore[1] + currentAfter[1];
-
-    if (currentType[0] === open) {
-      ta.value = val.slice(0, start) + content + val.slice(end);
-      ta.selectionStart = ta.selectionEnd = start + currentBefore[1].length;
-    } else {
-      ta.value = val.slice(0, start) + open + content + close + val.slice(end);
-      ta.selectionStart = ta.selectionEnd = start + open.length + currentBefore[1].length;
-    }
-    ta.focus();
-    ta.dispatchEvent(new Event("input"));
+    toggleInlineWrap(this.textarea, open, close);
   }
 
   private wrapSelection(open: string, close: string): void {
-    const ta = this.textarea;
-    let start = ta.selectionStart;
-    let end = ta.selectionEnd;
-    if (start === end) return;
-    const val = ta.value;
-
-    const markers = ["**", "*", "~~", "==", "$"];
-
-    // Check the marker matching `open` first to avoid bold/italic confusion.
-    const orderedForInner = open === "*"
-      ? ["*", "**", "~~", "==", "$"]
-      : open === "**"
-        ? ["**", "*", "~~", "==", "$"]
-        : markers;
-    for (const m of orderedForInner) {
-      const selected = val.slice(start, end);
-      // Skip the "*" match when the edges are "**" (that's bold).
-      if (m === "*" && (selected.startsWith("**") || selected.endsWith("**"))) continue;
-      if (selected.length >= m.length * 2 && selected.startsWith(m) && selected.endsWith(m)) {
-        const inner = selected.slice(m.length, selected.length - m.length);
-        ta.value = val.slice(0, start) + inner + val.slice(end);
-        ta.selectionStart = start;
-        ta.selectionEnd = start + inner.length;
-        ta.focus();
-        ta.dispatchEvent(new Event("input"));
-        return;
-      }
-    }
-
-    let unwrapped = false;
-    for (const m of markers) {
-      const before = val.slice(start - m.length, start);
-      const after = val.slice(end, end + m.length);
-      if (before === m && after === m) {
-        const newVal = val.slice(0, start - m.length) + val.slice(start, end) + val.slice(end + m.length);
-        start -= m.length;
-        end -= m.length;
-        ta.value = newVal;
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- kept for API signature / future use
-        unwrapped = true;
-        if (m === open) {
-          ta.selectionStart = start;
-          ta.selectionEnd = end;
-          ta.focus();
-          ta.dispatchEvent(new Event("input"));
-          return;
-        }
-        break;
-      }
-    }
-
-    const currentVal = ta.value;
-    ta.value = currentVal.slice(0, start) + open + currentVal.slice(start, end) + close + currentVal.slice(end);
-    ta.selectionStart = start;
-    ta.selectionEnd = end + open.length + close.length;
-    ta.focus();
-    ta.dispatchEvent(new Event("input"));
+    wrapSelection(this.textarea, open, close);
   }
 
-  // Wrap the selection in ![[...]], unwrap if already wrapped; no-op if it would nest.
   private wrapSelectionWithEmbedBrackets(): void {
-    const ta = this.textarea;
-    const start = ta.selectionStart;
-    const end = ta.selectionEnd;
-    if (start === end) return;
-    const val = ta.value;
-    const selected = val.slice(start, end);
-
-    const unwrapMatch = selected.match(/^(!?)\[\[([^\]]*)\]\]$/);
-    if (unwrapMatch) {
-      const inner = unwrapMatch[2];
-      const newVal = val.slice(0, start) + inner + val.slice(end);
-      ta.value = newVal;
-      const caret = start + inner.length;
-      ta.selectionStart = ta.selectionEnd = caret;
-      ta.focus();
-      ta.dispatchEvent(new Event("input"));
-      return;
-    }
-
-    if (/!?\[\[[^\]]*\]\]/.test(selected)) return;
-
-    const wrapped = "![[" + selected + "]]";
-    const newVal = val.slice(0, start) + wrapped + val.slice(end);
-    ta.value = newVal;
-    const caret = start + wrapped.length;
-    ta.selectionStart = ta.selectionEnd = caret;
-    ta.focus();
-    ta.dispatchEvent(new Event("input"));
+    wrapSelectionWithEmbedBrackets(this.textarea);
   }
 
   private toggleBlockPrefix(prefix: string): void {
-    const ta = this.textarea;
-    const start = ta.selectionStart;
-    const end = ta.selectionEnd;
-    const val = ta.value;
-
-    const lineStart = val.lastIndexOf("\n", start - 1) + 1;
-    const lineEnd = val.indexOf("\n", end - 1);
-    const blockEnd = lineEnd === -1 ? val.length : lineEnd;
-    const block = val.slice(lineStart, blockEnd);
-    const lines = block.split("\n");
-
-    const allHavePrefix = lines.every((l) => l.startsWith(prefix));
-
-    const newLines = allHavePrefix
-      ? lines.map((l) => l.slice(prefix.length))
-      : lines.map((l) => prefix + l);
-
-    const newBlock = newLines.join("\n");
-    ta.value = val.slice(0, lineStart) + newBlock + val.slice(blockEnd);
-
-    const diff = newBlock.length - block.length;
-    ta.selectionStart = ta.selectionEnd = blockEnd + diff;
-    ta.focus();
-    ta.dispatchEvent(new Event("input"));
+    toggleBlockPrefix(this.textarea, prefix);
   }
 
   private openSearch(tag: string): void {
@@ -1579,17 +1367,7 @@ export class WrotView extends ItemView {
   }
 
   private insertMarkdownLink(): void {
-    const ta = this.textarea;
-    const start = ta.selectionStart;
-    const end = ta.selectionEnd;
-    if (start === end) return;
-    const val = ta.value;
-    const selected = val.slice(start, end);
-    ta.value = val.slice(0, start) + "[" + selected + "](" + ")" + val.slice(end);
-    const cursorPos = start + 1 + selected.length + 2;
-    ta.selectionStart = ta.selectionEnd = cursorPos;
-    ta.focus();
-    ta.dispatchEvent(new Event("input"));
+    insertMarkdownLink(this.textarea);
   }
 
   // Only one menu open at a time; the trigger keeps an active class while open.

@@ -1,6 +1,7 @@
 import { App, ColorComponent, Notice, PluginSettingTab, Setting, TextComponent, setIcon } from "obsidian";
 import type WrotPlugin from "./main";
 import { t } from "./i18n";
+import { blendColor } from "./utils/color";
 
 export interface SubColorScope {
   buttons?: boolean;
@@ -96,6 +97,25 @@ function descWithBreaks(text: string): string | DocumentFragment {
   if (!text.includes("\n")) return text;
   return createFragment((frag) => appendWithBreaks(frag, text));
 }
+/** One tag-rule row in the settings UI: the values it shows and the writes each control makes. */
+interface RuleGroupOptions {
+  isFirst: boolean;
+  ruleNumber: number;
+  ruleKey: number;
+  initial: TagColorRule;
+  onTagChange: (v: string) => Promise<void>;
+  onBgChange: (v: string) => Promise<void>;
+  onFgChange: (v: string) => Promise<void>;
+  onAccentChange: (v: string | undefined) => Promise<void>;
+  onSubChange: (v: string | undefined) => Promise<void>;
+  onScopeChange: (key: keyof SubColorScope, value: boolean) => Promise<void>;
+  onNoIntegrationChange: (value: boolean) => Promise<void>;
+  trailing:
+    | { kind: "delete"; handler: () => Promise<void> }
+    | { kind: "reset"; handler: () => Promise<void> }
+    | null;
+}
+
 export class WrotSettingTab extends PluginSettingTab {
   plugin: WrotPlugin;
   private narrowObserver: ResizeObserver | null = null;
@@ -216,6 +236,13 @@ export class WrotSettingTab extends PluginSettingTab {
       this.settingItemObserver.observe(containerEl, { childList: true, subtree: true });
     }
 
+    this.renderBasicSection(containerEl);
+    this.renderAdvancedSection(containerEl);
+    this.renderTagRuleSection(containerEl);
+  }
+
+  // Colors, submit label, placeholder: the settings most people touch.
+  private renderBasicSection(containerEl: HTMLElement): void {
     new Setting(containerEl).setName(t("settings.section.basic")).setHeading();
 
     new Setting(containerEl)
@@ -394,6 +421,10 @@ export class WrotSettingTab extends PluginSettingTab {
         })
       );
 
+  }
+
+  // Behaviour toggles and the pieces that change how memos are written and shown.
+  private renderAdvancedSection(containerEl: HTMLElement): void {
     new Setting(containerEl).setName(t("settings.section.advanced")).setHeading();
 
     let submitText: TextComponent;
@@ -589,7 +620,8 @@ export class WrotSettingTab extends PluginSettingTab {
           })
       );
 
-    let calendarDayShapeSetting: Setting;
+    // Declared before the toggle above so its handler can show/hide this row.
+    let calendarDayShapeSetting: Setting | null = null;
 
     new Setting(containerEl)
       .setName(t("settings.item.showCalendarButton.name"))
@@ -601,7 +633,7 @@ export class WrotSettingTab extends PluginSettingTab {
             this.plugin.settings.showCalendarButton = value;
             await this.plugin.saveSettings();
             this.plugin.updateCalendarButton();
-            calendarDayShapeSetting.settingEl.toggle(value);
+            calendarDayShapeSetting?.settingEl.toggle(value);
           })
       );
 
@@ -622,6 +654,10 @@ export class WrotSettingTab extends PluginSettingTab {
       )
     calendarDayShapeSetting.settingEl.toggle(this.plugin.settings.showCalendarButton);
 
+  }
+
+  // Per-tag color overrides, including the add/remove/lock handling for each rule row.
+  private renderTagRuleSection(containerEl: HTMLElement): void {
     new Setting(containerEl).setName(t("settings.section.tagrules")).setHeading();
 
     new Setting(containerEl)
@@ -689,23 +725,23 @@ export class WrotSettingTab extends PluginSettingTab {
       const getDefaultSub = (rule: TagColorRule): string => {
         const fg = resolveRuleText(rule.textColor);
         const bg = resolveRuleBg(rule.bgColor);
-        return this.plugin.blendColor(fg, bg, 0.45);
+        return blendColor(fg, bg, 0.45);
       };
 
-      const buildRuleGroup = (
-        isFirst: boolean,
-        ruleNumber: number,
-        ruleKey: number,
-        initial: TagColorRule,
-        onTagChange: (v: string) => Promise<void>,
-        onBgChange: (v: string) => Promise<void>,
-        onFgChange: (v: string) => Promise<void>,
-        onAccentChange: (v: string | undefined) => Promise<void>,
-        onSubChange: (v: string | undefined) => Promise<void>,
-        onScopeChange: (key: keyof SubColorScope, value: boolean) => Promise<void>,
-        onNoIntegrationChange: (value: boolean) => Promise<void>,
-        trailing: { kind: "delete"; handler: () => Promise<void> } | { kind: "reset"; handler: () => Promise<void> } | null
-      ) => {
+      const buildRuleGroup = ({
+        isFirst,
+        ruleNumber,
+        ruleKey,
+        initial,
+        onTagChange,
+        onBgChange,
+        onFgChange,
+        onAccentChange,
+        onSubChange,
+        onScopeChange,
+        onNoIntegrationChange,
+        trailing,
+      }: RuleGroupOptions) => {
         if (!isFirst) {
           rulesContainer.createEl("hr", { cls: "wr-tag-rule-separator" });
         }
@@ -961,20 +997,20 @@ export class WrotSettingTab extends PluginSettingTab {
           }
         };
 
-        buildRuleGroup(
-          true,
-          1,
-          0,
-          placeholder,
-          async (v) => { placeholder.tag = v; await promoteIfNeeded(); },
-          async (v) => { placeholder.bgColor = v; await promoteIfNeeded(); },
-          async (v) => { placeholder.textColor = v; await promoteIfNeeded(); },
-          async (v) => {
+        buildRuleGroup({
+          isFirst: true,
+          ruleNumber: 1,
+          ruleKey: 0,
+          initial: placeholder,
+          onTagChange: async (v) => { placeholder.tag = v; await promoteIfNeeded(); },
+          onBgChange: async (v) => { placeholder.bgColor = v; await promoteIfNeeded(); },
+          onFgChange: async (v) => { placeholder.textColor = v; await promoteIfNeeded(); },
+          onAccentChange: async (v) => {
             if (v === undefined) delete placeholder.accentColor;
             else placeholder.accentColor = v;
             await promoteIfNeeded();
           },
-          async (v) => {
+          onSubChange: async (v) => {
             if (v === undefined) {
               delete placeholder.subColor;
               delete placeholder.subColorScope;
@@ -983,7 +1019,7 @@ export class WrotSettingTab extends PluginSettingTab {
             }
             await promoteIfNeeded();
           },
-          async (key, value) => {
+          onScopeChange: async (key, value) => {
             const current = placeholder.subColorScope ?? {
               buttons: true, quote: true, list: true, ogp: true,
             };
@@ -991,13 +1027,13 @@ export class WrotSettingTab extends PluginSettingTab {
             placeholder.subColorScope = current;
             await promoteIfNeeded();
           },
-          async (v) => {
+          onNoIntegrationChange: async (v) => {
             if (v) placeholder.noIntegration = true;
             else delete placeholder.noIntegration;
             await promoteIfNeeded();
           },
-          null,
-        );
+          trailing: null,
+        });
 
         addBtnContainer.empty();
         return;
@@ -1035,12 +1071,12 @@ export class WrotSettingTab extends PluginSettingTab {
                   renderRules();
                 },
               };
-        buildRuleGroup(
-          idx === 0,
-          idx + 1,
-          idx,
-          rule,
-          async (v) => {
+        buildRuleGroup({
+          isFirst: idx === 0,
+          ruleNumber: idx + 1,
+          ruleKey: idx,
+          initial: rule,
+          onTagChange: async (v) => {
             rule.tag = v;
             await this.plugin.saveSettings();
             this.plugin.applyTagColorRules();
@@ -1048,17 +1084,17 @@ export class WrotSettingTab extends PluginSettingTab {
             // The excluded tag name may have changed; rebuild the graph injection.
             this.plugin.graphTags.rebuild();
           },
-          async (v) => {
+          onBgChange: async (v) => {
             rule.bgColor = v;
             await this.plugin.saveSettings();
             this.plugin.applyTagColorRules();
           },
-          async (v) => {
+          onFgChange: async (v) => {
             rule.textColor = v;
             await this.plugin.saveSettings();
             this.plugin.applyTagColorRules();
           },
-          async (v) => {
+          onAccentChange: async (v) => {
             if (v === undefined) {
               delete rule.accentColor;
             } else {
@@ -1067,7 +1103,7 @@ export class WrotSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
             this.plugin.applyTagColorRules();
           },
-          async (v) => {
+          onSubChange: async (v) => {
             if (v === undefined) {
               delete rule.subColor;
               delete rule.subColorScope;
@@ -1077,7 +1113,7 @@ export class WrotSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
             this.plugin.applyTagColorRules();
           },
-          async (key, value) => {
+          onScopeChange: async (key, value) => {
             const current = rule.subColorScope ?? {
               buttons: true, quote: true, list: true, ogp: true,
             };
@@ -1086,14 +1122,14 @@ export class WrotSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
             this.plugin.applyTagColorRules();
           },
-          async (v) => {
+          onNoIntegrationChange: async (v) => {
             if (v) rule.noIntegration = true;
             else delete rule.noIntegration;
             await this.plugin.saveSettings();
             this.plugin.graphTags.rebuild();
           },
           trailing,
-        );
+        });
       });
 
       addBtnContainer.empty();

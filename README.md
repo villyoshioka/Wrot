@@ -44,6 +44,7 @@ By adjusting the date format in Obsidian's "Daily Notes" settings (e.g., `GGGG-[
 
 ## Requirements
 
+- Requires Obsidian **v1.8.7** or later. Wrot will not install on older versions.
 - Works on all platforms supported by [Obsidian](https://obsidian.md/):
   - macOS
   - iOS / iPadOS

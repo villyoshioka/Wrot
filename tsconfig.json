@@ -4,12 +4,10 @@
     "inlineSources": true,
     "module": "ESNext",
     "target": "ES2018",
-    "allowJs": true,
-    "noImplicitAny": true,
     "moduleResolution": "bundler",
     "importHelpers": true,
     "isolatedModules": true,
-    "strictNullChecks": true,
+    "strict": true,
     "esModuleInterop": true,
     "types": ["node"],
     "lib": ["DOM", "ES2022"]

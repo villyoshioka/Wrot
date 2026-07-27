@@ -458,7 +458,7 @@ function flashJumpTargetReadingView(
     pendingTimeouts.clear();
     stopMutationWatch();
     stopResizeWatch();
-    const targets = collectFlashTargets(blockId, app);
+    const targets = collectFlashTargets(blockId);
     for (const el of targets) {
       el.classList.remove("wr-quote-jump-flash");
       el.style.removeProperty("--wr-flash-color");
@@ -487,7 +487,7 @@ function flashJumpTargetReadingView(
 
   const flashAll = () => {
     if (canceled) return;
-    const targets = collectFlashTargets(blockId, app);
+    const targets = collectFlashTargets(blockId);
     for (const el of targets) {
       if (flashed.has(el)) continue;
       flashed.add(el);
@@ -555,7 +555,7 @@ function flashJumpTargetReadingView(
   // Obsidian can keep both LV and RV containers of the same note in the DOM; grabbing the hidden
   // LV-side match makes scroll/flash invisible. Require a visible element (offsetParent !== null) under .markdown-reading-view with no .markdown-source-view ancestor.
   const pickVisibleReadingViewTarget = (): HTMLElement | null => {
-    const all = collectFlashTargets(blockId, app);
+    const all = collectFlashTargets(blockId);
     if (all.length === 0) return null;
     const visibleRV = all.filter((el) => {
       if (el.offsetParent === null) return false;
@@ -663,7 +663,7 @@ export function flashJumpTarget(
     for (const id of pendingTimeouts) window.clearTimeout(id);
     pendingTimeouts.clear();
     stopResizeWatch();
-    const targets = collectFlashTargets(blockId, app);
+    const targets = collectFlashTargets(blockId);
     for (const el of targets) {
       el.classList.remove("wr-quote-jump-flash");
       el.style.removeProperty("--wr-flash-color");
@@ -691,7 +691,7 @@ export function flashJumpTarget(
 
   const flashAll = () => {
     if (canceled) return;
-    const targets = collectFlashTargets(blockId, app);
+    const targets = collectFlashTargets(blockId);
     for (const el of targets) {
       if (flashed.has(el)) continue;
       flashed.add(el);
@@ -719,7 +719,7 @@ export function flashJumpTarget(
   // line heights; once the target is in the DOM, re-center using real DOM coordinates.
   const tryFlash = (): boolean => {
     if (canceled || scrolled) return false;
-    const targets = collectFlashTargets(blockId, app);
+    const targets = collectFlashTargets(blockId);
     if (targets.length === 0) return false;
     scrolled = true;
     if (skipScroll) {
@@ -835,7 +835,7 @@ function scrollElementIntoCenter(el: HTMLElement): void {
 }
 
 // Collect block-id matches across LV/RV/timeline; on mobile, timeline cards in a transient drawer are excluded.
-function collectFlashTargets(blockId: string, app: App): HTMLElement[] {
+function collectFlashTargets(blockId: string): HTMLElement[] {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- assertion needed for cross-version Obsidian typings
   const all = Array.from(
     activeDocument.querySelectorAll(`.wr-block-id-${blockId}`)
@@ -933,7 +933,7 @@ export function renderQuoteCard(
     let alreadyVisible = false;
     if (targetView) {
       const container = targetView.containerEl;
-      const mounted = collectFlashTargets(blockId, app).find(
+      const mounted = collectFlashTargets(blockId).find(
         (el) => el.offsetParent !== null && container.contains(el)
       );
       alreadyVisible = !!mounted && isFullyVisibleInScroller(mounted);

@@ -1,14 +1,48 @@
-import { TFile, MarkdownRenderer, renderMath, finishRenderMath, Component } from "obsidian";
+import {
+  TFile,
+  MarkdownRenderer,
+  MarkdownRenderChild,
+  renderMath,
+  finishRenderMath,
+  Component,
+} from "obsidian";
 import { extractUrls, renderUrlPreviews, isSafeUrl, QUOTE_LINK_RE } from "./utils/urlRenderer";
 import { renderQuoteCard, invalidateMemoCache, refreshQuoteCardsForFile } from "./utils/quoteCard";
 import { toggleCheckbox } from "./utils/memoWriter";
 import { segmentBlocks, type Segment } from "./utils/blockSegmenter";
 import { isMathJaxReady, requestMathJax } from "./utils/mathjax";
+import {
+  WR_CODE_SELECTOR,
+  fileForLocation,
+  readWrBlockLocation,
+  resolveFileFromView,
+  scopedWrBlocks,
+  stampWrBlockLocation,
+  stampWrBlockLocations,
+  wrBlockContainer,
+  wrScopeRoot,
+} from "./utils/blockLocation";
+import { parseMemos, type Memo } from "./utils/memoParser";
 import type WrotPlugin from "./main";
+import { IMAGE_EXT_RE, QUOTE_MARKER_RE, inlineTokenPattern, matchTags } from "./utils/patterns";
+
+// Lets Obsidian finish its own render before we re-derive from the DOM.
+const REHIGHLIGHT_DELAY_MS = 100;
+// Quiet period after the last mutation before the recycling watch is dropped, and the hard cap.
+const RECYCLE_WATCH_MS = 1000;
+const RECYCLE_WATCH_MAX_MS = 5000;
 
 export function registerWrotPostProcessor(plugin: WrotPlugin): void {
   plugin.registerMarkdownPostProcessor((el, ctx) => {
-    highlightAllWrBlocks(el, plugin);
+    if (el.querySelector(WR_CODE_SELECTOR) === null) return;
+    // Record where each block came from before rendering: the context is the only place
+    // that knows the source path and the fence's line number.
+    stampWrBlockLocations(el, ctx);
+    // Nested renderers (a fenced mermaid/dataview block inside a memo) need a parent that is
+    // actually loaded, and one whose lifetime follows this section.
+    const child = new MarkdownRenderChild(el);
+    ctx.addChild(child);
+    highlightAllWrBlocks(el, plugin, child);
     void applyBlockIdClasses(el, plugin, ctx?.sourcePath);
   });
 
@@ -28,6 +62,7 @@ export function registerWrotPostProcessor(plugin: WrotPlugin): void {
     plugin.app.vault.on("modify", (file) => {
       if (!(file instanceof TFile)) return;
       invalidateMemoCache(file.path);
+      void repairReadingViewsFor(plugin, file);
       refreshQuoteCardsForFile(
         plugin.app,
         file,
@@ -50,10 +85,8 @@ export function registerWrotPostProcessor(plugin: WrotPlugin): void {
   );
 }
 
-function highlightAllWrBlocks(el: HTMLElement, plugin: WrotPlugin): void {
-  const codeEls = el.querySelectorAll(
-    'code.language-wr, .block-language-wr code, pre > code[class*="language-wr"]'
-  );
+function highlightAllWrBlocks(el: HTMLElement, plugin: WrotPlugin, parent: Component): void {
+  const codeEls = el.querySelectorAll(WR_CODE_SELECTOR);
   codeEls.forEach((code) => {
     const codeEl = code as HTMLElement;
 
@@ -69,53 +102,150 @@ function highlightAllWrBlocks(el: HTMLElement, plugin: WrotPlugin): void {
     const hasProcessedInBlock = parentBlock?.querySelector(".wr-reading-list, .wr-blockquote, .wr-embed-img, .wr-plain-text, .wr-codeblock-display, .wr-math-display");
     if (hasProcessedInCode || hasProcessedInBlock) return;
 
-    processCodeBlock(codeEl, plugin);
+    processCodeBlock(codeEl, plugin, parent);
   });
+}
+
+// Reading View can move an already rendered section onto another memo's position when their text
+// matches, carrying a stale line stamp, block id and checkbox state with it. What each position
+// should hold is captured up front, then re-applied whenever the view mutates.
+interface WrViewSnapshot {
+  sourcePath: string;
+  memos: Memo[];
+  states: boolean[][];
+}
+
+function snapshotOf(file: TFile, memos: Memo[]): WrViewSnapshot {
+  return { sourcePath: file.path, memos, states: memos.map((m) => checkboxStatesOf(m)) };
+}
+
+function checkboxStatesOf(memo: Memo): boolean[] {
+  return memo.content
+    .split("\n")
+    .map((line) => /^(?:>\s?)*- \[([ x])\] /.exec(line))
+    .filter((m): m is RegExpExecArray => m !== null)
+    .map((m) => m[1] === "x");
+}
+
+// Position only means anything while every memo of the file is mounted.
+function applySnapshot(scope: HTMLElement, snap: WrViewSnapshot): void {
+  const blocks = scopedWrBlocks(scope);
+  if (blocks.length !== snap.memos.length) return;
+  blocks.forEach((block, i) => {
+    stampWrBlockLocation(block, snap.sourcePath, snap.memos[i].lineStart);
+    applyBlockIdClass(block, snap.memos[i]);
+    const states = snap.states[i];
+    const boxes = Array.from(block.querySelectorAll<HTMLInputElement>('input[type="checkbox"]'));
+    if (boxes.length !== states.length) return;
+    boxes.forEach((box, k) => {
+      if (box.checked !== states[k]) box.checked = states[k];
+    });
+  });
+}
+
+// Repairing from the mutation record lands in the same frame, so the stale state never paints.
+// Only childList is observed; the repair touches attributes and properties, so it cannot
+// re-trigger itself. The watch extends while the render keeps arriving in bursts.
+function watchRecycling(scope: HTMLElement, snap: WrViewSnapshot): void {
+  applySnapshot(scope, snap);
+
+  const deadline = Date.now() + RECYCLE_WATCH_MAX_MS;
+  let idleTimer = 0;
+  const observer = new MutationObserver(() => {
+    applySnapshot(scope, snap);
+    window.clearTimeout(idleTimer);
+    if (Date.now() >= deadline) {
+      observer.disconnect();
+      return;
+    }
+    idleTimer = window.setTimeout(() => observer.disconnect(), RECYCLE_WATCH_MS);
+  });
+  observer.observe(scope, { childList: true, subtree: true });
+  idleTimer = window.setTimeout(() => observer.disconnect(), RECYCLE_WATCH_MS);
+}
+
+// Backstop for edits made anywhere else; the checkbox path arms its own watch without waiting
+// on a read, because a read costs the frame the repair needs to land in.
+async function repairReadingViewsFor(plugin: WrotPlugin, file: TFile): Promise<void> {
+  if (readingViewScopesFor(plugin, file).length === 0) return;
+  let snap: WrViewSnapshot;
+  try {
+    snap = snapshotOf(file, sortedMemosOf(await plugin.app.vault.read(file)));
+  } catch {
+    return;
+  }
+  for (const scope of readingViewScopesFor(plugin, file)) watchRecycling(scope, snap);
+}
+
+function readingViewScopesFor(plugin: WrotPlugin, file: TFile): HTMLElement[] {
+  const scopes: HTMLElement[] = [];
+  plugin.app.workspace.iterateAllLeaves((leaf) => {
+    const view = leaf.view as { containerEl?: HTMLElement; file?: unknown };
+    if (!(view.file instanceof TFile) || view.file.path !== file.path) return;
+    view.containerEl?.querySelectorAll<HTMLElement>(".markdown-reading-view").forEach((rv) => {
+      scopes.push(rv);
+    });
+  });
+  return scopes;
 }
 
 function rehighlightAllReadingViews(plugin: WrotPlugin): void {
   window.setTimeout(() => {
     activeDocument.querySelectorAll(".markdown-reading-view").forEach((view) => {
-      highlightAllWrBlocks(view as HTMLElement, plugin);
+      highlightAllWrBlocks(view as HTMLElement, plugin, plugin);
     });
-  }, 100);
+  }, REHIGHLIGHT_DELAY_MS);
 }
 
 async function applyBlockIdClasses(el: HTMLElement, plugin: WrotPlugin, sourcePath?: string): Promise<void> {
-  const codeEls = el.querySelectorAll(
-    'code.language-wr, .block-language-wr code, pre > code[class*="language-wr"]'
-  );
+  const codeEls = Array.from(el.querySelectorAll<HTMLElement>(WR_CODE_SELECTOR));
   if (codeEls.length === 0) return;
   if (!sourcePath) return;
   const file = plugin.app.vault.getAbstractFileByPath(sourcePath);
   if (!(file instanceof TFile)) return;
-  let memos: import("./utils/memoParser").Memo[];
+  let memos: Memo[];
   try {
-    const content = await plugin.app.vault.cachedRead(file);
-    const { parseMemos } = await import("./utils/memoParser");
-    memos = parseMemos(content);
+    memos = sortedMemosOf(await plugin.app.vault.cachedRead(file));
   } catch {
     return;
   }
-  // Pair fences and memos 1:1 by top-to-bottom order; matching by body text would bind
-  // duplicate posts to the same memo. parseMemos returns newest-first, so re-sort by lineStart.
-  const sortedMemos = [...memos].sort((a, b) => a.lineStart - b.lineStart);
-  const doc = (codeEls[0] as HTMLElement).ownerDocument || activeDocument;
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- assertion needed for cross-version Obsidian typings
-  const allCodeEls = Array.from(
-    doc.querySelectorAll(
-      'code.language-wr, .block-language-wr code, pre > code[class*="language-wr"]'
-    )
-  ) as HTMLElement[];
-  allCodeEls.forEach((code, i) => {
-    const block = code.closest(".block-language-wr") || code.closest("pre");
-    if (!(block instanceof HTMLElement)) return;
-    if (Array.from(block.classList).some((c) => c.startsWith("wr-block-id-wr-"))) return;
-    const memo = sortedMemos[i];
-    if (!memo) return;
-    const T = memo.time.replace(/[-:.TZ+]/g, "").slice(0, 17);
-    block.classList.add(`wr-block-id-wr-${T}`);
-  });
+  const memoByLineStart = new Map(memos.map((memo) => [memo.lineStart, memo]));
+
+  for (const code of codeEls) {
+    const block = wrBlockContainer(code);
+    if (!block) continue;
+
+    // Preferred: the stamped fence line identifies the memo outright.
+    const location = readWrBlockLocation(block);
+    let memo = location ? memoByLineStart.get(location.lineStart) : undefined;
+
+    // Fallback for blocks the context never covered: pair fences with memos by order, scoped to
+    // the surrounding embed / hover preview / reading view. Scoping matters because a single
+    // document can hold several rendered files at once, and a document-wide pairing would drift.
+    if (!memo) {
+      const scoped = scopedWrBlocks(wrScopeRoot(block));
+      const index = scoped.indexOf(block);
+      if (index >= 0) memo = memos[index];
+    }
+    if (!memo) continue;
+
+    applyBlockIdClass(block, memo);
+  }
+}
+
+function blockIdOf(memo: Memo): string {
+  return `wr-block-id-wr-${memo.time.replace(/[-:.TZ+]/g, "").slice(0, 17)}`;
+}
+
+function applyBlockIdClass(block: HTMLElement, memo: Memo): void {
+  const cls = blockIdOf(memo);
+  if (block.classList.contains(cls)) return;
+  // A previously assigned id may have come from a stale pairing; replace rather than keep,
+  // otherwise a wrong id sticks for the lifetime of the element.
+  for (const existing of Array.from(block.classList)) {
+    if (existing.startsWith("wr-block-id-wr-")) block.classList.remove(existing);
+  }
+  block.classList.add(cls);
 }
 
 function applyTagRuleClass(block: HTMLElement, code: HTMLElement, plugin: WrotPlugin): void {
@@ -138,7 +268,7 @@ function applyTagRuleClass(block: HTMLElement, code: HTMLElement, plugin: WrotPl
   }
 
   const rawText = code.getAttribute("data-wr-original") || code.textContent || "";
-  const blockTags = rawText.match(/#[^\s#]+/g) || [];
+  const blockTags = matchTags(rawText);
   const rule = plugin.findTagColorRule(blockTags);
   if (!rule) return;
   const idx = plugin.settings.tagColorRules.indexOf(rule);
@@ -148,7 +278,7 @@ function applyTagRuleClass(block: HTMLElement, code: HTMLElement, plugin: WrotPl
   for (const t of targets) t.classList.add(cls);
 }
 
-function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
+function processCodeBlock(code: HTMLElement, plugin: WrotPlugin, parent: Component): void {
   const block = code.closest(".block-language-wr") || code.closest("pre");
   if (!block) return;
 
@@ -201,10 +331,10 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
   // Posts containing a quote-card marker [[X#^wr-T]] render images inline instead of
   // collecting them at the tail, so images stay at their written position above the card.
   const blockFullText = code.textContent || "";
-  // eslint-disable-next-line no-useless-escape -- escape kept for regex readability
-  const hasQuoteMarker = /\[\[[^\[\]]+#\^wr-\d{17}\]\]/.test(blockFullText);
+   
+  const hasQuoteMarker = QUOTE_MARKER_RE.test(blockFullText);
 
-  convertListLines(code, plugin);
+  convertListLines(code, plugin, parent);
 
   const tailUrls: string[] = [];
   const tailEmbedImages: HTMLElement[] = [];
@@ -224,11 +354,9 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
     if (!text.includes("#") && !text.match(/(?:https?|obsidian):\/\//) && !text.includes("[[") && !text.includes("`") && !text.includes("*") && !text.includes("~") && !text.includes("=") && !text.includes("$")) continue;
 
     const frag = createFragment();
-    // eslint-disable-next-line no-useless-escape -- escape kept for regex readability
-    const parts = text.split(/(\$[^$]+\$|`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*|~~[^~]+~~|==[^=]+=+|!\[\[[^\]]+\]\]|\[\[[^\]]+\]\]|\[[^\[\]\n]+\]\((?:https?|obsidian):\/\/[^\s)]+\)|#[^\s#]+|(?:https?|obsidian):\/\/[^\s<>"'\]]+)/g);
+    const parts = text.split(inlineTokenPattern());
     let hasMatch = false;
 
-    const IMAGE_EXT = /\.(png|jpg|jpeg|gif|svg|webp|bmp)$/i;
 
     for (const part of parts) {
       if (!part) continue;
@@ -308,7 +436,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
 
       if (embedMatch) {
         const fileName = embedMatch[1];
-        if (IMAGE_EXT.test(fileName)) {
+        if (IMAGE_EXT_RE.test(fileName)) {
           const file = plugin.app.metadataCache.getFirstLinkpathDest(fileName, "");
           if (file) {
             const img = createEl("img");
@@ -425,7 +553,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
         // eslint-disable-next-line no-empty -- intentional no-op
         } catch {}
         const lowerName = fileName?.toLowerCase() || "";
-        const looksLikeImage = IMAGE_EXT.test(lowerName);
+        const looksLikeImage = IMAGE_EXT_RE.test(lowerName);
         const resolved = fileName ? plugin.app.metadataCache.getFirstLinkpathDest(fileName, "") : null;
         const isImageEmbed = looksLikeImage && resolved !== null;
         const isUnresolvedImage = looksLikeImage && resolved === null;
@@ -522,13 +650,18 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin): void {
   }
 }
 
-function renderCodeBlockFragment(segment: Extract<Segment, { kind: "codeblock" }>, plugin: WrotPlugin): HTMLElement {
+function renderCodeBlockFragment(
+  segment: Extract<Segment, { kind: "codeblock" }>,
+  plugin: WrotPlugin,
+  parent: Component
+): HTMLElement {
   const blockEl = createDiv();
   blockEl.className = "wr-codeblock-display";
   const fence = "~".repeat(Math.max(3, segment.fenceTildes));
   const source = (segment.lang ? `${fence}${segment.lang}\n` : `${fence}\n`) + segment.code + `\n${fence}`;
-  const renderComponent = new Component();
-  MarkdownRenderer.render(plugin.app, source, blockEl, "", renderComponent).catch(() => {
+  // The parent must already be loaded: a freshly constructed Component never loads its
+  // children, so processors registered by other plugins (mermaid, dataview, ...) never run.
+  MarkdownRenderer.render(plugin.app, source, blockEl, "", parent).catch(() => {
     blockEl.empty();
     const pre = blockEl.createEl("pre");
     const codeEl = pre.createEl("code");
@@ -557,14 +690,87 @@ function renderMathBlockFragment(segment: Extract<Segment, { kind: "mathblock" }
   return blockEl;
 }
 
+/**
+ * Wires a rendered checkbox back to the line it came from.
+ *
+ * `bodyLineIndex` is the 0-based line within the fence body, so the target line is the fence
+ * line plus one plus that offset.
+ */
+function attachCheckboxToggle(
+  cb: HTMLInputElement,
+  plugin: WrotPlugin,
+  block: HTMLElement,
+  bodyLineIndex: number,
+  blockBodyText: string
+): void {
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises -- async handler intentionally used as a callback
+  cb.addEventListener("click", async () => {
+    await toggleCheckboxForBlock(plugin, cb, block, bodyLineIndex, blockBodyText);
+  });
+}
+
+async function toggleCheckboxForBlock(
+  plugin: WrotPlugin,
+  cb: HTMLInputElement,
+  block: HTMLElement,
+  bodyLineIndex: number,
+  blockBodyText: string
+): Promise<void> {
+  const app = plugin.app;
+  const location = readWrBlockLocation(block);
+  const file = location ? fileForLocation(app, location) : resolveFileFromView(app, block);
+  if (!file) return;
+
+  const memos = sortedMemosOf(await app.vault.read(file));
+
+  // The render-time stamp may have been moved onto another memo by section recycling, so derive
+  // from where the element sits now.
+  const scope = wrScopeRoot(block);
+  const blocks = scopedWrBlocks(scope);
+  const mounted = blocks.length === memos.length;
+  const blockIdx = mounted ? blocks.indexOf(block) : -1;
+  let lineStart = blockIdx >= 0 ? memos[blockIdx].lineStart : location?.lineStart ?? null;
+
+  if (lineStart === null) {
+    // Never stamped and position is not trustworthy: last resort is a body-text search.
+    // Duplicate bodies are ambiguous here, which is exactly why it is the last resort.
+    lineStart = findFenceLineByBody(memos, blockBodyText);
+  }
+  if (lineStart === null) return;
+
+  await toggleCheckbox(app, file, lineStart + 1 + bodyLineIndex);
+
+  if (blockIdx < 0) return;
+  // What the view should show is known without reading the file back: the click flipped exactly
+  // one box. Arming the watch synchronously keeps the repair inside the render's own frame.
+  const snap = snapshotOf(file, memos);
+  const boxIdx = Array.from(
+    block.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')
+  ).indexOf(cb);
+  const states = snap.states[blockIdx];
+  if (boxIdx >= 0 && boxIdx < states.length) states[boxIdx] = !states[boxIdx];
+  watchRecycling(scope, snap);
+}
+
+function sortedMemosOf(content: string): Memo[] {
+  return parseMemos(content).sort((a, b) => a.lineStart - b.lineStart);
+}
+
+function findFenceLineByBody(memos: Memo[], blockBodyText: string): number | null {
+  const wanted = blockBodyText.trim();
+  const memo = memos.find((m) => m.content === wanted);
+  return memo ? memo.lineStart : null;
+}
+
 function convertListLines(
   code: HTMLElement,
-  plugin: WrotPlugin
+  plugin: WrotPlugin,
+  parent: Component
 ): void {
   const fullText = code.textContent || "";
   const segments = segmentBlocks(fullText);
 
-  const block = code.closest(".block-language-wr") || code.closest("pre");
+  const block = wrBlockContainer(code);
   if (!block) return;
 
   // Rebuild: non-list content stays inside code; lists are placed on the parent block.
@@ -597,7 +803,7 @@ function convertListLines(
     if (segment.kind === "codeblock") {
       flushList();
       flushPlain();
-      fragments.push(renderCodeBlockFragment(segment, plugin));
+      fragments.push(renderCodeBlockFragment(segment, plugin, parent));
       continue;
     }
     if (segment.kind === "mathblock") {
@@ -662,29 +868,7 @@ function convertListLines(
           const cb = createEl("input");
           cb.type = "checkbox";
           if (innerCheck[1] === "x") cb.checked = true;
-          const innerLineIdx = i;
-          // eslint-disable-next-line @typescript-eslint/no-misused-promises -- async handler intentionally used as a callback
-          cb.addEventListener("click", async () => {
-            const file = plugin.app.workspace.getActiveFile();
-            if (!file) return;
-            const data = await plugin.app.vault.read(file);
-            const fileLines = data.split("\n");
-            const blockContent = fullText.trim();
-            for (let f = 0; f < fileLines.length; f++) {
-              if (fileLines[f].match(/^```wr\s+/)) {
-                const bodyLines: string[] = [];
-                let k = f + 1;
-                while (k < fileLines.length && fileLines[k].trim() !== "```") {
-                  bodyLines.push(fileLines[k]);
-                  k++;
-                }
-                if (bodyLines.join("\n").trim() === blockContent) {
-                  await toggleCheckbox(plugin.app, file, f + 1 + innerLineIdx);
-                  return;
-                }
-              }
-            }
-          });
+          attachCheckboxToggle(cb, plugin, block, i, fullText);
           li.appendChild(cb);
           if (innerCheck[1] === "x" && plugin.settings.checkStrikethrough) {
             const span = createSpan();
@@ -734,30 +918,7 @@ function convertListLines(
         const cb = createEl("input");
         cb.type = "checkbox";
         if (checkMatch[1] === "x") cb.checked = true;
-        const lineIdx = i;
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises -- async handler intentionally used as a callback
-        cb.addEventListener("click", async () => {
-          const file = plugin.app.workspace.getActiveFile();
-          if (!file) return;
-          const data = await plugin.app.vault.read(file);
-          const fileLines = data.split("\n");
-          // Match by the full block text to avoid hitting a duplicate block.
-          const blockContent = fullText.trim();
-          for (let f = 0; f < fileLines.length; f++) {
-            if (fileLines[f].match(/^```wr\s+/)) {
-              const bodyLines: string[] = [];
-              let k = f + 1;
-              while (k < fileLines.length && fileLines[k].trim() !== "```") {
-                bodyLines.push(fileLines[k]);
-                k++;
-              }
-              if (bodyLines.join("\n").trim() === blockContent) {
-                await toggleCheckbox(plugin.app, file, f + 1 + lineIdx);
-                return;
-              }
-            }
-          }
-        });
+        attachCheckboxToggle(cb, plugin, block, i, fullText);
         li.appendChild(cb);
         if (checkMatch[1] === "x" && plugin.settings.checkStrikethrough) {
           const span = createSpan();

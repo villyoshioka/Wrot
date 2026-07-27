@@ -1,4 +1,5 @@
 node_modules/
+.DS_Store
 .claude/
 .opencode/
 .kilo/
@@ -7,4 +8,3 @@ data.json
 CLAUDE.md
 AGENTS.md
 dist/
-dev/

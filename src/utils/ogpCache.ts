@@ -9,11 +9,16 @@ export interface OGPData {
 }
 
 interface CacheEntry {
-  data: OGPData;
-  timestamp: number;
+  /** null records a URL that could not be resolved, so it is not retried immediately. */
+  data: OGPData | null;
+  expiresAt: number;
 }
 
-const TTL = 3600000; // 1 hour
+const SUCCESS_TTL = 3600000; // 1 hour
+// Failures are remembered too, otherwise a URL that always fails (a site returning 403 to bots,
+// or an offline vault) is re-requested on every redraw. Kept short so a recovered site comes back.
+const FAILURE_TTL = 600000; // 10 minutes
+const PRUNE_THRESHOLD = 500;
 
 export class OGPCache {
   private cache = new Map<string, CacheEntry>();
@@ -21,19 +26,51 @@ export class OGPCache {
   enabled = true;
 
   get(url: string): OGPData | null {
+    return this.fresh(url)?.data ?? null;
+  }
+
+  /** True when the outcome for this URL is already known, success or failure. */
+  isResolved(url: string): boolean {
+    return this.fresh(url) !== null;
+  }
+
+  /** True when a fetch would actually be attempted; false means there is nothing to wait for. */
+  canFetch(url: string): boolean {
+    if (!this.enabled) return false;
+    if (url.startsWith("obsidian://")) return false;
+    return this.isPublicUrl(url);
+  }
+
+  private fresh(url: string): CacheEntry | null {
     const entry = this.cache.get(url);
-    if (entry && Date.now() - entry.timestamp < TTL) {
-      return entry.data;
+    if (!entry) return null;
+    if (Date.now() >= entry.expiresAt) {
+      this.cache.delete(url);
+      return null;
     }
-    return null;
+    return entry;
+  }
+
+  private remember(url: string, data: OGPData | null): void {
+    if (this.cache.size >= PRUNE_THRESHOLD) this.pruneExpired();
+    this.cache.set(url, {
+      data,
+      expiresAt: Date.now() + (data ? SUCCESS_TTL : FAILURE_TTL),
+    });
+  }
+
+  private pruneExpired(): void {
+    const now = Date.now();
+    for (const [url, entry] of this.cache) {
+      if (now >= entry.expiresAt) this.cache.delete(url);
+    }
   }
 
   async fetchOGP(url: string): Promise<OGPData | null> {
-    if (!this.enabled) return null;
-    if (url.startsWith("obsidian://")) return null;
+    if (!this.canFetch(url)) return null;
 
-    const cached = this.get(url);
-    if (cached) return cached;
+    const entry = this.fresh(url);
+    if (entry) return entry.data;
 
     // Coalesce concurrent requests for the same URL
     const inflight = this.pending.get(url);
@@ -63,7 +100,6 @@ export class OGPCache {
   }
 
   private async doFetch(url: string): Promise<OGPData | null> {
-    if (!this.isPublicUrl(url)) return null;
     try {
       const resp = await requestUrl({
         url,
@@ -76,9 +112,10 @@ export class OGPCache {
 
       const html = resp.text;
       const data = this.parseOGP(html, url);
-      this.cache.set(url, { data, timestamp: Date.now() });
+      this.remember(url, data);
       return data;
     } catch {
+      this.remember(url, null);
       return null;
     }
   }

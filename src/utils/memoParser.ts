@@ -1,4 +1,5 @@
 import { extractNonBlockText } from "./blockSegmenter";
+import { matchTags } from "./patterns";
 
 export interface Memo {
   time: string;
@@ -40,7 +41,7 @@ export function parseMemos(fileContent: string): Memo[] {
 
       const content = bodyLines.join("\n").trim();
       const tagSource = extractNonBlockText(content);
-      const tags = tagSource.match(/#[^\s#]+/g) || [];
+      const tags = matchTags(tagSource);
 
       memos.push({
         time,

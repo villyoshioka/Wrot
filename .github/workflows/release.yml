@@ -3,6 +3,8 @@ name: Release
 on:
   push:
     tags:
+      # v 付きも受理して、検証ステップで明示的に失敗させる
+      # （パターンで弾くとワークフローごと起動せず、ミスに気づけないため）
       - 'v?[0-9]+.[0-9]+.[0-9]+*'
 
 permissions:
@@ -17,12 +19,70 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Compute release name (strip leading v)
-        id: relname
+      # Obsidian は manifest.json の version と同名のタグからアセットを取得する。
+      # タグ名がずれるとリリースページは正常に見えたまま配信だけが 404 になるため、
+      # ここで確実に落とす。
+      - name: Verify tag and version files
         run: |
           TAG="${GITHUB_REF_NAME}"
-          NAME="${TAG#v}"
-          echo "name=${NAME}" >> "$GITHUB_OUTPUT"
+
+          if [ "${TAG#v}" != "$TAG" ]; then
+            echo "::error::タグ '${TAG}' に v プレフィックスが付いています。Obsidian は manifest.json の version と同名のタグを参照するため、v なしで打ち直してください。"
+            exit 1
+          fi
+
+          if ! printf '%s' "$TAG" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::タグ '${TAG}' が x.y.z 形式ではありません。"
+            exit 1
+          fi
+
+          MANIFEST_VERSION="$(jq -r '.version' manifest.json)"
+          if [ "$MANIFEST_VERSION" != "$TAG" ]; then
+            echo "::error::manifest.json の version (${MANIFEST_VERSION}) がタグ (${TAG}) と一致しません。"
+            exit 1
+          fi
+
+          PACKAGE_VERSION="$(jq -r '.version' package.json)"
+          if [ "$PACKAGE_VERSION" != "$TAG" ]; then
+            echo "::error::package.json の version (${PACKAGE_VERSION}) がタグ (${TAG}) と一致しません。"
+            exit 1
+          fi
+
+          MIN_APP_VERSION="$(jq -r '.minAppVersion' manifest.json)"
+          VERSIONS_ENTRY="$(jq -r --arg v "$TAG" '.[$v] // empty' versions.json)"
+          if [ -z "$VERSIONS_ENTRY" ]; then
+            echo "::error::versions.json に ${TAG} のエントリがありません。"
+            exit 1
+          fi
+          if [ "$VERSIONS_ENTRY" != "$MIN_APP_VERSION" ]; then
+            echo "::error::versions.json の ${TAG} (${VERSIONS_ENTRY}) が manifest.json の minAppVersion (${MIN_APP_VERSION}) と一致しません。"
+            exit 1
+          fi
+
+          echo "タグ ${TAG} / manifest / package / versions.json の整合を確認しました。"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      # main.js はリポジトリ追跡の生成物をそのまま配布する運用。
+      # ビルドし直して差分が出た場合、コミット漏れ＝古い成果物の出荷を意味するので落とす。
+      - name: Verify committed build is up to date
+        run: |
+          npm run build
+          if ! git diff --exit-code -- main.js styles.css; then
+            echo "::error::ビルド成果物がコミット内容と一致しません。npm run build を実行してコミットし直してください。"
+            exit 1
+          fi
+          echo "コミット済みのビルド成果物が最新であることを確認しました。"
 
       # リポジトリの styles.css は非圧縮版。リリースアセットだけ圧縮する
       - name: Minify styles.css for release
@@ -39,7 +99,7 @@ jobs:
       - name: Create GitHub Release with assets
         uses: softprops/action-gh-release@v3
         with:
-          name: ${{ steps.relname.outputs.name }}
+          name: ${{ github.ref_name }}
           body: ''
           draft: false
           prerelease: false

@@ -1,6 +1,7 @@
 import type { OGPData, OGPCache } from "./ogpCache";
 import { segmentBlocks } from "./blockSegmenter";
 import { isMathJaxReady, requestMathJax } from "./mathjax";
+import { IMAGE_EXT_RE, inlineTokenPattern } from "./patterns";
 
 const IMAGE_EXTENSIONS = [
   ".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".bmp",
@@ -319,7 +320,6 @@ function renderTextSegment(
   }
 }
 
-const IMAGE_EXT_RE = /\.(png|jpg|jpeg|gif|svg|webp|bmp)$/i;
 
 function renderInlineTokens(
   container: HTMLElement,
@@ -334,9 +334,8 @@ function renderInlineTokens(
   urls: ParsedUrl[],
   seen: Set<string>
 ): void {
-  // eslint-disable-next-line no-useless-escape -- escape kept for regex readability
-  const TOKEN_REGEX = /(\$[^$]+\$|`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*|~~[^~]+~~|==[^=]+=+|!\[\[[^\]]+\]\]|\[\[[^\]]+\]\]|\[[^\[\]\n]+\]\((?:https?|obsidian):\/\/[^\s)]+\)|#[^\s#]+|(?:https?|obsidian):\/\/[^\s<>"'\]]+)/g;
-  const parts = text.split(TOKEN_REGEX);
+   
+  const parts = text.split(inlineTokenPattern());
 
   for (const part of parts) {
     if (!part) continue;
@@ -648,6 +647,26 @@ export function renderUrlPreviews(
     } else if (pu.url.startsWith("obsidian://")) {
       continue;
     } else {
+      const render = (host: HTMLElement, data: OGPData): void => {
+        if (pu.type === "twitter") {
+          renderTwitterCard(host, data);
+        } else {
+          renderOGPCard(host, data);
+        }
+      };
+
+      const cached = ogpCache.get(pu.url);
+      if (cached) {
+        if (!cached.title && !cached.description) continue;
+        const host = el("div", "wr-ogp-loading");
+        host.textContent = "";
+        container.appendChild(host);
+        render(host, cached);
+        continue;
+      }
+      // Already known to be unresolvable, or previews are off: no card, no loading flash.
+      if (ogpCache.isResolved(pu.url) || !ogpCache.canFetch(pu.url)) continue;
+
       const placeholder = el("div", "wr-ogp-loading");
       container.appendChild(placeholder);
       // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
@@ -657,11 +676,7 @@ export function renderUrlPreviews(
           placeholder.remove();
           return;
         }
-        if (pu.type === "twitter") {
-          renderTwitterCard(placeholder, data);
-        } else {
-          renderOGPCard(placeholder, data);
-        }
+        render(placeholder, data);
       });
     }
   }

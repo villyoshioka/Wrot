@@ -1,4 +1,4 @@
-import { CachedMetadata, TFile, TagCache, debounce, normalizePath } from "obsidian";
+import { CachedMetadata, Debouncer, TFile, TagCache, debounce, normalizePath } from "obsidian";
 import { parseMemos } from "./memoParser";
 import { extractTagsForHistory } from "./tagSuggest";
 import type WrotPlugin from "../main";
@@ -20,6 +20,9 @@ import type WrotPlugin from "../main";
 interface WrTagCache extends TagCache {
   wrGraph: true;
 }
+
+// Notes re-read during one reconcile pass before the index is written out.
+const RECONCILE_SAVE_INTERVAL = 200;
 
 function isWrTag(t: TagCache): boolean {
   return (t as WrTagCache).wrGraph === true;
@@ -85,8 +88,10 @@ export class GraphTagInjector {
   private index = new Map<string, GraphTagIndexEntry>();
   // Paths with injected entries; the cleanup targets on unload.
   private trackedPaths = new Set<string>();
-  private requestRefresh: () => void;
-  private requestIndexSave: () => void;
+  private requestRefresh: Debouncer<[], void>;
+  private requestIndexSave: Debouncer<[], void>;
+  // Set on unload so the reconcile loop stops re-injecting into a cache that was just cleaned.
+  private stopped = false;
 
   constructor(private plugin: WrotPlugin) {
     this.requestRefresh = debounce(() => this.refresh(), 400, true);
@@ -102,10 +107,19 @@ export class GraphTagInjector {
   // in the background (only mtime-changed notes get re-read).
   async start(): Promise<void> {
     if (!this.enabled) return;
+    this.stopped = false;
     await this.loadIndex();
     this.injectFromIndex();
     this.refresh();
     await this.reconcile();
+  }
+
+  // Called on unload, before the cache cleanup. Without this the reconcile loop keeps running
+  // after removeAll() and re-injects tags that then survive until Obsidian restarts.
+  stop(): void {
+    this.stopped = true;
+    this.requestRefresh.cancel();
+    this.requestIndexSave.cancel();
   }
 
   // Called when the integration toggle changes; realigns injection state.
@@ -141,7 +155,9 @@ export class GraphTagInjector {
   private async reconcile(): Promise<void> {
     const { vault, metadataCache } = this.plugin.app;
     let tagsChanged = false;
+    let sinceLastSave = 0;
     for (const file of vault.getMarkdownFiles()) {
+      if (this.stopped || !this.enabled) return;
       const entry = this.index.get(file.path);
       if (entry && entry.mtime === file.stat.mtime) continue;
       const cache = metadataCache.getFileCache(file);
@@ -150,10 +166,19 @@ export class GraphTagInjector {
       const hasGhost = cache.tags?.some(isWrTag) ?? false;
       if (!entry && !mayHaveFence && !hasGhost) continue;
       const content = await vault.cachedRead(file);
+      if (this.stopped || !this.enabled) return;
       const tags = this.collectTagEntries(content);
       if (this.updateIndexEntry(file.path, tags, file.stat.mtime)) tagsChanged = true;
       this.applyToCache(file.path, cache, tags);
-      this.requestIndexSave();
+      // The debounced save resets its timer on every note, so a long first scan would persist
+      // nothing until it finished. Flush periodically so an interrupted scan keeps its progress.
+      sinceLastSave++;
+      if (sinceLastSave >= RECONCILE_SAVE_INTERVAL) {
+        sinceLastSave = 0;
+        await this.saveIndex();
+      } else {
+        this.requestIndexSave();
+      }
     }
     if (tagsChanged) this.requestRefresh();
   }

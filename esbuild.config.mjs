@@ -1,20 +1,9 @@
 import esbuild from "esbuild";
 import process from "process";
 import fs from "fs";
+import { minifyCss } from "./scripts/css-minify.mjs";
 
 const prod = process.argv[2] === "production";
-
-function minifyCss(css) {
-  // Whitespace around + and - is preserved: collapsing it inside calc()
-  // invalidates the expression and drops the whole rule.
-  return css
-    .replace(/\/\*[\s\S]*?\*\//g, "")
-    .replace(/\s+/g, " ")
-    .replace(/\s*([{};:,>~])\s*/g, "$1")
-    .replace(/;}/g, "}")
-    .replace(/\s+!important/g, "!important")
-    .trim();
-}
 
 // Repo-root styles.css stays unminified (hand-edited; CI minifies it at release
 // via scripts/minify-styles.mjs), so this build never touches it.

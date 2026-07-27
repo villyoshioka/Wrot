@@ -1,5 +1,19 @@
 # Release Notes
 
+## 2.15.1 - 2026-07-27
+
+### Bug Fixes
+
+- Fixed an issue where toggling a checkbox could apply to the wrong post.
+- Fixed an issue where tags stayed behind after reloading during the tag integration scan.
+
+### Improvements
+
+- Reduced unnecessary work when refreshing the display.
+- Improved internal structure.
+
+---
+
 ## 2.15.0 - 2026-07-14
 
 ### Improvements

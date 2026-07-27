@@ -1,4 +1,5 @@
 import { extractNonBlockText } from "./blockSegmenter";
+import { inlineTokenPattern } from "./patterns";
 
 // Cap on stored recent tags; least-recently-used entries are dropped past
 // the cap to keep the candidate list fresh.
@@ -7,16 +8,14 @@ export const MAX_RECENT_TAGS = 200;
 // Max candidates shown at once (the list itself scrolls).
 const MAX_VISIBLE_ITEMS = 5;
 
-// Same token precedence as the renderer (urlRenderer TOKEN_REGEX): # inside code,
+// Token precedence comes from the shared inlineTokenPattern: # inside code,
 // math, decorations, embeds/links, or URLs is not a tag on screen, so not recorded either.
-// eslint-disable-next-line no-useless-escape -- escape kept for regex readability
-const TOKEN_REGEX = /(\$[^$]+\$|`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*|~~[^~]+~~|==[^=]+=+|!\[\[[^\]]+\]\]|\[\[[^\]]+\]\]|\[[^\[\]\n]+\]\((?:https?|obsidian):\/\/[^\s)]+\)|#[^\s#]+|(?:https?|obsidian):\/\/[^\s<>"'\]]+)/g;
 
 // Extract tags (without leading #) in appearance order, deduped; code/math blocks excluded.
 export function extractTagsForHistory(text: string): string[] {
   const source = extractNonBlockText(text);
   const tags: string[] = [];
-  for (const part of source.split(TOKEN_REGEX)) {
+  for (const part of source.split(inlineTokenPattern())) {
     if (!part) continue;
     if (/^#[^\s#]+$/.test(part)) {
       const tag = part.slice(1);

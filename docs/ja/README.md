@@ -46,6 +46,7 @@ Obsidian の「デイリーノート」設定で日付書式を週次（例: `GG
 
 ## 動作環境
 
+- Obsidian **v1.8.7** 以降が必要です。これより古いバージョンにはインストールできません。
 - [Obsidian](https://obsidian.md/) がサポートするすべてのプラットフォームに対応しています:
   - macOS
   - iOS / iPadOS
