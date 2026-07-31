@@ -18,11 +18,11 @@ const zhTW = {
 
   "settings.item.headerDateFormat.name": "標題日期顯示格式",
   "settings.item.headerDateFormat.desc":
-    "指定顯示在日期導覽列中的日期格式。（可以使用 YYYY, MM, DD 等）留空則恢復成預設值。",
+    "指定顯示在日期導覽列中的日期格式。（可以使用 YYYY, MM, DD 等）\n留空則恢復成預設值。",
 
   "settings.item.timestampFormat.name": "時間戳記顯示格式",
   "settings.item.timestampFormat.desc":
-    "指定貼文的日期時間格式。（可以使用 YYYY, MM, DD, HH, mm, ss）",
+    "指定貼文的日期時間格式。\n（可以使用 YYYY, MM, DD, HH, mm, ss）",
 
   "settings.item.bgColorLight.name": "背景顏色（淺色模式）",
   "settings.item.bgColorLight.desc":
@@ -39,13 +39,13 @@ const zhTW = {
 
   "settings.item.submitLabel.name": "發佈按鈕文字",
   "settings.item.submitLabel.desc":
-    "可以更改發佈按鈕上顯示的文字。留空可僅顯示圖示(僅當已設定圖示時)。",
+    "可以更改發佈按鈕上顯示的文字。\n留空可僅顯示圖示(僅當已設定圖示時)。",
   "settings.item.submitIcon.name": "發佈按鈕圖示",
   "settings.item.submitIcon.desc":
-    "變更發布按鈕的圖示。圖示名稱可從{linkOpen}這裡{linkClose}複製。留空則隱藏圖示。",
+    "變更發布按鈕的圖示。\n圖示名稱可從{linkOpen}這裡{linkClose}複製。\n留空則隱藏圖示。",
   "settings.item.inputPlaceholder.name": "貼文表單空白提示訊息",
   "settings.item.inputPlaceholder.desc":
-    "可以更改貼文表單為空時顯示的文字（佔位符）。留空則隱藏。",
+    "可以更改貼文表單為空時顯示的文字（佔位符）。\n留空則隱藏。",
 
   "settings.item.tagSuggest.name": "標籤自動補全",
   "settings.item.tagSuggest.desc":
@@ -60,7 +60,7 @@ const zhTW = {
 
   "settings.item.ogp.name": "URL 預覽",
   "settings.item.ogp.desc":
-    "自動從筆記內的 URL 取得 OGP 資訊並顯示。關閉後將不進行外部通訊。",
+    "自動從筆記內的 URL 取得 OGP 資訊並顯示。\n關閉後將不進行外部通訊。",
 
   "settings.item.checkStrikethrough.name": "已勾選項目加刪除線",
   "settings.item.checkStrikethrough.desc":
@@ -74,7 +74,7 @@ const zhTW = {
 
   "settings.item.showCalendarButton.name": "顯示日曆按鈕",
   "settings.item.showCalendarButton.desc":
-    "在日期導覽列中顯示日曆按鈕，點擊即可快速跳轉至指定日期。",
+    "在日期導覽列中顯示日曆按鈕，\n點擊即可快速跳轉至指定日期。",
 
   "settings.item.tagColorRules.name": "使用標籤規則",
   "settings.item.tagColorRules.desc":
@@ -96,7 +96,7 @@ const zhTW = {
     "標籤、連結、網址等使用的顏色。未設定時使用主題的強調色。",
   "settings.tagRule.sub.name": "輔助色",
   "settings.tagRule.sub.desc":
-    "時間戳、清單標記等次要元素的顏色。未設定時會自動計算。",
+    "時間戳、清單標記等次要元素的顏色。\n未設定時會自動計算。",
   "settings.tagRule.scope.buttons.name":
     "於時間戳記、選單、釘選套用輔助色",
   "settings.tagRule.scope.buttons.desc":
@@ -112,9 +112,9 @@ const zhTW = {
     "關閉時將使用自動設定的顏色。",
   "settings.item.graphTags.name": "標籤整合",
   "settings.item.graphTags.desc":
-    "讓備忘錄中的標籤出現在圖表檢視與標籤搜尋（tag:）中。關閉後標籤僅存在於 Wrot 內。",
+    "讓備忘錄中的標籤出現在圖表檢視與標籤搜尋（tag:）中。\n關閉後標籤僅存在於 Wrot 內。",
   "settings.tagRule.noIntegration.name": "從標籤整合中排除",
-  "settings.tagRule.noIntegration.desc": "開啟後，寫在備忘錄內的此規則標籤將不參與標籤整合，僅保留在 Wrot 內。",
+  "settings.tagRule.noIntegration.desc": "開啟後，寫在備忘錄內的此規則標籤將不參與標籤整合，\n僅保留在 Wrot 內。",
   "settings.tagRule.hideTimeline.name": "在時間軸中隱藏",
   "settings.tagRule.hideTimeline.desc":
     "開啟後，含有此標籤的備忘錄不再顯示於時間軸。每日筆記中仍會保留。",

@@ -2133,33 +2133,29 @@ body.is-mobile .wr-settings .setting-item.wr-reverse-controls > .setting-item-co
 
 /* Narrow settings pane (tablet portrait, split panes): rows keep label and control on one
    line, which squeezes text fields down to a sliver. Stack those rows instead — only the
-   text-input ones cramp; everything else is left to Obsidian. Measured against the pane
-   itself rather than the viewport, since the pane is often far narrower than the window. */
+   text-input ones cramp; everything else is left to Obsidian. Text-input rows are tagged
+   wr-text-input-row at render time (all of them are hand-rendered), so no :has() is needed.
+   Measured against the pane itself rather than the viewport, since the pane is often far
+   narrower than the window. */
 .wr-settings {
   container-type: inline-size;
 }
 
 @container (max-width: 600px) {
-  body .wr-settings .setting-item:has(.setting-item-control input[type="text"]):not(#x) {
+  body .wr-settings .setting-item.wr-text-input-row:not(#x) {
     display: flex;
     flex-direction: column;
     align-items: stretch;
     gap: 6px;
   }
 
-  body
-    .wr-settings
-    .setting-item:has(.setting-item-control input[type="text"])
-    > .setting-item-info:not(#x) {
+  body .wr-settings .setting-item.wr-text-input-row > .setting-item-info:not(#x) {
     width: 100%;
     flex: 0 0 auto;
     margin: 0;
   }
 
-  body
-    .wr-settings
-    .setting-item:has(.setting-item-control input[type="text"])
-    > .setting-item-control:not(#x) {
+  body .wr-settings .setting-item.wr-text-input-row > .setting-item-control:not(#x) {
     width: 100%;
     flex: 0 0 auto;
     justify-content: flex-start;

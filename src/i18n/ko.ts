@@ -18,11 +18,11 @@ const ko = {
 
   "settings.item.headerDateFormat.name": "헤더 날짜 표시 형식",
   "settings.item.headerDateFormat.desc":
-    "날짜 내비게이션에 표시할 형식을 지정합니다. (YYYY, MM, DD 등을 사용 가능) 비워두면 기본값으로 돌아갑니다.",
+    "날짜 내비게이션에 표시할 형식을 지정합니다. (YYYY, MM, DD 등을 사용 가능) \n비워두면 기본값으로 돌아갑니다.",
 
   "settings.item.timestampFormat.name": "타임스탬프 형식",
   "settings.item.timestampFormat.desc":
-    "게시물의 날짜와 시간 형식을 지정합니다. (YYYY, MM, DD, HH, mm, ss 사용 가능)",
+    "게시물의 날짜와 시간 형식을 지정합니다. \n(YYYY, MM, DD, HH, mm, ss 사용 가능)",
 
   "settings.item.bgColorLight.name": "배경색 (라이트 모드)",
   "settings.item.bgColorLight.desc":
@@ -39,13 +39,13 @@ const ko = {
 
   "settings.item.submitLabel.name": "게시 버튼 텍스트",
   "settings.item.submitLabel.desc":
-    "게시 버튼에 표시될 문구를 변경할 수 있습니다. 아이콘이 설정된 경우에 한해 비워두면 아이콘만 표시됩니다.",
+    "게시 버튼에 표시될 문구를 변경할 수 있습니다. \n아이콘이 설정된 경우에 한해 비워두면 아이콘만 표시됩니다.",
   "settings.item.submitIcon.name": "게시 버튼 아이콘",
   "settings.item.submitIcon.desc":
-    "게시 버튼의 아이콘을 변경합니다. 아이콘 이름은 {linkOpen}여기{linkClose}에서 복사하세요. 비우면 숨겨집니다.",
+    "게시 버튼의 아이콘을 변경합니다. \n아이콘 이름은 {linkOpen}여기{linkClose}에서 복사하세요. \n비우면 숨겨집니다.",
   "settings.item.inputPlaceholder.name": "입력창 안내 문구",
   "settings.item.inputPlaceholder.desc":
-    "입력창이 비어 있을 때 표시되는 텍스트를 변경할 수 있습니다. 비워두면 표시되지 않습니다.",
+    "입력창이 비어 있을 때 표시되는 텍스트를 변경할 수 있습니다. \n비워두면 표시되지 않습니다.",
 
   "settings.item.tagSuggest.name": "태그 자동 완성",
   "settings.item.tagSuggest.desc":
@@ -60,7 +60,7 @@ const ko = {
 
   "settings.item.ogp.name": "URL 미리보기 (OGP)",
   "settings.item.ogp.desc":
-    "게시물 내 URL의 미리보기 정보를 가져옵니다. 끄면 외부와 통신하지 않습니다.",
+    "게시물 내 URL의 미리보기 정보를 가져옵니다. \n끄면 외부와 통신하지 않습니다.",
 
   "settings.item.checkStrikethrough.name": "체크된 항목 취소선",
   "settings.item.checkStrikethrough.desc":
@@ -74,7 +74,7 @@ const ko = {
 
   "settings.item.showCalendarButton.name": "캘린더 버튼 표시",
   "settings.item.showCalendarButton.desc":
-    "날짜 네비게이션에 캘린더 버튼을 추가합니다. 버튼을 눌러 원하는 날짜로 바로 이동할 수 있습니다.",
+    "날짜 네비게이션에 캘린더 버튼을 추가합니다. \n버튼을 눌러 원하는 날짜로 바로 이동할 수 있습니다.",
 
   "settings.item.tagColorRules.name": "태그별 규칙 사용",
   "settings.item.tagColorRules.desc":
@@ -96,7 +96,7 @@ const ko = {
     "태그·링크·URL 등에 쓰는 색입니다. 설정하지 않으면 테마의 강조색을 사용합니다.",
   "settings.tagRule.sub.name": "서브 컬러",
   "settings.tagRule.sub.desc":
-    "타임스탬프·리스트 마커 등 보조 요소의 색입니다. 설정하지 않으면 자동 계산됩니다.",
+    "타임스탬프·리스트 마커 등 보조 요소의 색입니다. \n설정하지 않으면 자동 계산됩니다.",
   "settings.tagRule.scope.buttons.name": "버튼 및 고정 아이콘에 서브 컬러 적용",
   "settings.tagRule.scope.buttons.desc":
     "끄면 시스템 기본 색상으로 표시됩니다.",
@@ -108,9 +108,9 @@ const ko = {
   "settings.tagRule.scope.ogp.desc": "끄면 시스템 기본 색상으로 표시됩니다.",
   "settings.item.graphTags.name": "태그 통합",
   "settings.item.graphTags.desc":
-    "메모의 태그를 그래프 뷰와 태그 검색(tag:) 대상에 포함합니다. 끄면 Wrot 안에서만 쓰입니다.",
+    "메모의 태그를 그래프 뷰와 태그 검색(tag:) 대상에 포함합니다. \n끄면 Wrot 안에서만 쓰입니다.",
   "settings.tagRule.noIntegration.name": "태그 통합에서 제외",
-  "settings.tagRule.noIntegration.desc": "켜면 메모 안에 쓴 이 규칙의 태그는 태그 통합에서 제외되어 Wrot 안에서만 사용됩니다.",
+  "settings.tagRule.noIntegration.desc": "켜면 메모 안에 쓴 이 규칙의 태그는 태그 통합에서 제외되어 \nWrot 안에서만 사용됩니다.",
   "settings.tagRule.hideTimeline.name": "타임라인에서 숨기기",
   "settings.tagRule.hideTimeline.desc":
     "켜면 이 태그가 있는 게시물이 타임라인에 나오지 않습니다. 데일리 노트에는 남아 있습니다.",

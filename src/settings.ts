@@ -331,6 +331,7 @@ export class WrotSettingTab extends PluginSettingTab {
         setting
           .setName(options.name)
           .setDesc(desc(options.desc))
+          .setClass("wr-text-input-row")
           .addText((text) => {
             field = text;
             text
@@ -588,6 +589,7 @@ export class WrotSettingTab extends PluginSettingTab {
         setting
           .setName(t("settings.item.submitIcon.name"))
           .setDesc(buildDesc())
+          .setClass("wr-text-input-row")
           .addText((text) => {
             field = text;
             text
@@ -927,6 +929,7 @@ export class WrotSettingTab extends PluginSettingTab {
     new Setting(groupEl)
       .setName(t("settings.tagRule.tag.name"))
       .setDesc(desc(t("settings.tagRule.tag.desc")))
+      .setClass("wr-text-input-row")
       .addText((text) => {
         tagInputEl = text.inputEl;
         text

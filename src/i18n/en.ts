@@ -18,11 +18,11 @@ const en = {
 
   "settings.item.headerDateFormat.name": "Header Date Format",
   "settings.item.headerDateFormat.desc":
-    "Specify the date format for the date navigation. (YYYY, MM, DD, etc. can be used) Leave blank to reset to default.",
+    "Specify the date format for the date navigation. (YYYY, MM, DD, etc. can be used) \nLeave blank to reset to default.",
 
   "settings.item.timestampFormat.name": "Timestamp Format",
   "settings.item.timestampFormat.desc":
-    "Specify the date and time format for posts. (YYYY, MM, DD, HH, mm, ss can be used)",
+    "Specify the date and time format for posts. \n(YYYY, MM, DD, HH, mm, ss can be used)",
 
   "settings.item.bgColorLight.name": "Background Color (Light Mode)",
   "settings.item.bgColorLight.desc":
@@ -39,13 +39,13 @@ const en = {
 
   "settings.item.submitLabel.name": "Post Button Text",
   "settings.item.submitLabel.desc":
-    "Change the text displayed on the post button. Leave blank for an icon-only button (shown only if an icon is set).",
+    "Change the text displayed on the post button. \nLeave blank for an icon-only button (shown only if an icon is set).",
   "settings.item.submitIcon.name": "Post Button Icon",
   "settings.item.submitIcon.desc":
-    "Change the icon on the post button. Copy an icon name from {linkOpen}here{linkClose}. Leave blank to hide it.",
+    "Change the icon on the post button. \nCopy an icon name from {linkOpen}here{linkClose}. \nLeave blank to hide it.",
   "settings.item.inputPlaceholder.name": "Post Form Placeholder",
   "settings.item.inputPlaceholder.desc":
-    "Change the text displayed when the post form is empty. Leave blank to hide it.",
+    "Change the text displayed when the post form is empty. \nLeave blank to hide it.",
 
   "settings.item.tagSuggest.name": "Tag Autocomplete",
   "settings.item.tagSuggest.desc":
@@ -60,7 +60,7 @@ const en = {
 
   "settings.item.ogp.name": "URL Preview",
   "settings.item.ogp.desc":
-    "Automatically retrieve and display OGP information from URLs in notes. If turned off, no external communication will occur.",
+    "Automatically retrieve and display OGP information from URLs in notes. \nIf turned off, no external communication will occur.",
 
   "settings.item.checkStrikethrough.name": "Strikethrough for Checked Items",
   "settings.item.checkStrikethrough.desc":
@@ -74,7 +74,7 @@ const en = {
 
   "settings.item.showCalendarButton.name": "Calendar Button",
   "settings.item.showCalendarButton.desc":
-    "Adds a calendar button to the date nav, letting you jump to any date with a quick tap.",
+    "Adds a calendar button to the date nav, \nletting you jump to any date with a quick tap.",
 
   "settings.item.tagColorRules.name": "Use Tag Rules",
   "settings.item.tagColorRules.desc":
@@ -96,7 +96,7 @@ const en = {
     "Color for tags, links, and URLs. Uses the theme's accent color if unset.",
   "settings.tagRule.sub.name": "Sub Color",
   "settings.tagRule.sub.desc":
-    "Color for secondary elements like timestamps and list markers. Calculated automatically if unset.",
+    "Color for secondary elements like timestamps and list markers. \nCalculated automatically if unset.",
   "settings.tagRule.scope.buttons.name":
     "Apply Sub Color to Timestamp, Menu, and Pins",
   "settings.tagRule.scope.buttons.desc":
@@ -112,10 +112,10 @@ const en = {
     "When off, automatically determined colors will be used.",
   "settings.item.graphTags.name": "Tag Integration",
   "settings.item.graphTags.desc":
-    "Makes memo tags count for the graph view and tag: search. When off, tags stay inside Wrot.",
+    "Makes memo tags count for the graph view and tag: search. \nWhen off, tags stay inside Wrot.",
   "settings.tagRule.noIntegration.name": "Exclude from Tag Integration",
   "settings.tagRule.noIntegration.desc":
-    "When on, this rule's tag written inside memos is left out of Tag Integration and stays inside Wrot.",
+    "When on, this rule's tag written inside memos is left out of Tag Integration \nand stays inside Wrot.",
   "settings.tagRule.hideTimeline.name": "Hide from timeline",
   "settings.tagRule.hideTimeline.desc":
     "When on, memos with this tag no longer appear in the timeline. They stay in the daily note.",

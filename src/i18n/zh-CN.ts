@@ -18,11 +18,11 @@ const zhCN = {
 
   "settings.item.headerDateFormat.name": "页眉日期格式",
   "settings.item.headerDateFormat.desc":
-    "指定日期导航栏中显示的日期格式。（支持 YYYY, MM, DD 等）留空则恢复默认值。",
+    "指定日期导航栏中显示的日期格式。（支持 YYYY, MM, DD 等）\n留空则恢复默认值。",
 
   "settings.item.timestampFormat.name": "时间戳格式",
   "settings.item.timestampFormat.desc":
-    "指定记录的日期时间格式。（支持 YYYY, MM, DD, HH, mm, ss）",
+    "指定记录的日期时间格式。\n（支持 YYYY, MM, DD, HH, mm, ss）",
 
   "settings.item.bgColorLight.name": "背景颜色（浅色模式）",
   "settings.item.bgColorLight.desc":
@@ -39,13 +39,13 @@ const zhCN = {
 
   "settings.item.submitLabel.name": "发布按钮文本",
   "settings.item.submitLabel.desc":
-    "自定义发布按钮上显示的文字。留空可仅显示图标(仅当已设置图标时)。",
+    "自定义发布按钮上显示的文字。\n留空可仅显示图标(仅当已设置图标时)。",
   "settings.item.submitIcon.name": "发布按钮图标",
   "settings.item.submitIcon.desc":
-    "更改发布按钮的图标。图标名称可从{linkOpen}这里{linkClose}复制。留空则隐藏图标。",
+    "更改发布按钮的图标。\n图标名称可从{linkOpen}这里{linkClose}复制。\n留空则隐藏图标。",
   "settings.item.inputPlaceholder.name": "输入框占位文本",
   "settings.item.inputPlaceholder.desc":
-    "可以自定义输入框为空时显示的提示文字。留空则不显示。",
+    "可以自定义输入框为空时显示的提示文字。\n留空则不显示。",
 
   "settings.item.tagSuggest.name": "标签自动补全",
   "settings.item.tagSuggest.desc":
@@ -60,7 +60,7 @@ const zhCN = {
 
   "settings.item.ogp.name": "URL 预览",
   "settings.item.ogp.desc":
-    "自动获取并显示笔记内 URL 的 OGP 信息。关闭后将不再访问外部网络。",
+    "自动获取并显示笔记内 URL 的 OGP 信息。\n关闭后将不再访问外部网络。",
 
   "settings.item.checkStrikethrough.name": "已完成项目显示删除线",
   "settings.item.checkStrikethrough.desc":
@@ -74,7 +74,7 @@ const zhCN = {
 
   "settings.item.showCalendarButton.name": "显示日历按钮",
   "settings.item.showCalendarButton.desc":
-    "在日期导航栏中显示日历图标，方便你直接跳转到任何日期。",
+    "在日期导航栏中显示日历图标，\n方便你直接跳转到任何日期。",
 
   "settings.item.tagColorRules.name": "使用标签规则",
   "settings.item.tagColorRules.desc":
@@ -96,7 +96,7 @@ const zhCN = {
     "标签、链接、网址等使用的颜色。未设置时使用主题的强调色。",
   "settings.tagRule.sub.name": "辅助色",
   "settings.tagRule.sub.desc":
-    "时间戳、列表标记等次要元素的颜色。未设置时会自动计算。",
+    "时间戳、列表标记等次要元素的颜色。\n未设置时会自动计算。",
   "settings.tagRule.scope.buttons.name":
     "将辅助色应用于时间戳、菜单及置顶图标",
   "settings.tagRule.scope.buttons.desc":
@@ -112,9 +112,9 @@ const zhCN = {
     "关闭时将使用系统自动计算的颜色。",
   "settings.item.graphTags.name": "标签集成",
   "settings.item.graphTags.desc":
-    "让备忘录中的标签出现在图谱视图与标签搜索（tag:）中。关闭后标签仅存在于 Wrot 内。",
+    "让备忘录中的标签出现在图谱视图与标签搜索（tag:）中。\n关闭后标签仅存在于 Wrot 内。",
   "settings.tagRule.noIntegration.name": "从标签集成中排除",
-  "settings.tagRule.noIntegration.desc": "开启后，写在备忘录内的此规则标签将不参与标签集成，仅保留在 Wrot 内。",
+  "settings.tagRule.noIntegration.desc": "开启后，写在备忘录内的此规则标签将不参与标签集成，\n仅保留在 Wrot 内。",
   "settings.tagRule.hideTimeline.name": "在时间轴中隐藏",
   "settings.tagRule.hideTimeline.desc":
     "开启后，含有此标签的备忘录不再显示在时间轴中。每日笔记中仍会保留。",

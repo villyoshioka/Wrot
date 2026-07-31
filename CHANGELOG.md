@@ -1,5 +1,14 @@
 # Release Notes
 
+## 2.16.1 - 2026-07-31
+
+### Improvements
+
+- Applied the line breaks of setting descriptions to all languages.
+- Improved internal structure.
+
+---
+
 ## 2.16.0 - 2026-07-31
 
 ### Important Changes

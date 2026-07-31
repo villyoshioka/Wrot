@@ -18,11 +18,11 @@ const de = {
 
   "settings.item.headerDateFormat.name": "Datumsformat der Kopfzeile",
   "settings.item.headerDateFormat.desc":
-    "Geben Sie das Format für das Datum in der Datumsnavigation an. (YYYY, MM, DD usw. können verwendet werden) Leer lassen, um auf den Standardwert zurückzusetzen.",
+    "Geben Sie das Format für das Datum in der Datumsnavigation an. (YYYY, MM, DD usw. können verwendet werden) \nLeer lassen, um auf den Standardwert zurückzusetzen.",
 
   "settings.item.timestampFormat.name": "Zeitstempel-Format",
   "settings.item.timestampFormat.desc":
-    "Geben Sie das Format für Datum und Uhrzeit der Beiträge an. (YYYY, MM, DD, HH, mm, ss können verwendet werden)",
+    "Geben Sie das Format für Datum und Uhrzeit der Beiträge an. \n(YYYY, MM, DD, HH, mm, ss können verwendet werden)",
 
   "settings.item.bgColorLight.name": "Hintergrundfarbe (Heller Modus)",
   "settings.item.bgColorLight.desc":
@@ -39,13 +39,13 @@ const de = {
 
   "settings.item.submitLabel.name": "Text der Posten-Schaltfläche",
   "settings.item.submitLabel.desc":
-    "Sie können den Text ändern, der auf der Posten-Schaltfläche angezeigt wird. Leer lassen für eine reine Symbol-Schaltfläche (nur wenn ein Symbol festgelegt ist).",
+    "Sie können den Text ändern, der auf der Posten-Schaltfläche angezeigt wird. \nLeer lassen für eine reine Symbol-Schaltfläche (nur wenn ein Symbol festgelegt ist).",
   "settings.item.submitIcon.name": "Symbol der Posten-Schaltfläche",
   "settings.item.submitIcon.desc":
-    "Ändert das Symbol der Beitragsschaltfläche. Symbolnamen {linkOpen}hier{linkClose} kopieren. Leer lassen blendet es aus.",
+    "Ändert das Symbol der Beitragsschaltfläche. \nSymbolnamen {linkOpen}hier{linkClose} kopieren. \nLeer lassen blendet es aus.",
   "settings.item.inputPlaceholder.name": "Platzhaltertext im Eingabefeld",
   "settings.item.inputPlaceholder.desc":
-    "Sie können den Text ändern, der angezeigt wird, wenn das Eingabefeld leer ist. Lassen Sie das Feld leer, um ihn auszublenden.",
+    "Sie können den Text ändern, der angezeigt wird, wenn das Eingabefeld leer ist. \nLassen Sie das Feld leer, um ihn auszublenden.",
 
   "settings.item.tagSuggest.name": "Tag-Autovervollständigung",
   "settings.item.tagSuggest.desc":
@@ -60,7 +60,7 @@ const de = {
 
   "settings.item.ogp.name": "URL-Vorschau",
   "settings.item.ogp.desc":
-    "Ruft automatisch OGP-Informationen von URLs in Notizen ab und zeigt sie an. Wenn deaktiviert, findet keine externe Kommunikation statt.",
+    "Ruft automatisch OGP-Informationen von URLs in Notizen ab und zeigt sie an. \nWenn deaktiviert, findet keine externe Kommunikation statt.",
 
   "settings.item.checkStrikethrough.name": "Durchstreichen bei aktiviertem Kontrollkästchen",
   "settings.item.checkStrikethrough.desc":
@@ -74,7 +74,7 @@ const de = {
 
   "settings.item.showCalendarButton.name": "Kalender-Button einblenden",
   "settings.item.showCalendarButton.desc":
-    "Zeigt einen Button in der Datumsnavigation an, mit dem Sie per Fingertipp direkt zu einem beliebigen Datum springen können.",
+    "Zeigt einen Button in der Datumsnavigation an, \nmit dem Sie per Fingertipp direkt zu einem beliebigen Datum springen können.",
 
   "settings.item.tagColorRules.name": "Tag-Regeln verwenden",
   "settings.item.tagColorRules.desc":
@@ -95,7 +95,7 @@ const de = {
     "Farbe für Tags, Links und URLs. Ohne Angabe wird die Akzentfarbe des Themes verwendet.",
   "settings.tagRule.sub.name": "Subfarbe",
   "settings.tagRule.sub.desc":
-    "Farbe für Nebenelemente wie Zeitstempel und Listenpunkte. Ohne Angabe automatisch berechnet.",
+    "Farbe für Nebenelemente wie Zeitstempel und Listenpunkte. \nOhne Angabe automatisch berechnet.",
   "settings.tagRule.scope.buttons.name": "Subfarbe auf Zeitstempel, Menüs und Pins anwenden",
   "settings.tagRule.scope.buttons.desc": "Wenn deaktiviert, wird die automatisch festgelegte Farbe verwendet.",
   "settings.tagRule.scope.quote.name": "Subfarbe auf Zitate anwenden",
@@ -106,9 +106,9 @@ const de = {
   "settings.tagRule.scope.ogp.desc": "Wenn deaktiviert, wird die automatisch festgelegte Farbe verwendet.",
   "settings.item.graphTags.name": "Tag-Integration",
   "settings.item.graphTags.desc":
-    "Lässt Memo-Tags in der Graphansicht und der tag:-Suche zählen. Aus bleiben sie nur in Wrot.",
+    "Lässt Memo-Tags in der Graphansicht und der tag:-Suche zählen. \nAus bleiben sie nur in Wrot.",
   "settings.tagRule.noIntegration.name": "Von der Tag-Integration ausschließen",
-  "settings.tagRule.noIntegration.desc": "Wenn aktiviert, wird der in Memos geschriebene Tag dieser Regel von der Tag-Integration ausgenommen und bleibt nur innerhalb von Wrot.",
+  "settings.tagRule.noIntegration.desc": "Wenn aktiviert, wird der in Memos geschriebene Tag dieser Regel von der Tag-Integration ausgenommen \nund bleibt nur innerhalb von Wrot.",
   "settings.tagRule.hideTimeline.name": "In der Timeline ausblenden",
   "settings.tagRule.hideTimeline.desc":
     "Wenn aktiviert, erscheinen Memos mit diesem Tag nicht mehr in der Timeline. In der Tagesnotiz bleiben sie.",

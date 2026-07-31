@@ -20,11 +20,11 @@ const fr = {
 
   "settings.item.headerDateFormat.name": "Format de date de l'en-tête",
   "settings.item.headerDateFormat.desc":
-    "Définissez le format de la date pour la navigation. (YYYY, MM, DD, etc. sont acceptés) Laissez vide pour utiliser la valeur par défaut.",
+    "Définissez le format de la date pour la navigation. (YYYY, MM, DD, etc. sont acceptés) \nLaissez vide pour utiliser la valeur par défaut.",
 
   "settings.item.timestampFormat.name": "Format de l'horodatage",
   "settings.item.timestampFormat.desc":
-    "Définissez le format de la date et de l'heure des publications (YYYY, MM, DD, HH, mm, ss).",
+    "Définissez le format de la date et de l'heure des publications \n(YYYY, MM, DD, HH, mm, ss).",
 
   "settings.item.bgColorLight.name": "Couleur de fond (Mode clair)",
   "settings.item.bgColorLight.desc":
@@ -41,13 +41,13 @@ const fr = {
 
   "settings.item.submitLabel.name": "Libellé du bouton Poster",
   "settings.item.submitLabel.desc":
-    "Personnalisez le texte affiché sur le bouton Poster. Laissez vide pour un bouton avec seulement l'icône (uniquement si une icône est définie).",
+    "Personnalisez le texte affiché sur le bouton Poster. \nLaissez vide pour un bouton avec seulement l'icône (uniquement si une icône est définie).",
   "settings.item.submitIcon.name": "Icône du bouton Poster",
   "settings.item.submitIcon.desc":
-    "Change l'icône du bouton de publication. Copiez un nom d'icône {linkOpen}ici{linkClose}. Laissez vide pour la masquer.",
+    "Change l'icône du bouton de publication. \nCopiez un nom d'icône {linkOpen}ici{linkClose}. \nLaissez vide pour la masquer.",
   "settings.item.inputPlaceholder.name": "Message du champ vide",
   "settings.item.inputPlaceholder.desc":
-    "Texte affiché lorsque le champ de saisie est vide. Laissez vide pour ne rien afficher.",
+    "Texte affiché lorsque le champ de saisie est vide. \nLaissez vide pour ne rien afficher.",
 
   "settings.item.tagSuggest.name": "Saisie semi-automatique des tags",
   "settings.item.tagSuggest.desc":
@@ -62,7 +62,7 @@ const fr = {
 
   "settings.item.ogp.name": "Aperçu de l'URL",
   "settings.item.ogp.desc":
-    "Récupère et affiche automatiquement les informations OGP à partir des URL. Si désactivé, aucune communication externe n'est effectuée.",
+    "Récupère et affiche automatiquement les informations OGP à partir des URL. \nSi désactivé, aucune communication externe n'est effectuée.",
 
   "settings.item.checkStrikethrough.name": "Rayer les éléments cochés",
   "settings.item.checkStrikethrough.desc":
@@ -76,7 +76,7 @@ const fr = {
 
   "settings.item.showCalendarButton.name": "Bouton Calendrier",
   "settings.item.showCalendarButton.desc":
-    "Affiche un bouton calendrier dans la barre de navigation. Touchez-le pour accéder directement à n'importe quelle date.",
+    "Affiche un bouton calendrier dans la barre de navigation. \nTouchez-le pour accéder directement à n'importe quelle date.",
 
   "settings.item.tagColorRules.name": "Utiliser les règles par tag",
   "settings.item.tagColorRules.desc":
@@ -97,7 +97,7 @@ const fr = {
     "Couleur des tags, liens et URL. Sans réglage, la couleur d'accent du thème est utilisée.",
   "settings.tagRule.sub.name": "Couleur secondaire",
   "settings.tagRule.sub.desc":
-    "Couleur des éléments secondaires comme les horodatages et les puces. Calculée automatiquement si non définie.",
+    "Couleur des éléments secondaires comme les horodatages et les puces. \nCalculée automatiquement si non définie.",
   "settings.tagRule.scope.buttons.name":
     "Appliquer aux boutons et à l'horodatage",
   "settings.tagRule.scope.buttons.desc":
@@ -113,10 +113,10 @@ const fr = {
     "Si désactivé, utilise la couleur par défaut.",
   "settings.item.graphTags.name": "Intégration des tags",
   "settings.item.graphTags.desc":
-    "Fait compter les tags des mémos dans le graphe et la recherche tag:. Désactivé, ils restent dans Wrot.",
+    "Fait compter les tags des mémos dans le graphe et la recherche tag:. \nDésactivé, ils restent dans Wrot.",
   "settings.tagRule.noIntegration.name": "Exclure de l'intégration des tags",
   "settings.tagRule.noIntegration.desc":
-    "Si activé, le tag de cette règle écrit dans les mémos est exclu de l'intégration des tags et reste uniquement dans Wrot.",
+    "Si activé, le tag de cette règle écrit dans les mémos est exclu de l'intégration des tags \net reste uniquement dans Wrot.",
   "settings.tagRule.hideTimeline.name": "Masquer dans la timeline",
   "settings.tagRule.hideTimeline.desc":
     "Si activé, les mémos portant ce tag n'apparaissent plus dans la timeline. Ils restent dans la note quotidienne.",

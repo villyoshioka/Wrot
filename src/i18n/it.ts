@@ -20,11 +20,11 @@ const it = {
 
   "settings.item.headerDateFormat.name": "Formato data intestazione",
   "settings.item.headerDateFormat.desc":
-    "Specifica il formato della data nel navigatore delle date (es. YYYY, MM, DD). Lascia vuoto per ripristinare il valore predefinito.",
+    "Specifica il formato della data nel navigatore delle date (es. YYYY, MM, DD). \nLascia vuoto per ripristinare il valore predefinito.",
 
   "settings.item.timestampFormat.name": "Formato timestamp",
   "settings.item.timestampFormat.desc":
-    "Specifica il formato di data e ora per i post (puoi usare YYYY, MM, DD, HH, mm, ss).",
+    "Specifica il formato di data e ora per i post \n(puoi usare YYYY, MM, DD, HH, mm, ss).",
 
   "settings.item.bgColorLight.name": "Colore di sfondo (Modalità chiara)",
   "settings.item.bgColorLight.desc":
@@ -41,13 +41,13 @@ const it = {
 
   "settings.item.submitLabel.name": "Testo del pulsante Posta",
   "settings.item.submitLabel.desc":
-    "Puoi modificare il testo visualizzato sul pulsante Posta. Lascia vuoto per un pulsante con la sola icona (solo se è impostata un'icona).",
+    "Puoi modificare il testo visualizzato sul pulsante Posta. \nLascia vuoto per un pulsante con la sola icona (solo se è impostata un'icona).",
   "settings.item.submitIcon.name": "Icona del pulsante Posta",
   "settings.item.submitIcon.desc":
-    "Cambia l'icona del pulsante di pubblicazione. Copia un nome icona {linkOpen}qui{linkClose}. Lascia vuoto per nasconderla.",
+    "Cambia l'icona del pulsante di pubblicazione. \nCopia un nome icona {linkOpen}qui{linkClose}. \nLascia vuoto per nasconderla.",
   "settings.item.inputPlaceholder.name": "Messaggio segnaposto",
   "settings.item.inputPlaceholder.desc":
-    "Puoi modificare il testo visualizzato quando il campo di input è vuoto. Lascia vuoto per nasconderlo.",
+    "Puoi modificare il testo visualizzato quando il campo di input è vuoto. \nLascia vuoto per nasconderlo.",
 
   "settings.item.tagSuggest.name": "Completamento automatico dei tag",
   "settings.item.tagSuggest.desc":
@@ -62,7 +62,7 @@ const it = {
 
   "settings.item.ogp.name": "Anteprima URL",
   "settings.item.ogp.desc":
-    "Ottieni e visualizza automaticamente le informazioni OGP dagli URL nelle note. Se disattivato, non verrà effettuata alcuna comunicazione esterna.",
+    "Ottieni e visualizza automaticamente le informazioni OGP dagli URL nelle note. \nSe disattivato, non verrà effettuata alcuna comunicazione esterna.",
 
   "settings.item.checkStrikethrough.name": "Barrato per elementi completati",
   "settings.item.checkStrikethrough.desc":
@@ -76,7 +76,7 @@ const it = {
 
   "settings.item.showCalendarButton.name": "Mostra pulsante calendario",
   "settings.item.showCalendarButton.desc":
-    "Aggiunge un pulsante calendario alla barra di navigazione. Tocca per passare rapidamente a una data specifica.",
+    "Aggiunge un pulsante calendario alla barra di navigazione. \nTocca per passare rapidamente a una data specifica.",
 
   "settings.item.tagColorRules.name": "Usa le regole per tag",
   "settings.item.tagColorRules.desc":
@@ -98,7 +98,7 @@ const it = {
     "Colore di tag, link e URL. Se non impostato viene usato il colore d'accento del tema.",
   "settings.tagRule.sub.name": "Colore secondario",
   "settings.tagRule.sub.desc":
-    "Colore degli elementi secondari come orari ed elenchi. Calcolato automaticamente se non impostato.",
+    "Colore degli elementi secondari come orari ed elenchi. \nCalcolato automaticamente se non impostato.",
   "settings.tagRule.scope.buttons.name":
     "Applica colore secondario a timestamp, menu e pin",
   "settings.tagRule.scope.buttons.desc":
@@ -117,10 +117,10 @@ const it = {
     "Se disattivato, verrà utilizzato il colore impostato automaticamente.",
   "settings.item.graphTags.name": "Integrazione dei tag",
   "settings.item.graphTags.desc":
-    "Fa contare i tag dei memo nella vista grafo e nella ricerca tag:. Se disattivato restano in Wrot.",
+    "Fa contare i tag dei memo nella vista grafo e nella ricerca tag:. \nSe disattivato restano in Wrot.",
   "settings.tagRule.noIntegration.name": "Escludi dall'integrazione dei tag",
   "settings.tagRule.noIntegration.desc":
-    "Se attivato, il tag di questa regola scritto nei memo resta fuori dall'integrazione dei tag e rimane solo all'interno di Wrot.",
+    "Se attivato, il tag di questa regola scritto nei memo resta fuori dall'integrazione dei tag \ne rimane solo all'interno di Wrot.",
   "settings.tagRule.hideTimeline.name": "Nascondi nella timeline",
   "settings.tagRule.hideTimeline.desc":
     "Se attivato, i memo con questo tag non compaiono più nella timeline. Restano nella nota giornaliera.",
