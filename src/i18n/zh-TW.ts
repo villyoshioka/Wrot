@@ -42,17 +42,14 @@ const zhTW = {
     "可以更改發佈按鈕上顯示的文字。留空可僅顯示圖示(僅當已設定圖示時)。",
   "settings.item.submitIcon.name": "發佈按鈕圖示",
   "settings.item.submitIcon.desc":
-    "可以更改發佈按鈕的圖示。請從 {linkOpen}這裡{linkClose} 複製圖示名稱。留空則隱藏圖示。",
+    "變更發布按鈕的圖示。圖示名稱可從{linkOpen}這裡{linkClose}複製。留空則隱藏圖示。",
   "settings.item.inputPlaceholder.name": "貼文表單空白提示訊息",
   "settings.item.inputPlaceholder.desc":
     "可以更改貼文表單為空時顯示的文字（佔位符）。留空則隱藏。",
 
   "settings.item.tagSuggest.name": "標籤自動補全",
   "settings.item.tagSuggest.desc":
-    "在輸入框中輸入 # 時，會將過去貼文中使用過的標籤顯示為候選。垃圾桶圖示可清除補全候選。",
-  "settings.item.tagSuggestClear.name": "清除標籤補全候選",
-  "settings.notice.tagSuggestCleared": "已清除標籤補全候選",
-  "settings.item.tagSuggestClear.confirmLabel": "再按一次以確認",
+    "輸入 # 後會建議曾用過的標籤。關閉後已記住的建議也會清除。",
 
   "settings.item.pinLimit.name": "釘選上限",
   "settings.item.pinLimit.desc":
@@ -81,7 +78,7 @@ const zhTW = {
 
   "settings.item.tagColorRules.name": "使用標籤規則",
   "settings.item.tagColorRules.desc":
-    "按標籤設定規則：變更包含指定標籤之貼文的顏色，以及從標籤整合中排除。顏色方面，若符合多個規則，將優先適用本文中先出現的標籤。",
+    "依標籤設定顏色與標籤整合。顏色以內文中先出現的標籤為準。",
 
   "settings.tagRule.label": "規則 {n}",
   "settings.tagRule.tag.name": "標籤",
@@ -96,10 +93,10 @@ const zhTW = {
     "設定包含此標籤之貼文的正文文字顏色。（標籤、連結、URL 由強調色側設定）",
   "settings.tagRule.accent.name": "強調色",
   "settings.tagRule.accent.desc":
-    "設定標籤、連結、URL、複製完成圖示等使用強調色的元素顏色。未設定時將使用主題的強調色。",
+    "標籤、連結、網址等使用的顏色。未設定時使用主題的強調色。",
   "settings.tagRule.sub.name": "輔助色",
   "settings.tagRule.sub.desc":
-    "統一設定時間戳記、圖示、清單標記、引用線、勾選框等輔助元素的顏色。未設定時將根據背景顏色與文字顏色自動計算。",
+    "時間戳、清單標記等次要元素的顏色。未設定時會自動計算。",
   "settings.tagRule.scope.buttons.name":
     "於時間戳記、選單、釘選套用輔助色",
   "settings.tagRule.scope.buttons.desc":
@@ -114,9 +111,13 @@ const zhTW = {
   "settings.tagRule.scope.ogp.desc":
     "關閉時將使用自動設定的顏色。",
   "settings.item.graphTags.name": "標籤整合",
-  "settings.item.graphTags.desc": "將備忘錄標籤與 Obsidian 整合。\n備忘錄內的標籤會像一般標籤一樣顯示在關係圖中，也能被標籤搜尋（tag:）命中。\n停用後，標籤僅保留在 Wrot 內。",
+  "settings.item.graphTags.desc":
+    "讓備忘錄中的標籤出現在圖表檢視與標籤搜尋（tag:）中。關閉後標籤僅存在於 Wrot 內。",
   "settings.tagRule.noIntegration.name": "從標籤整合中排除",
   "settings.tagRule.noIntegration.desc": "開啟後，寫在備忘錄內的此規則標籤將不參與標籤整合，僅保留在 Wrot 內。",
+  "settings.tagRule.hideTimeline.name": "在時間軸中隱藏",
+  "settings.tagRule.hideTimeline.desc":
+    "開啟後，含有此標籤的備忘錄不再顯示於時間軸。每日筆記中仍會保留。",
   "settings.tagRule.button.add": "新增規則",
 
   "view.formatMenu.code": "程式碼",
@@ -136,7 +137,7 @@ const zhTW = {
   "view.dateNav.today": "今天",
   "view.dateNav.todaySuffix": "（今天）",
 
-  "view.empty.noMemos": "沒有筆記",
+  "view.empty.noMemos": "沒有可顯示的筆記",
   "view.notice.saveFailed": "筆記儲存失敗：{error}",
   "view.notice.searchPluginNotFound": "找不到搜尋插件",
 

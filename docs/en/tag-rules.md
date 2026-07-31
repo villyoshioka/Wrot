@@ -2,7 +2,8 @@
 
 In Wrot, you can automatically change the colors of memos based on their tags.
 By styling your tags—like a calm color for `#diary` or a vibrant color for `#work`—you can sort your timeline at a glance.
-This page explains how to create tag rules and where each color is applied.
+Besides colors, a rule can also keep memos with that tag out of the timeline.
+This page explains how to create tag rules and where each setting is applied.
 
 ---
 
@@ -67,6 +68,21 @@ Parts you uncheck return to the automatic color instead of the Sub Color.
 
 ---
 
+## Hiding Memos from the Timeline
+
+Each rule has a **Hide from timeline** option.
+When it is on, memos carrying that tag no longer appear in the Wrot timeline.
+
+- The daily note itself is untouched. Open the note directly and the memo is still there.
+- Reading View and Live Preview look exactly as before. Only the timeline list is affected.
+- **Pinned memos are an exception.** A pinned memo stays at the top of the timeline even when it carries a hidden tag.
+- When every memo of a day is hidden, you get the same "No notes to show" message as on a day with no memos.
+
+Colors use only the first matching rule, but hiding is checked against every rule.
+A single hidden tag is enough to keep a memo out of the timeline.
+
+---
+
 ## Lock to Prevent Accidental Edits
 
 Each rule heading has a **lock icon**.
@@ -119,6 +135,12 @@ A given memo shows the same colors in every view.
 - Check that "Change Color by Tag" is turned on.
 - Check that the rule's tag name matches the tag on your memo.
 - Check whether the memo also carries another rule's tag (the tag that appears first takes priority).
+
+### A memo disappeared from the timeline
+
+- Check whether a rule for one of its tags has **Hide from timeline** turned on.
+- The memo itself is not gone. Open the daily note and it is still there.
+- If you want a memo visible at all times, pin it — pinning wins over the hide option.
 
 ### I can't edit a rule
 

@@ -2034,10 +2034,46 @@ body.is-mobile .wr-settings input[type="color"]::-webkit-color-swatch {
   }
 }
 
-.wr-settings .wr-tag-rule-separator {
-  border: none;
-  border-top: 1px solid var(--background-modifier-border);
-  margin: 14px 0;
+/* The tag rules block builds its own rows, so the layout rules below are scoped to it;
+   every other settings row is laid out by Obsidian. */
+/* Rows inside the rules list inherit the list's compact style, which reads as cramped next
+   to the rest of the settings. Restore the spacing the other rows use. */
+.wr-settings .wr-tag-rule-group .setting-item {
+  padding: 20px 16px;
+  gap: 12px;
+}
+
+/* Same reason: inside a list, toggles switch to the small size variables. Put the rules
+   back on the regular ones — track, thumb, and the thumb's travel when switched on.
+   Desktop only: the small size is not applied on mobile. The :not() raises specificity
+   above the list rule without the priority flag. */
+body:not(.is-mobile) .wr-settings .wr-tag-rule-group .checkbox-container:not(#x) {
+  width: var(--toggle-width);
+  height: calc(var(--toggle-thumb-height) + var(--toggle-border-width) * 2);
+}
+
+body:not(.is-mobile) .wr-settings .wr-tag-rule-group .checkbox-container:not(#x)::after {
+  width: var(--toggle-thumb-width);
+  height: var(--toggle-thumb-height);
+  margin: var(--toggle-border-width) 0 0 0;
+  transform: translate3d(var(--toggle-border-width), 0, 0);
+}
+
+body:not(.is-mobile)
+  .wr-settings
+  .wr-tag-rule-group
+  .checkbox-container.is-enabled:not(#x)::after {
+  transform: translate3d(
+    calc(var(--toggle-width) - var(--toggle-thumb-width) - var(--toggle-border-width)),
+    0,
+    0
+  );
+}
+
+body:not(.is-mobile) .wr-settings .wr-tag-rule-group .checkbox-container:active:not(#x)::after {
+  width: calc(var(--toggle-thumb-width) + var(--toggle-border-width) * 4);
+  height: calc(var(--toggle-thumb-height) + var(--toggle-border-width) * 4);
+  margin-top: calc(var(--toggle-border-width) * -1);
 }
 
 /* Locked tag rule: gray out editable fields only; the label row holding the
@@ -2052,8 +2088,18 @@ body.is-mobile .wr-settings input[type="color"]::-webkit-color-swatch {
   cursor: not-allowed;
 }
 
-/* Mobile: keep text inputs and selects stacked vertically; everything else aligns on a single row */
-body.is-mobile .wr-settings .setting-item:not(.wr-setting-has-text-input):not(.wr-setting-has-select):not(#x) {
+
+/* On mobile the list renders its add-entry affordance as a row, which keeps the list's
+   compact height and sits shorter than everything around it. */
+body.is-mobile .wr-settings .setting-group.mod-list .setting-item:not(#x) {
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+
+/* Mobile stacks the label above the control, which splits the swatch and its reset button
+   off onto their own line. Colour rows are short enough to stay on one line, so they keep
+   the single-row layout; every other row is left to Obsidian. */
+body.is-mobile .wr-settings .setting-item.wr-reverse-controls:not(#x) {
   display: flex;
   flex-wrap: nowrap;
   flex-direction: row;
@@ -2061,22 +2107,17 @@ body.is-mobile .wr-settings .setting-item:not(.wr-setting-has-text-input):not(.w
   gap: 12px;
 }
 
-body.is-mobile .wr-settings .setting-item:not(.wr-setting-has-text-input):not(.wr-setting-has-select) > .setting-item-info:not(#x) {
+body.is-mobile .wr-settings .setting-item.wr-reverse-controls > .setting-item-info:not(#x) {
   flex: 1 1 auto;
   min-width: 0;
   width: auto;
   margin: 0;
 }
 
-body.is-mobile .wr-settings .setting-item:not(.wr-setting-has-text-input):not(.wr-setting-has-select) > .setting-item-control:not(#x) {
+body.is-mobile .wr-settings .setting-item.wr-reverse-controls > .setting-item-control:not(#x) {
   flex: 0 0 auto;
   justify-content: flex-end;
   width: auto;
-  /* Same control-column width on every single-row item so descriptions wrap at
-     one edge. Widest cluster = extra icon (~36px) + 8px gap + toggle → +44px;
-     --toggle-width is per-platform (62px iOS, 52px elsewhere). */
-  min-width: calc(var(--toggle-width) + 44px);
-  max-width: none;
   margin: 0;
   padding: 0;
 }
@@ -2090,45 +2131,52 @@ body.is-mobile .wr-settings .setting-item:not(.wr-setting-has-text-input):not(.w
   order: 1;
 }
 
-/* Narrow layout (e.g. iPad mini portrait): stack label above control ONLY for
-   text-input rows (the ones that cramp); everything else stays single-line. */
-body .wr-settings.wr-settings-narrow .setting-item.wr-setting-has-text-input:not(#x) {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 6px;
+/* Narrow settings pane (tablet portrait, split panes): rows keep label and control on one
+   line, which squeezes text fields down to a sliver. Stack those rows instead — only the
+   text-input ones cramp; everything else is left to Obsidian. Measured against the pane
+   itself rather than the viewport, since the pane is often far narrower than the window. */
+.wr-settings {
+  container-type: inline-size;
 }
 
-body .wr-settings.wr-settings-narrow .setting-item.wr-setting-has-text-input > .setting-item-info:not(#x) {
-  width: 100%;
-  flex: 0 0 auto;
-  margin: 0;
+@container (max-width: 600px) {
+  body .wr-settings .setting-item:has(.setting-item-control input[type="text"]):not(#x) {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+
+  body
+    .wr-settings
+    .setting-item:has(.setting-item-control input[type="text"])
+    > .setting-item-info:not(#x) {
+    width: 100%;
+    flex: 0 0 auto;
+    margin: 0;
+  }
+
+  body
+    .wr-settings
+    .setting-item:has(.setting-item-control input[type="text"])
+    > .setting-item-control:not(#x) {
+    width: 100%;
+    flex: 0 0 auto;
+    justify-content: flex-start;
+    margin: 0;
+    padding: 0;
+  }
+
+  .wr-settings .setting-item .setting-item-control input[type="text"] {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
 }
 
-body .wr-settings.wr-settings-narrow .setting-item.wr-setting-has-text-input > .setting-item-control:not(#x) {
-  width: 100%;
-  flex: 0 0 auto;
-  justify-content: flex-start;
-  margin: 0;
-  padding: 0;
-}
-
-.wr-settings.wr-settings-narrow .setting-item.wr-setting-has-text-input .setting-item-control input[type="text"] {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-/* Manual description breaks ("\n" in locale strings) are desktop-only; mobile
+/* Authored description breaks ("\n" in locale strings) are desktop-only; mobile
    columns are narrow enough that natural wrapping suffices. */
 body.is-mobile .wr-settings .wr-pc-break {
   display: none;
-}
-
-/* Tag-suggest clear icon, armed state (first press of the two-press confirm):
-   the icon is replaced by the confirm label in warning color. */
-.wr-settings .extra-setting-button.wr-confirm-armed {
-  color: var(--text-error);
-  font-size: var(--font-ui-smaller);
 }
 
 

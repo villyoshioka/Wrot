@@ -1,5 +1,29 @@
 # Release Notes
 
+## 2.16.0 - 2026-07-31
+
+### Important Changes
+
+- Raised the minimum required version to Obsidian 1.13.0.
+
+### Updates
+
+- Updated dependencies.
+
+### New Features
+
+- Adapted the settings screen to the new API available from Obsidian 1.13.0. Wrot's settings can now be found through Obsidian's settings search.
+- Added "Hide from timeline" to tag rules. When it is on, posts containing that tag no longer appear in the timeline. Pinned posts are an exception and stay in the timeline.
+
+### Improvements
+
+- Shortened the setting descriptions.
+- Removed the button for deleting tag autocomplete candidates. Turning autocomplete off now also discards the candidates it had learned.
+- Made the plugin start up faster.
+- Tag integration no longer re-reads unchanged notes on every startup.
+
+---
+
 ## 2.15.2 - 2026-07-27
 
 ### Improvements

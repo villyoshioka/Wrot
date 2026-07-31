@@ -42,17 +42,14 @@ const zhCN = {
     "自定义发布按钮上显示的文字。留空可仅显示图标(仅当已设置图标时)。",
   "settings.item.submitIcon.name": "发布按钮图标",
   "settings.item.submitIcon.desc":
-    "自定义发布按钮的图标。请从 {linkOpen}此处{linkClose} 复制图标名称。留空则隐藏图标。",
+    "更改发布按钮的图标。图标名称可从{linkOpen}这里{linkClose}复制。留空则隐藏图标。",
   "settings.item.inputPlaceholder.name": "输入框占位文本",
   "settings.item.inputPlaceholder.desc":
     "可以自定义输入框为空时显示的提示文字。留空则不显示。",
 
   "settings.item.tagSuggest.name": "标签自动补全",
   "settings.item.tagSuggest.desc":
-    "在输入框中输入 # 时，会将过去帖子中用过的标签显示为候选。垃圾桶图标可清除补全候选。",
-  "settings.item.tagSuggestClear.name": "清除标签补全候选",
-  "settings.notice.tagSuggestCleared": "已清除标签补全候选",
-  "settings.item.tagSuggestClear.confirmLabel": "再按一次以确认",
+    "输入 # 后会推荐用过的标签。关闭后已记住的候选也会清除。",
 
   "settings.item.pinLimit.name": "置顶上限",
   "settings.item.pinLimit.desc":
@@ -81,7 +78,7 @@ const zhCN = {
 
   "settings.item.tagColorRules.name": "使用标签规则",
   "settings.item.tagColorRules.desc":
-    "按标签设置规则：更改包含特定标签的记录的颜色，以及从标签集成中排除。颜色方面，若符合多个规则，优先适用正文中先出现的标签。",
+    "按标签设置颜色与标签集成。颜色以正文中先出现的标签为准。",
 
   "settings.tagRule.label": "规则 {n}",
   "settings.tagRule.tag.name": "标签",
@@ -96,10 +93,10 @@ const zhCN = {
     "设置包含此标签的记录正文颜色。（标签、链接、URL 将使用强调色）",
   "settings.tagRule.accent.name": "强调色",
   "settings.tagRule.accent.desc":
-    "设置标签、链接、URL、复制成功图标等强调元素的颜色。未设置时将沿用主题强调色。",
+    "标签、链接、网址等使用的颜色。未设置时使用主题的强调色。",
   "settings.tagRule.sub.name": "辅助色",
   "settings.tagRule.sub.desc":
-    "统一设置时间戳、图标、列表标记、引用线、复选框等次要元素的颜色。未设置时将根据背景色和文字色自动计算。",
+    "时间戳、列表标记等次要元素的颜色。未设置时会自动计算。",
   "settings.tagRule.scope.buttons.name":
     "将辅助色应用于时间戳、菜单及置顶图标",
   "settings.tagRule.scope.buttons.desc":
@@ -114,9 +111,13 @@ const zhCN = {
   "settings.tagRule.scope.ogp.desc":
     "关闭时将使用系统自动计算的颜色。",
   "settings.item.graphTags.name": "标签集成",
-  "settings.item.graphTags.desc": "将备忘录标签与 Obsidian 集成。\n备忘录内的标签会像普通标签一样显示在关系图谱中，也能被标签搜索（tag:）命中。\n关闭后，标签仅保留在 Wrot 内。",
+  "settings.item.graphTags.desc":
+    "让备忘录中的标签出现在图谱视图与标签搜索（tag:）中。关闭后标签仅存在于 Wrot 内。",
   "settings.tagRule.noIntegration.name": "从标签集成中排除",
   "settings.tagRule.noIntegration.desc": "开启后，写在备忘录内的此规则标签将不参与标签集成，仅保留在 Wrot 内。",
+  "settings.tagRule.hideTimeline.name": "在时间轴中隐藏",
+  "settings.tagRule.hideTimeline.desc":
+    "开启后，含有此标签的备忘录不再显示在时间轴中。每日笔记中仍会保留。",
   "settings.tagRule.button.add": "添加规则",
 
   "view.formatMenu.code": "代码",
@@ -136,7 +137,7 @@ const zhCN = {
   "view.dateNav.today": "今天",
   "view.dateNav.todaySuffix": "（今天）",
 
-  "view.empty.noMemos": "暂无笔记",
+  "view.empty.noMemos": "暂无可显示的笔记",
   "view.notice.saveFailed": "笔记保存失败：{error}",
   "view.notice.searchPluginNotFound": "未找到搜索插件",
 

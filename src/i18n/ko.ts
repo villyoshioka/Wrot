@@ -42,17 +42,14 @@ const ko = {
     "게시 버튼에 표시될 문구를 변경할 수 있습니다. 아이콘이 설정된 경우에 한해 비워두면 아이콘만 표시됩니다.",
   "settings.item.submitIcon.name": "게시 버튼 아이콘",
   "settings.item.submitIcon.desc":
-    "게시 버튼의 아이콘을 변경할 수 있습니다. 아이콘 이름은 {linkOpen}여기{linkClose}에서 복사해 주세요. 비워두면 아이콘이 숨겨집니다.",
+    "게시 버튼의 아이콘을 변경합니다. 아이콘 이름은 {linkOpen}여기{linkClose}에서 복사하세요. 비우면 숨겨집니다.",
   "settings.item.inputPlaceholder.name": "입력창 안내 문구",
   "settings.item.inputPlaceholder.desc":
     "입력창이 비어 있을 때 표시되는 텍스트를 변경할 수 있습니다. 비워두면 표시되지 않습니다.",
 
   "settings.item.tagSuggest.name": "태그 자동 완성",
   "settings.item.tagSuggest.desc":
-    "입력창에서 #을 입력하면 이전 게시물에서 사용한 태그가 후보로 표시됩니다. 휴지통 아이콘으로 이 후보를 삭제할 수 있습니다.",
-  "settings.item.tagSuggestClear.name": "태그 자동 완성 후보 지우기",
-  "settings.notice.tagSuggestCleared": "태그 자동 완성 후보를 삭제했습니다",
-  "settings.item.tagSuggestClear.confirmLabel": "한 번 더 눌러 확정",
+    "# 뒤에 입력하면 이전에 쓴 태그를 추천합니다. 끄면 기억한 후보도 지워집니다.",
 
   "settings.item.pinLimit.name": "고정 개수 제한",
   "settings.item.pinLimit.desc":
@@ -81,7 +78,7 @@ const ko = {
 
   "settings.item.tagColorRules.name": "태그별 규칙 사용",
   "settings.item.tagColorRules.desc":
-    "태그별로 규칙을 설정합니다: 특정 태그가 포함된 게시물의 색상 변경과 태그 통합에서의 제외. 색상은 여러 규칙이 겹치면 본문에서 먼저 등장한 태그가 우선 적용됩니다.",
+    "태그별로 색과 태그 통합을 설정합니다. 색은 본문에서 먼저 나온 태그가 우선합니다.",
 
   "settings.tagRule.label": "규칙 {n}",
   "settings.tagRule.tag.name": "태그",
@@ -96,10 +93,10 @@ const ko = {
     "해당 태그를 포함한 게시물의 본문 글자색을 설정합니다. (태그, 링크 등은 액센트 컬러에서 설정)",
   "settings.tagRule.accent.name": "액센트 컬러",
   "settings.tagRule.accent.desc":
-    "태그, 링크, 아이콘 등 포인트가 되는 요소의 색상을 설정합니다. 설정하지 않으면 테마 기본색을 사용합니다.",
+    "태그·링크·URL 등에 쓰는 색입니다. 설정하지 않으면 테마의 강조색을 사용합니다.",
   "settings.tagRule.sub.name": "서브 컬러",
   "settings.tagRule.sub.desc":
-    "타임스탬프, 리스트 마커 등 보조 요소의 색상을 설정합니다. 설정하지 않으면 배경/글자색에 맞춰 자동 계산됩니다.",
+    "타임스탬프·리스트 마커 등 보조 요소의 색입니다. 설정하지 않으면 자동 계산됩니다.",
   "settings.tagRule.scope.buttons.name": "버튼 및 고정 아이콘에 서브 컬러 적용",
   "settings.tagRule.scope.buttons.desc":
     "끄면 시스템 기본 색상으로 표시됩니다.",
@@ -110,9 +107,13 @@ const ko = {
   "settings.tagRule.scope.ogp.name": "OGP 카드에 서브 컬러 적용",
   "settings.tagRule.scope.ogp.desc": "끄면 시스템 기본 색상으로 표시됩니다.",
   "settings.item.graphTags.name": "태그 통합",
-  "settings.item.graphTags.desc": "메모의 태그를 Obsidian과 통합합니다.\n메모 안의 태그가 일반 태그와 마찬가지로 그래프 뷰에 표시되고, 태그 검색(tag:)에서도 검색됩니다.\n끄면 태그는 Wrot 안에서만 사용됩니다.",
+  "settings.item.graphTags.desc":
+    "메모의 태그를 그래프 뷰와 태그 검색(tag:) 대상에 포함합니다. 끄면 Wrot 안에서만 쓰입니다.",
   "settings.tagRule.noIntegration.name": "태그 통합에서 제외",
   "settings.tagRule.noIntegration.desc": "켜면 메모 안에 쓴 이 규칙의 태그는 태그 통합에서 제외되어 Wrot 안에서만 사용됩니다.",
+  "settings.tagRule.hideTimeline.name": "타임라인에서 숨기기",
+  "settings.tagRule.hideTimeline.desc":
+    "켜면 이 태그가 있는 게시물이 타임라인에 나오지 않습니다. 데일리 노트에는 남아 있습니다.",
   "settings.tagRule.button.add": "규칙 추가",
 
   "view.formatMenu.code": "코드",
@@ -132,7 +133,7 @@ const ko = {
   "view.dateNav.today": "오늘",
   "view.dateNav.todaySuffix": " (오늘)",
 
-  "view.empty.noMemos": "작성된 게시물이 없습니다",
+  "view.empty.noMemos": "표시할 게시물이 없습니다",
   "view.notice.saveFailed": "저장 실패: {error}",
   "view.notice.searchPluginNotFound": "검색 플러그인을 찾을 수 없습니다.",
 

@@ -19,7 +19,7 @@ const ja = {
 
   "settings.item.timestampFormat.name": "タイムスタンプ表示形式",
   "settings.item.timestampFormat.desc":
-    "投稿の日時フォーマットを指定します。（YYYY, MM, DD, HH, mm, ss が使えます）",
+    "投稿の日時フォーマットを指定します。\n（YYYY, MM, DD, HH, mm, ss が使えます）",
 
   "settings.item.bgColorLight.name": "背景色（ライトモード）",
   "settings.item.bgColorLight.desc": "ライトテーマでの投稿・投稿フォームの背景色を設定します。",
@@ -34,17 +34,15 @@ const ja = {
   "settings.item.submitLabel.desc": "投稿ボタンに表示するテキストを変更できます。\n空欄にするとアイコンのみの表示にできます(アイコン設定時のみ)。",
   "settings.item.submitIcon.name": "投稿ボタンのアイコン",
   // {linkOpen}/{linkClose} placeholders mark the part wrapped in an anchor element.
-  "settings.item.submitIcon.desc": "投稿ボタンのアイコンを変更できます。アイコン名は {linkOpen}こちら{linkClose} からコピーしてください。\n空欄にするとアイコンを非表示にできます。",
+  "settings.item.submitIcon.desc":
+    "投稿ボタンのアイコンを変更できます。\nアイコン名は {linkOpen}こちら{linkClose} からコピーできます。\n空欄にすると非表示になります。",
   "settings.item.inputPlaceholder.name": "投稿フォームの空欄メッセージ",
   "settings.item.inputPlaceholder.desc":
     "投稿フォームが空の時に表示されるテキストを変更できます。\n空欄にすると非表示になります。",
 
   "settings.item.tagSuggest.name": "タグ入力補完",
   "settings.item.tagSuggest.desc":
-    "投稿フォームで # に続けて入力すると、過去の投稿で使ったタグを候補として表示します。\nゴミ箱アイコンで補完候補を削除できます。",
-  "settings.item.tagSuggestClear.name": "タグの補完候補を削除",
-  "settings.notice.tagSuggestCleared": "タグの補完候補を削除しました",
-  "settings.item.tagSuggestClear.confirmLabel": "もう一度押して確定",
+    "# に続けて入力すると、過去に使ったタグを候補表示します。オフにすると覚えた候補も消えます。",
 
   "settings.item.pinLimit.name": "ピン留めの上限",
   "settings.item.pinLimit.desc": "タイムラインに固定できるメモの上限を設定します。",
@@ -71,7 +69,7 @@ const ja = {
 
   "settings.item.tagColorRules.name": "タグ別ルールを使う",
   "settings.item.tagColorRules.desc":
-    "指定タグを含む投稿の色変更や、本体統合からの除外をタグ別に設定します。\n色は複数ルールに該当する場合、本文で先に出たタグが優先されます。",
+    "タグごとに投稿の色や本体統合の扱いを設定します。色は本文で先に出たタグが優先されます。",
 
   "settings.tagRule.label": "ルール {n}",
   "settings.tagRule.tag.name": "タグ",
@@ -84,10 +82,10 @@ const ja = {
     "このタグを含む投稿の本文文字色を設定します。（タグ・リンク・URLはアクセントカラー側で設定します）",
   "settings.tagRule.accent.name": "アクセントカラー",
   "settings.tagRule.accent.desc":
-    "タグ・リンク・URL・コピー完了アイコンなどアクセントカラーが使われる要素の色を設定します。\n未設定時はテーマのアクセントカラーを使います。",
+    "タグ・リンク・URLなどに使う色です。未設定時はテーマのアクセントカラーになります。",
   "settings.tagRule.sub.name": "サブカラー",
   "settings.tagRule.sub.desc":
-    "タイムスタンプ・アイコン・リストマーカー・引用線・チェックボックスなどサブ要素の色をまとめて設定します。\n未設定時は背景色と文字色から自動算出します。",
+    "タイムスタンプ・リストマーカーなどサブ要素の色です。\n未設定時は背景色と文字色から自動算出します。",
   "settings.tagRule.scope.buttons.name": "タイムスタンプ・メニュー・ピンにサブカラーを適用",
   "settings.tagRule.scope.buttons.desc": "オフのときは自動設定された色になります。",
   "settings.tagRule.scope.quote.name": "引用にサブカラーを適用",
@@ -97,9 +95,14 @@ const ja = {
   "settings.tagRule.scope.ogp.name": "OGPカードにサブカラーを適用",
   "settings.tagRule.scope.ogp.desc": "オフのときは自動設定された色になります。",
   "settings.item.graphTags.name": "タグの本体統合",
-  "settings.item.graphTags.desc": "メモのタグをObsidian本体と統合します。\nメモ内のタグが、普通のタグと同じようにグラフビューに表示され、タグ検索（tag:）でもヒットするようになります。\nオフにすると、タグはWrotの中だけのものになります。",
+  "settings.item.graphTags.desc":
+    "メモ内のタグをグラフビューやタグ検索（tag:）の対象にします。\nオフのときは、タグはWrotの中だけのものになります。",
   "settings.tagRule.noIntegration.name": "本体統合から除外",
-  "settings.tagRule.noIntegration.desc": "オンにすると、メモ内に書いたこのルールのタグは本体統合の対象から外れ、Wrotの中だけのものになります。",
+  "settings.tagRule.noIntegration.desc":
+    "オンにすると、メモ内に書いたこのルールのタグは本体統合の対象から外れ、\nWrotの中だけのものになります。",
+  "settings.tagRule.hideTimeline.name": "タイムラインに非表示",
+  "settings.tagRule.hideTimeline.desc":
+    "オンにすると、このタグを含む投稿がタイムラインに出なくなります。デイリーノートには残ります。",
   "settings.tagRule.button.add": "ルールを追加",
 
   "view.formatMenu.code": "コード",
@@ -120,7 +123,7 @@ const ja = {
   // Suffix appended to the date label; keyed so each locale can restyle it, brackets included.
   "view.dateNav.todaySuffix": "（今日）",
 
-  "view.empty.noMemos": "メモはありません",
+  "view.empty.noMemos": "表示できるメモはありません",
   "view.notice.saveFailed": "メモの保存に失敗しました: {error}",
   "view.notice.searchPluginNotFound": "検索プラグインが見つかりません",
 

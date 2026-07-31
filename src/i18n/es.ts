@@ -43,17 +43,14 @@ const es = {
     "Cambia el texto que se muestra en el botón de postear. Déjalo en blanco para un botón solo con icono (solo si hay uno configurado).",
   "settings.item.submitIcon.name": "Icono del botón de postear",
   "settings.item.submitIcon.desc":
-    "Cambia el icono del botón de postear. Copia el nombre del icono desde {linkOpen}aquí{linkClose}. Si se deja en blanco, el icono se ocultará.",
+    "Cambia el icono del botón de publicar. Copia un nombre de icono desde {linkOpen}aquí{linkClose}. Déjalo vacío para ocultarlo.",
   "settings.item.inputPlaceholder.name": "Mensaje de campo vacío",
   "settings.item.inputPlaceholder.desc":
     "Cambia el texto que aparece cuando el campo de entrada está vacío. Si se deja en blanco, se ocultará.",
 
   "settings.item.tagSuggest.name": "Autocompletado de etiquetas",
   "settings.item.tagSuggest.desc":
-    "Al escribir # en el campo de entrada, se muestran como sugerencias las etiquetas usadas en publicaciones anteriores. El icono de papelera borra estas sugerencias.",
-  "settings.item.tagSuggestClear.name": "Borrar sugerencias de etiquetas",
-  "settings.notice.tagSuggestCleared": "Sugerencias de etiquetas borradas",
-  "settings.item.tagSuggestClear.confirmLabel": "Pulsa de nuevo para confirmar",
+    "Al escribir # se sugieren etiquetas ya usadas. Al desactivarlo se borran las recordadas.",
 
   "settings.item.pinLimit.name": "Límite de fijados",
   "settings.item.pinLimit.desc":
@@ -82,7 +79,7 @@ const es = {
 
   "settings.item.tagColorRules.name": "Usar reglas por etiqueta",
   "settings.item.tagColorRules.desc":
-    "Define reglas por etiqueta: colores para los posts que contienen etiquetas específicas y exclusión de la integración de etiquetas. Para los colores, si coinciden varias reglas, se aplicará la de la primera etiqueta encontrada.",
+    "Define colores e integración por etiqueta. En los colores, gana la etiqueta que aparece primero en el texto.",
 
   "settings.tagRule.label": "Regla {n}",
   "settings.tagRule.tag.name": "Etiqueta",
@@ -96,10 +93,10 @@ const es = {
     "Color del cuerpo del texto para estos posts (etiquetas y enlaces usarán el color de acento).",
   "settings.tagRule.accent.name": "Color de acento",
   "settings.tagRule.accent.desc":
-    "Color para etiquetas, enlaces e iconos de estado. Si se deja vacío, se usará el del tema.",
+    "Color para etiquetas, enlaces y URL. Si no se define, se usa el color de acento del tema.",
   "settings.tagRule.sub.name": "Color secundario",
   "settings.tagRule.sub.desc":
-    "Color para elementos secundarios (fechas, iconos, listas, etc.). Si se deja vacío, se calculará automáticamente.",
+    "Color de elementos secundarios como marcas de tiempo y marcadores de lista. Se calcula solo si no se define.",
   "settings.tagRule.scope.buttons.name":
     "Aplicar color secundario a fechas, menús y chinchetas",
   "settings.tagRule.scope.buttons.desc":
@@ -116,10 +113,13 @@ const es = {
     "Si se desactiva, se usará el color calculado automáticamente.",
   "settings.item.graphTags.name": "Integración de etiquetas",
   "settings.item.graphTags.desc":
-    "Integra las etiquetas de los memos con Obsidian.\nLas etiquetas dentro de los memos aparecen en la vista de gráfico y responden a la búsqueda por etiquetas (tag:), igual que las etiquetas normales.\nSi se desactiva, las etiquetas se quedan solo dentro de Wrot.",
+    "Hace que las etiquetas de los memos cuenten en el grafo y en la búsqueda tag:. Si se desactiva, quedan solo dentro de Wrot.",
   "settings.tagRule.noIntegration.name": "Excluir de la integración de etiquetas",
   "settings.tagRule.noIntegration.desc":
     "Si se activa, la etiqueta de esta regla escrita dentro de los memos queda fuera de la integración de etiquetas y se queda solo dentro de Wrot.",
+  "settings.tagRule.hideTimeline.name": "Ocultar en la línea de tiempo",
+  "settings.tagRule.hideTimeline.desc":
+    "Si se activa, los memos con esta etiqueta dejan de aparecer en la línea de tiempo. Permanecen en la nota diaria.",
   "settings.tagRule.button.add": "Añadir regla",
 
   "view.formatMenu.code": "Código",
@@ -139,7 +139,7 @@ const es = {
   "view.dateNav.today": "Hoy",
   "view.dateNav.todaySuffix": " (Hoy)",
 
-  "view.empty.noMemos": "No hay notas",
+  "view.empty.noMemos": "No hay notas que mostrar",
   "view.notice.saveFailed": "Error al guardar la nota: {error}",
   "view.notice.searchPluginNotFound":
     "No se encontró el complemento de búsqueda",

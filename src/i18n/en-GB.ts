@@ -41,17 +41,14 @@ const enGB = {
   "settings.item.submitLabel.desc": "Customise the text displayed on the post button. Leave blank for an icon-only button (shown only if an icon is set).",
   "settings.item.submitIcon.name": "Post Button Icon",
   "settings.item.submitIcon.desc":
-    "Customise the icon for the post button. Copy icon names from {linkOpen}here{linkClose}. Leave blank to hide the icon.",
+    "Customise the icon on the post button. Copy an icon name from {linkOpen}here{linkClose}. Leave blank to hide it.",
   "settings.item.inputPlaceholder.name": "Post Form Placeholder",
   "settings.item.inputPlaceholder.desc":
     "Customise the text shown when the post form is empty. Leave blank to hide.",
 
   "settings.item.tagSuggest.name": "Tag Autocomplete",
   "settings.item.tagSuggest.desc":
-    "Typing # in the post form shows tags used in your past posts as suggestions. The bin icon clears these suggestions.",
-  "settings.item.tagSuggestClear.name": "Clear Tag Suggestions",
-  "settings.notice.tagSuggestCleared": "Tag suggestions cleared",
-  "settings.item.tagSuggestClear.confirmLabel": "Click again to confirm",
+    "Typing # suggests tags from your past posts. Switching it off also clears the remembered tags.",
 
   "settings.item.pinLimit.name": "Pin Limit",
   "settings.item.pinLimit.desc":
@@ -80,7 +77,7 @@ const enGB = {
 
   "settings.item.tagColorRules.name": "Use Tag Rules",
   "settings.item.tagColorRules.desc":
-    "Set per-tag rules: colours for posts containing specific tags, and exclusion from tag integration. For colours, if multiple rules apply, the tag appearing first in the text takes priority.",
+    "Set colours and tag integration per tag. For colours, the tag appearing first in the text wins.",
 
   "settings.tagRule.label": "Rule {n}",
   "settings.tagRule.tag.name": "Tag",
@@ -94,10 +91,10 @@ const enGB = {
     "Set the body text colour for posts containing this tag. (Tags, links, and URLs are set via Accent Colour)",
   "settings.tagRule.accent.name": "Accent Colour",
   "settings.tagRule.accent.desc":
-    "Set the colour for elements using accent colours, such as tags, links, URLs, and the copy-complete icon. Uses the theme accent colour if unset.",
+    "Colour for tags, links, and URLs. Uses the theme's accent colour if unset.",
   "settings.tagRule.sub.name": "Sub Colour",
   "settings.tagRule.sub.desc":
-    "Set the colour for sub-elements collectively, such as timestamps, icons, list markers, blockquotes, and tick boxes. Automatically calculated from background and text colours if unset.",
+    "Colour for secondary elements like timestamps and list markers. Calculated automatically if unset.",
   "settings.tagRule.scope.buttons.name": "Apply Sub Colour to Timestamp, Menu, and Pin",
   "settings.tagRule.scope.buttons.desc": "When off, automatically assigned colours will be used.",
   "settings.tagRule.scope.quote.name": "Apply Sub Colour to Blockquotes",
@@ -107,9 +104,13 @@ const enGB = {
   "settings.tagRule.scope.ogp.name": "Apply Sub Colour to OGP Cards",
   "settings.tagRule.scope.ogp.desc": "When off, automatically assigned colours will be used.",
   "settings.item.graphTags.name": "Tag Integration",
-  "settings.item.graphTags.desc": "Integrates memo tags with Obsidian.\nTags inside your memos appear in the graph view and match tag searches (tag:), just like regular tags.\nWhen off, tags stay inside Wrot.",
+  "settings.item.graphTags.desc":
+    "Makes memo tags count for the graph view and tag: search. When off, tags stay inside Wrot.",
   "settings.tagRule.noIntegration.name": "Exclude from Tag Integration",
   "settings.tagRule.noIntegration.desc": "When on, this rule's tag written inside memos is left out of Tag Integration and stays inside Wrot.",
+  "settings.tagRule.hideTimeline.name": "Hide from timeline",
+  "settings.tagRule.hideTimeline.desc":
+    "When on, memos with this tag no longer appear in the timeline. They stay in the daily note.",
   "settings.tagRule.button.add": "Add Rule",
 
   "view.formatMenu.code": "Code",
@@ -129,7 +130,7 @@ const enGB = {
   "view.dateNav.today": "Today",
   "view.dateNav.todaySuffix": " (Today)",
 
-  "view.empty.noMemos": "No notes found",
+  "view.empty.noMemos": "No notes to show",
   "view.notice.saveFailed": "Failed to save note: {error}",
   "view.notice.searchPluginNotFound": "Search plugin not found",
 

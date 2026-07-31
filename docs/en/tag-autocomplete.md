@@ -44,22 +44,13 @@ Your usual post shortcut (Ctrl / Cmd + Enter) still works while suggestions are 
 
 ---
 
-## Turning It Off & Clearing Suggestions
+## Turning It Off
 
 Toggle **"Tag Autocomplete"** in the **Advanced** section of Settings (on by default).
 
 - When turned off, suggestions stop appearing and no new tags are remembered.
-- Your saved suggestions are kept. Turn it back on to pick up where you left off.
-
-### Clearing All Suggestions
-
-Use the **trash icon** in the "Tag Autocomplete" row to delete all remembered suggestions.
-
-- Press it once and it changes to a "press again to confirm" label.
-- Press it again to perform the deletion.
-- If you wait a moment instead, it returns to the icon without deleting anything—so an accidental press is harmless.
-
-Deletion is all-at-once only; you cannot remove individual suggestions.
+- Turning it off also discards every tag remembered so far. Turn it back on and the list starts empty again.
+- Suggestions can only be cleared all at once; you cannot remove individual ones.
 
 ---
 
@@ -77,4 +68,4 @@ Deletion is all-at-once only; you cannot remove individual suggestions.
 
 ### Starting Over
 
-- Since individual suggestions can't be removed, clear them all with the trash icon. As you keep posting with tags, the suggestions will grow back.
+- Since individual suggestions can't be removed, turn "Tag Autocomplete" off once and back on to wipe the list. As you keep posting with tags, the suggestions will grow back.

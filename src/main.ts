@@ -27,6 +27,10 @@ export default class WrotPlugin extends Plugin {
   private bgSheet = new WrStyleSheet("wr-bg-override");
   private tagRuleSheet = new WrStyleSheet("wr-tag-rule-override");
   private fontSheet = new WrStyleSheet("wr-font-override");
+  // Documents of the open popout windows. Runtime styles go to every window Wrot can appear
+  // in, not just the focused one: with settings opened in their own window, that window would
+  // otherwise be the only one to get them.
+  private popoutDocs = new Set<Document>();
   // Guards against the MathJax-ready callback re-rendering through an already
   // unregistered postProcessor (stripping wr decorations) after the plugin is disabled.
   private unloading = false;
@@ -59,11 +63,7 @@ export default class WrotPlugin extends Plugin {
 
     this.registerEditorExtension([createWrEditorExtension(this.ogpCache, this.app, this, () => this.settings.checkStrikethrough)]);
 
-    this.addSettingTab(new WrotSettingTab(this.app, this));
-
     this.applyFontFollow();
-    this.applyBgColor();
-    this.applyTagColorRules();
     this.applyCalendarDayShape();
     this.registerEvent(
       this.app.workspace.on("css-change", () => {
@@ -71,13 +71,31 @@ export default class WrotPlugin extends Plugin {
         this.applyTagColorRules();
       })
     );
+    this.registerEvent(
+      this.app.workspace.on("window-open", (win) => {
+        this.popoutDocs.add(win.doc);
+        this.syncStyleDocs();
+      })
+    );
+    this.registerEvent(
+      this.app.workspace.on("window-close", (win) => {
+        this.popoutDocs.delete(win.doc);
+      })
+    );
     // MathJax is fully lazy-loaded (see utils/mathjax.ts); only register the
     // handler that redraws fallback math once loading completes.
     setMathJaxReadyHandler(() => this.onMathJaxReady());
 
-    // No-!important policy: injected styles win specificity ties by sitting last in
-    // <head>. Re-append after layout so startup CSS load order doesn't matter.
+    // The palette and tag-rule sheets are built here rather than during load: adopting a
+    // sheet parses it and invalidates document style synchronously, which is dead weight in
+    // the blocking load path. Applying them once after layout is enough — adopted sheets
+    // always sort after the document's own stylesheets, so unlike the <style> elements this
+    // replaced, they no longer need re-applying to win the specificity ladder.
     this.app.workspace.onLayoutReady(() => {
+      // Registering the tab evaluates getSettingDefinitions() right away, because the
+      // settings modal indexes every definition for its search. That work is only needed
+      // once the user opens settings, so it stays out of the blocking load path.
+      this.addSettingTab(new WrotSettingTab(this.app, this));
       this.applyBgColor();
       this.applyTagColorRules();
       // Integrate memo tags into the core graph view / native tag search:
@@ -180,7 +198,9 @@ export default class WrotPlugin extends Plugin {
   }
 
   applyFontFollow(): void {
-    activeDocument.body.classList.toggle("wr-font-follow", this.settings.followObsidianFontSize);
+    for (const doc of this.styleDocs()) {
+      doc.body.classList.toggle("wr-font-follow", this.settings.followObsidianFontSize);
+    }
     if (this.settings.followObsidianFontSize) {
       // Scale from --font-text-size to preserve the 14:13:12 size ratio.
       this.fontSheet.apply(`/* @css */
@@ -190,7 +210,7 @@ export default class WrotPlugin extends Plugin {
           --wr-font-ui-smaller: calc(var(--font-text-size) * 0.857);
           --wr-font-date: min(var(--font-text-size), 24px);
         }
-      `);
+      `, this.styleDocs());
     } else {
       this.fontSheet.apply(`/* @css */
         body {
@@ -199,7 +219,7 @@ export default class WrotPlugin extends Plugin {
           --wr-font-ui-smaller: 12px;
           --wr-font-date: 14px;
         }
-      `);
+      `, this.styleDocs());
     }
   }
 
@@ -221,7 +241,7 @@ export default class WrotPlugin extends Plugin {
       faintColor: blendColor(textColor, bgColor, 0.6),
       unresolvedLinkColor: blendColor(textColor, bgColor, 0.3),
     });
-    this.bgSheet.apply(boostSelectors(css, 2));
+    this.bgSheet.apply(boostSelectors(css, 2), this.styleDocs());
   }
 
   findTagColorRule(memoTags: string[]): TagColorRule | null {
@@ -238,6 +258,30 @@ export default class WrotPlugin extends Plugin {
       }
     }
     return null;
+  }
+
+  // Whether a rule keeps memos with this tag out of the timeline. Only active while
+  // tag rules are enabled — same gate as the colour rules.
+  // Every rule is scanned rather than going through findTagColorRule: that one stops at
+  // the first tag that matches any rule, so a memo carrying both a colour tag and a
+  // hidden tag would slip through depending on the order the tags appear in.
+  isHiddenFromTimeline(memoTags: string[]): boolean {
+    if (!this.settings.tagColorRulesEnabled) return false;
+    const rules = this.settings.tagColorRules;
+    if (!rules || rules.length === 0 || !memoTags || memoTags.length === 0) return false;
+
+    const hidden = new Set<string>();
+    for (const rule of rules) {
+      if (!rule.hideFromTimeline) continue;
+      const ruleTag = rule.tag.replace(/^#/, "").toLowerCase().trim();
+      if (ruleTag) hidden.add(ruleTag);
+    }
+    if (hidden.size === 0) return false;
+
+    return memoTags.some((raw) => {
+      const tag = raw.replace(/^#/, "").toLowerCase().trim();
+      return tag !== "" && hidden.has(tag);
+    });
   }
 
   getTagRuleClassForContent(content: string): string | null {
@@ -265,7 +309,26 @@ export default class WrotPlugin extends Plugin {
   applyCalendarDayShape(): void {
     const radiusMap = { circle: "50%", rounded: "6px", square: "0px" } as const;
     const radius = radiusMap[this.settings.calendarDayShape ?? "circle"];
-    activeDocument.body.style.setProperty("--wr-cal-day-radius", radius);
+    for (const doc of this.styleDocs()) {
+      doc.body.style.setProperty("--wr-cal-day-radius", radius);
+    }
+  }
+
+  // The main window plus every open popout. `document` is the main window's own document:
+  // activeDocument would follow the focus instead, which sends styles to the wrong window
+  // as soon as anything is driven from a separate settings window.
+  private styleDocs(): Document[] {
+    return [document, ...this.popoutDocs];
+  }
+
+  // Hands a newly opened window the styles that are already in effect.
+  private syncStyleDocs(): void {
+    const docs = this.styleDocs();
+    this.bgSheet.sync(docs);
+    this.tagRuleSheet.sync(docs);
+    this.fontSheet.sync(docs);
+    this.applyFontFollow();
+    this.applyCalendarDayShape();
   }
 
   applyTagColorRules(): void {
@@ -277,7 +340,7 @@ export default class WrotPlugin extends Plugin {
     const css = buildTagRuleCss(rules);
     if (css.length === 0) return;
 
-    this.tagRuleSheet.apply(boostSelectors(css, 4));
+    this.tagRuleSheet.apply(boostSelectors(css, 4), this.styleDocs());
   }
 
   refreshReadingViews(): void {
@@ -290,16 +353,26 @@ export default class WrotPlugin extends Plugin {
       '.code-block-flair[class*="wr-tag-rule-"], ' +
       '.copy-code-button[class*="wr-tag-rule-"], ' +
       '.wr-flair-bg[class*="wr-tag-rule-"]';
-    activeDocument.querySelectorAll<HTMLElement>(sweepSelector).forEach((el) => {
-      const existing = Array.from(el.classList);
-      for (const cls of existing) {
-        if (/^wr-tag-rule-\d+$/.test(cls)) el.classList.remove(cls);
-      }
-    });
+    // Every window, not just the focused one: a change made from a separate settings
+    // window would otherwise never reach the notes the user is looking at.
+    const docs = this.styleDocs();
+    for (const doc of docs) {
+      doc.querySelectorAll<HTMLElement>(sweepSelector).forEach((el) => {
+        const existing = Array.from(el.classList);
+        for (const cls of existing) {
+          if (/^wr-tag-rule-\d+$/.test(cls)) el.classList.remove(cls);
+        }
+      });
+    }
 
     if (!this.settings.tagColorRulesEnabled) return;
 
-    activeDocument.querySelectorAll('code.language-wr, .block-language-wr code, pre > code[class*="language-wr"]').forEach((code) => {
+    const codeBlocks = docs.flatMap((doc) =>
+      Array.from(
+        doc.querySelectorAll('code.language-wr, .block-language-wr code, pre > code[class*="language-wr"]')
+      )
+    );
+    codeBlocks.forEach((code) => {
       const block = code.closest(".block-language-wr") || code.closest("pre");
       if (!(block instanceof HTMLElement)) return;
 
@@ -391,7 +464,7 @@ export default class WrotPlugin extends Plugin {
     this.bgSheet.remove();
     this.tagRuleSheet.remove();
     this.fontSheet.remove();
-    activeDocument.body.classList.remove("wr-font-follow");
+    for (const doc of this.styleDocs()) doc.body.classList.remove("wr-font-follow");
   }
 
   async activateView(): Promise<void> {

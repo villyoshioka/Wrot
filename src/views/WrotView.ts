@@ -991,32 +991,26 @@ export class WrotView extends ItemView {
       );
 
       if (!file) {
-        if (pinnedResolved.length === 0) {
-          this.listContainer.createDiv({
-            cls: "wr-empty",
-            text: t("view.empty.noMemos"),
-          });
-        }
+        if (pinnedResolved.length === 0) this.renderEmptyState();
         return;
       }
 
       const content = await this.app.vault.cachedRead(file);
       const memos = parseMemos(content);
 
-      if (memos.length === 0) {
-        if (pinnedResolved.length === 0) {
-          this.listContainer.createDiv({
-            cls: "wr-empty",
-            text: t("view.empty.noMemos"),
-          });
-        }
-        return;
-      }
-
+      let rendered = 0;
       for (const memo of memos) {
         if (pinnedTimestamps.has(memo.time)) continue;
+        // Pinned memos above are deliberately exempt: pinning names a single memo,
+        // which outranks a rule that hides a whole tag.
+        if (this.plugin.isHiddenFromTimeline(memo.tags)) continue;
         this.renderMemoCard(memo, { pinned: false, filePath: file.path });
+        rendered++;
       }
+
+      // Covers both "the note has no memos" and "every memo is hidden by a rule":
+      // the same message reads for either, and the list never ends up blank.
+      if (pinnedResolved.length === 0 && rendered === 0) this.renderEmptyState();
     } finally {
       this.refreshing = false;
       if (this.refreshQueued) {
@@ -1025,6 +1019,13 @@ export class WrotView extends ItemView {
         this.refresh();
       }
     }
+  }
+
+  private renderEmptyState(): void {
+    this.listContainer.createDiv({
+      cls: "wr-empty",
+      text: t("view.empty.noMemos"),
+    });
   }
 
   private clearPinnedContainer(): void {

@@ -40,17 +40,14 @@ const ru = {
     "Вы можете изменить текст, отображаемый на кнопке поста. Оставьте пустым для кнопки только с иконкой (только если иконка задана).",
   "settings.item.submitIcon.name": "Иконка кнопки поста",
   "settings.item.submitIcon.desc":
-    "Вы можете изменить иконку кнопки поста. Скопируйте название иконки {linkOpen}отсюда{linkClose}. Оставьте поле пустым, чтобы скрыть иконку.",
+    "Меняет значок кнопки публикации. Название значка скопируйте {linkOpen}здесь{linkClose}. Пустое поле скрывает значок.",
   "settings.item.inputPlaceholder.name": "Подсказка в пустом поле",
   "settings.item.inputPlaceholder.desc":
     "Текст, отображаемый в пустом поле ввода. Оставьте поле пустым, чтобы скрыть подсказку.",
 
   "settings.item.tagSuggest.name": "Автодополнение тегов",
   "settings.item.tagSuggest.desc":
-    "При вводе # в поле ввода показываются теги из прошлых записей в качестве подсказок. Значок корзины удаляет эти подсказки.",
-  "settings.item.tagSuggestClear.name": "Очистить подсказки тегов",
-  "settings.notice.tagSuggestCleared": "Подсказки тегов очищены",
-  "settings.item.tagSuggestClear.confirmLabel": "Нажмите ещё раз для подтверждения",
+    "После # предлагаются ранее использованные теги. При выключении сохранённые теги удаляются.",
 
   "settings.item.pinLimit.name": "Лимит закрепления",
   "settings.item.pinLimit.desc":
@@ -79,7 +76,7 @@ const ru = {
 
   "settings.item.tagColorRules.name": "Правила для тегов",
   "settings.item.tagColorRules.desc":
-    "Задает правила для каждого тега: цвета записей с определенными тегами и исключение из интеграции тегов. Для цветов, если подходят несколько правил, приоритет отдается первому тегу в тексте.",
+    "Настройка цвета и интеграции для каждого тега. В цветах побеждает тег, идущий в тексте первым.",
 
   "settings.tagRule.label": "Правило {n}",
   "settings.tagRule.tag.name": "Тег",
@@ -93,10 +90,10 @@ const ru = {
     "Цвет основного текста (для тегов и ссылок используется акцентный цвет).",
   "settings.tagRule.accent.name": "Акцентный цвет",
   "settings.tagRule.accent.desc":
-    "Цвет для тегов, ссылок и активных элементов. Если не установлено, используется системный акцентный цвет.",
+    "Цвет тегов, ссылок и URL. Если не задан, используется акцентный цвет темы.",
   "settings.tagRule.sub.name": "Дополнительный цвет",
   "settings.tagRule.sub.desc":
-    "Цвет для второстепенных элементов (время, маркеры, чекбоксы). Если не установлено, рассчитывается автоматически.",
+    "Цвет вспомогательных элементов: отметок времени, маркеров списка. Если не задан, вычисляется автоматически.",
   "settings.tagRule.scope.buttons.name": "Применять доп. цвет к метаданным",
   "settings.tagRule.scope.buttons.desc":
     "Временные метки, меню и кнопки закрепления.",
@@ -107,9 +104,13 @@ const ru = {
   "settings.tagRule.scope.ogp.name": "Применять доп. цвет к карточкам OGP",
   "settings.tagRule.scope.ogp.desc": "Рамки и фон предпросмотра ссылок.",
   "settings.item.graphTags.name": "Интеграция тегов",
-  "settings.item.graphTags.desc": "Интегрирует теги заметок с Obsidian.\nТеги внутри заметок отображаются в графе и находятся поиском по тегам (tag:) — как обычные теги.\nЕсли отключено, теги остаются только внутри Wrot.",
+  "settings.item.graphTags.desc":
+    "Учитывает теги заметок в графе и поиске tag:. Если выключено, теги остаются только внутри Wrot.",
   "settings.tagRule.noIntegration.name": "Исключить из интеграции тегов",
   "settings.tagRule.noIntegration.desc": "Если включено, тег этого правила, написанный в заметках, исключается из интеграции тегов и остаётся только внутри Wrot.",
+  "settings.tagRule.hideTimeline.name": "Скрыть в ленте",
+  "settings.tagRule.hideTimeline.desc":
+    "Если включено, заметки с этим тегом не отображаются в ленте. В ежедневной заметке они остаются.",
   "settings.tagRule.button.add": "Добавить правило",
 
   "view.formatMenu.code": "Код",
@@ -129,7 +130,7 @@ const ru = {
   "view.dateNav.today": "Сегодня",
   "view.dateNav.todaySuffix": " (Сегодня)",
 
-  "view.empty.noMemos": "Записей нет",
+  "view.empty.noMemos": "Нет записей для отображения",
   "view.notice.saveFailed": "Ошибка сохранения: {error}",
   "view.notice.searchPluginNotFound": "Плагин поиска не найден",
 

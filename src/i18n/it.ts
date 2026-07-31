@@ -44,17 +44,14 @@ const it = {
     "Puoi modificare il testo visualizzato sul pulsante Posta. Lascia vuoto per un pulsante con la sola icona (solo se è impostata un'icona).",
   "settings.item.submitIcon.name": "Icona del pulsante Posta",
   "settings.item.submitIcon.desc":
-    "Puoi modificare l'icona del pulsante Posta. Copia il nome dell'icona da {linkOpen}qui{linkClose}. Lascia vuoto per nasconderla.",
+    "Cambia l'icona del pulsante di pubblicazione. Copia un nome icona {linkOpen}qui{linkClose}. Lascia vuoto per nasconderla.",
   "settings.item.inputPlaceholder.name": "Messaggio segnaposto",
   "settings.item.inputPlaceholder.desc":
     "Puoi modificare il testo visualizzato quando il campo di input è vuoto. Lascia vuoto per nasconderlo.",
 
   "settings.item.tagSuggest.name": "Completamento automatico dei tag",
   "settings.item.tagSuggest.desc":
-    "Digitando # nel campo di input, i tag usati nei post precedenti vengono mostrati come suggerimenti. L'icona del cestino cancella questi suggerimenti.",
-  "settings.item.tagSuggestClear.name": "Cancella i suggerimenti dei tag",
-  "settings.notice.tagSuggestCleared": "Suggerimenti dei tag cancellati",
-  "settings.item.tagSuggestClear.confirmLabel": "Premi di nuovo per confermare",
+    "Digitando # vengono suggeriti i tag già usati. Disattivandolo, i tag memorizzati vengono cancellati.",
 
   "settings.item.pinLimit.name": "Limite post fissati",
   "settings.item.pinLimit.desc":
@@ -83,7 +80,7 @@ const it = {
 
   "settings.item.tagColorRules.name": "Usa le regole per tag",
   "settings.item.tagColorRules.desc":
-    "Imposta regole per tag: colori dei post che contengono tag specifici ed esclusione dall'integrazione dei tag. Per i colori, se si applicano più regole, ha la priorità il primo tag che appare nel testo.",
+    "Imposta colori e integrazione per tag. Per i colori vince il tag che compare per primo nel testo.",
 
   "settings.tagRule.label": "Regola {n}",
   "settings.tagRule.tag.name": "Tag",
@@ -98,10 +95,10 @@ const it = {
     "Imposta il colore del testo del corpo per i post che contengono questo tag (tag, link e URL vengono impostati tramite il colore accento).",
   "settings.tagRule.accent.name": "Colore accento",
   "settings.tagRule.accent.desc":
-    "Imposta il colore per gli elementi come tag, link e icone. Se non impostato, verrà utilizzato il colore accento del tema.",
+    "Colore di tag, link e URL. Se non impostato viene usato il colore d'accento del tema.",
   "settings.tagRule.sub.name": "Colore secondario",
   "settings.tagRule.sub.desc":
-    "Imposta collettivamente il colore per timestamp, icone, marcatori e checkbox. Se non impostato, verrà calcolato automaticamente.",
+    "Colore degli elementi secondari come orari ed elenchi. Calcolato automaticamente se non impostato.",
   "settings.tagRule.scope.buttons.name":
     "Applica colore secondario a timestamp, menu e pin",
   "settings.tagRule.scope.buttons.desc":
@@ -120,10 +117,13 @@ const it = {
     "Se disattivato, verrà utilizzato il colore impostato automaticamente.",
   "settings.item.graphTags.name": "Integrazione dei tag",
   "settings.item.graphTags.desc":
-    "Integra i tag dei memo con Obsidian.\nI tag contenuti nei memo compaiono nella vista grafo e rispondono alla ricerca per tag (tag:), proprio come i tag normali.\nSe disattivato, i tag restano solo all'interno di Wrot.",
+    "Fa contare i tag dei memo nella vista grafo e nella ricerca tag:. Se disattivato restano in Wrot.",
   "settings.tagRule.noIntegration.name": "Escludi dall'integrazione dei tag",
   "settings.tagRule.noIntegration.desc":
     "Se attivato, il tag di questa regola scritto nei memo resta fuori dall'integrazione dei tag e rimane solo all'interno di Wrot.",
+  "settings.tagRule.hideTimeline.name": "Nascondi nella timeline",
+  "settings.tagRule.hideTimeline.desc":
+    "Se attivato, i memo con questo tag non compaiono più nella timeline. Restano nella nota giornaliera.",
   "settings.tagRule.button.add": "Aggiungi regola",
 
   "view.formatMenu.code": "Codice",
@@ -143,7 +143,7 @@ const it = {
   "view.dateNav.today": "Oggi",
   "view.dateNav.todaySuffix": " (Oggi)",
 
-  "view.empty.noMemos": "Nessuna nota presente",
+  "view.empty.noMemos": "Nessuna nota da mostrare",
   "view.notice.saveFailed": "Salvataggio fallito: {error}",
   "view.notice.searchPluginNotFound": "Plugin di ricerca non trovato",
 

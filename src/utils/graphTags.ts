@@ -24,6 +24,15 @@ interface WrTagCache extends TagCache {
 // Notes re-read during one reconcile pass before the index is written out.
 const RECONCILE_SAVE_INTERVAL = 200;
 
+// Notes re-read during one reconcile pass before yielding to the event loop. Reconcile starts
+// right after layout, so it has to share the main thread with the first paint.
+const RECONCILE_YIELD_INTERVAL = 25;
+
+// Key holding the last completed-scan timestamp in the persisted index. Obsidian forbids "#" in
+// note names, so this can never collide with a real path. Readers that predate it unpack the
+// number, get null and drop it; the value simply reads as "never scanned" when absent.
+const SCANNED_AT_KEY = "#scannedAt";
+
 function isWrTag(t: TagCache): boolean {
   return (t as WrTagCache).wrGraph === true;
 }
@@ -88,6 +97,10 @@ export class GraphTagInjector {
   private index = new Map<string, GraphTagIndexEntry>();
   // Paths with injected entries; the cleanup targets on unload.
   private trackedPaths = new Set<string>();
+  // When the last reconcile that ran to completion started. A note with no index entry either
+  // carries no memo tags or has never been looked at; this timestamp tells the two apart, so
+  // notes untouched since that scan need no re-read. 0 means "never scanned".
+  private scannedAt = 0;
   private requestRefresh: Debouncer<[], void>;
   private requestIndexSave: Debouncer<[], void>;
   // Set on unload so the reconcile loop stops re-injecting into a cache that was just cleaned.
@@ -137,6 +150,7 @@ export class GraphTagInjector {
 
   private injectFromIndex(): void {
     const { vault, metadataCache } = this.plugin.app;
+    const excluded = this.excludedTagSet();
     for (const [path, entry] of this.index) {
       const file = vault.getAbstractFileByPath(path);
       if (!(file instanceof TFile)) {
@@ -147,19 +161,28 @@ export class GraphTagInjector {
       }
       const cache = metadataCache.getFileCache(file);
       if (!cache) continue;
-      this.applyToCache(path, cache, entry.tags);
+      this.applyToCache(path, cache, entry.tags, excluded);
     }
   }
 
   // Notes whose mtime matches the index are skipped; an unchanged startup reads zero files.
   private async reconcile(): Promise<void> {
     const { vault, metadataCache } = this.plugin.app;
+    const excluded = this.excludedTagSet();
+    // Taken before the walk, not after: a note written while the scan is running keeps an mtime
+    // ahead of this, so the next startup still re-reads it.
+    const scanStartedAt = Date.now();
     let tagsChanged = false;
     let sinceLastSave = 0;
+    let sinceLastYield = 0;
     for (const file of vault.getMarkdownFiles()) {
       if (this.stopped || !this.enabled) return;
       const entry = this.index.get(file.path);
       if (entry && entry.mtime === file.stat.mtime) continue;
+      // No entry means an earlier scan found no memo tags here — worth re-reading only if the
+      // note has been touched since. Without this, notes holding any code fence but no memo are
+      // re-read on every single startup, because a tagless note leaves no entry behind.
+      if (!entry && file.stat.mtime <= this.scannedAt) continue;
       const cache = metadataCache.getFileCache(file);
       if (!cache) continue;
       const mayHaveFence = cache.sections?.some((s) => s.type === "code") ?? false;
@@ -169,7 +192,7 @@ export class GraphTagInjector {
       if (this.stopped || !this.enabled) return;
       const tags = this.collectTagEntries(content);
       if (this.updateIndexEntry(file.path, tags, file.stat.mtime)) tagsChanged = true;
-      this.applyToCache(file.path, cache, tags);
+      this.applyToCache(file.path, cache, tags, excluded);
       // The debounced save resets its timer on every note, so a long first scan would persist
       // nothing until it finished. Flush periodically so an interrupted scan keeps its progress.
       sinceLastSave++;
@@ -179,7 +202,17 @@ export class GraphTagInjector {
       } else {
         this.requestIndexSave();
       }
+      sinceLastYield++;
+      if (sinceLastYield >= RECONCILE_YIELD_INTERVAL) {
+        sinceLastYield = 0;
+        await new Promise<void>((resolve) => window.setTimeout(resolve, 0));
+      }
     }
+    // Only a pass that walked every note may move the mark; an interrupted one would otherwise
+    // let the notes it never reached be skipped forever. The write is left to the debouncer so
+    // a startup that changed nothing still keeps its file I/O off the critical path.
+    this.scannedAt = scanStartedAt;
+    this.requestIndexSave();
     if (tagsChanged) this.requestRefresh();
   }
 
@@ -223,12 +256,13 @@ export class GraphTagInjector {
   rebuild(): void {
     if (!this.enabled) return;
     const { vault, metadataCache } = this.plugin.app;
+    const excluded = this.excludedTagSet();
     for (const [path, entry] of this.index) {
       const file = vault.getAbstractFileByPath(path);
       if (!(file instanceof TFile)) continue;
       const cache = metadataCache.getFileCache(file);
       if (!cache) continue;
-      this.applyToCache(path, cache, entry.tags);
+      this.applyToCache(path, cache, entry.tags, excluded);
     }
     this.requestRefresh();
   }
@@ -252,8 +286,15 @@ export class GraphTagInjector {
   // Apply injected entries to one note's cache (idempotent: previous injections are
   // stripped first). Exclusion rules apply here. When disabled, injects nothing so
   // only leftover removal takes effect.
-  private applyToCache(path: string, cache: CachedMetadata, occurrences: TagOccurrence[]): void {
-    const excluded = this.excludedTagSet();
+  // `excludedTags` lets callers that loop over notes build the exclusion set once instead of
+  // rebuilding it from settings for every note.
+  private applyToCache(
+    path: string,
+    cache: CachedMetadata,
+    occurrences: TagOccurrence[],
+    excludedTags?: Set<string>
+  ): void {
+    const excluded = excludedTags ?? this.excludedTagSet();
     const tags = this.enabled
       ? occurrences.filter((t) => !excluded.has(normalizeTag(t.tag)))
       : [];
@@ -393,12 +434,17 @@ export class GraphTagInjector {
       const parsed: unknown = JSON.parse(await this.plugin.app.vault.adapter.read(path));
       if (typeof parsed !== "object" || parsed === null) return;
       for (const [notePath, raw] of Object.entries(parsed)) {
+        if (notePath === SCANNED_AT_KEY) {
+          if (typeof raw === "number") this.scannedAt = raw;
+          continue;
+        }
         const entry = unpackEntry(raw);
         if (entry) this.index.set(notePath, entry);
       }
     } catch {
       // Unreadable index: restart empty; reconcile re-reads and rebuilds it.
       this.index.clear();
+      this.scannedAt = 0;
     }
   }
 
@@ -406,7 +452,8 @@ export class GraphTagInjector {
     const path = this.indexPath();
     if (!path) return;
     try {
-      const packed: Record<string, PersistedEntry> = {};
+      const packed: Record<string, PersistedEntry | number> = {};
+      if (this.scannedAt > 0) packed[SCANNED_AT_KEY] = this.scannedAt;
       for (const [notePath, entry] of this.index) {
         packed[notePath] = packEntry(entry);
       }

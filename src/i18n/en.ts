@@ -42,17 +42,14 @@ const en = {
     "Change the text displayed on the post button. Leave blank for an icon-only button (shown only if an icon is set).",
   "settings.item.submitIcon.name": "Post Button Icon",
   "settings.item.submitIcon.desc":
-    "Change the icon of the post button. Copy the icon name from {linkOpen}here{linkClose}. Leave blank to hide the icon.",
+    "Change the icon on the post button. Copy an icon name from {linkOpen}here{linkClose}. Leave blank to hide it.",
   "settings.item.inputPlaceholder.name": "Post Form Placeholder",
   "settings.item.inputPlaceholder.desc":
     "Change the text displayed when the post form is empty. Leave blank to hide it.",
 
   "settings.item.tagSuggest.name": "Tag Autocomplete",
   "settings.item.tagSuggest.desc":
-    "Typing # in the post form shows tags used in your past posts as suggestions. The trash icon clears these suggestions.",
-  "settings.item.tagSuggestClear.name": "Clear Tag Suggestions",
-  "settings.notice.tagSuggestCleared": "Tag suggestions cleared",
-  "settings.item.tagSuggestClear.confirmLabel": "Click again to confirm",
+    "Typing # suggests tags from your past posts. Switching it off also clears the remembered tags.",
 
   "settings.item.pinLimit.name": "Pin Limit",
   "settings.item.pinLimit.desc":
@@ -81,7 +78,7 @@ const en = {
 
   "settings.item.tagColorRules.name": "Use Tag Rules",
   "settings.item.tagColorRules.desc":
-    "Set per-tag rules: colors for posts containing specific tags, and exclusion from tag integration. For colors, if multiple rules apply, the tag that appears first in the text takes priority.",
+    "Set colors and tag integration per tag. For colors, the tag appearing first in the text wins.",
 
   "settings.tagRule.label": "Rule {n}",
   "settings.tagRule.tag.name": "Tag",
@@ -96,10 +93,10 @@ const en = {
     "Set the text color for the body of posts containing this tag. (Tags, links, and URLs are set using the accent color)",
   "settings.tagRule.accent.name": "Accent Color",
   "settings.tagRule.accent.desc":
-    "Set the color for elements where the accent color is used, such as tags, links, URLs, and the copy completion icon. If unset, the theme's accent color will be used.",
+    "Color for tags, links, and URLs. Uses the theme's accent color if unset.",
   "settings.tagRule.sub.name": "Sub Color",
   "settings.tagRule.sub.desc":
-    "Batch set the color for secondary elements like timestamps, icons, list markers, blockquote lines, and checkboxes. If unset, it will be automatically calculated from the background and text colors.",
+    "Color for secondary elements like timestamps and list markers. Calculated automatically if unset.",
   "settings.tagRule.scope.buttons.name":
     "Apply Sub Color to Timestamp, Menu, and Pins",
   "settings.tagRule.scope.buttons.desc":
@@ -115,10 +112,13 @@ const en = {
     "When off, automatically determined colors will be used.",
   "settings.item.graphTags.name": "Tag Integration",
   "settings.item.graphTags.desc":
-    "Integrates memo tags with Obsidian.\nTags inside your memos appear in the graph view and match tag searches (tag:), just like regular tags.\nWhen off, tags stay inside Wrot.",
+    "Makes memo tags count for the graph view and tag: search. When off, tags stay inside Wrot.",
   "settings.tagRule.noIntegration.name": "Exclude from Tag Integration",
   "settings.tagRule.noIntegration.desc":
     "When on, this rule's tag written inside memos is left out of Tag Integration and stays inside Wrot.",
+  "settings.tagRule.hideTimeline.name": "Hide from timeline",
+  "settings.tagRule.hideTimeline.desc":
+    "When on, memos with this tag no longer appear in the timeline. They stay in the daily note.",
   "settings.tagRule.button.add": "Add Rule",
 
   "view.formatMenu.code": "Code",
@@ -138,7 +138,7 @@ const en = {
   "view.dateNav.today": "Today",
   "view.dateNav.todaySuffix": " (Today)",
 
-  "view.empty.noMemos": "No notes found",
+  "view.empty.noMemos": "No notes to show",
   "view.notice.saveFailed": "Failed to save note: {error}",
   "view.notice.searchPluginNotFound": "Search plugin not found",
 

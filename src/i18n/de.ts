@@ -42,17 +42,14 @@ const de = {
     "Sie können den Text ändern, der auf der Posten-Schaltfläche angezeigt wird. Leer lassen für eine reine Symbol-Schaltfläche (nur wenn ein Symbol festgelegt ist).",
   "settings.item.submitIcon.name": "Symbol der Posten-Schaltfläche",
   "settings.item.submitIcon.desc":
-    "Sie können das Symbol der Posten-Schaltfläche ändern. Kopieren Sie den Symbolnamen von {linkOpen}hier{linkClose}. Lassen Sie das Feld leer, um das Symbol auszublenden.",
+    "Ändert das Symbol der Beitragsschaltfläche. Symbolnamen {linkOpen}hier{linkClose} kopieren. Leer lassen blendet es aus.",
   "settings.item.inputPlaceholder.name": "Platzhaltertext im Eingabefeld",
   "settings.item.inputPlaceholder.desc":
     "Sie können den Text ändern, der angezeigt wird, wenn das Eingabefeld leer ist. Lassen Sie das Feld leer, um ihn auszublenden.",
 
   "settings.item.tagSuggest.name": "Tag-Autovervollständigung",
   "settings.item.tagSuggest.desc":
-    "Bei der Eingabe von # im Eingabefeld werden Tags aus früheren Beiträgen als Vorschläge angezeigt. Das Papierkorb-Symbol löscht diese Vorschläge.",
-  "settings.item.tagSuggestClear.name": "Tag-Vorschläge löschen",
-  "settings.notice.tagSuggestCleared": "Tag-Vorschläge gelöscht",
-  "settings.item.tagSuggestClear.confirmLabel": "Zum Bestätigen erneut drücken",
+    "Nach # werden bereits genutzte Tags vorgeschlagen. Beim Ausschalten werden die gemerkten Tags gelöscht.",
 
   "settings.item.pinLimit.name": "Limit für angepinnte Beiträge",
   "settings.item.pinLimit.desc":
@@ -81,7 +78,7 @@ const de = {
 
   "settings.item.tagColorRules.name": "Tag-Regeln verwenden",
   "settings.item.tagColorRules.desc":
-    "Legt Regeln pro Tag fest: Farben für Beiträge mit bestimmten Tags sowie Ausschluss von der Tag-Integration. Bei den Farben hat, wenn mehrere Regeln zutreffen, das im Text zuerst vorkommende Tag Vorrang.",
+    "Legt Farben und Tag-Integration pro Tag fest. Bei Farben gewinnt der zuerst genannte Tag.",
 
   "settings.tagRule.label": "Regel {n}",
   "settings.tagRule.tag.name": "Tag",
@@ -95,10 +92,10 @@ const de = {
     "Legt die Textfarbe für Beiträge fest, die dieses Tag enthalten. (Tags, Links und URLs werden über die Akzentfarbe eingestellt)",
   "settings.tagRule.accent.name": "Akzentfarbe",
   "settings.tagRule.accent.desc":
-    "Legt die Farbe für Elemente fest, die die Akzentfarbe verwenden, wie Tags, Links, URLs und das Symbol für \"Kopie abgeschlossen\". Wenn nicht festgelegt, wird die Akzentfarbe des Themes verwendet.",
+    "Farbe für Tags, Links und URLs. Ohne Angabe wird die Akzentfarbe des Themes verwendet.",
   "settings.tagRule.sub.name": "Subfarbe",
   "settings.tagRule.sub.desc":
-    "Legt die Farbe für untergeordnete Elemente wie Zeitstempel, Symbole, Listenmarker, Zitatlinien und Kontrollkästchen zusammengefasst fest. Wenn nicht festgelegt, wird sie automatisch aus der Hintergrund- und Textfarbe berechnet.",
+    "Farbe für Nebenelemente wie Zeitstempel und Listenpunkte. Ohne Angabe automatisch berechnet.",
   "settings.tagRule.scope.buttons.name": "Subfarbe auf Zeitstempel, Menüs und Pins anwenden",
   "settings.tagRule.scope.buttons.desc": "Wenn deaktiviert, wird die automatisch festgelegte Farbe verwendet.",
   "settings.tagRule.scope.quote.name": "Subfarbe auf Zitate anwenden",
@@ -108,9 +105,13 @@ const de = {
   "settings.tagRule.scope.ogp.name": "Subfarbe auf OGP-Karten anwenden",
   "settings.tagRule.scope.ogp.desc": "Wenn deaktiviert, wird die automatisch festgelegte Farbe verwendet.",
   "settings.item.graphTags.name": "Tag-Integration",
-  "settings.item.graphTags.desc": "Integriert Memo-Tags mit Obsidian.\nTags in den Memos erscheinen in der Graphenansicht und werden von der Tag-Suche (tag:) gefunden – genau wie normale Tags.\nWenn deaktiviert, bleiben Tags nur innerhalb von Wrot.",
+  "settings.item.graphTags.desc":
+    "Lässt Memo-Tags in der Graphansicht und der tag:-Suche zählen. Aus bleiben sie nur in Wrot.",
   "settings.tagRule.noIntegration.name": "Von der Tag-Integration ausschließen",
   "settings.tagRule.noIntegration.desc": "Wenn aktiviert, wird der in Memos geschriebene Tag dieser Regel von der Tag-Integration ausgenommen und bleibt nur innerhalb von Wrot.",
+  "settings.tagRule.hideTimeline.name": "In der Timeline ausblenden",
+  "settings.tagRule.hideTimeline.desc":
+    "Wenn aktiviert, erscheinen Memos mit diesem Tag nicht mehr in der Timeline. In der Tagesnotiz bleiben sie.",
   "settings.tagRule.button.add": "Regel hinzufügen",
 
   "view.formatMenu.code": "Code",
@@ -130,7 +131,7 @@ const de = {
   "view.dateNav.today": "Heute",
   "view.dateNav.todaySuffix": " (Heute)",
 
-  "view.empty.noMemos": "Keine Notizen vorhanden",
+  "view.empty.noMemos": "Keine Notizen anzuzeigen",
   "view.notice.saveFailed": "Fehler beim Speichern der Notiz: {error}",
   "view.notice.searchPluginNotFound": "Such-Plugin nicht gefunden",
 

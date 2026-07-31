@@ -44,17 +44,14 @@ const fr = {
     "Personnalisez le texte affiché sur le bouton Poster. Laissez vide pour un bouton avec seulement l'icône (uniquement si une icône est définie).",
   "settings.item.submitIcon.name": "Icône du bouton Poster",
   "settings.item.submitIcon.desc":
-    "Modifiez l'icône du bouton. Copiez le nom de l'icône depuis {linkOpen}ici{linkClose}. Laissez vide pour la masquer.",
+    "Change l'icône du bouton de publication. Copiez un nom d'icône {linkOpen}ici{linkClose}. Laissez vide pour la masquer.",
   "settings.item.inputPlaceholder.name": "Message du champ vide",
   "settings.item.inputPlaceholder.desc":
     "Texte affiché lorsque le champ de saisie est vide. Laissez vide pour ne rien afficher.",
 
   "settings.item.tagSuggest.name": "Saisie semi-automatique des tags",
   "settings.item.tagSuggest.desc":
-    "Saisir # dans le champ de saisie affiche les tags utilisés dans vos publications précédentes comme suggestions. L'icône de corbeille efface ces suggestions.",
-  "settings.item.tagSuggestClear.name": "Effacer les suggestions de tags",
-  "settings.notice.tagSuggestCleared": "Suggestions de tags effacées",
-  "settings.item.tagSuggestClear.confirmLabel": "Appuyez à nouveau pour confirmer",
+    "Taper # propose les tags déjà utilisés. Le désactiver efface les tags mémorisés.",
 
   "settings.item.pinLimit.name": "Limite d'épinglage",
   "settings.item.pinLimit.desc":
@@ -83,7 +80,7 @@ const fr = {
 
   "settings.item.tagColorRules.name": "Utiliser les règles par tag",
   "settings.item.tagColorRules.desc":
-    "Définit des règles par tag : couleurs des publications contenant certains tags et exclusion de l'intégration des tags. Pour les couleurs, en cas de conflit, la première étiquette du texte est prioritaire.",
+    "Définit couleurs et intégration par tag. Pour les couleurs, le tag apparaissant en premier l'emporte.",
 
   "settings.tagRule.label": "Règle {n}",
   "settings.tagRule.tag.name": "Étiquette",
@@ -97,10 +94,10 @@ const fr = {
     "Couleur du texte principal (les étiquettes et liens utilisent la couleur d'accentuation).",
   "settings.tagRule.accent.name": "Couleur d'accentuation",
   "settings.tagRule.accent.desc":
-    "Couleur des liens, étiquettes et icônes d'action. Utilise la couleur du thème par défaut.",
+    "Couleur des tags, liens et URL. Sans réglage, la couleur d'accent du thème est utilisée.",
   "settings.tagRule.sub.name": "Couleur secondaire",
   "settings.tagRule.sub.desc":
-    "Couleur des éléments secondaires (horodatage, icônes, listes, citations). Calculée automatiquement si non définie.",
+    "Couleur des éléments secondaires comme les horodatages et les puces. Calculée automatiquement si non définie.",
   "settings.tagRule.scope.buttons.name":
     "Appliquer aux boutons et à l'horodatage",
   "settings.tagRule.scope.buttons.desc":
@@ -116,10 +113,13 @@ const fr = {
     "Si désactivé, utilise la couleur par défaut.",
   "settings.item.graphTags.name": "Intégration des tags",
   "settings.item.graphTags.desc":
-    "Intègre les tags des mémos à Obsidian.\nLes tags contenus dans les mémos apparaissent dans la vue graphique et répondent à la recherche par tag (tag:), comme les tags ordinaires.\nSi désactivé, les tags restent uniquement dans Wrot.",
+    "Fait compter les tags des mémos dans le graphe et la recherche tag:. Désactivé, ils restent dans Wrot.",
   "settings.tagRule.noIntegration.name": "Exclure de l'intégration des tags",
   "settings.tagRule.noIntegration.desc":
     "Si activé, le tag de cette règle écrit dans les mémos est exclu de l'intégration des tags et reste uniquement dans Wrot.",
+  "settings.tagRule.hideTimeline.name": "Masquer dans la timeline",
+  "settings.tagRule.hideTimeline.desc":
+    "Si activé, les mémos portant ce tag n'apparaissent plus dans la timeline. Ils restent dans la note quotidienne.",
   "settings.tagRule.button.add": "Ajouter une règle",
 
   "view.formatMenu.code": "Code",
@@ -139,7 +139,7 @@ const fr = {
   "view.dateNav.today": "Aujourd'hui",
   "view.dateNav.todaySuffix": " (Aujourd'hui)",
 
-  "view.empty.noMemos": "Aucune note",
+  "view.empty.noMemos": "Aucune note à afficher",
   "view.notice.saveFailed": "Échec de l'enregistrement de la note : {error}",
   "view.notice.searchPluginNotFound": "Plugin de recherche introuvable",
 

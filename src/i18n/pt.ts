@@ -42,7 +42,7 @@ const pt = {
   "settings.item.submitLabel.desc": "Altera o texto exibido no botão de postagem. Deixe em branco para um botão somente com ícone (apenas se houver um definido).",
   "settings.item.submitIcon.name": "Ícone do botão de postagem",
   "settings.item.submitIcon.desc":
-    "Altera o ícone do botão. Copie o nome do ícone de {linkOpen}aqui{linkClose}. Deixe em branco para ocultar.",
+    "Muda o ícone do botão de publicar. Copie um nome de ícone {linkOpen}aqui{linkClose}. Deixe vazio para ocultar.",
   "settings.item.inputPlaceholder.name":
     "Mensagem de campo vazio no formulário",
   "settings.item.inputPlaceholder.desc":
@@ -50,10 +50,7 @@ const pt = {
 
   "settings.item.tagSuggest.name": "Autocompletar de tags",
   "settings.item.tagSuggest.desc":
-    "Ao digitar # no campo de postagem, as tags usadas em publicações anteriores são exibidas como sugestões. O ícone de lixeira apaga essas sugestões.",
-  "settings.item.tagSuggestClear.name": "Limpar sugestões de tags",
-  "settings.notice.tagSuggestCleared": "Sugestões de tags apagadas",
-  "settings.item.tagSuggestClear.confirmLabel": "Pressione novamente para confirmar",
+    "Digitar # sugere tags já usadas. Desativar apaga as tags memorizadas.",
 
   "settings.item.pinLimit.name": "Limite de fixação",
   "settings.item.pinLimit.desc":
@@ -82,7 +79,7 @@ const pt = {
 
   "settings.item.tagColorRules.name": "Usar regras por tag",
   "settings.item.tagColorRules.desc":
-    "Define regras por tag: cores para postagens que contêm tags específicas e exclusão da integração de tags. Para as cores, se houver múltiplas regras, a primeira tag que aparecer terá prioridade.",
+    "Define cores e integração por tag. Nas cores, vence a tag que aparece primeiro no texto.",
 
   "settings.tagRule.label": "Regra {n}",
   "settings.tagRule.tag.name": "Tag",
@@ -96,10 +93,10 @@ const pt = {
     "Define a cor do corpo do texto. (Tags e links usam a cor de destaque)",
   "settings.tagRule.accent.name": "Cor de destaque",
   "settings.tagRule.accent.desc":
-    "Define a cor de tags, links e ícones. Se vazio, usa o destaque padrão do tema.",
+    "Cor para tags, links e URLs. Se não definida, usa a cor de destaque do tema.",
   "settings.tagRule.sub.name": "Cor secundária",
   "settings.tagRule.sub.desc":
-    "Define a cor de elementos como carimbos de hora e ícones. Se vazio, é calculado automaticamente.",
+    "Cor de elementos secundários como carimbos de data e marcadores de lista. Calculada automaticamente se não definida.",
   "settings.tagRule.scope.buttons.name":
     "Aplicar cor secundária a botões e pin",
   "settings.tagRule.scope.buttons.desc":
@@ -111,9 +108,13 @@ const pt = {
   "settings.tagRule.scope.ogp.name": "Aplicar cor secundária a cartões OGP",
   "settings.tagRule.scope.ogp.desc": "Se desativado, usará a cor automática.",
   "settings.item.graphTags.name": "Integração de tags",
-  "settings.item.graphTags.desc": "Integra as tags dos memos ao Obsidian.\nAs tags dentro dos memos aparecem na visualização de grafo e respondem à busca por tags (tag:), assim como as tags normais.\nSe desativado, as tags ficam apenas dentro do Wrot.",
+  "settings.item.graphTags.desc":
+    "Faz as tags dos memos contarem no grafo e na busca tag:. Se desativado, ficam apenas dentro do Wrot.",
   "settings.tagRule.noIntegration.name": "Excluir da integração de tags",
   "settings.tagRule.noIntegration.desc": "Se ativado, a tag desta regra escrita dentro dos memos fica fora da integração de tags e permanece apenas dentro do Wrot.",
+  "settings.tagRule.hideTimeline.name": "Ocultar na linha do tempo",
+  "settings.tagRule.hideTimeline.desc":
+    "Se ativado, memos com esta tag deixam de aparecer na linha do tempo. Permanecem na nota diária.",
   "settings.tagRule.button.add": "Adicionar regra",
 
   "view.formatMenu.code": "Código",
@@ -133,7 +134,7 @@ const pt = {
   "view.dateNav.today": "Hoje",
   "view.dateNav.todaySuffix": " (Hoje)",
 
-  "view.empty.noMemos": "Não há notas",
+  "view.empty.noMemos": "Não há notas para mostrar",
   "view.notice.saveFailed": "Falha ao salvar a nota: {error}",
   "view.notice.searchPluginNotFound": "Plugin de busca não encontrado",
 
