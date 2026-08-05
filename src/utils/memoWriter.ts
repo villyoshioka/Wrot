@@ -42,6 +42,39 @@ export async function ensureBlockIdOnFence(
   return added;
 }
 
+// Replaces only the body of the memo whose opening fence carries this timestamp.
+// The fence line itself is left untouched, so the timestamp and any block ID
+// (^wr-T) survive the edit. Returns false when no matching memo exists anymore.
+export async function updateMemo(
+  app: App,
+  file: TFile,
+  memoTimestamp: string,
+  newContent: string
+): Promise<boolean> {
+  let updated = false;
+  await app.vault.process(file, (data) => {
+    const lines = data.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      const m = lines[i].match(/^(```wr\s+)(\S+)(.*)$/);
+      if (!m) continue;
+      if (m[2].trim() !== memoTimestamp) continue;
+      // Same closing-fence detection as parseMemos, so the replaced range is
+      // exactly what the parser reads as this memo's body.
+      let end = i + 1;
+      while (end < lines.length && lines[end].trim() !== "```") end++;
+      if (end >= lines.length) return data;
+      updated = true;
+      return [
+        ...lines.slice(0, i + 1),
+        ...newContent.split("\n"),
+        ...lines.slice(end),
+      ].join("\n");
+    }
+    return data;
+  });
+  return updated;
+}
+
 declare const moment: typeof import("moment");
 
 export async function appendMemo(

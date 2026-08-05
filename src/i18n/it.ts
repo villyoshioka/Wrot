@@ -45,6 +45,12 @@ const it = {
   "settings.item.submitIcon.name": "Icona del pulsante Posta",
   "settings.item.submitIcon.desc":
     "Cambia l'icona del pulsante di pubblicazione. \nCopia un nome icona {linkOpen}qui{linkClose}. \nLascia vuoto per nasconderla.",
+  "settings.item.updateLabel.name": "Testo del pulsante Aggiorna",
+  "settings.item.updateLabel.desc":
+    "Puoi modificare il testo visualizzato sul pulsante Posta durante la modifica di un post. \nLascia vuoto per un pulsante con la sola icona (solo se è impostata un'icona).",
+  "settings.item.updateIcon.name": "Icona del pulsante Aggiorna",
+  "settings.item.updateIcon.desc":
+    "Cambia l'icona mostrata durante la modifica di un post. \nCopia un nome icona {linkOpen}qui{linkClose}. \nLascia vuoto per usare l'icona del pulsante Posta.",
   "settings.item.inputPlaceholder.name": "Messaggio segnaposto",
   "settings.item.inputPlaceholder.desc":
     "Puoi modificare il testo visualizzato quando il campo di input è vuoto. \nLascia vuoto per nasconderlo.",
@@ -136,6 +142,8 @@ const it = {
 
   "view.postMenu.copy": "Copia",
   "view.postMenu.quotePost": "Cita post",
+  "view.postMenu.edit": "Modifica",
+  "view.postMenu.cancelEdit": "Annulla modifica",
   "view.postMenu.unpin": "Rimuovi pin",
   "view.postMenu.pin": "Fissa in alto",
   "view.postMenu.pinLimitHint": "Il limite per i pin è di {limit} elementi.",
@@ -155,6 +163,7 @@ const it = {
 
   "defaults.headerDateFormat": "D MMMM YYYY",
   "defaults.submitLabel": "Posta",
+  "defaults.updateLabel": "Aggiorna",
   "defaults.inputPlaceholder": "Scrivi qualcosa...",
 } satisfies Translations;
 

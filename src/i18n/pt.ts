@@ -43,6 +43,12 @@ const pt = {
   "settings.item.submitIcon.name": "Ícone do botão de postagem",
   "settings.item.submitIcon.desc":
     "Muda o ícone do botão de publicar. \nCopie um nome de ícone {linkOpen}aqui{linkClose}. \nDeixe vazio para ocultar.",
+  "settings.item.updateLabel.name": "Texto do botão de atualizar",
+  "settings.item.updateLabel.desc":
+    "Altera o texto exibido no botão de postagem enquanto edita uma postagem. \nDeixe em branco para um botão somente com ícone (apenas se houver um definido).",
+  "settings.item.updateIcon.name": "Ícone do botão de atualizar",
+  "settings.item.updateIcon.desc":
+    "Muda o ícone exibido enquanto edita uma postagem. \nCopie um nome de ícone {linkOpen}aqui{linkClose}. \nDeixe vazio para usar o ícone do botão de postagem.",
   "settings.item.inputPlaceholder.name":
     "Mensagem de campo vazio no formulário",
   "settings.item.inputPlaceholder.desc":
@@ -127,6 +133,8 @@ const pt = {
 
   "view.postMenu.copy": "Copiar",
   "view.postMenu.quotePost": "Citar postagem",
+  "view.postMenu.edit": "Editar",
+  "view.postMenu.cancelEdit": "Cancelar edição",
   "view.postMenu.unpin": "Desafixar",
   "view.postMenu.pin": "Fixar",
   "view.postMenu.pinLimitHint": "O limite é de {limit} itens fixados.",
@@ -146,6 +154,7 @@ const pt = {
 
   "defaults.headerDateFormat": "D [de] MMMM [de] YYYY",
   "defaults.submitLabel": "Postar",
+  "defaults.updateLabel": "Atualizar",
   "defaults.inputPlaceholder": "Escreva algo aqui...",
 } satisfies Translations;
 

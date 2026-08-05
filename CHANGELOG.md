@@ -1,5 +1,18 @@
 # Release Notes
 
+## 2.17.0 - 2026-08-05
+
+### Updates
+
+- Updated dependencies.
+
+### New Features
+
+- Added post editing. Choosing "Edit" from a post's menu brings its content back into the input form, where you can rewrite it and update the post.
+- Added "Update Button Text" and "Update Button Icon" to the settings.
+
+---
+
 ## 2.16.1 - 2026-07-31
 
 ### Improvements

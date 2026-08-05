@@ -1,7 +1,7 @@
 import { ItemView, WorkspaceLeaf, Notice, TFile, EventRef, setIcon, Menu, Scope, MarkdownRenderer, renderMath, finishRenderMath } from "obsidian";
 import { VIEW_TYPE_WROT } from "../constants";
 import { parseMemos, Memo } from "../utils/memoParser";
-import { appendMemo, toggleCheckbox } from "../utils/memoWriter";
+import { appendMemo, toggleCheckbox, updateMemo } from "../utils/memoWriter";
 import { getOrCreateDailyNote, getDailyNoteFile } from "../utils/dailyNote";
 import { renderTextWithTagsAndUrls, renderUrlPreviews } from "../utils/urlRenderer";
 import { renderQuoteCard } from "../utils/quoteCard";
@@ -107,6 +107,19 @@ export class WrotView extends ItemView {
   private thumbnailContainer: HTMLElement | null = null;
   private imageAddBtn: HTMLButtonElement | null = null;
   private submitBtnEl: HTMLButtonElement | null = null;
+  // Edit mode: the memo whose body the form is rewriting. time is the unique key;
+  // filePath keeps the write target stable across date navigation and for pinned
+  // memos living in another file.
+  private editingMemo: { time: string; filePath: string } | null = null;
+  // Draft stashed on entering edit mode, restored on update or cancel. The image
+  // is kept as a File reference: its object URL is revoked with the thumbnail,
+  // but setPendingImage regenerates one on restore.
+  private savedDraft: {
+    text: string;
+    image: File | null;
+    selStart: number;
+    selEnd: number;
+  } | null = null;
 
   constructor(leaf: WorkspaceLeaf, plugin: WrotPlugin) {
     super(leaf);
@@ -366,18 +379,30 @@ export class WrotView extends ItemView {
   // when an icon is actually set, otherwise it falls back to the default label text.
   refreshSubmitButton(): void {
     if (!this.submitBtnEl) return;
-    const { submitLabel, submitIcon } = this.plugin.settings;
-    const label = submitLabel || (submitIcon ? "" : t("defaults.submitLabel"));
+    const { submitLabel, submitIcon, updateLabel, updateIcon } = this.plugin.settings;
+    const editing = this.editingMemo !== null;
+    // While editing, both the label and the icon swap to their update variants
+    // under the same rules as posting: an empty label goes icon-only when the
+    // effective icon is set, default text otherwise. An empty update icon
+    // shares the post button's icon.
+    const icon = editing ? updateIcon || submitIcon : submitIcon;
+    const label = editing
+      ? updateLabel || (icon ? "" : t("defaults.updateLabel"))
+      : submitLabel || (icon ? "" : t("defaults.submitLabel"));
     this.submitLabelEl.textContent = label ? `${label} ` : "";
     this.submitBtnEl.toggleClass("wr-submit-icon-only", !label);
+    this.submitBtnEl.toggleClass("wr-submit-editing", editing);
     if (label) {
       this.submitBtnEl.removeAttribute("aria-label");
     } else {
-      this.submitBtnEl.setAttr("aria-label", t("defaults.submitLabel"));
+      this.submitBtnEl.setAttr(
+        "aria-label",
+        editing ? t("defaults.updateLabel") : t("defaults.submitLabel")
+      );
     }
     this.submitIconEl.empty();
-    if (submitIcon) {
-      setIcon(this.submitIconEl, submitIcon);
+    if (icon) {
+      setIcon(this.submitIconEl, icon);
     }
   }
 
@@ -419,6 +444,13 @@ export class WrotView extends ItemView {
       // Suggest dropdown handles navigation keys first; Mod+Enter only closes it
       // without being consumed, so it falls through to the submit handling below.
       if (this.tagSuggest?.handleKeydown(e)) return;
+      // Escape leaves edit mode from the keyboard: the cancel menu item can be out
+      // of reach when the target card is scrolled away or on another date.
+      if (e.key === "Escape" && this.editingMemo) {
+        e.preventDefault();
+        this.exitEditMode();
+        return;
+      }
       if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
         return;
       }
@@ -908,6 +940,139 @@ export class WrotView extends ItemView {
     this.submitBtnEl.toggleClass("wr-submit-active", hasContent);
   }
 
+  private isEditingTarget(memo: Memo): boolean {
+    return this.editingMemo?.time === memo.time;
+  }
+
+  private enterEditMode(memo: Memo, filePath: string): void {
+    // Stash the draft before clearing the pending image: clearPendingImage only
+    // revokes the object URL, the File reference stays valid for the restore.
+    this.savedDraft = {
+      text: this.textarea.value,
+      image: this.pendingImage,
+      selStart: this.textarea.selectionStart,
+      selEnd: this.textarea.selectionEnd,
+    };
+    this.clearPendingImage();
+    this.editingMemo = { time: memo.time, filePath };
+    this.activeFormatMode = null;
+    // The caret lands at the end of the recalled text. If that end is a tag, pad
+    // it with the same trailing space the tag completion inserts — otherwise the
+    // caret would sit inside the tag and pop the suggest dropdown right away.
+    // A trailing space is trimmed away on submit, so the content stays intact.
+    const content = /#[^\s#]+$/.test(memo.content) ? `${memo.content} ` : memo.content;
+    this.textarea.value = content;
+    // Order matters: gaining focus momentarily resets the selection to 0 — the
+    // first line — and the toolbar state computed at that instant would stick
+    // (e.g. a lit list button on a list-starting memo). Place the caret after
+    // focus(), then fire input so every dependent state (toolbar highlights,
+    // autoGrow, submit button) is recomputed synchronously with the final caret.
+    this.textarea.focus();
+    this.textarea.selectionStart = this.textarea.selectionEnd = this.textarea.value.length;
+    this.textarea.dispatchEvent(new Event("input"));
+    this.refreshSubmitButton();
+    this.applyEditModeClasses();
+  }
+
+  private exitEditMode(): void {
+    if (!this.editingMemo) return;
+    this.editingMemo = null;
+    this.activeFormatMode = null;
+    const draft = this.savedDraft;
+    this.textarea.value = draft?.text ?? "";
+    this.clearPendingImage();
+    if (draft?.image) this.setPendingImage(draft.image);
+    this.savedDraft = null;
+    this.textarea.setCssStyles({ height: "" });
+    // Same order as enterEditMode: focus first (gaining focus transiently
+    // resets the selection), then restore the draft's caret, then fire input
+    // so all dependent state is recomputed with the final caret.
+    this.textarea.focus();
+    const len = this.textarea.value.length;
+    this.textarea.setSelectionRange(
+      Math.min(draft?.selStart ?? len, len),
+      Math.min(draft?.selEnd ?? len, len)
+    );
+    this.textarea.dispatchEvent(new Event("input"));
+    this.refreshSubmitButton();
+    this.applyEditModeClasses();
+  }
+
+  // Syncs the editing/locked card classes in place. Rendering also applies them
+  // (renderMemoCard reads the state), so this only covers mode changes that
+  // happen without a re-render, like entering or cancelling an edit.
+  private applyEditModeClasses(): void {
+    const editing = this.editingMemo;
+    const targetClass = editing
+      ? `wr-block-id-wr-${editing.time.replace(/[-:.TZ+]/g, "").slice(0, 17)}`
+      : null;
+    this.contentEl.querySelectorAll<HTMLElement>(".wr-card").forEach((card) => {
+      const isTarget = targetClass !== null && card.classList.contains(targetClass);
+      card.classList.toggle("wr-card-editing", isTarget);
+      card.classList.toggle("wr-card-menu-locked", editing !== null && !isTarget);
+      this.setEditingAccentVars(card, isTarget);
+    });
+  }
+
+  // Same convention as the quote-jump flash: a tag-rule card with a custom
+  // accent carries it as inline CSS vars while highlighted; without them the
+  // stylesheet defaults fall back to the theme accent.
+  private setEditingAccentVars(card: HTMLElement, editing: boolean): void {
+    const ruleClass = Array.from(card.classList).find((c) => /^wr-tag-rule-\d+$/.test(c));
+    const accent = editing && ruleClass ? this.plugin.getRuleAccentColor(ruleClass) : null;
+    if (accent) {
+      const r = parseInt(accent.slice(1, 3), 16);
+      const g = parseInt(accent.slice(3, 5), 16);
+      const b = parseInt(accent.slice(5, 7), 16);
+      card.style.setProperty("--wr-editing-ring-color", `rgba(${r}, ${g}, ${b}, 0.45)`);
+      card.style.setProperty("--wr-editing-tint-color", `rgba(${r}, ${g}, ${b}, 0.07)`);
+      card.style.setProperty("--wr-editing-accent", accent);
+    } else {
+      card.style.removeProperty("--wr-editing-ring-color");
+      card.style.removeProperty("--wr-editing-tint-color");
+      card.style.removeProperty("--wr-editing-accent");
+    }
+  }
+
+  // Writes the edited body back into the original memo block. The opening fence
+  // line is untouched, so the timestamp and any block ID survive and quotes or
+  // pins referencing this memo keep resolving.
+  private async applyEdit(rawText: string): Promise<void> {
+    const target = this.editingMemo;
+    if (!target) return;
+    const file = this.app.vault.getAbstractFileByPath(target.filePath);
+    if (!(file instanceof TFile)) {
+      // The target file is gone; nothing to write. Leaving edit mode restores
+      // the draft, and the edited text was theirs to begin with.
+      this.exitEditMode();
+      return;
+    }
+    try {
+      let bodyText = rawText;
+      if (this.pendingImage) {
+        const savedFile = await saveImageToVault(this.app, this.pendingImage, file);
+        const embed = buildEmbedLink(savedFile);
+        bodyText = insertEmbedAboveBottomBlock(bodyText, embed);
+      }
+
+      this.ignoreNextModify = true;
+      await updateMemo(this.app, file, target.time, bodyText);
+
+      if (this.plugin.settings.tagSuggestEnabled) {
+        const usedTags = extractTagsForHistory(rawText);
+        if (usedTags.length > 0) {
+          this.plugin.recentTags = mergeRecentTags(this.plugin.recentTags, usedTags);
+          await this.plugin.saveRecentTags();
+        }
+      }
+
+      this.exitEditMode();
+      await this.refresh();
+    } catch {
+      // Stay in edit mode so the typed text is not lost; the user can retry.
+    }
+  }
+
   async submitMemo(): Promise<void> {
     if (this.activeFormatMode) {
       const marker = this.activeFormatMode === "bold" ? "**" : "*";
@@ -916,6 +1081,11 @@ export class WrotView extends ItemView {
     }
     const rawText = this.textarea.value.trim().replace(/＃/g, "#");
     if (!rawText && !this.pendingImage) return;
+
+    if (this.editingMemo) {
+      await this.applyEdit(rawText);
+      return;
+    }
 
     // Re-anchor to today just before resolving the target file (matters for
     // weekly/monthly aggregate note formats).
@@ -1013,12 +1183,39 @@ export class WrotView extends ItemView {
       if (pinnedResolved.length === 0 && rendered === 0) this.renderEmptyState();
     } finally {
       this.refreshing = false;
+      await this.releaseEditModeIfTargetGone().catch(() => {});
       if (this.refreshQueued) {
         this.refreshQueued = false;
         // eslint-disable-next-line @typescript-eslint/no-floating-promises -- replay must not alter this call's result
         this.refresh();
       }
     }
+  }
+
+  // While editing, watch the target memo: if it vanished (deleted or rewritten
+  // externally), release the mode quietly but keep every character the user
+  // typed — the edit buffer stays in the textarea, the stashed draft is
+  // appended after it.
+  private async releaseEditModeIfTargetGone(): Promise<void> {
+    const target = this.editingMemo;
+    if (!target) return;
+    const file = this.app.vault.getAbstractFileByPath(target.filePath);
+    let alive = false;
+    if (file instanceof TFile) {
+      const content = await this.app.vault.cachedRead(file);
+      alive = parseMemos(content).some((m) => m.time === target.time);
+    }
+    if (alive) return;
+    const typed = this.textarea.value;
+    const draft = this.savedDraft?.text ?? "";
+    const draftImage = this.savedDraft?.image ?? null;
+    this.editingMemo = null;
+    this.savedDraft = null;
+    this.textarea.value = typed && draft ? `${typed}\n\n${draft}` : typed || draft;
+    if (draftImage && !this.pendingImage) this.setPendingImage(draftImage);
+    this.textarea.dispatchEvent(new Event("input"));
+    this.refreshSubmitButton();
+    this.applyEditModeClasses();
   }
 
   private renderEmptyState(): void {
@@ -1138,11 +1335,16 @@ export class WrotView extends ItemView {
     if (options.pinned) card.classList.add("wr-card-pinned");
     const T = memo.time.replace(/[-:.TZ+]/g, "").slice(0, 17);
     card.classList.add(`wr-block-id-wr-${T}`);
+    // State-driven so the classes survive any full re-render during an edit.
+    if (this.isEditingTarget(memo)) card.classList.add("wr-card-editing");
+    else if (this.editingMemo) card.classList.add("wr-card-menu-locked");
     const rule = this.plugin.findTagColorRule(memo.tags);
     if (rule) {
       const idx = this.plugin.settings.tagColorRules.indexOf(rule);
       if (idx >= 0) card.classList.add(`wr-tag-rule-${idx}`);
     }
+    // After the rule class: the accent vars are resolved from it.
+    if (this.isEditingTarget(memo)) this.setEditingAccentVars(card, true);
 
     const contentEl = card.createDiv({ cls: "wr-content" });
     const resolveImagePath = (fileName: string): string | null => {
@@ -1238,6 +1440,9 @@ export class WrotView extends ItemView {
     setIcon(menuBtn, "ellipsis");
     // eslint-disable-next-line @typescript-eslint/no-misused-promises -- async handler intentionally used as a callback
     menuBtn.addEventListener("click", async (e) => {
+      // While editing, every other card's menu is locked; only the card being
+      // edited keeps its menu (it carries the cancel action).
+      if (this.editingMemo && !this.isEditingTarget(memo)) return;
       // Drop orphaned pins before evaluating the pin limit.
       await this.cleanupOrphanPins();
       const pinned = this.isPinned(memo);
@@ -1249,12 +1454,27 @@ export class WrotView extends ItemView {
             await navigator.clipboard.writeText(memo.content);
           })
         );
-        menu.addItem((item) =>
+        menu.addItem((item) => {
           item.setTitle(t("view.postMenu.quotePost")).setIcon("quote").onClick(() => {
             // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
             this.insertQuoteToForm(memo, options.filePath);
-          })
-        );
+          });
+          // Quoting writes into the form, which would clobber the edit in progress.
+          if (this.isEditingTarget(memo)) item.setDisabled(true);
+        });
+        if (this.isEditingTarget(memo)) {
+          menu.addItem((item) =>
+            item.setTitle(t("view.postMenu.cancelEdit")).setIcon("pencil-off").onClick(() => {
+              this.exitEditMode();
+            })
+          );
+        } else {
+          menu.addItem((item) =>
+            item.setTitle(t("view.postMenu.edit")).setIcon("pencil").onClick(() => {
+              this.enterEditMode(memo, options.filePath);
+            })
+          );
+        }
         if (pinned) {
           menu.addItem((item) =>
             item.setTitle(t("view.postMenu.unpin")).setIcon("pin-off").onClick(async () => {

@@ -43,6 +43,12 @@ const zhCN = {
   "settings.item.submitIcon.name": "发布按钮图标",
   "settings.item.submitIcon.desc":
     "更改发布按钮的图标。\n图标名称可从{linkOpen}这里{linkClose}复制。\n留空则隐藏图标。",
+  "settings.item.updateLabel.name": "更新按钮文本",
+  "settings.item.updateLabel.desc":
+    "自定义编辑内容时发布按钮上显示的文字。\n留空可仅显示图标(仅当已设置图标时)。",
+  "settings.item.updateIcon.name": "更新按钮图标",
+  "settings.item.updateIcon.desc":
+    "更改编辑内容时显示的图标。\n图标名称可从{linkOpen}这里{linkClose}复制。\n留空则使用发布按钮的图标。",
   "settings.item.inputPlaceholder.name": "输入框占位文本",
   "settings.item.inputPlaceholder.desc":
     "可以自定义输入框为空时显示的提示文字。\n留空则不显示。",
@@ -130,6 +136,8 @@ const zhCN = {
 
   "view.postMenu.copy": "复制",
   "view.postMenu.quotePost": "引用此条内容",
+  "view.postMenu.edit": "编辑",
+  "view.postMenu.cancelEdit": "取消编辑",
   "view.postMenu.unpin": "取消置顶",
   "view.postMenu.pin": "置顶",
   "view.postMenu.pinLimitHint": "置顶条数已达上限（最多 {limit} 条）。",
@@ -149,6 +157,7 @@ const zhCN = {
 
   "defaults.headerDateFormat": "YYYY/MM/DD",
   "defaults.submitLabel": "发布",
+  "defaults.updateLabel": "更新",
   "defaults.inputPlaceholder": "这一刻的想法...",
 } satisfies Translations;
 

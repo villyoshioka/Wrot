@@ -36,6 +36,12 @@ const ja = {
   // {linkOpen}/{linkClose} placeholders mark the part wrapped in an anchor element.
   "settings.item.submitIcon.desc":
     "投稿ボタンのアイコンを変更できます。\nアイコン名は {linkOpen}こちら{linkClose} からコピーできます。\n空欄にすると非表示になります。",
+  "settings.item.updateLabel.name": "更新ボタンのテキスト",
+  "settings.item.updateLabel.desc":
+    "投稿の編集中に、投稿ボタンへ表示するテキストを変更できます。\n空欄にするとアイコンのみの表示にできます(アイコン設定時のみ)。",
+  "settings.item.updateIcon.name": "更新ボタンのアイコン",
+  "settings.item.updateIcon.desc":
+    "投稿の編集中に表示するアイコンを変更できます。\nアイコン名は {linkOpen}こちら{linkClose} からコピーできます。\n空欄にすると投稿ボタンと同じアイコンになります。",
   "settings.item.inputPlaceholder.name": "投稿フォームの空欄メッセージ",
   "settings.item.inputPlaceholder.desc":
     "投稿フォームが空の時に表示されるテキストを変更できます。\n空欄にすると非表示になります。",
@@ -115,6 +121,8 @@ const ja = {
 
   "view.postMenu.copy": "コピー",
   "view.postMenu.quotePost": "投稿を引用",
+  "view.postMenu.edit": "編集",
+  "view.postMenu.cancelEdit": "編集をキャンセル",
   "view.postMenu.unpin": "ピンを外す",
   "view.postMenu.pin": "ピン留め",
   "view.postMenu.pinLimitHint": "ピン留めは{limit}件までです。",
@@ -138,6 +146,7 @@ const ja = {
   // Locale-dependent defaults adopted on fresh install instead of DEFAULT_SETTINGS.
   "defaults.headerDateFormat": "YYYY年MM月DD日",
   "defaults.submitLabel": "投稿",
+  "defaults.updateLabel": "更新",
   "defaults.inputPlaceholder": "あなたが書くのを待っています...",
 };
 

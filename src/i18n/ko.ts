@@ -43,6 +43,12 @@ const ko = {
   "settings.item.submitIcon.name": "게시 버튼 아이콘",
   "settings.item.submitIcon.desc":
     "게시 버튼의 아이콘을 변경합니다. \n아이콘 이름은 {linkOpen}여기{linkClose}에서 복사하세요. \n비우면 숨겨집니다.",
+  "settings.item.updateLabel.name": "수정 버튼 텍스트",
+  "settings.item.updateLabel.desc":
+    "게시물을 수정하는 동안 게시 버튼에 표시될 문구를 변경할 수 있습니다. \n아이콘이 설정된 경우에 한해 비워두면 아이콘만 표시됩니다.",
+  "settings.item.updateIcon.name": "수정 버튼 아이콘",
+  "settings.item.updateIcon.desc":
+    "게시물을 수정하는 동안 표시될 아이콘을 변경합니다. \n아이콘 이름은 {linkOpen}여기{linkClose}에서 복사하세요. \n비워두면 게시 버튼과 같은 아이콘이 사용됩니다.",
   "settings.item.inputPlaceholder.name": "입력창 안내 문구",
   "settings.item.inputPlaceholder.desc":
     "입력창이 비어 있을 때 표시되는 텍스트를 변경할 수 있습니다. \n비워두면 표시되지 않습니다.",
@@ -126,6 +132,8 @@ const ko = {
 
   "view.postMenu.copy": "복사",
   "view.postMenu.quotePost": "게시물 인용",
+  "view.postMenu.edit": "수정",
+  "view.postMenu.cancelEdit": "수정 취소",
   "view.postMenu.unpin": "고정 해제",
   "view.postMenu.pin": "상단 고정",
   "view.postMenu.pinLimitHint": "최대 {limit}개까지만 고정할 수 있습니다.",
@@ -145,6 +153,7 @@ const ko = {
 
   "defaults.headerDateFormat": "YYYY년 MM월 DD일",
   "defaults.submitLabel": "게시",
+  "defaults.updateLabel": "수정",
   "defaults.inputPlaceholder": "새로운 내용을 게시해 보세요...",
 } satisfies Translations;
 

@@ -525,6 +525,7 @@ export default class WrotPlugin extends Plugin {
       ...DEFAULT_SETTINGS,
       headerDateFormat: t("defaults.headerDateFormat"),
       submitLabel: t("defaults.submitLabel"),
+      updateLabel: t("defaults.updateLabel"),
       inputPlaceholder: t("defaults.inputPlaceholder"),
     };
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- value from untyped Obsidian/CodeMirror internal API
@@ -537,13 +538,14 @@ export default class WrotPlugin extends Plugin {
       dirty = true;
     }
 
-    // If Obsidian's language changed since last run, force-reset the three text settings to the new
+    // If Obsidian's language changed since last run, force-reset the text settings to the new
     // locale's defaults (custom values lose meaning across languages). Missing lastLocale (pre-i18n users): record only, no reset.
     const currentLocale = getActiveLocale();
     const previousLocale = (raw as { lastLocale?: string }).lastLocale;
     if (previousLocale !== undefined && previousLocale !== currentLocale) {
       this.settings.headerDateFormat = t("defaults.headerDateFormat");
       this.settings.submitLabel = t("defaults.submitLabel");
+      this.settings.updateLabel = t("defaults.updateLabel");
       this.settings.inputPlaceholder = t("defaults.inputPlaceholder");
       dirty = true;
     }

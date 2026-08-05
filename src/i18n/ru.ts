@@ -41,6 +41,12 @@ const ru = {
   "settings.item.submitIcon.name": "Иконка кнопки поста",
   "settings.item.submitIcon.desc":
     "Меняет значок кнопки публикации. \nНазвание значка скопируйте {linkOpen}здесь{linkClose}. \nПустое поле скрывает значок.",
+  "settings.item.updateLabel.name": "Текст кнопки обновления",
+  "settings.item.updateLabel.desc":
+    "Вы можете изменить текст, отображаемый на кнопке поста во время редактирования записи. \nОставьте пустым для кнопки только с иконкой (только если иконка задана).",
+  "settings.item.updateIcon.name": "Иконка кнопки обновления",
+  "settings.item.updateIcon.desc":
+    "Меняет значок, отображаемый во время редактирования записи. \nНазвание значка скопируйте {linkOpen}здесь{linkClose}. \nОставьте пустым, чтобы использовать значок кнопки поста.",
   "settings.item.inputPlaceholder.name": "Подсказка в пустом поле",
   "settings.item.inputPlaceholder.desc":
     "Текст, отображаемый в пустом поле ввода. \nОставьте поле пустым, чтобы скрыть подсказку.",
@@ -123,6 +129,8 @@ const ru = {
 
   "view.postMenu.copy": "Копировать",
   "view.postMenu.quotePost": "Цитировать запись",
+  "view.postMenu.edit": "Редактировать",
+  "view.postMenu.cancelEdit": "Отменить редактирование",
   "view.postMenu.unpin": "Открепить",
   "view.postMenu.pin": "Закрепить",
   "view.postMenu.pinLimitHint": "Максимум закрепленных записей: {limit}.",
@@ -142,6 +150,7 @@ const ru = {
 
   "defaults.headerDateFormat": "D MMMM YYYY [г.]",
   "defaults.submitLabel": "Постить",
+  "defaults.updateLabel": "Обновить",
   "defaults.inputPlaceholder": "Ваши мысли здесь...",
 } satisfies Translations;
 

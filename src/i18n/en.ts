@@ -43,6 +43,12 @@ const en = {
   "settings.item.submitIcon.name": "Post Button Icon",
   "settings.item.submitIcon.desc":
     "Change the icon on the post button. \nCopy an icon name from {linkOpen}here{linkClose}. \nLeave blank to hide it.",
+  "settings.item.updateLabel.name": "Update Button Text",
+  "settings.item.updateLabel.desc":
+    "Change the text displayed on the post button while editing a post. \nLeave blank for an icon-only button (shown only if an icon is set).",
+  "settings.item.updateIcon.name": "Update Button Icon",
+  "settings.item.updateIcon.desc":
+    "Change the icon shown while editing a post. \nCopy an icon name from {linkOpen}here{linkClose}. \nLeave blank to use the post button's icon.",
   "settings.item.inputPlaceholder.name": "Post Form Placeholder",
   "settings.item.inputPlaceholder.desc":
     "Change the text displayed when the post form is empty. \nLeave blank to hide it.",
@@ -131,6 +137,8 @@ const en = {
 
   "view.postMenu.copy": "Copy",
   "view.postMenu.quotePost": "Quote Post",
+  "view.postMenu.edit": "Edit",
+  "view.postMenu.cancelEdit": "Cancel Edit",
   "view.postMenu.unpin": "Unpin",
   "view.postMenu.pin": "Pin",
   "view.postMenu.pinLimitHint": "You can pin up to {limit} posts.",
@@ -150,6 +158,7 @@ const en = {
 
   "defaults.headerDateFormat": "MMMM D, YYYY",
   "defaults.submitLabel": "Post",
+  "defaults.updateLabel": "Update",
   "defaults.inputPlaceholder": "Note to self...",
 } satisfies Translations;
 

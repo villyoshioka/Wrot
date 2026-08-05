@@ -43,6 +43,12 @@ const zhTW = {
   "settings.item.submitIcon.name": "發佈按鈕圖示",
   "settings.item.submitIcon.desc":
     "變更發布按鈕的圖示。\n圖示名稱可從{linkOpen}這裡{linkClose}複製。\n留空則隱藏圖示。",
+  "settings.item.updateLabel.name": "更新按鈕文字",
+  "settings.item.updateLabel.desc":
+    "可以更改編輯貼文時發佈按鈕上顯示的文字。\n留空可僅顯示圖示(僅當已設定圖示時)。",
+  "settings.item.updateIcon.name": "更新按鈕圖示",
+  "settings.item.updateIcon.desc":
+    "變更編輯貼文時顯示的圖示。\n圖示名稱可從{linkOpen}這裡{linkClose}複製。\n留空則使用發佈按鈕的圖示。",
   "settings.item.inputPlaceholder.name": "貼文表單空白提示訊息",
   "settings.item.inputPlaceholder.desc":
     "可以更改貼文表單為空時顯示的文字（佔位符）。\n留空則隱藏。",
@@ -130,6 +136,8 @@ const zhTW = {
 
   "view.postMenu.copy": "複製",
   "view.postMenu.quotePost": "引用貼文",
+  "view.postMenu.edit": "編輯",
+  "view.postMenu.cancelEdit": "取消編輯",
   "view.postMenu.unpin": "取消釘選",
   "view.postMenu.pin": "釘選",
   "view.postMenu.pinLimitHint": "釘選上限為 {limit} 件。",
@@ -149,6 +157,7 @@ const zhTW = {
 
   "defaults.headerDateFormat": "YYYY/MM/DD",
   "defaults.submitLabel": "發佈",
+  "defaults.updateLabel": "更新",
   "defaults.inputPlaceholder": "在想些什麼？",
 } satisfies Translations;
 

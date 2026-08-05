@@ -44,6 +44,12 @@ const es = {
   "settings.item.submitIcon.name": "Icono del botón de postear",
   "settings.item.submitIcon.desc":
     "Cambia el icono del botón de publicar. \nCopia un nombre de icono desde {linkOpen}aquí{linkClose}. \nDéjalo vacío para ocultarlo.",
+  "settings.item.updateLabel.name": "Texto del botón de actualizar",
+  "settings.item.updateLabel.desc":
+    "Cambia el texto que se muestra en el botón de postear mientras editas un post. \nDéjalo en blanco para un botón solo con icono (solo si hay uno configurado).",
+  "settings.item.updateIcon.name": "Icono del botón de actualizar",
+  "settings.item.updateIcon.desc":
+    "Cambia el icono que se muestra mientras editas un post. \nCopia un nombre de icono desde {linkOpen}aquí{linkClose}. \nDéjalo vacío para usar el icono del botón de postear.",
   "settings.item.inputPlaceholder.name": "Mensaje de campo vacío",
   "settings.item.inputPlaceholder.desc":
     "Cambia el texto que aparece cuando el campo de entrada está vacío. \nSi se deja en blanco, se ocultará.",
@@ -132,6 +138,8 @@ const es = {
 
   "view.postMenu.copy": "Copiar",
   "view.postMenu.quotePost": "Citar post",
+  "view.postMenu.edit": "Editar",
+  "view.postMenu.cancelEdit": "Cancelar edición",
   "view.postMenu.unpin": "Desfijar",
   "view.postMenu.pin": "Fijar",
   "view.postMenu.pinLimitHint": "El límite es de {limit} elementos fijados.",
@@ -152,6 +160,7 @@ const es = {
 
   "defaults.headerDateFormat": "D [de] MMMM [de] YYYY",
   "defaults.submitLabel": "Postear",
+  "defaults.updateLabel": "Actualizar",
   "defaults.inputPlaceholder": "Escribe algo...",
 } satisfies Translations;
 

@@ -51,6 +51,11 @@ export interface WrotSettings {
   textColorDark: string;
   submitLabel: string;
   submitIcon: string;
+  // Submit-button text while editing a post. Same rules as submitLabel:
+  // empty renders icon-only (only when an icon is set, default text otherwise).
+  updateLabel: string;
+  // Submit-button icon while editing a post. Empty shares submitIcon.
+  updateIcon: string;
   inputPlaceholder: string;
   enableOgpFetch: boolean;
   checkStrikethrough: boolean;
@@ -80,6 +85,8 @@ export const DEFAULT_SETTINGS: WrotSettings = {
   textColorDark: "#dcddde",
   submitLabel: "投稿",
   submitIcon: "send",
+  updateLabel: "更新",
+  updateIcon: "send",
   inputPlaceholder: "あなたが書くのを待っています...",
   enableOgpFetch: true,
   checkStrikethrough: false,
@@ -488,7 +495,20 @@ export class WrotSettingTab extends PluginSettingTab {
           },
           resetValue: () => t("defaults.submitLabel"),
         }),
-        this.submitIconRow(),
+        this.iconRow("submitIcon"),
+        this.textWithReset({
+          name: t("settings.item.updateLabel.name"),
+          desc: t("settings.item.updateLabel.desc"),
+          placeholder: t("defaults.updateLabel"),
+          read: () => settings.updateLabel,
+          write: async (value) => {
+            settings.updateLabel = value.trim();
+            await this.plugin.saveSettings();
+            this.plugin.updateSubmitLabel();
+          },
+          resetValue: () => t("defaults.updateLabel"),
+        }),
+        this.iconRow("updateIcon"),
         this.textWithReset({
           name: t("settings.item.inputPlaceholder.name"),
           desc: t("settings.item.inputPlaceholder.desc"),
@@ -558,9 +578,10 @@ export class WrotSettingTab extends PluginSettingTab {
   }
 
   // The description carries a link to the icon gallery, so the row is built by hand.
-  private submitIconRow(): SettingDefinition {
+  // Shared by the post-button and update-button icon settings.
+  private iconRow(key: "submitIcon" | "updateIcon"): SettingDefinition {
     const settings = this.plugin.settings;
-    const template = t("settings.item.submitIcon.desc");
+    const template = t(`settings.item.${key}.desc`);
 
     const buildDesc = (): DocumentFragment =>
       createFragment((frag) => {
@@ -580,32 +601,32 @@ export class WrotSettingTab extends PluginSettingTab {
       });
 
     return {
-      name: t("settings.item.submitIcon.name"),
+      name: t(`settings.item.${key}.name`),
       desc: buildDesc(),
       render: (setting: Setting) => {
         let field: TextComponent;
         // Lucide icon IDs are lowercase-only; this is an identifier, not UI prose.
         const iconNamePlaceholder = "send";
         setting
-          .setName(t("settings.item.submitIcon.name"))
+          .setName(t(`settings.item.${key}.name`))
           .setDesc(buildDesc())
           .setClass("wr-text-input-row")
           .addText((text) => {
             field = text;
             text
               .setPlaceholder(iconNamePlaceholder)
-              .setValue(settings.submitIcon)
+              .setValue(settings[key])
               .onChange(async (value) => {
-                settings.submitIcon = value.trim();
+                settings[key] = value.trim();
                 await this.plugin.saveSettings();
                 this.plugin.updateSubmitIcon();
               });
           })
           .addExtraButton((btn) =>
             btn.setIcon("reset").onClick(async () => {
-              settings.submitIcon = DEFAULT_SETTINGS.submitIcon;
+              settings[key] = DEFAULT_SETTINGS[key];
               await this.plugin.saveSettings();
-              field.setValue(DEFAULT_SETTINGS.submitIcon);
+              field.setValue(DEFAULT_SETTINGS[key]);
               this.plugin.updateSubmitIcon();
             })
           );

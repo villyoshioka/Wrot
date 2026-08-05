@@ -105,7 +105,7 @@ Wrot is highly customizable. Key settings include:
 - **Themes** — Custom background and text colors for both Light and Dark modes.
 - **Tag Styling** — Set specific colors for tags to categorize your timeline visually.
 - **Pin Limits** — Choose to pin 1, 3, or 5 notes to the top.
-- **Button Customization** — Change the post button’s label and icon.
+- **Button Customization** — Change the post and update buttons’ labels and icons.
 - **Time Formats** — Customize how timestamps appear (e.g., `YYYY/MM/DD HH:mm:ss`).
 - **URL Previews** — Toggle OGP card previews on or off.
 

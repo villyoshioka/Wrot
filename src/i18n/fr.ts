@@ -45,6 +45,12 @@ const fr = {
   "settings.item.submitIcon.name": "Icône du bouton Poster",
   "settings.item.submitIcon.desc":
     "Change l'icône du bouton de publication. \nCopiez un nom d'icône {linkOpen}ici{linkClose}. \nLaissez vide pour la masquer.",
+  "settings.item.updateLabel.name": "Libellé du bouton Mettre à jour",
+  "settings.item.updateLabel.desc":
+    "Personnalisez le texte affiché sur le bouton Poster pendant la modification d'un post. \nLaissez vide pour un bouton avec seulement l'icône (uniquement si une icône est définie).",
+  "settings.item.updateIcon.name": "Icône du bouton Mettre à jour",
+  "settings.item.updateIcon.desc":
+    "Changez l'icône affichée pendant la modification d'un post. \nCopiez un nom d'icône {linkOpen}ici{linkClose}. \nLaissez vide pour utiliser l'icône du bouton Poster.",
   "settings.item.inputPlaceholder.name": "Message du champ vide",
   "settings.item.inputPlaceholder.desc":
     "Texte affiché lorsque le champ de saisie est vide. \nLaissez vide pour ne rien afficher.",
@@ -132,6 +138,8 @@ const fr = {
 
   "view.postMenu.copy": "Copier",
   "view.postMenu.quotePost": "Citer le post",
+  "view.postMenu.edit": "Modifier",
+  "view.postMenu.cancelEdit": "Annuler la modification",
   "view.postMenu.unpin": "Désépingler",
   "view.postMenu.pin": "Épingler",
   "view.postMenu.pinLimitHint": "La limite est de {limit} épingles.",
@@ -151,6 +159,7 @@ const fr = {
 
   "defaults.headerDateFormat": "D MMMM YYYY",
   "defaults.submitLabel": "Poster",
+  "defaults.updateLabel": "Mettre à jour",
   "defaults.inputPlaceholder": "À vous de jouer...",
 } satisfies Translations;
 

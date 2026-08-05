@@ -43,6 +43,12 @@ const de = {
   "settings.item.submitIcon.name": "Symbol der Posten-Schaltfläche",
   "settings.item.submitIcon.desc":
     "Ändert das Symbol der Beitragsschaltfläche. \nSymbolnamen {linkOpen}hier{linkClose} kopieren. \nLeer lassen blendet es aus.",
+  "settings.item.updateLabel.name": "Text der Aktualisieren-Schaltfläche",
+  "settings.item.updateLabel.desc":
+    "Sie können den Text ändern, der während der Bearbeitung eines Beitrags auf der Posten-Schaltfläche angezeigt wird. \nLeer lassen für eine reine Symbol-Schaltfläche (nur wenn ein Symbol festgelegt ist).",
+  "settings.item.updateIcon.name": "Symbol der Aktualisieren-Schaltfläche",
+  "settings.item.updateIcon.desc":
+    "Ändert das Symbol, das während der Bearbeitung eines Beitrags angezeigt wird. \nSymbolnamen {linkOpen}hier{linkClose} kopieren. \nLeer lassen übernimmt das Symbol der Posten-Schaltfläche.",
   "settings.item.inputPlaceholder.name": "Platzhaltertext im Eingabefeld",
   "settings.item.inputPlaceholder.desc":
     "Sie können den Text ändern, der angezeigt wird, wenn das Eingabefeld leer ist. \nLassen Sie das Feld leer, um ihn auszublenden.",
@@ -124,6 +130,8 @@ const de = {
 
   "view.postMenu.copy": "Kopieren",
   "view.postMenu.quotePost": "Beitrag zitieren",
+  "view.postMenu.edit": "Bearbeiten",
+  "view.postMenu.cancelEdit": "Bearbeitung abbrechen",
   "view.postMenu.unpin": "Anpinnen aufheben",
   "view.postMenu.pin": "Anpinnen",
   "view.postMenu.pinLimitHint": "Sie können maximal {limit} Beiträge anpinnen.",
@@ -143,6 +151,7 @@ const de = {
 
   "defaults.headerDateFormat": "D. MMMM YYYY",
   "defaults.submitLabel": "Posten",
+  "defaults.updateLabel": "Aktualisieren",
   "defaults.inputPlaceholder": "Schreib etwas ...",
 } satisfies Translations;
 

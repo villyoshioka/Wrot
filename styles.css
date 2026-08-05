@@ -659,6 +659,46 @@ body .wr-submit-btn.wr-submit-active {
   font-size: var(--wr-font-text);
 }
 
+/* Edit mode: the card being edited gets an accent ring plus a faint accent
+   tint. The tint is painted on an ::after overlay — the palette sheet owns the
+   card's own background, and an overlay needs no specificity fight with it.
+   Tag-rule cards carry their rule's accent via inline --wr-editing-* vars set
+   in JS (same convention as the quote-jump flash); the hsla fallbacks below
+   are the theme accent used by every other card. */
+.wr-card.wr-card-editing {
+  /* Inset ring: an outer ring extends past the card bounds and gets clipped by
+     the scrolling list container, so the accent ring is drawn inside instead. */
+  box-shadow: inset 0 0 0 1.5px
+    var(--wr-editing-ring-color, hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.45));
+}
+
+/* The editing card's own menu stays live (it carries the cancel action):
+   accent-colored so it reads as active rather than locked like the others.
+   :not(#x) lifts specificity above Obsidian's default SVG color/stroke rules. */
+body .wr-card.wr-card-editing .wr-menu-btn .svg-icon:not(#x) {
+  color: var(--wr-editing-accent, var(--text-accent));
+  stroke: var(--wr-editing-accent, var(--text-accent));
+}
+
+.wr-card.wr-card-editing::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-color: var(--wr-editing-tint-color, hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.07));
+  border-radius: inherit;
+  /* Above the card's own content, but below overlapping siblings like the tag
+     suggest dropdown (z-index: 50) — the card has no z-index of its own, so
+     this pseudo-element stacks against them directly. */
+  z-index: 1;
+}
+
+/* Every other card's menu is locked while an edit is in progress. */
+.wr-card.wr-card-menu-locked .wr-menu-btn {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
 .wr-card-footer {
   display: flex;
   align-items: center;
