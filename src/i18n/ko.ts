@@ -82,6 +82,10 @@ const ko = {
   "settings.item.showCalendarButton.desc":
     "날짜 네비게이션에 캘린더 버튼을 추가합니다. \n버튼을 눌러 원하는 날짜로 바로 이동할 수 있습니다.",
 
+  "settings.item.showPostDelete.name": "삭제 버튼 표시",
+  "settings.item.showPostDelete.desc":
+    "게시물 메뉴에 '삭제' 버튼을 표시합니다. \n삭제한 게시물은 되돌릴 수 없습니다. \n게시물에 넣은 이미지는 삭제되지 않습니다.",
+
   "settings.item.tagColorRules.name": "태그별 규칙 사용",
   "settings.item.tagColorRules.desc":
     "태그별로 색과 태그 통합을 설정합니다. 색은 본문에서 먼저 나온 태그가 우선합니다.",
@@ -120,6 +124,9 @@ const ko = {
   "settings.tagRule.hideTimeline.name": "타임라인에서 숨기기",
   "settings.tagRule.hideTimeline.desc":
     "켜면 이 태그가 있는 게시물이 타임라인에 나오지 않습니다. 데일리 노트에는 남아 있습니다.",
+  "settings.tagRule.protectDelete.name": "삭제 버튼 비활성화",
+  "settings.tagRule.protectDelete.desc":
+    "이 태그가 있는 게시물의 '삭제' 버튼을 누를 수 없게 합니다.",
   "settings.tagRule.button.add": "규칙 추가",
 
   "view.formatMenu.code": "코드",
@@ -137,6 +144,9 @@ const ko = {
   "view.postMenu.unpin": "고정 해제",
   "view.postMenu.pin": "상단 고정",
   "view.postMenu.pinLimitHint": "최대 {limit}개까지만 고정할 수 있습니다.",
+  "view.postMenu.delete": "삭제",
+  // Shown on the same row after the first press, in place of the label above.
+  "view.postMenu.deleteConfirm": "한 번 더 누르면 삭제",
 
   "view.dateNav.today": "오늘",
   "view.dateNav.todaySuffix": " (오늘)",
@@ -146,6 +156,9 @@ const ko = {
   "view.notice.searchPluginNotFound": "검색 플러그인을 찾을 수 없습니다.",
 
   "view.image.removeAria": "이미지 삭제",
+
+  // Placeholder body of a quote card whose original post is gone.
+  "quote.card.notFound": "(원본 게시물을 찾을 수 없습니다)",
 
   "settings.item.submitIcon.lucideUrl": "https://lucide.dev/icons/",
 

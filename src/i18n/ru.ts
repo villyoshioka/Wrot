@@ -80,6 +80,10 @@ const ru = {
   "settings.item.showCalendarButton.desc":
     "Отображать кнопку календаря в панели навигации. \nНажмите, чтобы быстро перейти к нужной дате.",
 
+  "settings.item.showPostDelete.name": "Кнопка удаления",
+  "settings.item.showPostDelete.desc":
+    "Добавляет кнопку «Удалить» в меню записи. \nУдалённую запись нельзя восстановить. \nИзображения из записи не удаляются.",
+
   "settings.item.tagColorRules.name": "Правила для тегов",
   "settings.item.tagColorRules.desc":
     "Настройка цвета и интеграции для каждого тега. В цветах побеждает тег, идущий в тексте первым.",
@@ -117,6 +121,9 @@ const ru = {
   "settings.tagRule.hideTimeline.name": "Скрыть в ленте",
   "settings.tagRule.hideTimeline.desc":
     "Если включено, заметки с этим тегом не отображаются в ленте. В ежедневной заметке они остаются.",
+  "settings.tagRule.protectDelete.name": "Отключить кнопку удаления",
+  "settings.tagRule.protectDelete.desc":
+    "Отключает кнопку «Удалить» у записей с этим тегом.",
   "settings.tagRule.button.add": "Добавить правило",
 
   "view.formatMenu.code": "Код",
@@ -134,6 +141,9 @@ const ru = {
   "view.postMenu.unpin": "Открепить",
   "view.postMenu.pin": "Закрепить",
   "view.postMenu.pinLimitHint": "Максимум закрепленных записей: {limit}.",
+  "view.postMenu.delete": "Удалить",
+  // Shown on the same row after the first press, in place of the label above.
+  "view.postMenu.deleteConfirm": "Нажмите ещё раз для удаления",
 
   "view.dateNav.today": "Сегодня",
   "view.dateNav.todaySuffix": " (Сегодня)",
@@ -143,6 +153,9 @@ const ru = {
   "view.notice.searchPluginNotFound": "Плагин поиска не найден",
 
   "view.image.removeAria": "Удалить изображение",
+
+  // Placeholder body of a quote card whose original post is gone.
+  "quote.card.notFound": "(Исходная запись не найдена)",
 
   "settings.item.submitIcon.lucideUrl": "https://lucide.dev/icons/",
 

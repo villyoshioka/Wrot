@@ -82,6 +82,10 @@ const zhCN = {
   "settings.item.showCalendarButton.desc":
     "在日期导航栏中显示日历图标，\n方便你直接跳转到任何日期。",
 
+  "settings.item.showPostDelete.name": "显示删除按钮",
+  "settings.item.showPostDelete.desc":
+    "在笔记菜单中显示“删除”按钮。 \n删除后无法恢复。 \n笔记中的图片不会被删除。",
+
   "settings.item.tagColorRules.name": "使用标签规则",
   "settings.item.tagColorRules.desc":
     "按标签设置颜色与标签集成。颜色以正文中先出现的标签为准。",
@@ -124,6 +128,9 @@ const zhCN = {
   "settings.tagRule.hideTimeline.name": "在时间轴中隐藏",
   "settings.tagRule.hideTimeline.desc":
     "开启后，含有此标签的备忘录不再显示在时间轴中。每日笔记中仍会保留。",
+  "settings.tagRule.protectDelete.name": "停用删除按钮",
+  "settings.tagRule.protectDelete.desc":
+    "让含有此标签的笔记无法按下“删除”按钮。",
   "settings.tagRule.button.add": "添加规则",
 
   "view.formatMenu.code": "代码",
@@ -141,6 +148,9 @@ const zhCN = {
   "view.postMenu.unpin": "取消置顶",
   "view.postMenu.pin": "置顶",
   "view.postMenu.pinLimitHint": "置顶条数已达上限（最多 {limit} 条）。",
+  "view.postMenu.delete": "删除",
+  // Shown on the same row after the first press, in place of the label above.
+  "view.postMenu.deleteConfirm": "再按一次即删除",
 
   "view.dateNav.today": "今天",
   "view.dateNav.todaySuffix": "（今天）",
@@ -150,6 +160,9 @@ const zhCN = {
   "view.notice.searchPluginNotFound": "未找到搜索插件",
 
   "view.image.removeAria": "删除图片",
+
+  // Placeholder body of a quote card whose original post is gone.
+  "quote.card.notFound": "(未找到原始笔记)",
 
   "settings.item.submitIcon.lucideUrl": "https://lucide.dev/icons/",
 

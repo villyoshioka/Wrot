@@ -83,6 +83,10 @@ const pt = {
   "settings.item.showCalendarButton.desc":
     "Exibe um ícone de calendário na barra de navegação. \nToque para selecionar e ir direto para qualquer data.",
 
+  "settings.item.showPostDelete.name": "Mostrar botão Excluir",
+  "settings.item.showPostDelete.desc":
+    "Adiciona o botão «Excluir» ao menu do memo. \nUm memo excluído não pode ser recuperado. \nAs imagens do memo não são excluídas.",
+
   "settings.item.tagColorRules.name": "Usar regras por tag",
   "settings.item.tagColorRules.desc":
     "Define cores e integração por tag. Nas cores, vence a tag que aparece primeiro no texto.",
@@ -121,6 +125,9 @@ const pt = {
   "settings.tagRule.hideTimeline.name": "Ocultar na linha do tempo",
   "settings.tagRule.hideTimeline.desc":
     "Se ativado, memos com esta tag deixam de aparecer na linha do tempo. Permanecem na nota diária.",
+  "settings.tagRule.protectDelete.name": "Desativar o botão Excluir",
+  "settings.tagRule.protectDelete.desc":
+    "Desativa o botão «Excluir» nos memos que têm esta tag.",
   "settings.tagRule.button.add": "Adicionar regra",
 
   "view.formatMenu.code": "Código",
@@ -138,6 +145,9 @@ const pt = {
   "view.postMenu.unpin": "Desafixar",
   "view.postMenu.pin": "Fixar",
   "view.postMenu.pinLimitHint": "O limite é de {limit} itens fixados.",
+  "view.postMenu.delete": "Excluir",
+  // Shown on the same row after the first press, in place of the label above.
+  "view.postMenu.deleteConfirm": "Pressione de novo para excluir",
 
   "view.dateNav.today": "Hoje",
   "view.dateNav.todaySuffix": " (Hoje)",
@@ -147,6 +157,9 @@ const pt = {
   "view.notice.searchPluginNotFound": "Plugin de busca não encontrado",
 
   "view.image.removeAria": "Excluir imagem",
+
+  // Placeholder body of a quote card whose original post is gone.
+  "quote.card.notFound": "(Memo original não encontrado)",
 
   "settings.item.submitIcon.lucideUrl": "https://lucide.dev/icons/",
 

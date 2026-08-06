@@ -1,6 +1,7 @@
 import { App, TFile, Platform, setIcon } from "obsidian";
 import { parseMemos, type Memo } from "./memoParser";
 import { renderTextWithTagsAndUrls } from "./urlRenderer";
+import { t } from "../i18n";
 
 declare const moment: typeof import("moment");
 
@@ -394,7 +395,7 @@ function fillCardBody(
 
 function markDead(card: HTMLElement, bodyEl: HTMLElement, metaEl: HTMLElement): void {
   card.classList.add("wr-quote-card-dead");
-  bodyEl.textContent = "(元投稿が見つかりません)";
+  bodyEl.textContent = t("quote.card.notFound");
   metaEl.textContent = "";
 }
 

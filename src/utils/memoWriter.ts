@@ -75,6 +75,62 @@ export async function updateMemo(
   return updated;
 }
 
+// Removes the whole memo block — both fences and the body — for the memo whose
+// opening fence carries this timestamp, plus one adjacent blank line so the note
+// keeps the single-blank-line separation appendMemo writes. The preceding blank
+// is taken first (it is the separator appendMemo added along with this block);
+// only when the block starts the file does the following blank go instead.
+// Returns false when no matching memo exists anymore.
+export async function deleteMemo(
+  app: App,
+  file: TFile,
+  memoTimestamp: string,
+  expectedLineStart?: number
+): Promise<boolean> {
+  let deleted = false;
+  await app.vault.process(file, (data) => {
+    const lines = data.split("\n");
+    const matchesAt = (idx: number): boolean => {
+      const line = lines[idx];
+      if (line === undefined) return false;
+      const m = line.match(/^(```wr\s+)(\S+)(.*)$/);
+      return m !== null && m[2].trim() === memoTimestamp;
+    };
+
+    // Two posts written in the same millisecond share a timestamp. The caller's
+    // line hint tells them apart while it still points at a matching fence;
+    // otherwise fall back to the first match, as updateMemo does.
+    let start = -1;
+    if (expectedLineStart !== undefined && matchesAt(expectedLineStart)) {
+      start = expectedLineStart;
+    } else {
+      for (let i = 0; i < lines.length; i++) {
+        if (matchesAt(i)) {
+          start = i;
+          break;
+        }
+      }
+    }
+    if (start < 0) return data;
+
+    // Same closing-fence detection as parseMemos, so the removed range is
+    // exactly what the parser reads as this memo.
+    let end = start + 1;
+    while (end < lines.length && lines[end].trim() !== "```") end++;
+    // Unterminated block: refuse rather than swallow everything after the fence.
+    if (end >= lines.length) return data;
+
+    let from = start;
+    let to = end;
+    if (from > 0 && lines[from - 1].trim() === "") from--;
+    else if (to + 1 < lines.length && lines[to + 1].trim() === "") to++;
+
+    deleted = true;
+    return [...lines.slice(0, from), ...lines.slice(to + 1)].join("\n");
+  });
+  return deleted;
+}
+
 declare const moment: typeof import("moment");
 
 export async function appendMemo(

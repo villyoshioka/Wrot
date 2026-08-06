@@ -83,6 +83,10 @@ const es = {
   "settings.item.showCalendarButton.desc":
     "Muestra un icono de calendario en la barra de navegación. \nAl pulsarlo, podrás saltar directamente a la fecha que elijas.",
 
+  "settings.item.showPostDelete.name": "Mostrar el botón Eliminar",
+  "settings.item.showPostDelete.desc":
+    "Añade el botón «Eliminar» al menú del memo. \nUn memo eliminado no se puede recuperar. \nLas imágenes del memo no se eliminan.",
+
   "settings.item.tagColorRules.name": "Usar reglas por etiqueta",
   "settings.item.tagColorRules.desc":
     "Define colores e integración por etiqueta. En los colores, gana la etiqueta que aparece primero en el texto.",
@@ -126,6 +130,9 @@ const es = {
   "settings.tagRule.hideTimeline.name": "Ocultar en la línea de tiempo",
   "settings.tagRule.hideTimeline.desc":
     "Si se activa, los memos con esta etiqueta dejan de aparecer en la línea de tiempo. Permanecen en la nota diaria.",
+  "settings.tagRule.protectDelete.name": "Desactivar el botón Eliminar",
+  "settings.tagRule.protectDelete.desc":
+    "Desactiva el botón «Eliminar» en los memos que llevan esta etiqueta.",
   "settings.tagRule.button.add": "Añadir regla",
 
   "view.formatMenu.code": "Código",
@@ -143,6 +150,9 @@ const es = {
   "view.postMenu.unpin": "Desfijar",
   "view.postMenu.pin": "Fijar",
   "view.postMenu.pinLimitHint": "El límite es de {limit} elementos fijados.",
+  "view.postMenu.delete": "Eliminar",
+  // Shown on the same row after the first press, in place of the label above.
+  "view.postMenu.deleteConfirm": "Pulsa otra vez para eliminar",
 
   "view.dateNav.today": "Hoy",
   "view.dateNav.todaySuffix": " (Hoy)",
@@ -153,6 +163,9 @@ const es = {
     "No se encontró el complemento de búsqueda",
 
   "view.image.removeAria": "Eliminar imagen",
+
+  // Placeholder body of a quote card whose original post is gone.
+  "quote.card.notFound": "(No se encuentra el memo original)",
 
   "settings.item.submitIcon.lucideUrl": "https://lucide.dev/icons/",
 

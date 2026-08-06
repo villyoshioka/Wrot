@@ -266,21 +266,34 @@ export default class WrotPlugin extends Plugin {
   // the first tag that matches any rule, so a memo carrying both a colour tag and a
   // hidden tag would slip through depending on the order the tags appear in.
   isHiddenFromTimeline(memoTags: string[]): boolean {
+    return this.matchesRuleFlag(memoTags, (rule) => rule.hideFromTimeline === true);
+  }
+
+  // A memo is protected as soon as any one of its tags asks for it, so adding a
+  // second tag can never take the protection away.
+  isProtectedFromDelete(memoTags: string[]): boolean {
+    return this.matchesRuleFlag(memoTags, (rule) => rule.protectFromDelete === true);
+  }
+
+  private matchesRuleFlag(
+    memoTags: string[],
+    hasFlag: (rule: TagColorRule) => boolean
+  ): boolean {
     if (!this.settings.tagColorRulesEnabled) return false;
     const rules = this.settings.tagColorRules;
     if (!rules || rules.length === 0 || !memoTags || memoTags.length === 0) return false;
 
-    const hidden = new Set<string>();
+    const flagged = new Set<string>();
     for (const rule of rules) {
-      if (!rule.hideFromTimeline) continue;
+      if (!hasFlag(rule)) continue;
       const ruleTag = rule.tag.replace(/^#/, "").toLowerCase().trim();
-      if (ruleTag) hidden.add(ruleTag);
+      if (ruleTag) flagged.add(ruleTag);
     }
-    if (hidden.size === 0) return false;
+    if (flagged.size === 0) return false;
 
     return memoTags.some((raw) => {
       const tag = raw.replace(/^#/, "").toLowerCase().trim();
-      return tag !== "" && hidden.has(tag);
+      return tag !== "" && flagged.has(tag);
     });
   }
 

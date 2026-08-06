@@ -32,6 +32,9 @@ export interface TagColorRule {
   // Keeps memos carrying this tag out of the timeline view. The daily note itself
   // is untouched: reading view and live preview still render them as before.
   hideFromTimeline?: boolean;
+  // Greys out the delete item on memos carrying this tag, so a whole category of
+  // memos can be put out of reach of a mistaken tap.
+  protectFromDelete?: boolean;
 }
 
 export interface PinEntry {
@@ -66,6 +69,9 @@ export interface WrotSettings {
   tagColorRulesEnabled: boolean;
   tagColorRules: TagColorRule[];
   followObsidianFontSize: boolean;
+  // Deletion is irreversible and the plugin has no undo, so the menu item stays
+  // out of sight until it is asked for.
+  showPostDelete: boolean;
   showCalendarButton: boolean;
   calendarDayShape: "circle" | "rounded" | "square";
   pins: PinEntry[];
@@ -95,6 +101,7 @@ export const DEFAULT_SETTINGS: WrotSettings = {
   tagColorRulesEnabled: false,
   tagColorRules: [],
   followObsidianFontSize: false,
+  showPostDelete: false,
   showCalendarButton: true,
   calendarDayShape: "rounded",
   pins: [],
@@ -136,6 +143,7 @@ interface RuleGroupOptions {
   onScopeChange: (key: keyof SubColorScope, value: boolean) => Promise<void>;
   onNoIntegrationChange: (value: boolean) => Promise<void>;
   onHideFromTimelineChange: (value: boolean) => Promise<void>;
+  onProtectFromDeleteChange: (value: boolean) => Promise<void>;
   trailing:
     | { kind: "delete"; handler: () => Promise<void> }
     | { kind: "reset"; handler: () => Promise<void> }
@@ -218,6 +226,14 @@ export class WrotSettingTab extends PluginSettingTab {
       case "enableOgpFetch":
         settings.enableOgpFetch = value as boolean;
         await this.plugin.saveSettings();
+        return;
+
+      case "showPostDelete":
+        settings.showPostDelete = value as boolean;
+        await this.plugin.saveSettings();
+        this.plugin.refreshViews();
+        // The per-rule "disable delete button" row is only offered while this is on.
+        this.update();
         return;
 
       case "checkStrikethrough":
@@ -573,6 +589,11 @@ export class WrotSettingTab extends PluginSettingTab {
             },
           },
         },
+        {
+          name: t("settings.item.showPostDelete.name"),
+          desc: desc(t("settings.item.showPostDelete.desc")),
+          control: { type: "toggle", key: "showPostDelete" },
+        },
       ],
     };
   }
@@ -724,6 +745,7 @@ export class WrotSettingTab extends PluginSettingTab {
               delete rule.subColorScope;
               delete rule.noIntegration;
               delete rule.hideFromTimeline;
+              delete rule.protectFromDelete;
               await this.plugin.saveSettings();
               this.plugin.applyTagColorRules();
               this.plugin.refreshAllWrDecorations();
@@ -802,6 +824,12 @@ export class WrotSettingTab extends PluginSettingTab {
         // Only the timeline is affected; reading view and live preview stay as they are.
         this.plugin.refreshViews();
       },
+      onProtectFromDeleteChange: async (v) => {
+        if (v) rule.protectFromDelete = true;
+        else delete rule.protectFromDelete;
+        await this.plugin.saveSettings();
+        this.plugin.refreshViews();
+      },
       trailing,
     });
   }
@@ -835,7 +863,8 @@ export class WrotSettingTab extends PluginSettingTab {
         placeholder.accentColor !== undefined ||
         placeholder.subColor !== undefined ||
         placeholder.noIntegration === true ||
-        placeholder.hideFromTimeline === true;
+        placeholder.hideFromTimeline === true ||
+        placeholder.protectFromDelete === true;
       if (!touched) return;
 
       this.plugin.settings.tagColorRules.push({ ...placeholder });
@@ -897,6 +926,11 @@ export class WrotSettingTab extends PluginSettingTab {
         else delete placeholder.hideFromTimeline;
         await promoteIfNeeded();
       },
+      onProtectFromDeleteChange: async (v) => {
+        if (v) placeholder.protectFromDelete = true;
+        else delete placeholder.protectFromDelete;
+        await promoteIfNeeded();
+      },
       trailing: null,
     });
   }
@@ -915,6 +949,7 @@ export class WrotSettingTab extends PluginSettingTab {
       onScopeChange,
       onNoIntegrationChange,
       onHideFromTimelineChange,
+      onProtectFromDeleteChange,
       trailing,
     } = options;
 
@@ -1076,6 +1111,21 @@ export class WrotSettingTab extends PluginSettingTab {
         });
       });
 
+    // Only offered while the delete button exists at all; with no button to
+    // disable, the row would be a rule about nothing.
+    let protectToggleEl: HTMLElement | null = null;
+    if (this.plugin.settings.showPostDelete) {
+      new Setting(groupEl)
+        .setName(t("settings.tagRule.protectDelete.name"))
+        .setDesc(desc(t("settings.tagRule.protectDelete.desc")))
+        .addToggle((tg) => {
+          protectToggleEl = tg.toggleEl;
+          tg.setValue(initial.protectFromDelete === true).onChange(async (v) => {
+            await onProtectFromDeleteChange(v);
+          });
+        });
+    }
+
     const renderScope = () => {
       scopeContainer.empty();
       scopeToggleEls.length = 0;
@@ -1128,6 +1178,7 @@ export class WrotSettingTab extends PluginSettingTab {
       setDisabled(subResetBtnEl, !unlocked);
       setDisabled(noIntegrationToggleEl, !unlocked);
       setDisabled(hideToggleEl, !unlocked);
+      setDisabled(protectToggleEl, !unlocked);
       setDisabled(trailingBtnEl, !unlocked);
       for (const el of scopeToggleEls) setDisabled(el, !unlocked);
       if (lockBtnEl) {

@@ -82,6 +82,10 @@ const de = {
   "settings.item.showCalendarButton.desc":
     "Zeigt einen Button in der Datumsnavigation an, \nmit dem Sie per Fingertipp direkt zu einem beliebigen Datum springen können.",
 
+  "settings.item.showPostDelete.name": "Löschen-Button einblenden",
+  "settings.item.showPostDelete.desc":
+    "Fügt dem Memo-Menü einen „Löschen“-Button hinzu. \nEin gelöschtes Memo lässt sich nicht wiederherstellen. \nBilder im Memo werden nicht gelöscht.",
+
   "settings.item.tagColorRules.name": "Tag-Regeln verwenden",
   "settings.item.tagColorRules.desc":
     "Legt Farben und Tag-Integration pro Tag fest. Bei Farben gewinnt der zuerst genannte Tag.",
@@ -118,6 +122,9 @@ const de = {
   "settings.tagRule.hideTimeline.name": "In der Timeline ausblenden",
   "settings.tagRule.hideTimeline.desc":
     "Wenn aktiviert, erscheinen Memos mit diesem Tag nicht mehr in der Timeline. In der Tagesnotiz bleiben sie.",
+  "settings.tagRule.protectDelete.name": "Löschen-Button deaktivieren",
+  "settings.tagRule.protectDelete.desc":
+    "Deaktiviert den „Löschen“-Button bei Memos mit diesem Tag.",
   "settings.tagRule.button.add": "Regel hinzufügen",
 
   "view.formatMenu.code": "Code",
@@ -135,6 +142,9 @@ const de = {
   "view.postMenu.unpin": "Anpinnen aufheben",
   "view.postMenu.pin": "Anpinnen",
   "view.postMenu.pinLimitHint": "Sie können maximal {limit} Beiträge anpinnen.",
+  "view.postMenu.delete": "Löschen",
+  // Shown on the same row after the first press, in place of the label above.
+  "view.postMenu.deleteConfirm": "Zum Löschen erneut drücken",
 
   "view.dateNav.today": "Heute",
   "view.dateNav.todaySuffix": " (Heute)",
@@ -144,6 +154,9 @@ const de = {
   "view.notice.searchPluginNotFound": "Such-Plugin nicht gefunden",
 
   "view.image.removeAria": "Bild löschen",
+
+  // Placeholder body of a quote card whose original post is gone.
+  "quote.card.notFound": "(Ursprüngliches Memo nicht gefunden)",
 
   "settings.item.submitIcon.lucideUrl": "https://lucide.dev/icons/",
 

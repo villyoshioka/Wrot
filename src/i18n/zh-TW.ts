@@ -82,6 +82,10 @@ const zhTW = {
   "settings.item.showCalendarButton.desc":
     "在日期導覽列中顯示日曆按鈕，\n點擊即可快速跳轉至指定日期。",
 
+  "settings.item.showPostDelete.name": "顯示刪除按鈕",
+  "settings.item.showPostDelete.desc":
+    "在筆記選單中顯示「刪除」按鈕。 \n刪除後無法復原。 \n筆記中的圖片不會被刪除。",
+
   "settings.item.tagColorRules.name": "使用標籤規則",
   "settings.item.tagColorRules.desc":
     "依標籤設定顏色與標籤整合。顏色以內文中先出現的標籤為準。",
@@ -124,6 +128,9 @@ const zhTW = {
   "settings.tagRule.hideTimeline.name": "在時間軸中隱藏",
   "settings.tagRule.hideTimeline.desc":
     "開啟後，含有此標籤的備忘錄不再顯示於時間軸。每日筆記中仍會保留。",
+  "settings.tagRule.protectDelete.name": "停用刪除按鈕",
+  "settings.tagRule.protectDelete.desc":
+    "讓含有此標籤的筆記無法按下「刪除」按鈕。",
   "settings.tagRule.button.add": "新增規則",
 
   "view.formatMenu.code": "程式碼",
@@ -141,6 +148,9 @@ const zhTW = {
   "view.postMenu.unpin": "取消釘選",
   "view.postMenu.pin": "釘選",
   "view.postMenu.pinLimitHint": "釘選上限為 {limit} 件。",
+  "view.postMenu.delete": "刪除",
+  // Shown on the same row after the first press, in place of the label above.
+  "view.postMenu.deleteConfirm": "再按一次即刪除",
 
   "view.dateNav.today": "今天",
   "view.dateNav.todaySuffix": "（今天）",
@@ -150,6 +160,9 @@ const zhTW = {
   "view.notice.searchPluginNotFound": "找不到搜尋插件",
 
   "view.image.removeAria": "刪除圖片",
+
+  // Placeholder body of a quote card whose original post is gone.
+  "quote.card.notFound": "(找不到原始筆記)",
 
   "settings.item.submitIcon.lucideUrl": "https://lucide.dev/icons/",
 

@@ -84,6 +84,10 @@ const fr = {
   "settings.item.showCalendarButton.desc":
     "Affiche un bouton calendrier dans la barre de navigation. \nTouchez-le pour accéder directement à n'importe quelle date.",
 
+  "settings.item.showPostDelete.name": "Bouton Supprimer",
+  "settings.item.showPostDelete.desc":
+    "Ajoute le bouton « Supprimer » au menu du mémo. \nUn mémo supprimé est irrécupérable. \nLes images du mémo ne sont pas supprimées.",
+
   "settings.item.tagColorRules.name": "Utiliser les règles par tag",
   "settings.item.tagColorRules.desc":
     "Définit couleurs et intégration par tag. Pour les couleurs, le tag apparaissant en premier l'emporte.",
@@ -126,6 +130,9 @@ const fr = {
   "settings.tagRule.hideTimeline.name": "Masquer dans la timeline",
   "settings.tagRule.hideTimeline.desc":
     "Si activé, les mémos portant ce tag n'apparaissent plus dans la timeline. Ils restent dans la note quotidienne.",
+  "settings.tagRule.protectDelete.name": "Désactiver le bouton Supprimer",
+  "settings.tagRule.protectDelete.desc":
+    "Désactive le bouton « Supprimer » sur les mémos portant ce tag.",
   "settings.tagRule.button.add": "Ajouter une règle",
 
   "view.formatMenu.code": "Code",
@@ -143,6 +150,9 @@ const fr = {
   "view.postMenu.unpin": "Désépingler",
   "view.postMenu.pin": "Épingler",
   "view.postMenu.pinLimitHint": "La limite est de {limit} épingles.",
+  "view.postMenu.delete": "Supprimer",
+  // Shown on the same row after the first press, in place of the label above.
+  "view.postMenu.deleteConfirm": "Appuyez encore pour supprimer",
 
   "view.dateNav.today": "Aujourd'hui",
   "view.dateNav.todaySuffix": " (Aujourd'hui)",
@@ -152,6 +162,9 @@ const fr = {
   "view.notice.searchPluginNotFound": "Plugin de recherche introuvable",
 
   "view.image.removeAria": "Supprimer l'image",
+
+  // Placeholder body of a quote card whose original post is gone.
+  "quote.card.notFound": "(Mémo d'origine introuvable)",
 
   "settings.item.submitIcon.lucideUrl": "https://lucide.dev/icons/",
 

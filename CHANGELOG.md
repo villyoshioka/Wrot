@@ -1,5 +1,18 @@
 # Release Notes
 
+## 2.18.0 - 2026-08-06
+
+### New Features
+
+- Added post deletion. Turning on "Delete Button" in the settings puts "Delete" in a post's menu, where a second press confirms it.
+- Added "Disable delete button" to the tag rules.
+
+### Bug Fixes
+
+- Fixed the placeholder shown in place of a quoted post that no longer exists being displayed in Japanese in every language.
+
+---
+
 ## 2.17.0 - 2026-08-05
 
 ### Updates

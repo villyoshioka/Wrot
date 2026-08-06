@@ -81,6 +81,10 @@ const enGB = {
   "settings.item.showCalendarButton.desc":
     "Add a calendar icon to the navigation bar \nso you can jump straight to any date.",
 
+  "settings.item.showPostDelete.name": "Show delete button",
+  "settings.item.showPostDelete.desc":
+    "Adds a “Delete” button to the post menu. \nA deleted post cannot be brought back. \nImages attached to the post are not deleted.",
+
   "settings.item.tagColorRules.name": "Use Tag Rules",
   "settings.item.tagColorRules.desc":
     "Set colours and tag integration per tag. For colours, the tag appearing first in the text wins.",
@@ -117,6 +121,9 @@ const enGB = {
   "settings.tagRule.hideTimeline.name": "Hide from timeline",
   "settings.tagRule.hideTimeline.desc":
     "When on, memos with this tag no longer appear in the timeline. They stay in the daily note.",
+  "settings.tagRule.protectDelete.name": "Disable delete button",
+  "settings.tagRule.protectDelete.desc":
+    "Greys out the “Delete” button on memos carrying this tag.",
   "settings.tagRule.button.add": "Add Rule",
 
   "view.formatMenu.code": "Code",
@@ -134,6 +141,9 @@ const enGB = {
   "view.postMenu.unpin": "Unpin",
   "view.postMenu.pin": "Pin",
   "view.postMenu.pinLimitHint": "Pin limit is {limit} items.",
+  "view.postMenu.delete": "Delete",
+  // Shown on the same row after the first press, in place of the label above.
+  "view.postMenu.deleteConfirm": "Press again to delete",
 
   "view.dateNav.today": "Today",
   "view.dateNav.todaySuffix": " (Today)",
@@ -143,6 +153,9 @@ const enGB = {
   "view.notice.searchPluginNotFound": "Search plugin not found",
 
   "view.image.removeAria": "Delete image",
+
+  // Placeholder body of a quote card whose original post is gone.
+  "quote.card.notFound": "(Original post not found)",
 
   "settings.item.submitIcon.lucideUrl": "https://lucide.dev/icons/",
 

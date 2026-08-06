@@ -34,7 +34,7 @@ Everything you write is saved directly into your Daily Notes. This means it work
 
 Every note is stored as a ` ```wr ` code block directly within your Obsidian **Daily Notes**. There are no hidden databases or external services involved; everything stays locally within your Vault.
 
-Since your data is stored in plain text, you can edit or delete entries simply by opening the note. You are always in full control of your data.
+Posting, editing and deleting all happen right in the timeline, and since your data is stored in plain text, you can also open the note and change it by hand. You are always in full control of your data.
 
 By adjusting the date format in Obsidian's "Daily Notes" settings (e.g., `GGGG-[W]WW` for weekly or `YYYY-MM` for monthly), you can easily adapt Wrot for weekly or monthly logging.
 
@@ -106,6 +106,7 @@ Wrot is highly customizable. Key settings include:
 - **Tag Styling** — Set specific colors for tags to categorize your timeline visually.
 - **Pin Limits** — Choose to pin 1, 3, or 5 notes to the top.
 - **Button Customization** — Change the post and update buttons’ labels and icons.
+- **Delete Button** — Choose whether a post's menu offers deletion (hidden by default).
 - **Time Formats** — Customize how timestamps appear (e.g., `YYYY/MM/DD HH:mm:ss`).
 - **URL Previews** — Toggle OGP card previews on or off.
 

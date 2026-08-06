@@ -73,6 +73,10 @@ const ja = {
   "settings.item.showCalendarButton.desc":
     "日付ナビにカレンダーボタンを表示します。\nタップで任意の日付へジャンプできます。",
 
+  "settings.item.showPostDelete.name": "削除ボタンを表示",
+  "settings.item.showPostDelete.desc":
+    "投稿のメニューに「削除」ボタンを表示します。\n削除した投稿は元に戻せません。\n投稿に添付した画像は削除されません。",
+
   "settings.item.tagColorRules.name": "タグ別ルールを使う",
   "settings.item.tagColorRules.desc":
     "タグごとに投稿の色や本体統合の扱いを設定します。色は本文で先に出たタグが優先されます。",
@@ -109,6 +113,9 @@ const ja = {
   "settings.tagRule.hideTimeline.name": "タイムラインに非表示",
   "settings.tagRule.hideTimeline.desc":
     "オンにすると、このタグを含む投稿がタイムラインに出なくなります。デイリーノートには残ります。",
+  "settings.tagRule.protectDelete.name": "削除ボタンを無効にする",
+  "settings.tagRule.protectDelete.desc":
+    "このタグを含む投稿の「削除ボタン」を無効化します。",
   "settings.tagRule.button.add": "ルールを追加",
 
   "view.formatMenu.code": "コード",
@@ -126,6 +133,9 @@ const ja = {
   "view.postMenu.unpin": "ピンを外す",
   "view.postMenu.pin": "ピン留め",
   "view.postMenu.pinLimitHint": "ピン留めは{limit}件までです。",
+  "view.postMenu.delete": "削除",
+  // Shown on the same row after the first press, in place of the label above.
+  "view.postMenu.deleteConfirm": "もう一度押すと削除",
 
   "view.dateNav.today": "今日",
   // Suffix appended to the date label; keyed so each locale can restyle it, brackets included.
@@ -136,6 +146,9 @@ const ja = {
   "view.notice.searchPluginNotFound": "検索プラグインが見つかりません",
 
   "view.image.removeAria": "画像を削除",
+
+  // Placeholder body of a quote card whose original post is gone.
+  "quote.card.notFound": "(元投稿が見つかりません)",
 
   "settings.item.submitIcon.lucideUrl": "https://lucide.dev/icons/",
 

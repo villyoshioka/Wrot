@@ -1,10 +1,10 @@
 import { ItemView, WorkspaceLeaf, Notice, TFile, EventRef, setIcon, Menu, Scope, MarkdownRenderer, renderMath, finishRenderMath } from "obsidian";
 import { VIEW_TYPE_WROT } from "../constants";
 import { parseMemos, Memo } from "../utils/memoParser";
-import { appendMemo, toggleCheckbox, updateMemo } from "../utils/memoWriter";
+import { appendMemo, deleteMemo, toggleCheckbox, updateMemo } from "../utils/memoWriter";
 import { getOrCreateDailyNote, getDailyNoteFile } from "../utils/dailyNote";
 import { renderTextWithTagsAndUrls, renderUrlPreviews } from "../utils/urlRenderer";
-import { renderQuoteCard } from "../utils/quoteCard";
+import { invalidateMemoCache, renderQuoteCard } from "../utils/quoteCard";
 import { ensureBlockIdOnFence } from "../utils/memoWriter";
 import { isImageFile, saveImageToVault, buildEmbedLink } from "../utils/imageAttachment";
 import { openCalendarPopover, CalendarPopoverHandle } from "../utils/calendarPopover";
@@ -111,6 +111,9 @@ export class WrotView extends ItemView {
   // filePath keeps the write target stable across date navigation and for pinned
   // memos living in another file.
   private editingMemo: { time: string; filePath: string } | null = null;
+  // Timestamp of the memo whose delete has taken its first press, if any.
+  private deleteArmedTime: string | null = null;
+  private deleteArmTimer: number | null = null;
   // Draft stashed on entering edit mode, restored on update or cancel. The image
   // is kept as a File reference: its object URL is revoked with the thumbnail,
   // but setPendingImage regenerates one on restore.
@@ -183,6 +186,7 @@ export class WrotView extends ItemView {
       this.toolbarResizeObserver = null;
     }
     this.clearPendingImage();
+    this.clearDeleteArm();
     this.clearPinnedContainer();
     this.contentEl.empty();
     return Promise.resolve();
@@ -1327,6 +1331,61 @@ export class WrotView extends ItemView {
     await this.refresh();
   }
 
+  // The delete confirm outlives the menu it was armed in, so a native menu —
+  // which cannot be reworded in place — can carry the first press over into a
+  // second opening. Expires on its own so an abandoned confirm never lingers.
+  private armDelete(memo: Memo, onExpire?: () => void): void {
+    this.clearDeleteArm();
+    this.deleteArmedTime = memo.time;
+    this.deleteArmTimer = window.setTimeout(() => {
+      this.deleteArmedTime = null;
+      this.deleteArmTimer = null;
+      onExpire?.();
+    }, 3000);
+  }
+
+  private clearDeleteArm(): void {
+    if (this.deleteArmTimer !== null) {
+      window.clearTimeout(this.deleteArmTimer);
+      this.deleteArmTimer = null;
+    }
+    this.deleteArmedTime = null;
+  }
+
+  private isDeleteArmed(memo: Memo): boolean {
+    return this.deleteArmedTime === memo.time;
+  }
+
+  // Removes the memo's block from its note. Deliberately silent: the card
+  // disappearing is the success signal, and it staying put is the failure one,
+  // matching how editing reports itself.
+  private async deletePost(memo: Memo, filePath: string): Promise<void> {
+    const file = this.app.vault.getAbstractFileByPath(filePath);
+    if (file instanceof TFile) {
+      try {
+        this.ignoreNextModify = true;
+        const removed = await deleteMemo(this.app, file, memo.time, memo.lineStart);
+        if (removed) {
+          // Quote cards read a per-file memo cache; drop it so this refresh
+          // cannot repaint a quote of the memo we just removed.
+          invalidateMemoCache(file.path);
+          const before = this.plugin.settings.pins.length;
+          this.plugin.settings.pins = this.plugin.settings.pins.filter(
+            (p) => p.timestamp !== memo.time
+          );
+          if (this.plugin.settings.pins.length !== before) {
+            await this.plugin.saveSettings();
+          }
+        }
+      } catch {
+        // Nothing was removed; the card stays and the user can retry.
+      }
+    }
+    // A pinned memo can live outside the current note, so the other leaves
+    // would filter away the modify event that should refresh them.
+    this.plugin.refreshViews();
+  }
+
   private renderMemoCard(memo: Memo, options: { pinned: boolean; filePath: string }): void {
     const host = options.pinned
       ? this.ensurePinnedContainer()
@@ -1438,8 +1497,10 @@ export class WrotView extends ItemView {
 
     const menuBtn = footer.createSpan({ cls: "wr-menu-btn" });
     setIcon(menuBtn, "ellipsis");
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises -- async handler intentionally used as a callback
-    menuBtn.addEventListener("click", async (e) => {
+    // Named so the delete confirm can re-open the menu on itself: with native
+    // menus there is no row to rewrite in place, so the second state has to be a
+    // second opening.
+    const openPostMenu = async (e: MouseEvent): Promise<void> => {
       // While editing, every other card's menu is locked; only the card being
       // edited keeps its menu (it carries the cancel action).
       if (this.editingMemo && !this.isEditingTarget(memo)) return;
@@ -1499,8 +1560,75 @@ export class WrotView extends ItemView {
             });
           }
         }
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- assertion needed for cross-version Obsidian typings
-      }, e as MouseEvent);
+        // Deleting is irreversible and there is no undo, so the item only exists
+        // once it has been asked for in the settings, and then only fires on the
+        // second press. Last and below a separator, like Obsidian's own file menu.
+        if (this.plugin.settings.showPostDelete) {
+          menu.addSeparator();
+          menu.addItem((item) => {
+            // Three ways a memo is out of reach: it is the one being edited
+            // ("Cancel edit" sits one item above), it is pinned (unpin first —
+            // pinning is what marks a memo worth keeping), or one of its tags
+            // carries a rule that protects it.
+            const locked =
+              this.isEditingTarget(memo) ||
+              pinned ||
+              this.plugin.isProtectedFromDelete(memo.tags);
+            // Armed already when a previous opening took the first press.
+            let armed = this.isDeleteArmed(memo);
+            item
+              .setTitle(t(armed ? "view.postMenu.deleteConfirm" : "view.postMenu.delete"))
+              .setIcon("trash-2")
+              .setWarning(true);
+            if (locked) item.setDisabled(true);
+
+            const itemDom = (item as { dom?: HTMLElement }).dom;
+            // Marks the row for the mobile press-state reset: this is the one
+            // menu item that outlives its own press, so the stuck touch state
+            // has to be neutralised for good, not only while armed.
+            itemDom?.classList.add("wr-menu-delete");
+
+            // Menus built from DOM close themselves on a click, so the first
+            // press is swallowed here in the capture phase and the row is
+            // reworded in place. The second press falls through to onClick.
+            itemDom?.addEventListener(
+              "click",
+              (ev) => {
+                if (locked || armed) return;
+                ev.preventDefault();
+                ev.stopPropagation();
+                armed = true;
+                this.armDelete(memo, () => {
+                  armed = false;
+                  item.setTitle(t("view.postMenu.delete"));
+                });
+                item.setTitle(t("view.postMenu.deleteConfirm"));
+              },
+              true
+            );
+
+            item.onClick(() => {
+              // Arriving here unarmed means the handler above never ran: native
+              // menus have no row to reword, so the confirm becomes a second
+              // opening of the menu instead.
+              if (!armed) {
+                this.armDelete(memo);
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; a failure just leaves the menu closed
+                openPostMenu(e);
+                return;
+              }
+              this.clearDeleteArm();
+              // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; the card staying put is the failure signal
+              this.deletePost(memo, options.filePath);
+            });
+          });
+        }
+      }, e);
+    };
+
+    menuBtn.addEventListener("click", (e) => {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; a failure just leaves the menu closed
+      openPostMenu(e);
     });
 
     if (options.pinned) {

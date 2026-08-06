@@ -84,6 +84,10 @@ const it = {
   "settings.item.showCalendarButton.desc":
     "Aggiunge un pulsante calendario alla barra di navigazione. \nTocca per passare rapidamente a una data specifica.",
 
+  "settings.item.showPostDelete.name": "Mostra pulsante Elimina",
+  "settings.item.showPostDelete.desc":
+    "Aggiunge il pulsante «Elimina» al menu del memo. \nUn memo eliminato non è recuperabile. \nLe immagini del memo non vengono eliminate.",
+
   "settings.item.tagColorRules.name": "Usa le regole per tag",
   "settings.item.tagColorRules.desc":
     "Imposta colori e integrazione per tag. Per i colori vince il tag che compare per primo nel testo.",
@@ -130,6 +134,9 @@ const it = {
   "settings.tagRule.hideTimeline.name": "Nascondi nella timeline",
   "settings.tagRule.hideTimeline.desc":
     "Se attivato, i memo con questo tag non compaiono più nella timeline. Restano nella nota giornaliera.",
+  "settings.tagRule.protectDelete.name": "Disattiva il pulsante Elimina",
+  "settings.tagRule.protectDelete.desc":
+    "Disattiva il pulsante «Elimina» sui memo che portano questo tag.",
   "settings.tagRule.button.add": "Aggiungi regola",
 
   "view.formatMenu.code": "Codice",
@@ -147,6 +154,9 @@ const it = {
   "view.postMenu.unpin": "Rimuovi pin",
   "view.postMenu.pin": "Fissa in alto",
   "view.postMenu.pinLimitHint": "Il limite per i pin è di {limit} elementi.",
+  "view.postMenu.delete": "Elimina",
+  // Shown on the same row after the first press, in place of the label above.
+  "view.postMenu.deleteConfirm": "Premi di nuovo per eliminare",
 
   "view.dateNav.today": "Oggi",
   "view.dateNav.todaySuffix": " (Oggi)",
@@ -156,6 +166,9 @@ const it = {
   "view.notice.searchPluginNotFound": "Plugin di ricerca non trovato",
 
   "view.image.removeAria": "Elimina immagine",
+
+  // Placeholder body of a quote card whose original post is gone.
+  "quote.card.notFound": "(Memo originale non trovato)",
 
   "settings.item.submitIcon.lucideUrl": "https://lucide.dev/icons/",
 

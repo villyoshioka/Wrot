@@ -95,6 +95,7 @@ body.wr-font-follow .wr-nav-btn .svg-icon {
 .wr-date-label:hover {
   color: var(--text-accent);
 }
+
 .wr-date-label:active,
 .wr-date-label-active {
   opacity: 0.7;
@@ -136,6 +137,7 @@ body.wr-font-follow .wr-nav-btn .svg-icon {
   margin-left: 2px;
   position: relative;
 }
+
 /* While the calendar is open, pin the light hover tint so the darker :active
    color (0.08) cannot cut in on arrow taps and flicker. */
 .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-btn.wr-toolbar-active,
@@ -668,8 +670,7 @@ body .wr-submit-btn.wr-submit-active {
 .wr-card.wr-card-editing {
   /* Inset ring: an outer ring extends past the card bounds and gets clipped by
      the scrolling list container, so the accent ring is drawn inside instead. */
-  box-shadow: inset 0 0 0 1.5px
-    var(--wr-editing-ring-color, hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.45));
+  box-shadow: inset 0 0 0 1.5px var(--wr-editing-ring-color, hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.45));
 }
 
 /* The editing card's own menu stays live (it carries the cancel action):
@@ -744,6 +745,7 @@ body .wr-card.wr-card-editing .wr-menu-btn .svg-icon:not(#x) {
   from {
     filter: brightness(1.1);
   }
+
   to {
     filter: brightness(1);
   }
@@ -762,13 +764,13 @@ body .wr-tag-highlight:not(#x) {
   padding-left: 0;
 }
 
-.wr-bullet-list > li,
-.wr-ordered-list > li {
+.wr-bullet-list>li,
+.wr-ordered-list>li {
   padding-left: 22px;
   position: relative;
 }
 
-.wr-bullet-list > li:not(.wr-check-item)::before {
+.wr-bullet-list>li:not(.wr-check-item)::before {
   content: "•";
   position: absolute;
   left: 4px;
@@ -780,11 +782,11 @@ body .wr-tag-highlight:not(#x) {
   counter-reset: wr-ol-tl;
 }
 
-.wr-ordered-list > li {
+.wr-ordered-list>li {
   counter-increment: wr-ol-tl;
 }
 
-.wr-ordered-list > li::before {
+.wr-ordered-list>li::before {
   content: counter(wr-ol-tl) ".";
   position: absolute;
   left: 4px;
@@ -806,18 +808,18 @@ body ol.wr-reading-list:not(#x) {
   font-family: var(--font-monospace);
 }
 
-ul.wr-reading-list > li,
-ol.wr-reading-list > li {
+ul.wr-reading-list>li,
+ol.wr-reading-list>li {
   padding-left: 22px;
   position: relative;
 }
 
-body ul.wr-reading-list:not(#x) > li,
-body ol.wr-reading-list:not(#x) > li {
+body ul.wr-reading-list:not(#x)>li,
+body ol.wr-reading-list:not(#x)>li {
   margin-inline-start: 0;
 }
 
-ul.wr-reading-list > li:not(.wr-check-item)::before {
+ul.wr-reading-list>li:not(.wr-check-item)::before {
   content: "•";
   position: absolute;
   left: 4px;
@@ -829,11 +831,11 @@ ol.wr-reading-list {
   counter-reset: wr-ol;
 }
 
-ol.wr-reading-list > li {
+ol.wr-reading-list>li {
   counter-increment: wr-ol;
 }
 
-ol.wr-reading-list > li::before {
+ol.wr-reading-list>li::before {
   content: counter(wr-ol) ".";
   position: absolute;
   left: 4px;
@@ -919,8 +921,8 @@ body .wr-internal-link-highlight:not(#x) {
 /* RV: tail images of a normal post. Extra bottom margin balances the space
    the copy button creates above. RV appends the image directly under
    pre.language-wr (not .block-language-wr), hence both parent selectors. */
-pre.language-wr > .wr-embed-img,
-.block-language-wr > .wr-embed-img {
+pre.language-wr>.wr-embed-img,
+.block-language-wr>.wr-embed-img {
   margin-bottom: 24px;
 }
 
@@ -1013,10 +1015,11 @@ body .wr-inline-code-highlight:not(#x) {
 /* Cursor-inside state: the end backtick spans are direct children of
    .cm-hmd-codeblock; zero their inner padding to avoid doubling against the
    middle span. */
-.cm-hmd-codeblock > .wr-inline-code-highlight:first-child {
+.cm-hmd-codeblock>.wr-inline-code-highlight:first-child {
   padding-right: 0;
 }
-.cm-hmd-codeblock > .wr-inline-code-highlight:last-child:not(:first-child) {
+
+.cm-hmd-codeblock>.wr-inline-code-highlight:last-child:not(:first-child) {
   padding-left: 0;
 }
 
@@ -1161,13 +1164,13 @@ body .wr-content .wr-blockquote {
 }
 
 /* Blockquote: reading view matches code block text */
-body .block-language-wr > .wr-blockquote,
-body pre > .wr-blockquote {
+body .block-language-wr>.wr-blockquote,
+body pre>.wr-blockquote {
   padding-left: 10px;
 }
 
-body .block-language-wr > .wr-blockquote:not(#x),
-body pre > .wr-blockquote:not(#x) {
+body .block-language-wr>.wr-blockquote:not(#x),
+body pre>.wr-blockquote:not(#x) {
   font-size: var(--code-size);
   font-family: var(--font-monospace);
 }
@@ -1471,6 +1474,26 @@ body.wr-font-follow .wr-pin-indicator .svg-icon {
   padding-top: 0;
 }
 
+/* The confirm wording is far longer than the label it replaces, and the menu is
+   already sized and placed by the time it swaps in. Let this one row wrap rather
+   than run past the menu edge; growing taller is fine, being cut off is not. */
+.wr-menu .menu-item.wr-menu-delete .menu-item-title {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* Mobile: Unlike other items, Delete stays open on tap, leaving hover/select active.
+Disabled these globally on the row; scoping highlights to the armed state ensures
+they clear on disarm. :active is kept for tap feedback. */
+body.is-mobile .wr-menu .menu-item.wr-menu-delete:not(:active):not(#x):not(#y):not(#z),
+body.is-mobile .wr-menu .menu-item.wr-menu-delete:hover:not(:active):not(#x):not(#y):not(#z),
+body.is-mobile .wr-menu .menu-item.wr-menu-delete:focus:not(:active):not(#x):not(#y):not(#z),
+body.is-mobile .wr-menu .menu-item.wr-menu-delete.selected:not(:active):not(#x):not(#y):not(#z),
+body.is-mobile .wr-menu .menu-item.wr-menu-delete.is-active:not(:active):not(#x):not(#y):not(#z),
+body.is-mobile .wr-menu .menu-item.wr-menu-delete.is-focused:not(:active):not(#x):not(#y):not(#z) {
+  background: transparent;
+}
+
 /* Mobile: Obsidian's Menu adds is-disabled, but tap-highlight and :active
    backgrounds arrive via other paths; kill every state explicitly, with the
    body prefix to beat the default menu-item rules. */
@@ -1543,6 +1566,7 @@ body .wr-codeblock-line .code-block-flair:not(#x) {
 body div.block-language-wr .wr-inline-code {
   background: rgba(var(--mono-rgb-100), 0.08);
 }
+
 body div.block-language-wr .wr-highlight {
   background: var(--text-highlight-bg);
 }
@@ -1632,20 +1656,20 @@ body .wr-media-area:empty:not(#x) {
 /* LV: an empty media widget on the closing fence line adds height (line break
    + widgetBuffer). The line must stay visible for the fence characters, so
    only the empty widget is pulled out of layout. */
-.cm-line.wr-codeblock-line.HyperMD-codeblock-end > .wr-media-area:empty:not(#x) {
+.cm-line.wr-codeblock-line.HyperMD-codeblock-end>.wr-media-area:empty:not(#x) {
   position: absolute;
   width: 0;
 }
 
-body .block-language-wr > .wr-media-area {
+body .block-language-wr>.wr-media-area {
   padding: 0 16px 12px;
 }
 
 /* RV image-URL posts get the same bottom spacing as normal images so the
    "image post" experience matches; wr-media-area may sit directly under
    pre.language-wr, so target both parents. */
-body pre.language-wr > .wr-media-area.wr-has-link,
-body .block-language-wr > .wr-media-area.wr-has-link {
+body pre.language-wr>.wr-media-area.wr-has-link,
+body .block-language-wr>.wr-media-area.wr-has-link {
   padding-bottom: 28px;
 }
 
@@ -2099,15 +2123,10 @@ body:not(.is-mobile) .wr-settings .wr-tag-rule-group .checkbox-container:not(#x)
   transform: translate3d(var(--toggle-border-width), 0, 0);
 }
 
-body:not(.is-mobile)
-  .wr-settings
-  .wr-tag-rule-group
-  .checkbox-container.is-enabled:not(#x)::after {
-  transform: translate3d(
-    calc(var(--toggle-width) - var(--toggle-thumb-width) - var(--toggle-border-width)),
-    0,
-    0
-  );
+body:not(.is-mobile) .wr-settings .wr-tag-rule-group .checkbox-container.is-enabled:not(#x)::after {
+  transform: translate3d(calc(var(--toggle-width) - var(--toggle-thumb-width) - var(--toggle-border-width)),
+      0,
+      0);
 }
 
 body:not(.is-mobile) .wr-settings .wr-tag-rule-group .checkbox-container:active:not(#x)::after {
@@ -2118,8 +2137,7 @@ body:not(.is-mobile) .wr-settings .wr-tag-rule-group .checkbox-container:active:
 
 /* Locked tag rule: gray out editable fields only; the label row holding the
    lock toggle stays full-opacity so the unlock affordance is clear. */
-.wr-settings .wr-tag-rule-group.wr-tag-rule-locked
-  .setting-item:not(.wr-tag-rule-label-setting) {
+.wr-settings .wr-tag-rule-group.wr-tag-rule-locked .setting-item:not(.wr-tag-rule-label-setting) {
   opacity: 0.55;
 }
 
@@ -2147,14 +2165,14 @@ body.is-mobile .wr-settings .setting-item.wr-reverse-controls:not(#x) {
   gap: 12px;
 }
 
-body.is-mobile .wr-settings .setting-item.wr-reverse-controls > .setting-item-info:not(#x) {
+body.is-mobile .wr-settings .setting-item.wr-reverse-controls>.setting-item-info:not(#x) {
   flex: 1 1 auto;
   min-width: 0;
   width: auto;
   margin: 0;
 }
 
-body.is-mobile .wr-settings .setting-item.wr-reverse-controls > .setting-item-control:not(#x) {
+body.is-mobile .wr-settings .setting-item.wr-reverse-controls>.setting-item-control:not(#x) {
   flex: 0 0 auto;
   justify-content: flex-end;
   width: auto;
@@ -2164,10 +2182,11 @@ body.is-mobile .wr-settings .setting-item.wr-reverse-controls > .setting-item-co
 
 /* Reverse the control row visually (reset left of the picker) via `order`;
    row-reverse would change the flex main-axis behaviour. */
-.wr-settings .setting-item.wr-reverse-controls .setting-item-control > :first-child {
+.wr-settings .setting-item.wr-reverse-controls .setting-item-control> :first-child {
   order: 2;
 }
-.wr-settings .setting-item.wr-reverse-controls .setting-item-control > :last-child {
+
+.wr-settings .setting-item.wr-reverse-controls .setting-item-control> :last-child {
   order: 1;
 }
 
@@ -2189,13 +2208,13 @@ body.is-mobile .wr-settings .setting-item.wr-reverse-controls > .setting-item-co
     gap: 6px;
   }
 
-  body .wr-settings .setting-item.wr-text-input-row > .setting-item-info:not(#x) {
+  body .wr-settings .setting-item.wr-text-input-row>.setting-item-info:not(#x) {
     width: 100%;
     flex: 0 0 auto;
     margin: 0;
   }
 
-  body .wr-settings .setting-item.wr-text-input-row > .setting-item-control:not(#x) {
+  body .wr-settings .setting-item.wr-text-input-row>.setting-item-control:not(#x) {
     width: 100%;
     flex: 0 0 auto;
     justify-content: flex-start;
@@ -2229,7 +2248,7 @@ body.is-mobile .wr-settings .wr-pc-break {
 }
 
 /* Slots inside wr-quote-block keep only the right margin so they do not hit the wr fence's right edge */
-.wr-quote-block > .wr-quote-card-slot.wr-lp-quote-card {
+.wr-quote-block>.wr-quote-card-slot.wr-lp-quote-card {
   margin: 0 var(--size-4-4, 16px) 0 0;
 }
 
@@ -2363,24 +2382,24 @@ body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-internal-link {
 }
 
 /* Gap between the URL preview (incl. image URLs) and the quote card. Matches the look of quotes following a normal ![[]] image */
-.wr-quote-block > .wr-media-area {
+.wr-quote-block>.wr-media-area {
   margin-bottom: 28px;
 }
 
 /* RV / timeline: when an image URL .wr-media-link sits right before the
    quote card, pad it up to match the spacing after a normal (![[]]) image */
-.wr-media-area.wr-has-link + .wr-quote-card-slot {
+.wr-media-area.wr-has-link+.wr-quote-card-slot {
   margin-top: 25px;
 }
 
 /* Under wr-quote-block the quote card hangs right below, so the tail
    padding-bottom is unnecessary; wr-quote-block's margin owns the spacing */
-.wr-quote-block > .wr-lp-media.wr-has-img,
-.wr-quote-block > .wr-lp-media.wr-has-link {
+.wr-quote-block>.wr-lp-media.wr-has-img,
+.wr-quote-block>.wr-lp-media.wr-has-link {
   padding-bottom: 0;
 }
 
-.wr-quote-block > .wr-quote-card-slot {
+.wr-quote-block>.wr-quote-card-slot {
   margin-top: 0;
 }
 
@@ -2459,7 +2478,15 @@ pre.wr-quote-jump-flash::after,
 }
 
 @keyframes wr-quote-jump-flash-overlay {
-  0% { opacity: 0; }
-  20% { opacity: 1; }
-  100% { opacity: 0; }
+  0% {
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
 }
