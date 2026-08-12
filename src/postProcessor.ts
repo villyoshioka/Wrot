@@ -25,6 +25,7 @@ import {
 import { parseMemos, type Memo } from "./utils/memoParser";
 import type WrotPlugin from "./main";
 import { IMAGE_EXT_RE, QUOTE_MARKER_RE, inlineTokenPattern, matchTags } from "./utils/patterns";
+import { ListDepthTracker, NestedListStack, parseListLine, tagFor, type ListLine } from "./utils/listParser";
 
 // Lets Obsidian finish its own render before we re-derive from the DOM.
 const REHIGHLIGHT_DELAY_MS = 100;
@@ -122,7 +123,7 @@ function snapshotOf(file: TFile, memos: Memo[]): WrViewSnapshot {
 function checkboxStatesOf(memo: Memo): boolean[] {
   return memo.content
     .split("\n")
-    .map((line) => /^(?:>\s?)*- \[([ x])\] /.exec(line))
+    .map((line) => /^(?:>\s?)*[ \t\u3000]*- \[([ x])\] /.exec(line))
     .filter((m): m is RegExpExecArray => m !== null)
     .map((m) => m[1] === "x");
 }
@@ -776,12 +777,19 @@ function convertListLines(
   // Rebuild: non-list content stays inside code; lists are placed on the parent block.
   code.textContent = "";
   const fragments: (string | HTMLElement)[] = [];
-  let currentListEl: HTMLElement | null = null;
-  let currentListType: "ul" | "ol" | null = null;
+  const makeList = (tag: "ul" | "ol") => {
+    const el = createEl(tag);
+    el.className = "wr-reading-list";
+    return el;
+  };
+  const makeItem = () => createEl("li");
+  const listStack = new NestedListStack(makeList, makeItem);
+  const listDepth = new ListDepthTracker();
   let plainLines: string[] = [];
   let quoteStack: HTMLElement[] = [];
-  let quoteListEl: HTMLElement | null = null;
-  let quoteListType: "ul" | "ol" | null = null;
+  const quoteListStack = new NestedListStack(makeList, makeItem);
+  const quoteListDepthTracker = new ListDepthTracker();
+  let quoteListTarget: HTMLElement | null = null;
   let quoteListDepth: number = 0;
 
   const flushPlain = () => {
@@ -792,11 +800,37 @@ function convertListLines(
   };
 
   const flushList = () => {
-    if (currentListEl) {
-      fragments.push(currentListEl);
-      currentListEl = null;
-      currentListType = null;
+    const root = listStack.root;
+    if (root) fragments.push(root);
+    listStack.clear();
+    listDepth.reset();
+  };
+
+  const resetQuoteList = () => {
+    quoteListStack.clear();
+    quoteListDepthTracker.reset();
+    quoteListTarget = null;
+  };
+
+  const buildListItem = (info: ListLine, lineIndex: number) => {
+    const li = createEl("li");
+    if (info.kind === "check") {
+      li.className = "wr-check-item";
+      const cb = createEl("input");
+      cb.type = "checkbox";
+      if (info.checked) cb.checked = true;
+      attachCheckboxToggle(cb, plugin, block, lineIndex, fullText);
+      li.appendChild(cb);
+      if (info.checked && plugin.settings.checkStrikethrough) {
+        const span = createSpan();
+        span.className = "wr-check-done";
+        span.appendChild(activeDocument.createTextNode(info.content));
+        li.appendChild(span);
+        return li;
+      }
     }
+    li.appendChild(activeDocument.createTextNode(info.content));
+    return li;
   };
 
   for (const segment of segments) {
@@ -819,16 +853,10 @@ function convertListLines(
       const i = lineOffset + li2;
       const line = lines[li2];
       const quoteMatch = line.match(/^((?:>\s?)+)(.*)$/);
-    const checkMatch = !quoteMatch && line.match(/^- \[([ x])\] (.*)$/);
-    const listMatch = !quoteMatch && !checkMatch && line.match(/^- (.+)$/);
-    const olMatch = !quoteMatch && !checkMatch && !listMatch && line.match(/^\d+\.\s?(.+)$/);
+    const listInfo = !quoteMatch ? parseListLine(line) : null;
 
     if (quoteMatch) {
-      if (currentListEl) {
-        fragments.push(currentListEl);
-        currentListEl = null;
-        currentListType = null;
-      }
+      flushList();
       flushPlain();
       const depth = (quoteMatch[1].match(/>/g) || []).length;
       const body = quoteMatch[2];
@@ -839,6 +867,7 @@ function convertListLines(
         root.className = "wr-blockquote";
         fragments.push(root);
         quoteStack = [root];
+        resetQuoteList();
       }
       while (quoteStack.length > depth) {
         quoteStack.pop();
@@ -851,115 +880,46 @@ function convertListLines(
         quoteStack.push(bq);
       }
       const target = quoteStack[quoteStack.length - 1];
-      const innerCheck = body.match(/^- \[([ x])\] (.*)$/);
-      const innerList = !innerCheck && body.match(/^- (.+)$/);
-      const innerOl = !innerCheck && !innerList && body.match(/^\d+\.\s?(.+)$/);
-      if (innerCheck || innerList) {
-        if (quoteListEl === null || quoteListType !== "ul" || quoteListDepth !== depth || quoteListEl.parentElement !== target) {
-          quoteListEl = createEl("ul");
-          quoteListEl.className = "wr-reading-list";
-          target.appendChild(quoteListEl);
-          quoteListType = "ul";
+      const innerInfo = parseListLine(body);
+      if (innerInfo) {
+        // A list only continues while it stays in the same blockquote at the same depth.
+        if (quoteListTarget !== target || quoteListDepth !== depth) {
+          resetQuoteList();
+          quoteListTarget = target;
           quoteListDepth = depth;
         }
-        const li = createEl("li");
-        if (innerCheck) {
-          li.className = "wr-check-item";
-          const cb = createEl("input");
-          cb.type = "checkbox";
-          if (innerCheck[1] === "x") cb.checked = true;
-          attachCheckboxToggle(cb, plugin, block, i, fullText);
-          li.appendChild(cb);
-          if (innerCheck[1] === "x" && plugin.settings.checkStrikethrough) {
-            const span = createSpan();
-            span.className = "wr-check-done";
-            span.appendChild(activeDocument.createTextNode(innerCheck[2]));
-            li.appendChild(span);
-          } else {
-            li.appendChild(activeDocument.createTextNode(innerCheck[2]));
-          }
-        } else if (innerList) {
-          li.appendChild(activeDocument.createTextNode(innerList[1]));
-        }
-        quoteListEl.appendChild(li);
-      } else if (innerOl) {
-        if (quoteListEl === null || quoteListType !== "ol" || quoteListDepth !== depth || quoteListEl.parentElement !== target) {
-          quoteListEl = createEl("ol");
-          quoteListEl.className = "wr-reading-list";
-          target.appendChild(quoteListEl);
-          quoteListType = "ol";
-          quoteListDepth = depth;
-        }
-        const li = createEl("li");
-        li.appendChild(activeDocument.createTextNode(innerOl[1]));
-        quoteListEl.appendChild(li);
+        const itemDepth = quoteListDepthTracker.place(innerInfo).depth;
+        const previousRoot = quoteListStack.root;
+        const list = quoteListStack.listFor(itemDepth, tagFor(innerInfo.kind));
+        if (quoteListStack.root !== previousRoot) target.appendChild(quoteListStack.root!);
+        list.appendChild(buildListItem(innerInfo, i));
       } else {
-        quoteListEl = null;
-        quoteListType = null;
+        resetQuoteList();
         if (target.childNodes.length > 0 && target.lastChild?.nodeName !== "OL" && target.lastChild?.nodeName !== "UL" && target.lastChild?.nodeName !== "BLOCKQUOTE") {
           target.appendChild(createEl("br"));
         }
         target.appendChild(activeDocument.createTextNode(body));
       }
-    } else if (checkMatch || listMatch) {
+    } else if (listInfo) {
       quoteStack = [];
-      quoteListEl = null;
-      quoteListType = null;
-      if (currentListType !== "ul") {
-        if (currentListEl) fragments.push(currentListEl);
+      resetQuoteList();
+      const itemDepth = listDepth.place(listInfo).depth;
+      const previousRoot = listStack.root;
+      const list = listStack.listFor(itemDepth, tagFor(listInfo.kind));
+      if (listStack.root !== previousRoot) {
+        if (previousRoot) fragments.push(previousRoot);
         flushPlain();
-        currentListEl = createEl("ul");
-        currentListEl.className = "wr-reading-list";
-        currentListType = "ul";
       }
-      const li = createEl("li");
-      if (checkMatch) {
-        li.className = "wr-check-item";
-        const cb = createEl("input");
-        cb.type = "checkbox";
-        if (checkMatch[1] === "x") cb.checked = true;
-        attachCheckboxToggle(cb, plugin, block, i, fullText);
-        li.appendChild(cb);
-        if (checkMatch[1] === "x" && plugin.settings.checkStrikethrough) {
-          const span = createSpan();
-          span.className = "wr-check-done";
-          span.appendChild(activeDocument.createTextNode(checkMatch[2]));
-          li.appendChild(span);
-        } else {
-          li.appendChild(activeDocument.createTextNode(checkMatch[2]));
-        }
-      } else if (listMatch) {
-        li.appendChild(activeDocument.createTextNode(listMatch[1]));
-      }
-      currentListEl!.appendChild(li);
-    } else if (olMatch) {
-      quoteStack = [];
-      quoteListEl = null;
-      quoteListType = null;
-      if (currentListType !== "ol") {
-        if (currentListEl) fragments.push(currentListEl);
-        flushPlain();
-        currentListEl = createEl("ol");
-        currentListEl.className = "wr-reading-list";
-        currentListType = "ol";
-      }
-      const li = createEl("li");
-      li.appendChild(activeDocument.createTextNode(olMatch[1]));
-      currentListEl!.appendChild(li);
+      list.appendChild(buildListItem(listInfo, i));
     } else {
       quoteStack = [];
-      quoteListEl = null;
-      quoteListType = null;
-      if (currentListEl) {
-        fragments.push(currentListEl);
-        currentListEl = null;
-        currentListType = null;
-      }
+      resetQuoteList();
+      flushList();
       plainLines.push(line);
     }
   }
   }
-  if (currentListEl) fragments.push(currentListEl);
+  flushList();
   flushPlain();
 
   // Preserve the original text for the copy button.

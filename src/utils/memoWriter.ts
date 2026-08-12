@@ -9,7 +9,7 @@ export async function toggleCheckbox(
     const lines = data.split("\n");
     if (lineNumber < 0 || lineNumber >= lines.length) return data;
     const line = lines[lineNumber];
-    const match = line.match(/^((?:>\s?)*- \[)([ x])(\] .*)$/);
+    const match = line.match(/^((?:>\s?)*[ \t\u3000]*- \[)([ x])(\] .*)$/);
     if (!match) return data;
     lines[lineNumber] = match[1] + (match[2] === " " ? "x" : " ") + match[3];
     return lines.join("\n");

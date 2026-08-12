@@ -34,12 +34,21 @@ async function ensureFolderForPath(app: App, path: string): Promise<void> {
   await app.vault.createFolder(dir);
 }
 
+/**
+ * Where the note for this date lives, whether or not it exists.
+ *
+ * Deletion is the case that needs this: once the file is gone there is nothing to look up,
+ * so a watcher asking "was that the note I am showing?" has only the path to go on.
+ */
+export function dailyNotePathFor(date: ReturnType<typeof moment>): string {
+  return buildNotePath(date).path;
+}
+
 export function getDailyNoteFile(
   app: App,
   date: ReturnType<typeof moment>
 ): TFile | null {
-  const { path } = buildNotePath(date);
-  const file = app.vault.getAbstractFileByPath(path);
+  const file = app.vault.getAbstractFileByPath(dailyNotePathFor(date));
   return file instanceof TFile ? file : null;
 }
 

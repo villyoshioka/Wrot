@@ -848,6 +848,16 @@ ol.wr-reading-list>li::before {
   margin: 1px 0;
 }
 
+/* Nested lists (reading view and timeline).
+   A child list sits inside its parent item, which already carries the 22px marker slot, so
+   each level steps in by that much on its own. Only the gap above and below needs dropping:
+   a nested list is part of the item, not a new block. */
+li>.wr-bullet-list,
+li>.wr-ordered-list,
+li>.wr-reading-list {
+  margin: 0;
+}
+
 /* Timeline: check item */
 .wr-bullet-list .wr-check-item {
   list-style: none;
@@ -872,6 +882,14 @@ ol.wr-reading-list>li::before {
 .wr-reading-list .wr-check-item input[type="checkbox"]:not(#x):checked::after {
   top: -2.5px;
   inset-inline-start: -2px;
+}
+
+/* An item holding a nested list is as tall as its whole subtree, so the centered box would
+   sink to the middle of the group. Anchor it to the first line instead. */
+.wr-bullet-list .wr-check-item.wr-has-sublist>input[type="checkbox"]:not(#x),
+.wr-reading-list .wr-check-item.wr-has-sublist>input[type="checkbox"]:not(#x) {
+  top: calc(0.5lh - 7px);
+  transform: none;
 }
 
 
@@ -1337,6 +1355,24 @@ body .wr-lp-marker:not(#x) {
 
 .wr-lp-bullet {
   font-size: 0.85em;
+}
+
+/* Nesting in live preview: the marker carries the offset, since a line here cannot hold a
+   child list. Steps match the 22px marker slot the rendered views use. */
+.wr-lp-marker.wr-lp-indent-1 {
+  margin-inline-start: 22px;
+}
+
+.wr-lp-marker.wr-lp-indent-2 {
+  margin-inline-start: 44px;
+}
+
+.wr-lp-marker.wr-lp-indent-3 {
+  margin-inline-start: 66px;
+}
+
+.wr-lp-marker.wr-lp-indent-4 {
+  margin-inline-start: 88px;
 }
 
 .wr-lp-check {
@@ -2322,6 +2358,23 @@ body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-internal-link {
 .wr-quote-card-line-text {
   flex: 1 1 auto;
   min-width: 0;
+}
+
+/* Nesting in the card: one marker-slot width per level, matching the flat line layout. */
+.wr-quote-card-line-depth-1 {
+  margin-inline-start: 1.4em;
+}
+
+.wr-quote-card-line-depth-2 {
+  margin-inline-start: 2.8em;
+}
+
+.wr-quote-card-line-depth-3 {
+  margin-inline-start: 4.2em;
+}
+
+.wr-quote-card-line-depth-4 {
+  margin-inline-start: 5.6em;
 }
 
 /* Marker slot: bullet / "1." / circle check share a fixed width so text aligns.

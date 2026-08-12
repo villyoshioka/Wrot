@@ -1,5 +1,25 @@
 # Release Notes
 
+## 2.19.0 - 2026-08-12
+
+### Updates
+
+- Updated dependencies.
+
+### Improvements
+
+- Added Tab in the input form to indent a list item and Shift+Tab to outdent it.
+- Made a half-width space, an ideographic space and a tab all indent by the same level.
+- Made a new line keep the list level, and an empty item step out one level.
+- Made numbered lists count by position rather than by the digits typed.
+
+### Bug Fixes
+
+- Fixed nested lists being shown as written instead of as levels.
+- Fixed the posts of a deleted note staying in the timeline until the date was changed.
+
+---
+
 ## 2.18.0 - 2026-08-06
 
 ### New Features

@@ -10,6 +10,7 @@ import type { App } from "obsidian";
 import type WrotPlugin from "./main";
 import { findBlockRanges, type BlockRange } from "./utils/blockSegmenter";
 import { IMAGE_EXT_RE, QUOTE_MARKER_ONLY_LINE_RE, QUOTE_MARKER_RE, tagPattern } from "./utils/patterns";
+import { ListDepthTracker, parseListLine } from "./utils/listParser";
 
 const ogpFetched = StateEffect.define<null>();
 export const tagRulesChanged = StateEffect.define<null>();
@@ -225,6 +226,10 @@ function buildDecorations(
         }
       }
 
+      // Nesting depth builds up across the block's lines, so the tracker spans the whole loop.
+      const listDepth = new ListDepthTracker();
+      let lastQuoteDepth = 0;
+
       for (let j = block.startLn + 1; j < block.endLn; j++) {
         const l = doc.line(j);
         const showRaw = isSourceMode || blockHasCursor;
@@ -286,8 +291,24 @@ function buildDecorations(
         const quotePrefix = quotePrefixMatch ? quotePrefixMatch[0].length : 0;
         const quoteDepth = quotePrefixMatch ? (quotePrefixMatch[0].match(/>/g) || []).length : 0;
         const innerTextAfterQuote = quoteDepth > 0 ? l.text.slice(quotePrefix) : "";
-        const quoteInnerIsList = quoteDepth > 0 && /^(?:- \[[ x]\] |- |\d+\.\s?)/.test(innerTextAfterQuote);
+        const listInfo = parseListLine(quoteDepth > 0 ? innerTextAfterQuote : l.text, true);
+        const quoteInnerIsList = quoteDepth > 0 && listInfo !== null;
         const isQuoteLine = quoteDepth > 0;
+        // One line is one .cm-line here, so nesting rides on the marker's offset, not markup.
+        // A quote holds its own list, the way the rendered views treat it.
+        if (quoteDepth !== lastQuoteDepth) {
+          listDepth.reset();
+          lastQuoteDepth = quoteDepth;
+        }
+        let listItemDepth = 0;
+        let listItemOrdinal = 1;
+        if (listInfo) {
+          const placed = listDepth.place(listInfo);
+          listItemDepth = placed.depth;
+          listItemOrdinal = placed.ordinal;
+        } else {
+          listDepth.reset();
+        }
         const hasObsidianUrl = !showRaw && /obsidian:\/\//.test(l.text);
         const isEmbedOnlyLine = (() => {
           if (showRaw) return false;
@@ -323,9 +344,6 @@ function buildDecorations(
         // Ranges excluded from format detection (inline code).
         const codeRanges: { from: number; to: number }[] = [];
 
-        const checkMatch = l.text.match(/^- \[([ x])\] /);
-        const listMatch = !checkMatch && l.text.match(/^- /);
-
         if (isQuoteLine) {
           if (showRaw) {
             entries.push({ from: l.from, to: l.from + quotePrefix, deco: Decoration.mark({ class: "wr-quote-highlight" }) });
@@ -335,82 +353,50 @@ function buildDecorations(
               entries.push({ from: l.from + quotePrefix, to: l.to, deco: Decoration.mark({ class: "wr-blockquote-wrap" }) });
             }
           }
-          if (quoteInnerIsList) {
-            const innerCheck = innerTextAfterQuote.match(/^- \[([ x])\] /);
-            const innerList = !innerCheck && innerTextAfterQuote.match(/^- /);
-            const innerOl = !innerCheck && !innerList && innerTextAfterQuote.match(/^(\d+\.)\s?/);
-            if (innerCheck) {
-              const isChecked = innerCheck[1] === "x";
-              if (showRaw) {
-                const mark = isChecked ? Decoration.mark({ class: "wr-check-checked" }) : Decoration.mark({ class: "wr-check-unchecked" });
-                entries.push({ from: l.from + quotePrefix, to: l.from + quotePrefix + innerCheck[0].length, deco: mark });
-              } else {
-                entries.push({
-                  from: l.from + quotePrefix,
-                  to: l.from + quotePrefix + innerCheck[0].length,
-                  deco: Decoration.replace({ widget: new CheckboxWidget(isChecked) }),
-                });
-              }
-              if (isChecked && checkStrikethrough && l.to > l.from + quotePrefix + innerCheck[0].length) {
-                entries.push({ from: l.from + quotePrefix + innerCheck[0].length, to: l.to, deco: Decoration.mark({ class: "wr-check-done" }) });
-              }
-            } else if (innerList) {
-              if (showRaw) {
-                entries.push({ from: l.from + quotePrefix, to: l.from + quotePrefix + 2, deco: Decoration.mark({ class: "wr-list-highlight" }) });
-              } else {
-                entries.push({
-                  from: l.from + quotePrefix,
-                  to: l.from + quotePrefix + 2,
-                  deco: Decoration.replace({ widget: new BulletWidget() }),
-                });
-              }
-            } else if (innerOl) {
-              if (showRaw) {
-                entries.push({ from: l.from + quotePrefix, to: l.from + quotePrefix + innerOl[0].length, deco: olMark });
-              } else {
-                entries.push({
-                  from: l.from + quotePrefix,
-                  to: l.from + quotePrefix + innerOl[0].length,
-                  deco: Decoration.replace({ widget: new OlMarkerWidget(innerOl[1]) }),
-                });
-              }
-            }
+        }
+
+        if (listInfo) {
+          const indentFrom = l.from + (isQuoteLine ? quotePrefix : 0);
+          const markerFrom = indentFrom + listInfo.indentLength;
+          const markerTo = markerFrom + listInfo.markerLength;
+          // The indent characters give way to the depth class, so the marker stays aligned
+          // with the level's pad instead of drifting right by however it was typed.
+          if (!showRaw && listInfo.indentLength > 0) {
+            entries.push({ from: indentFrom, to: markerFrom, deco: replaceHidden });
           }
-        } else if (checkMatch) {
-          const isChecked = checkMatch[1] === "x";
-          if (showRaw) {
-            const mark = isChecked ? Decoration.mark({ class: "wr-check-checked" }) : Decoration.mark({ class: "wr-check-unchecked" });
-            entries.push({ from: l.from, to: l.from + checkMatch[0].length, deco: mark });
-          } else {
-            entries.push({
-              from: l.from,
-              to: l.from + checkMatch[0].length,
-              deco: Decoration.replace({ widget: new CheckboxWidget(isChecked) }),
-            });
-          }
-          if (isChecked && checkStrikethrough && l.to > l.from + checkMatch[0].length) {
-            entries.push({ from: l.from + checkMatch[0].length, to: l.to, deco: Decoration.mark({ class: "wr-check-done" }) });
-          }
-        } else if (listMatch) {
-          if (showRaw) {
-            entries.push({ from: l.from, to: l.from + 2, deco: Decoration.mark({ class: "wr-list-highlight" }) });
-          } else {
-            entries.push({
-              from: l.from,
-              to: l.from + 2,
-              deco: Decoration.replace({ widget: new BulletWidget() }),
-            });
-          }
-        } else {
-          const olMatchResult = l.text.match(/^(\d+\.)\s?/);
-          if (olMatchResult) {
+          if (listInfo.kind === "check") {
             if (showRaw) {
-              entries.push({ from: l.from, to: l.from + olMatchResult[0].length, deco: olMark });
+              const mark = listInfo.checked ? Decoration.mark({ class: "wr-check-checked" }) : Decoration.mark({ class: "wr-check-unchecked" });
+              entries.push({ from: markerFrom, to: markerTo, deco: mark });
             } else {
               entries.push({
-                from: l.from,
-                to: l.from + olMatchResult[0].length,
-                deco: Decoration.replace({ widget: new OlMarkerWidget(olMatchResult[1]) }),
+                from: markerFrom,
+                to: markerTo,
+                deco: Decoration.replace({ widget: new CheckboxWidget(listInfo.checked, listItemDepth) }),
+              });
+            }
+            if (listInfo.checked && checkStrikethrough && l.to > markerTo) {
+              entries.push({ from: markerTo, to: l.to, deco: Decoration.mark({ class: "wr-check-done" }) });
+            }
+          } else if (listInfo.kind === "bullet") {
+            if (showRaw) {
+              entries.push({ from: markerFrom, to: markerTo, deco: Decoration.mark({ class: "wr-list-highlight" }) });
+            } else {
+              entries.push({
+                from: markerFrom,
+                to: markerTo,
+                deco: Decoration.replace({ widget: new BulletWidget(listItemDepth) }),
+              });
+            }
+          } else {
+            if (showRaw) {
+              entries.push({ from: markerFrom, to: markerTo, deco: olMark });
+            } else {
+              entries.push({
+                from: markerFrom,
+                to: markerTo,
+                // Numbered the way the rendered views number: by position, not by what was typed.
+                deco: Decoration.replace({ widget: new OlMarkerWidget(`${listItemOrdinal}.`, listItemDepth) }),
               });
             }
           }

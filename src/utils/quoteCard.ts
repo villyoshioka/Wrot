@@ -1,6 +1,7 @@
 import { App, TFile, Platform, setIcon } from "obsidian";
 import { parseMemos, type Memo } from "./memoParser";
 import { renderTextWithTagsAndUrls } from "./urlRenderer";
+import { ListDepthTracker, parseListLine } from "./listParser";
 import { t } from "../i18n";
 
 declare const moment: typeof import("moment");
@@ -333,40 +334,51 @@ function renderPreviewLines(
     },
   };
 
+  const listDepth = new ListDepthTracker();
+
   for (const rawLine of lines) {
     const line = rawLine.length > PREVIEW_MAX_CHARS_PER_LINE
       ? rawLine.slice(0, PREVIEW_MAX_CHARS_PER_LINE) + "…"
       : rawLine;
 
+    const info = parseListLine(line);
+    // The card is a flat run of line divs, so nesting reads as a left offset per depth.
+    let itemDepth = 0;
+    let itemOrdinal = 1;
+    if (info) {
+      const placed = listDepth.place(info);
+      itemDepth = placed.depth;
+      itemOrdinal = placed.ordinal;
+    } else {
+      listDepth.reset();
+    }
     const lineEl = bodyEl.createDiv({ cls: "wr-quote-card-line" });
+    if (itemDepth > 0) lineEl.addClass(`wr-quote-card-line-depth-${itemDepth}`);
 
-    const checkMatch = line.match(/^- \[([ x])\] (.*)$/);
-    const listMatch = !checkMatch && line.match(/^- (.+)$/);
-    const olMatch = !checkMatch && !listMatch && line.match(/^(\d+)\.\s?(.+)$/);
-
-    if (checkMatch) {
+    if (info?.kind === "check") {
       const slot = lineEl.createSpan({ cls: "wr-quote-card-marker-slot wr-quote-card-marker-check" });
       slot.createSpan({
-        cls: checkMatch[1] === "x"
+        cls: info.checked
           ? "wr-quote-card-check wr-quote-card-check-done"
           : "wr-quote-card-check",
       });
       const textSpan = lineEl.createSpan({
-        cls: checkMatch[1] === "x" && checkStrikethrough
+        cls: info.checked && checkStrikethrough
           ? "wr-quote-card-line-text wr-check-done"
           : "wr-quote-card-line-text",
       });
-      renderTextWithTagsAndUrls(textSpan, checkMatch[2], inlineCallbacks);
-    } else if (listMatch) {
+      renderTextWithTagsAndUrls(textSpan, info.content, inlineCallbacks);
+    } else if (info?.kind === "bullet") {
       const slot = lineEl.createSpan({ cls: "wr-quote-card-marker-slot wr-quote-card-marker-bullet" });
       slot.textContent = "・";
       const textSpan = lineEl.createSpan({ cls: "wr-quote-card-line-text" });
-      renderTextWithTagsAndUrls(textSpan, listMatch[1], inlineCallbacks);
-    } else if (olMatch) {
+      renderTextWithTagsAndUrls(textSpan, info.content, inlineCallbacks);
+    } else if (info?.kind === "ol") {
       const slot = lineEl.createSpan({ cls: "wr-quote-card-marker-slot wr-quote-card-marker-ol" });
-      slot.textContent = `${olMatch[1]}.`;
+      // Numbered by position, matching the rendered views rather than what was typed.
+      slot.textContent = `${itemOrdinal}.`;
       const textSpan = lineEl.createSpan({ cls: "wr-quote-card-line-text" });
-      renderTextWithTagsAndUrls(textSpan, olMatch[2], inlineCallbacks);
+      renderTextWithTagsAndUrls(textSpan, info.content, inlineCallbacks);
     } else {
       const textSpan = lineEl.createSpan({ cls: "wr-quote-card-line-text" });
       renderTextWithTagsAndUrls(textSpan, line, inlineCallbacks);

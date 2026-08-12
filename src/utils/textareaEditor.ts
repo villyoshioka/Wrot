@@ -7,6 +7,8 @@
  * auto-resize and toolbar-state handlers listen for.
  */
 
+import { ListDepthTracker, nestThreshold, parseListLine } from "./listParser";
+
 function commit(ta: HTMLTextAreaElement): void {
   ta.focus();
   ta.dispatchEvent(new Event("input"));
@@ -54,6 +56,219 @@ export function insertAtLineStart(ta: HTMLTextAreaElement, prefix: string): void
     ta.selectionStart = ta.selectionEnd = lineStart + prefix.length;
   }
   commit(ta);
+}
+
+/**
+ * Indent of the item the given one is nested under.
+ *
+ * Indents are written by hand and come in no fixed step, so the level to step out to is
+ * whichever one the parent actually used — the nearest item above whose text begins at or
+ * before this indent. Scanning stops where the run of list items does, since anything before
+ * that belongs to another list.
+ */
+function enclosingIndent(val: string, lineStart: number, indentWidth: number): string {
+  if (lineStart === 0) return "";
+  const lines = val.slice(0, lineStart - 1).split("\n");
+  for (let i = lines.length - 1; i >= 0; i--) {
+    const item = parseListLine(lines[i], true);
+    if (!item) break;
+    if (nestThreshold(item) <= indentWidth) {
+      return lines[i].slice(0, item.indentLength);
+    }
+  }
+  return "";
+}
+
+/** One level of indent, as the composer writes it. */
+const INDENT_UNIT = "  ";
+
+/** Whether an indent is built only from the spaces one types a level with. */
+function isPlainSpaces(indent: string): boolean {
+  return /^ *$/.test(indent);
+}
+
+/**
+ * Brings the list being edited into the shape the views will give it.
+ *
+ * Both the numbers and the indent are decoration in the text: the views number by position and
+ * step by level, whatever was typed. The composer shows raw characters, so an ideographic space
+ * and a tab sit at different places on screen while meaning the same level — writing them all
+ * as the same step is what makes the form agree with itself and with the post.
+ */
+export function syncListFormatting(ta: HTMLTextAreaElement): void {
+  normalizeRunAroundCaret(ta);
+}
+
+// Only the run under the caret is touched; lists elsewhere in the post are left alone.
+function normalizeRunAroundCaret(ta: HTMLTextAreaElement): void {
+  const lines = ta.value.split("\n");
+  const lineOf = (pos: number) => {
+    let index = 0;
+    let offset = 0;
+    for (let i = 0; i < lines.length; i++) {
+      if (offset > pos) break;
+      index = i;
+      offset += lines[i].length + 1;
+    }
+    return index;
+  };
+
+  const caretLine = lineOf(ta.selectionStart);
+  const endLine = lineOf(ta.selectionEnd);
+  if (!parseListLine(lines[caretLine], true)) return;
+
+  let first = caretLine;
+  let last = caretLine;
+  while (first > 0 && parseListLine(lines[first - 1], true)) first--;
+  while (last + 1 < lines.length && parseListLine(lines[last + 1], true)) last++;
+
+  const tracker = new ListDepthTracker();
+  let startShift = 0;
+  let endShift = 0;
+  let changed = false;
+  for (let i = first; i <= last; i++) {
+    const item = parseListLine(lines[i], true);
+    if (!item) continue;
+    const { depth, ordinal } = tracker.place(item);
+    const written = lines[i].slice(0, item.indentLength);
+    // A part-typed indent on the caret's line is left alone: normalising it away would eat
+    // each space as it arrives, and the next level could never be reached by typing. Only
+    // spaces get that grace — a tab or an ideographic space is a whole step as it stands.
+    const midStep =
+      i === caretLine && isPlainSpaces(written) && written.length > depth * INDENT_UNIT.length;
+    const indent = midStep ? written : INDENT_UNIT.repeat(depth);
+
+    let rest = lines[i].slice(item.indentLength);
+    if (item.kind === "ol") rest = `${ordinal}.` + rest.slice(item.olMarker.length);
+    const next = indent + rest;
+    if (next === lines[i]) continue;
+
+    const delta = next.length - lines[i].length;
+    if (i <= caretLine) startShift += delta;
+    if (i <= endLine) endShift += delta;
+    lines[i] = next;
+    changed = true;
+  }
+  if (!changed) return;
+
+  const start = Math.max(0, ta.selectionStart + startShift);
+  const end = Math.max(start, ta.selectionEnd + endShift);
+  ta.value = lines.join("\n");
+  ta.selectionStart = start;
+  ta.selectionEnd = end;
+}
+
+/**
+ * Indent that would nest the given item one level deeper, or null when it cannot go deeper.
+ *
+ * An item nests under the item above it at its own level, so the step is added to that item's
+ * own indent. The first item of a level has no such neighbour and stays put — the same limit
+ * markdown itself puts on indenting.
+ */
+function childIndent(val: string, lineStart: number, indentWidth: number): string | null {
+  if (lineStart === 0) return null;
+  const lines = val.slice(0, lineStart - 1).split("\n");
+  for (let i = lines.length - 1; i >= 0; i--) {
+    const item = parseListLine(lines[i], true);
+    if (!item) return null;
+    if (item.indentWidth > indentWidth) continue;
+    if (item.indentWidth < indentWidth) return null;
+    return lines[i].slice(0, item.indentLength) + INDENT_UNIT;
+  }
+  return null;
+}
+
+/**
+ * Moves the list items covered by the selection one level in or out, for Tab and Shift+Tab.
+ *
+ * Returns false when nothing in reach is a list item that can move, which leaves Tab to do
+ * what it always did and keeps a way out of the textarea by keyboard.
+ */
+export function shiftListIndent(ta: HTMLTextAreaElement, outdent: boolean): boolean {
+  const val = ta.value;
+  const selStart = ta.selectionStart;
+  const selEnd = ta.selectionEnd;
+  const blockStart = selStart > 0 ? val.lastIndexOf("\n", selStart - 1) + 1 : 0;
+  const trailing = val.indexOf("\n", selEnd);
+  const blockEnd = trailing === -1 ? val.length : trailing;
+
+  const rebuilt: string[] = [];
+  let lineStart = blockStart;
+  let startShift = 0;
+  let endShift = 0;
+  let changed = false;
+
+  for (const line of val.slice(blockStart, blockEnd).split("\n")) {
+    const item = parseListLine(line, true);
+    let next = line;
+    if (item) {
+      // Every line is measured against the text as it was, so one item moving does not
+      // drag the next one along with it.
+      const target = outdent
+        ? enclosingIndent(val, lineStart, item.indentWidth)
+        : childIndent(val, lineStart, item.indentWidth);
+      if (target !== null && target.length !== item.indentLength) {
+        next = target + line.slice(item.indentLength);
+        changed = true;
+      }
+    }
+    const delta = next.length - line.length;
+    if (lineStart <= selStart) startShift += delta;
+    if (lineStart <= selEnd) endShift += delta;
+    rebuilt.push(next);
+    lineStart += line.length + 1;
+  }
+
+  if (!changed) return false;
+
+  ta.value = val.slice(0, blockStart) + rebuilt.join("\n") + val.slice(blockEnd);
+  ta.selectionStart = Math.max(blockStart, selStart + startShift);
+  ta.selectionEnd = Math.max(blockStart, selEnd + endShift);
+  normalizeRunAroundCaret(ta);
+  ta.dispatchEvent(new Event("input"));
+  return true;
+}
+
+/**
+ * Carries a list item onto the next line when Enter is pressed.
+ *
+ * A item with text repeats its marker at the same indent, numbering on from the current one.
+ * An empty one steps out a level instead, and at the outermost level loses its marker, so
+ * repeated Enter walks back out of the list. Returns false when the caret is not on a list
+ * item at all, leaving the plain newline to the textarea.
+ */
+export function continueListOnEnter(ta: HTMLTextAreaElement): boolean {
+  const pos = ta.selectionStart;
+  const val = ta.value;
+  const lineStart = pos > 0 ? val.lastIndexOf("\n", pos - 1) + 1 : 0;
+  const line = val.slice(lineStart, pos);
+
+  const info = parseListLine(line, true);
+  if (!info) return false;
+  const indent = line.slice(0, info.indentLength);
+
+  if (info.content !== "") {
+    const marker =
+      info.kind === "check" ? "- [ ] "
+        : info.kind === "bullet" ? "- "
+          : `${parseInt(info.olMarker, 10) + 1}. `;
+    const insert = `\n${indent}${marker}`;
+    ta.value = val.slice(0, pos) + insert + val.slice(pos);
+    ta.selectionStart = ta.selectionEnd = pos + insert.length;
+  } else if (indent === "") {
+    ta.value = val.slice(0, lineStart) + val.slice(pos);
+    ta.selectionStart = ta.selectionEnd = lineStart;
+  } else {
+    const outer = enclosingIndent(val, lineStart, info.indentWidth);
+    const marker = line.slice(info.indentLength);
+    ta.value = val.slice(0, lineStart) + outer + marker + val.slice(pos);
+    ta.selectionStart = ta.selectionEnd = lineStart + outer.length + marker.length;
+  }
+  normalizeRunAroundCaret(ta);
+  // Not commit(): the caret is already in the textarea, and re-focusing mid-keystroke
+  // disturbs the IME on iOS.
+  ta.dispatchEvent(new Event("input"));
+  return true;
 }
 
 /** Inserts a fenced block (code or math) on its own lines, caret placed inside it. */

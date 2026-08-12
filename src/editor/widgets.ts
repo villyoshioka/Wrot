@@ -11,6 +11,7 @@ import {
   type ParsedUrl,
 } from "../utils/urlRenderer";
 import { renderQuoteCard } from "../utils/quoteCard";
+import { parseListLine } from "../utils/listParser";
 import type { OGPCache } from "../utils/ogpCache";
 
 /**
@@ -21,37 +22,53 @@ import type { OGPCache } from "../utils/ogpCache";
  * `eq` compares to decide whether CodeMirror can keep the existing DOM.
  */
 
+/**
+ * Nesting offset for a list marker.
+ *
+ * One line is one .cm-line here, so a nested item cannot be wrapped in a child list the way
+ * reading view does. The marker carries the indent instead, and the text after it follows.
+ */
+function indentClass(depth: number): string {
+  return depth > 0 ? ` wr-lp-indent-${depth}` : "";
+}
+
 export class BulletWidget extends WidgetType {
+  constructor(private depth: number = 0) { super(); }
   toDOM(): HTMLElement {
     const span = createSpan();
-    span.className = "wr-lp-marker wr-lp-bullet";
+    span.className = `wr-lp-marker wr-lp-bullet${indentClass(this.depth)}`;
     span.textContent = "\u2022";
     return span;
   }
-  eq(): boolean { return true; }
+  eq(other: BulletWidget): boolean { return this.depth === other.depth; }
 }
 
 export class CheckboxWidget extends WidgetType {
-  constructor(private checked: boolean) { super(); }
+  constructor(private checked: boolean, private depth: number = 0) { super(); }
   toDOM(view: EditorView): HTMLElement {
     const wrap = createSpan();
-    wrap.className = "wr-lp-marker wr-lp-check";
+    wrap.className = `wr-lp-marker wr-lp-check${indentClass(this.depth)}`;
     const cb = createEl("input");
     cb.type = "checkbox";
     cb.checked = this.checked;
     cb.addEventListener("click", (e) => {
       // updateDOM reuses DOM, so derive state from the doc at click time (listener may be stale).
       // No preventDefault: the browser would roll checked back afterward, leaving the box stale.
-      const pos = view.posAtDOM(wrap);
-      if (!/^- \[[ x]\] /.test(view.state.doc.sliceString(pos, pos + 6))) {
+      // The marker is re-found from the line rather than from the widget position, which an
+      // indented item shares with the hidden indent before it.
+      const line = view.state.doc.lineAt(view.posAtDOM(wrap));
+      const quotePrefix = /^(?:>\s?)+/.exec(line.text)?.[0].length ?? 0;
+      const info = parseListLine(line.text.slice(quotePrefix), true);
+      if (!info || info.kind !== "check") {
         // Position not identifiable: skip the doc write and revert the box.
         e.preventDefault();
         return;
       }
-      // The char inside "[ ]" is at pos+3.
-      const next = view.state.doc.sliceString(pos + 3, pos + 4) === " ";
+      // The char inside "[ ]" sits three characters into the marker.
+      const statePos = line.from + quotePrefix + info.indentLength + 3;
+      const next = view.state.doc.sliceString(statePos, statePos + 1) === " ";
       cb.checked = next;
-      view.dispatch({ changes: { from: pos + 3, to: pos + 4, insert: next ? "x" : " " } });
+      view.dispatch({ changes: { from: statePos, to: statePos + 1, insert: next ? "x" : " " } });
     });
     wrap.appendChild(cb);
     return wrap;
@@ -64,7 +81,9 @@ export class CheckboxWidget extends WidgetType {
     if (cb.checked !== this.checked) cb.checked = this.checked;
     return true;
   }
-  eq(other: CheckboxWidget): boolean { return this.checked === other.checked; }
+  eq(other: CheckboxWidget): boolean {
+    return this.checked === other.checked && this.depth === other.depth;
+  }
   // Keep events from the editor: a mousedown would move the cursor into the block,
   // opening it as raw text and diverging from RV.
   ignoreEvent(): boolean { return true; }
@@ -92,14 +111,16 @@ export class TagWidget extends WidgetType {
 }
 
 export class OlMarkerWidget extends WidgetType {
-  constructor(private label: string) { super(); }
+  constructor(private label: string, private depth: number = 0) { super(); }
   toDOM(): HTMLElement {
     const span = createSpan();
-    span.className = "wr-lp-marker wr-lp-ol";
+    span.className = `wr-lp-marker wr-lp-ol${indentClass(this.depth)}`;
     span.textContent = this.label;
     return span;
   }
-  eq(other: OlMarkerWidget): boolean { return this.label === other.label; }
+  eq(other: OlMarkerWidget): boolean {
+    return this.label === other.label && this.depth === other.depth;
+  }
 }
 
 export class ObsidianLinkWidget extends WidgetType {

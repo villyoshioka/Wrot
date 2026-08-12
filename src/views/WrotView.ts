@@ -2,7 +2,7 @@ import { ItemView, WorkspaceLeaf, Notice, TFile, EventRef, setIcon, Menu, Scope,
 import { VIEW_TYPE_WROT } from "../constants";
 import { parseMemos, Memo } from "../utils/memoParser";
 import { appendMemo, deleteMemo, toggleCheckbox, updateMemo } from "../utils/memoWriter";
-import { getOrCreateDailyNote, getDailyNoteFile } from "../utils/dailyNote";
+import { getOrCreateDailyNote, getDailyNoteFile, dailyNotePathFor } from "../utils/dailyNote";
 import { renderTextWithTagsAndUrls, renderUrlPreviews } from "../utils/urlRenderer";
 import { invalidateMemoCache, renderQuoteCard } from "../utils/quoteCard";
 import { ensureBlockIdOnFence } from "../utils/memoWriter";
@@ -12,12 +12,15 @@ import { TagSuggest, extractTagsForHistory, mergeRecentTags } from "../utils/tag
 import { isMathJaxReady, requestMathJax } from "../utils/mathjax";
 import { quoteMarkerPattern } from "../utils/patterns";
 import {
+  continueListOnEnter,
   insertAtLineStart,
   insertFenceBlock,
   insertMarkdownLink,
   isInsideEmbed,
   isInsideMarker,
   lineMarkerState,
+  shiftListIndent,
+  syncListFormatting,
   toggleBlockPrefix,
   toggleInlineWrap,
   wrapSelection,
@@ -207,7 +210,7 @@ export class WrotView extends ItemView {
         this.app,
         this.currentDate
       );
-      if (currentFile && file.path === currentFile.path) {
+      if ((currentFile && file.path === currentFile.path) || this.holdsPinnedMemo(file.path)) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
         this.refresh();
       }
@@ -239,8 +242,16 @@ export class WrotView extends ItemView {
     const IMAGE_EXT = /^(png|jpe?g|gif|webp|svg|bmp)$/i;
     if (IMAGE_EXT.test(file.extension)) return true;
     if (file.extension.toLowerCase() !== "md") return false;
-    const currentFile = getDailyNoteFile(this.app, this.currentDate);
-    return currentFile !== null && file.path === currentFile.path;
+    // Matched by path rather than by looking the note up: a deleted file is no longer there
+    // to be found, and the timeline would sit on the posts of a note that is gone.
+    if (file.path === dailyNotePathFor(this.currentDate)) return true;
+    // Pins show above the day's posts whatever date is open, so their notes count too.
+    return this.holdsPinnedMemo(file.path);
+  }
+
+  /** Whether a pinned memo lives in this note, which the timeline shows on every date. */
+  private holdsPinnedMemo(path: string): boolean {
+    return (this.plugin.settings.pins ?? []).some((pin) => pin.file === path);
   }
 
   private unregisterFileWatcher(): void {
@@ -459,50 +470,11 @@ export class WrotView extends ItemView {
         return;
       }
       if (e.key === "Enter" && !e.shiftKey) {
-        const ta = this.textarea;
-        const pos = ta.selectionStart;
-        const val = ta.value;
-        const lineStart = val.lastIndexOf("\n", pos - 1) + 1;
-        const line = val.slice(lineStart, pos);
-
-            const checkMatch = line.match(/^- \[[ x]\] (.*)$/);
-        const listMatch = !checkMatch && line.match(/^- (.*)$/);
-        const olMatch = !checkMatch && !listMatch && line.match(/^(\d+)\.\s?(.*)$/);
-        if (checkMatch) {
-          e.preventDefault();
-          if (checkMatch[1] === "") {
-            ta.value = val.slice(0, lineStart) + val.slice(pos);
-            ta.selectionStart = ta.selectionEnd = lineStart;
-          } else {
-            const insert = "\n- [ ] ";
-            ta.value = val.slice(0, pos) + insert + val.slice(pos);
-            ta.selectionStart = ta.selectionEnd = pos + insert.length;
-          }
-          ta.dispatchEvent(new Event("input"));
-        } else if (listMatch) {
-          e.preventDefault();
-          if (listMatch[1] === "") {
-            ta.value = val.slice(0, lineStart) + val.slice(pos);
-            ta.selectionStart = ta.selectionEnd = lineStart;
-          } else {
-            const insert = "\n- ";
-            ta.value = val.slice(0, pos) + insert + val.slice(pos);
-            ta.selectionStart = ta.selectionEnd = pos + insert.length;
-          }
-          ta.dispatchEvent(new Event("input"));
-        } else if (olMatch) {
-          e.preventDefault();
-          if (olMatch[2] === "") {
-            ta.value = val.slice(0, lineStart) + val.slice(pos);
-            ta.selectionStart = ta.selectionEnd = lineStart;
-          } else {
-            const nextNum = parseInt(olMatch[1]) + 1;
-            const insert = `\n${nextNum}. `;
-            ta.value = val.slice(0, pos) + insert + val.slice(pos);
-            ta.selectionStart = ta.selectionEnd = pos + insert.length;
-          }
-          ta.dispatchEvent(new Event("input"));
-        }
+        if (continueListOnEnter(this.textarea)) e.preventDefault();
+      }
+      // Tab only moves list items; anywhere else it still leaves the textarea.
+      if (e.key === "Tab") {
+        if (shiftListIndent(this.textarea, e.shiftKey)) e.preventDefault();
       }
     }, true);
 
@@ -821,6 +793,13 @@ export class WrotView extends ItemView {
         this.imeLocked = false;
         updateFormatBtns();
       }
+    });
+
+    // Indenting an item by hand moves it to another level, so its number has to follow.
+    // Held back mid-composition: rewriting the value then would drop the IME's pending text.
+    this.textarea.addEventListener("input", (e) => {
+      if (e.isComposing) return;
+      syncListFormatting(this.textarea);
     });
 
     // Refresh on both input and compositionend so uncommitted IME text also filters candidates.

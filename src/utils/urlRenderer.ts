@@ -2,6 +2,14 @@ import type { OGPData, OGPCache } from "./ogpCache";
 import { segmentBlocks } from "./blockSegmenter";
 import { isMathJaxReady, requestMathJax } from "./mathjax";
 import { IMAGE_EXT_RE, inlineTokenPattern } from "./patterns";
+import {
+  ListDepthTracker,
+  NestedListStack,
+  parseListLine,
+  tagFor,
+  type ListLine,
+  type ListTag,
+} from "./listParser";
 
 const IMAGE_EXTENSIONS = [
   ".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".bmp",
@@ -174,23 +182,65 @@ function renderTextSegment(
 ): void {
   const lines = text.split("\n");
 
-  let currentList: HTMLElement | null = null;
-  let currentListType: "ul" | "ol" | null = null;
+  const makeList = (tag: ListTag) =>
+    createEl(tag, { cls: tag === "ul" ? "wr-bullet-list" : "wr-ordered-list" });
+  const makeItem = () => createEl("li");
+
+  const listStack = new NestedListStack(makeList, makeItem);
+  const listDepth = new ListDepthTracker();
   let quoteStack: HTMLElement[] = [];
-  let quoteList: HTMLElement | null = null;
-  let quoteListType: "ul" | "ol" | null = null;
+  const quoteListStack = new NestedListStack(makeList, makeItem);
+  const quoteListDepthTracker = new ListDepthTracker();
+  let quoteListTarget: HTMLElement | null = null;
   let quoteListDepth: number = 0;
+
+  const resetList = () => {
+    listStack.clear();
+    listDepth.reset();
+  };
+
+  const resetQuoteList = () => {
+    quoteListStack.clear();
+    quoteListDepthTracker.reset();
+    quoteListTarget = null;
+  };
+
+  const buildListItem = (info: ListLine, lineIndex: number): HTMLElement => {
+    const li = createEl("li");
+    if (info.kind !== "check") {
+      renderInlineTokens(li, info.content, callbacks, urls, seen);
+      return li;
+    }
+    li.addClass("wr-check-item");
+    const checkbox = li.createEl("input", { attr: { type: "checkbox" } });
+    if (info.checked) checkbox.checked = true;
+    // Always wrap the text in a span: modify-driven re-render is suppressed to prevent
+    // card flicker, so strikethrough is toggled instantly via this span's class instead.
+    const textContainer = li.createSpan(
+      info.checked && callbacks.checkStrikethrough ? { cls: "wr-check-done" } : {}
+    );
+    if (callbacks.onCheckToggle) {
+      const cb = callbacks.onCheckToggle;
+      checkbox.addEventListener("click", () => {
+        cb(lineIndex, checkbox.checked);
+        if (callbacks.checkStrikethrough) {
+          textContainer.classList.toggle("wr-check-done", checkbox.checked);
+        }
+      });
+    } else {
+      checkbox.disabled = true;
+    }
+    renderInlineTokens(textContainer, info.content, callbacks, urls, seen);
+    return li;
+  };
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const quoteMatch = line.match(/^((?:>\s?)+)(.*)$/);
-    const checkMatch = !quoteMatch && line.match(/^- \[([ x])\] (.*)$/);
-    const listMatch = !quoteMatch && !checkMatch && line.match(/^- (.+)$/);
-    const olMatch = !quoteMatch && !checkMatch && !listMatch && line.match(/^\d+\.\s?(.+)$/);
+    const listInfo = !quoteMatch ? parseListLine(line) : null;
 
     if (quoteMatch) {
-      currentList = null;
-      currentListType = null;
+      resetList();
       const depth = (quoteMatch[1].match(/>/g) || []).length;
       const body = quoteMatch[2];
       while (quoteStack.length > depth) {
@@ -202,52 +252,21 @@ function renderTextSegment(
         quoteStack.push(bq);
       }
       const target = quoteStack[quoteStack.length - 1];
-      const innerCheck = body.match(/^- \[([ x])\] (.*)$/);
-      const innerList = !innerCheck && body.match(/^- (.+)$/);
-      const innerOl = !innerCheck && !innerList && body.match(/^\d+\.\s?(.+)$/);
-      if (innerCheck || innerList) {
-        if (quoteList === null || quoteListType !== "ul" || quoteListDepth !== depth || quoteList.parentElement !== target) {
-          quoteList = target.createEl("ul", { cls: "wr-bullet-list" });
-          quoteListType = "ul";
+      const innerInfo = parseListLine(body);
+      if (innerInfo) {
+        // A list only continues while it stays in the same blockquote at the same depth.
+        if (quoteListTarget !== target || quoteListDepth !== depth) {
+          resetQuoteList();
+          quoteListTarget = target;
           quoteListDepth = depth;
         }
-        const li = quoteList.createEl("li");
-        if (innerCheck) {
-          li.addClass("wr-check-item");
-          const checkbox = li.createEl("input", { attr: { type: "checkbox" } });
-          if (innerCheck[1] === "x") checkbox.checked = true;
-          // Always wrap the text in a span: modify-driven re-render is suppressed to prevent
-          // card flicker, so strikethrough is toggled instantly via this span's class instead.
-          const textContainer = li.createSpan(
-            innerCheck[1] === "x" && callbacks.checkStrikethrough ? { cls: "wr-check-done" } : {}
-          );
-          if (callbacks.onCheckToggle) {
-            const lineIdx = lineOffset + i;
-            const cb = callbacks.onCheckToggle;
-            checkbox.addEventListener("click", () => {
-              cb(lineIdx, checkbox.checked);
-              if (callbacks.checkStrikethrough) {
-                textContainer.classList.toggle("wr-check-done", checkbox.checked);
-              }
-            });
-          } else {
-            checkbox.disabled = true;
-          }
-          renderInlineTokens(textContainer, innerCheck[2], callbacks, urls, seen);
-        } else if (innerList) {
-          renderInlineTokens(li, innerList[1], callbacks, urls, seen);
-        }
-      } else if (innerOl) {
-        if (quoteList === null || quoteListType !== "ol" || quoteListDepth !== depth || quoteList.parentElement !== target) {
-          quoteList = target.createEl("ol", { cls: "wr-ordered-list" });
-          quoteListType = "ol";
-          quoteListDepth = depth;
-        }
-        const li = quoteList.createEl("li");
-        renderInlineTokens(li, innerOl[1], callbacks, urls, seen);
+        const itemDepth = quoteListDepthTracker.place(innerInfo).depth;
+        const previousRoot = quoteListStack.root;
+        const list = quoteListStack.listFor(itemDepth, tagFor(innerInfo.kind));
+        if (quoteListStack.root !== previousRoot) target.appendChild(quoteListStack.root!);
+        list.appendChild(buildListItem(innerInfo, lineOffset + i));
       } else {
-        quoteList = null;
-        quoteListType = null;
+        resetQuoteList();
         // Skip <br> after a nested blockquote/list box: the block already breaks the line,
         // so adding one creates an extra blank line. Break only between text lines.
         const last = target.lastChild;
@@ -263,57 +282,19 @@ function renderTextSegment(
         }
         renderInlineTokens(target, body, callbacks, urls, seen);
       }
-    } else if (checkMatch || listMatch) {
+    } else if (listInfo) {
       quoteStack = [];
-      quoteList = null;
-      quoteListType = null;
-      if (currentListType !== "ul") {
-        currentList = container.createEl("ul", { cls: "wr-bullet-list" });
-        currentListType = "ul";
-      }
-      const li = currentList!.createEl("li");
-
-      if (checkMatch) {
-        li.addClass("wr-check-item");
-        const checkbox = li.createEl("input", { attr: { type: "checkbox" } });
-        if (checkMatch[1] === "x") checkbox.checked = true;
-        // Always wrap in a span (same reason as the quote-inner checkbox above).
-        const textContainer = li.createSpan(
-          checkMatch[1] === "x" && callbacks.checkStrikethrough ? { cls: "wr-check-done" } : {}
-        );
-        if (callbacks.onCheckToggle) {
-          const lineIdx = lineOffset + i;
-          const cb = callbacks.onCheckToggle;
-          checkbox.addEventListener("click", () => {
-            cb(lineIdx, checkbox.checked);
-            if (callbacks.checkStrikethrough) {
-              textContainer.classList.toggle("wr-check-done", checkbox.checked);
-            }
-          });
-        } else {
-          checkbox.disabled = true;
-        }
-        renderInlineTokens(textContainer, checkMatch[2], callbacks, urls, seen);
-      } else if (listMatch) {
-        renderInlineTokens(li, listMatch[1], callbacks, urls, seen);
-      }
-    } else if (olMatch) {
-      quoteStack = [];
-      quoteList = null;
-      quoteListType = null;
-      if (currentListType !== "ol") {
-        currentList = container.createEl("ol", { cls: "wr-ordered-list" });
-        currentListType = "ol";
-      }
-      const li = currentList!.createEl("li");
-      renderInlineTokens(li, olMatch[1], callbacks, urls, seen);
+      resetQuoteList();
+      const itemDepth = listDepth.place(listInfo).depth;
+      const previousRoot = listStack.root;
+      const list = listStack.listFor(itemDepth, tagFor(listInfo.kind));
+      if (listStack.root !== previousRoot) container.appendChild(listStack.root!);
+      list.appendChild(buildListItem(listInfo, lineOffset + i));
     } else {
-      const prevWasBlock = currentList !== null || quoteStack.length > 0;
-      currentList = null;
-      currentListType = null;
+      const prevWasBlock = !listStack.isEmpty || quoteStack.length > 0;
+      resetList();
       quoteStack = [];
-      quoteList = null;
-      quoteListType = null;
+      resetQuoteList();
       if (i > 0 && !prevWasBlock) container.appendText("\n");
       renderInlineTokens(container, line, callbacks, urls, seen);
     }
