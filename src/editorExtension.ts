@@ -9,7 +9,16 @@ import { RangeSetBuilder, StateEffect, StateField } from "@codemirror/state";
 import type { App } from "obsidian";
 import type WrotPlugin from "./main";
 import { findBlockRanges, type BlockRange } from "./utils/blockSegmenter";
-import { IMAGE_EXT_RE, QUOTE_MARKER_ONLY_LINE_RE, QUOTE_MARKER_RE, tagPattern } from "./utils/patterns";
+import {
+  IMAGE_EXT_RE,
+  QUOTE_MARKER_ONLY_LINE_RE,
+  QUOTE_MARKER_RE,
+  boldPattern,
+  highlightPattern,
+  italicPattern,
+  strikePattern,
+  tagPattern,
+} from "./utils/patterns";
 import { ListDepthTracker, parseListLine } from "./utils/listParser";
 
 const ogpFetched = StateEffect.define<null>();
@@ -561,7 +570,7 @@ function buildDecorations(
 
         const boldRanges: { from: number; to: number }[] = [];
 
-        const boldRegex = /\*\*[^*]+\*\*/g;
+        const boldRegex = boldPattern();
         while ((match = boldRegex.exec(l.text)) !== null) {
           const from = l.from + match.index;
           const to = from + match[0].length;
@@ -585,7 +594,7 @@ function buildDecorations(
             for (let i = start; i < end && i < chars.length; i++) chars[i] = " ";
           }
           const masked = chars.join("");
-          const italicRegex = /\*([^*]+)\*/g;
+          const italicRegex = italicPattern();
           while ((match = italicRegex.exec(masked)) !== null) {
             const from = l.from + match.index;
             const to = from + match[0].length;
@@ -600,7 +609,7 @@ function buildDecorations(
           }
         }
 
-        const strikeRegex = /~~[^~]+~~/g;
+        const strikeRegex = strikePattern();
         while ((match = strikeRegex.exec(l.text)) !== null) {
           const from = l.from + match.index;
           const to = from + match[0].length;
@@ -614,7 +623,7 @@ function buildDecorations(
           }
         }
 
-        const highlightRegex = /==([^=]+)==/g;
+        const highlightRegex = highlightPattern();
         while ((match = highlightRegex.exec(l.text)) !== null) {
           const from = l.from + match.index;
           const to = from + match[0].length;

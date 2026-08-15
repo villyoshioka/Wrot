@@ -12,6 +12,7 @@ import { TagSuggest, extractTagsForHistory, mergeRecentTags } from "../utils/tag
 import { isMathJaxReady, requestMathJax } from "../utils/mathjax";
 import { quoteMarkerPattern } from "../utils/patterns";
 import {
+  closeInlineMarker,
   continueListOnEnter,
   insertAtLineStart,
   insertFenceBlock,
@@ -604,8 +605,7 @@ export class WrotView extends ItemView {
           ta.value = ta.value.slice(0, pos - 2) + ta.value.slice(pos);
           ta.selectionStart = ta.selectionEnd = pos - 2;
         } else {
-          ta.value = ta.value.slice(0, pos) + "**" + ta.value.slice(pos);
-          ta.selectionStart = ta.selectionEnd = pos + 2;
+          closeInlineMarker(ta, "**");
         }
         this.activeFormatMode = null;
       } else {
@@ -636,8 +636,7 @@ export class WrotView extends ItemView {
           ta.value = ta.value.slice(0, pos - 1) + ta.value.slice(pos);
           ta.selectionStart = ta.selectionEnd = pos - 1;
         } else {
-          ta.value = ta.value.slice(0, pos) + "*" + ta.value.slice(pos);
-          ta.selectionStart = ta.selectionEnd = pos + 1;
+          closeInlineMarker(ta, "*");
         }
         this.activeFormatMode = null;
       } else {
@@ -1057,11 +1056,9 @@ export class WrotView extends ItemView {
   }
 
   async submitMemo(): Promise<void> {
-    if (this.activeFormatMode) {
-      const marker = this.activeFormatMode === "bold" ? "**" : "*";
-      this.textarea.value = this.textarea.value + marker;
-      this.activeFormatMode = null;
-    }
+    // The post keeps whatever was typed: a decoration left open stays open, rather than
+    // being closed on the author's behalf at the end of the text.
+    this.activeFormatMode = null;
     const rawText = this.textarea.value.trim().replace(/＃/g, "#");
     if (!rawText && !this.pendingImage) return;
 

@@ -2270,6 +2270,19 @@ body.is-mobile .wr-settings .wr-pc-break {
   display: none;
 }
 
+/* Links inside a setting description inherit the muted description color, which reads as
+   plain text; :not(#x) lifts specificity above that inherited rule, and the fill color is
+   set alongside it because inherited -webkit-text-fill-color wins over color alone. */
+body .wr-settings-link:not(#x) {
+  color: var(--text-accent);
+  -webkit-text-fill-color: var(--text-accent);
+  text-decoration: none;
+}
+
+body .wr-settings-link:not(#x):hover {
+  opacity: 0.8;
+}
+
 
 /* ===== Wrot quote card (Twitter quote-RT style) ===== */
 .wr-quote-card-slot {

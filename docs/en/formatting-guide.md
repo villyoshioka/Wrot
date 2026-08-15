@@ -44,6 +44,10 @@ This system allows you to insert only the marker at the cursor position first an
 
 Italic works the same way.
 
+When the decoration is closed, a half-width space is added after the closing marker. Markers that touch each other are not read as a decoration, so the space lets you carry straight on typing.
+
+If you submit a post while a decoration is still open, it is saved exactly as typed: the markers stay as plain characters and no decoration is applied.
+
 ### Bold and Italic cannot be used simultaneously
 
 If you press the Italic button while "Bold is in preview mode," it will not respond. The reverse is also true.

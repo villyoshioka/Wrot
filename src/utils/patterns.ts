@@ -43,11 +43,73 @@ export function matchTags(text: string): string[] {
 }
 
 /**
+ * Sources for the inline decorations, shared by the live-preview extension and the token
+ * pattern below so all three renderers agree on what counts as a decoration.
+ *
+ * Two rules keep a half-typed run from being decorated, matching how Markdown itself pairs
+ * delimiters:
+ *
+ * - A delimiter only counts when its own character does not continue past it, so `**foo*`
+ *   is a bold in progress rather than an italic wrapping `*foo` with a stray delimiter left
+ *   on screen.
+ * - An opening delimiter may not be followed by whitespace and a closing one may not be
+ *   preceded by it, so two separate openers such as `*大事 *注意` no longer pair up with each
+ *   other and swallow the text in between.
+ *
+ * @param mark The delimiter, already escaped for use in a regular expression.
+ * @param char The delimiter's single character class, e.g. `\*`, used for the run guards.
+ */
+function decorationSource(mark: string, char: string): string {
+  // One non-space character, or a run that both starts and ends with one.
+  const body = `(?:[^${char}\\s]|[^${char}\\s][^${char}]*[^${char}\\s])`;
+  return `(?<!${char})${mark}${body}${mark}(?!${char})`;
+}
+
+const BOLD_SOURCE = decorationSource(String.raw`\*\*`, String.raw`\*`);
+const ITALIC_SOURCE = decorationSource(String.raw`\*`, String.raw`\*`);
+const STRIKE_SOURCE = decorationSource("~~", "~");
+const HIGHLIGHT_SOURCE = decorationSource("==", "=");
+
+/** Fresh global matchers for each decoration. Returned fresh because they are sticky. */
+export function boldPattern(): RegExp {
+  return new RegExp(BOLD_SOURCE, "g");
+}
+
+export function italicPattern(): RegExp {
+  return new RegExp(ITALIC_SOURCE, "g");
+}
+
+export function strikePattern(): RegExp {
+  return new RegExp(STRIKE_SOURCE, "g");
+}
+
+export function highlightPattern(): RegExp {
+  return new RegExp(HIGHLIGHT_SOURCE, "g");
+}
+
+/**
  * Inline token precedence, shared by every renderer and by tag extraction.
  *
  * Order matters: a `#` inside code, math, a decoration, an embed/link, or a URL is not a tag
  * on screen, so it must not be treated as one anywhere. Returned fresh because it is sticky.
  */
 export function inlineTokenPattern(): RegExp {
-  return /(\$[^$]+\$|`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*|~~[^~]+~~|==[^=]+=+|!\[\[[^\]]+\]\]|\[\[[^\]]+\]\]|\[[^[\]\n]+\]\((?:https?|obsidian):\/\/[^\s)]+\)|#[^\s#]+|(?:https?|obsidian):\/\/[^\s<>"'\]]+)/g;
+  return new RegExp(
+    "(" +
+      [
+        String.raw`\$[^$]+\$`,
+        "`[^`]+`",
+        BOLD_SOURCE,
+        ITALIC_SOURCE,
+        STRIKE_SOURCE,
+        HIGHLIGHT_SOURCE,
+        String.raw`!\[\[[^\]]+\]\]`,
+        String.raw`\[\[[^\]]+\]\]`,
+        String.raw`\[[^[\]\n]+\]\((?:https?|obsidian):\/\/[^\s)]+\)`,
+        String.raw`#[^\s#]+`,
+        String.raw`(?:https?|obsidian):\/\/[^\s<>"'\]]+`,
+      ].join("|") +
+      ")",
+    "g"
+  );
 }

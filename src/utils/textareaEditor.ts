@@ -355,6 +355,24 @@ export function isInsideEmbed(ta: HTMLTextAreaElement): boolean {
 }
 
 /**
+ * Inserts a closing marker at the caret and leaves the caret past a single half-width space.
+ *
+ * Delimiters that touch each other read as one longer run, so text or another decoration
+ * typed straight after the closing marker would keep it from being recognized. The space is
+ * skipped when whitespace already follows.
+ */
+export function closeInlineMarker(ta: HTMLTextAreaElement, marker: string): void {
+  const pos = ta.selectionStart;
+  const val = ta.value;
+  const next = val.slice(pos, pos + 1);
+  // At the end of the text the caret keeps typing right after the marker, so the space is
+  // wanted there; a space or a line break already does the job.
+  const insert = next === " " || next === "\n" ? marker : marker + " ";
+  ta.value = val.slice(0, pos) + insert + val.slice(pos);
+  ta.selectionStart = ta.selectionEnd = pos + insert.length;
+}
+
+/**
  * Toggles an inline wrapper around the caret. If the caret already sits inside one of the
  * known wrappers, that one is removed or swapped; otherwise an empty pair is inserted.
  */

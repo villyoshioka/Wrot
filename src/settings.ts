@@ -614,10 +614,14 @@ export class WrotSettingTab extends PluginSettingTab {
         }
         appendWithBreaks(frag, template.slice(0, linkOpenIdx));
         const link = frag.createEl("a", {
+          // Without a class of our own the anchor inherits the muted description color and
+          // stops reading as a link.
+          cls: "wr-settings-link",
           text: template.slice(linkOpenIdx + "{linkOpen}".length, linkCloseIdx),
           href: t("settings.item.submitIcon.lucideUrl"),
         });
         link.setAttr("target", "_blank");
+        link.setAttr("rel", "noopener");
         appendWithBreaks(frag, template.slice(linkCloseIdx + "{linkClose}".length));
       });
 

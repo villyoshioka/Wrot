@@ -1,5 +1,19 @@
 # Release Notes
 
+## 2.19.1 - 2026-08-15
+
+### Updates
+
+- Updated dependencies.
+
+### Bug Fixes
+
+- Fixed a decoration being applied even though it had not been closed.
+- Fixed a decoration sometimes leaving one of its markers on screen.
+- Fixed the icon gallery link in the settings being hard to tell apart from the text around it.
+
+---
+
 ## 2.19.0 - 2026-08-12
 
 ### Updates
