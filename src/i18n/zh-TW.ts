@@ -86,6 +86,15 @@ const zhTW = {
   "settings.item.showPostDelete.desc":
     "在筆記選單中顯示「刪除」按鈕。 \n刪除後無法復原。 \n筆記中的圖片不會被刪除。",
 
+  "settings.item.useCustomAttachmentFolder.name": "指定圖片儲存位置",
+  "settings.item.useCustomAttachmentFolder.desc":
+    "將從 Wrot 加入的圖片儲存到指定資料夾， \n不受 Obsidian 附件設定的影響。",
+
+  "settings.item.attachmentFolder.name": "儲存資料夾",
+  "settings.item.attachmentFolder.desc":
+    "選擇儲存圖片的資料夾。 \n若資料夾不存在，則依照 Obsidian 的附件設定。",
+  "settings.item.attachmentFolder.placeholder": "選擇資料夾",
+
   "settings.item.tagColorRules.name": "使用標籤規則",
   "settings.item.tagColorRules.desc":
     "依標籤設定顏色與標籤整合。顏色以內文中先出現的標籤為準。",

@@ -88,6 +88,15 @@ const fr = {
   "settings.item.showPostDelete.desc":
     "Ajoute le bouton « Supprimer » au menu du mémo. \nUn mémo supprimé est irrécupérable. \nLes images du mémo ne sont pas supprimées.",
 
+  "settings.item.useCustomAttachmentFolder.name": "Dossier des images",
+  "settings.item.useCustomAttachmentFolder.desc":
+    "Enregistre les images ajoutées depuis Wrot dans le dossier de votre choix, \nindépendamment du réglage des pièces jointes d'Obsidian.",
+
+  "settings.item.attachmentFolder.name": "Dossier de destination",
+  "settings.item.attachmentFolder.desc":
+    "Sélectionnez le dossier où les images sont enregistrées. \nSi le dossier n'existe pas, le réglage des pièces jointes d'Obsidian est utilisé.",
+  "settings.item.attachmentFolder.placeholder": "Sélectionner un dossier",
+
   "settings.item.tagColorRules.name": "Utiliser les règles par tag",
   "settings.item.tagColorRules.desc":
     "Définit couleurs et intégration par tag. Pour les couleurs, le tag apparaissant en premier l'emporte.",

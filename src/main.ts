@@ -428,43 +428,32 @@ export default class WrotPlugin extends Plugin {
     });
   }
 
+  /** Runs `fn` against every open Wrot view, in the main window and any popout. */
+  private forEachView(fn: (view: WrotView) => void): void {
+    for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_WROT)) {
+      fn(leaf.view as WrotView);
+    }
+  }
+
   refreshViews(): void {
-    const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_WROT);
-    for (const leaf of leaves) {
+    this.forEachView((view) => {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
-      (leaf.view as WrotView).refresh();
-    }
+      view.refresh();
+    });
   }
 
-  updateSubmitLabel(): void {
-    const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_WROT);
-    for (const leaf of leaves) {
-      (leaf.view as WrotView).refreshSubmitButton();
-    }
-  }
-
-  updateSubmitIcon(): void {
-    const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_WROT);
-    for (const leaf of leaves) {
-      (leaf.view as WrotView).refreshSubmitButton();
-    }
+  updateSubmitButton(): void {
+    this.forEachView((view) => view.refreshSubmitButton());
   }
 
   updateCalendarButton(): void {
-    const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_WROT);
-    for (const leaf of leaves) {
-      (leaf.view as WrotView).updateCalendarButton();
-    }
+    this.forEachView((view) => view.updateCalendarButton());
   }
 
   updateInputPlaceholder(): void {
-    const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_WROT);
-    for (const leaf of leaves) {
-      const view = leaf.view as WrotView;
-      if (view.textarea) {
-        view.textarea.setAttribute("placeholder", this.settings.inputPlaceholder);
-      }
-    }
+    this.forEachView((view) => {
+      view.textarea?.setAttribute("placeholder", this.settings.inputPlaceholder);
+    });
   }
 
   onunload(): void {

@@ -86,6 +86,15 @@ const en = {
   "settings.item.showPostDelete.desc":
     "Adds a “Delete” button to the post menu. \nA deleted post cannot be brought back. \nImages attached to the post are not deleted.",
 
+  "settings.item.useCustomAttachmentFolder.name": "Image Folder",
+  "settings.item.useCustomAttachmentFolder.desc":
+    "Saves images added from Wrot to a folder of your choice, \nseparate from Obsidian's attachment setting.",
+
+  "settings.item.attachmentFolder.name": "Destination Folder",
+  "settings.item.attachmentFolder.desc":
+    "Select the folder images are saved to. \nIf the folder is missing, Obsidian's attachment setting is used.",
+  "settings.item.attachmentFolder.placeholder": "Select a folder",
+
   "settings.item.tagColorRules.name": "Use Tag Rules",
   "settings.item.tagColorRules.desc":
     "Set colors and tag integration per tag. For colors, the tag appearing first in the text wins.",

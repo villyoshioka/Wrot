@@ -150,157 +150,98 @@ function formatMemoTimestamp(time: string, format?: string): string {
   return moment(time).format(format || DEFAULT_TIMESTAMP_FORMAT);
 }
 
-// Nested quote markers are flattened to "QT:" instead of expanded, preventing recursive nesting.
-// eslint-disable-next-line no-useless-escape -- escape kept for regex readability
-const NESTED_QUOTE_RE_INLINE = /[\s]*\[\[[^\[\]]+#\^wr-\d{17}\]\][\s]*/g;
-
-const NESTED_QUOTE_PLACEHOLDER = "QT:";
-const NESTED_QUOTE_DISPLAY = "QT: ...";
-
-function sanitizeNestedQuotes(text: string): string {
-  return text.replace(NESTED_QUOTE_RE_INLINE, ` ${NESTED_QUOTE_PLACEHOLDER}`);
+/**
+ * Block forms that would crowd a quote-card preview.
+ *
+ * Each is collapsed to a placeholder before the preview text is rendered, then swapped back in
+ * as a compact marker span afterwards. Applied in listed order; the placeholders are distinct so
+ * a later pattern never sees an earlier one's output.
+ */
+interface PreviewMarker {
+  re: RegExp;
+  placeholder: string;
+  /** Replacement for `re` when it differs from the bare placeholder. */
+  replacement?: string;
+  cls: string;
+  /** Omitted for markers rendered as plain text. */
+  icon?: string;
+  label: string;
 }
 
-// Image/math/code blocks would crowd the preview; replaced with icon+label summaries.
-// eslint-disable-next-line no-useless-escape -- escape kept for regex readability
-const IMAGE_EMBED_RE = /!\[\[[^\[\]]+\.(?:png|jpe?g|gif|webp|svg|bmp)\]\]/gi;
-const IMAGE_EMBED_PLACEHOLDER = "@@WR_IMAGE_EMBED@@";
+const PREVIEW_MARKERS: readonly PreviewMarker[] = [
+  // Nested quote markers are flattened rather than expanded, preventing recursive nesting.
+  {
+    // eslint-disable-next-line no-useless-escape -- escape kept for regex readability
+    re: /[\s]*\[\[[^\[\]]+#\^wr-\d{17}\]\][\s]*/g,
+    placeholder: "QT:",
+    replacement: " QT:",
+    cls: "wr-nested-quote-marker",
+    label: "QT: ...",
+  },
+  {
+    // eslint-disable-next-line no-useless-escape -- escape kept for regex readability
+    re: /!\[\[[^\[\]]+\.(?:png|jpe?g|gif|webp|svg|bmp)\]\]/gi,
+    placeholder: "@@WR_IMAGE_EMBED@@",
+    cls: "wr-quote-image-marker",
+    icon: "image",
+    label: " image",
+  },
+  {
+    re: /\$\$[\s\S]+?\$\$/g,
+    placeholder: "@@WR_MATH_BLOCK@@",
+    cls: "wr-quote-math-marker",
+    icon: "sigma",
+    label: " math",
+  },
+  {
+    re: /(?:```|~~~)[\s\S]+?(?:```|~~~)/g,
+    placeholder: "@@WR_CODE_BLOCK@@",
+    cls: "wr-quote-code-marker",
+    icon: "code",
+    label: " code",
+  },
+];
 
-function sanitizeImageEmbeds(text: string): string {
-  return text.replace(IMAGE_EMBED_RE, IMAGE_EMBED_PLACEHOLDER);
+function sanitizeForPreview(text: string): string {
+  return PREVIEW_MARKERS.reduce(
+    (acc, m) => acc.replace(m.re, m.replacement ?? m.placeholder),
+    text
+  );
 }
 
-const MATH_BLOCK_RE = /\$\$[\s\S]+?\$\$/g;
-const MATH_BLOCK_PLACEHOLDER = "@@WR_MATH_BLOCK@@";
-
-function sanitizeMathBlocks(text: string): string {
-  return text.replace(MATH_BLOCK_RE, MATH_BLOCK_PLACEHOLDER);
+function markerSpan(marker: PreviewMarker): HTMLElement {
+  const span = createSpan();
+  span.className = marker.cls;
+  if (marker.icon) {
+    const iconEl = createSpan();
+    iconEl.className = `${marker.cls}-icon`;
+    setIcon(iconEl, marker.icon);
+    span.appendChild(iconEl);
+  }
+  span.appendChild(activeDocument.createTextNode(marker.label));
+  return span;
 }
 
-const CODE_BLOCK_RE = /(?:```|~~~)[\s\S]+?(?:```|~~~)/g;
-const CODE_BLOCK_PLACEHOLDER = "@@WR_CODE_BLOCK@@";
-
-function sanitizeCodeBlocks(text: string): string {
-  return text.replace(CODE_BLOCK_RE, CODE_BLOCK_PLACEHOLDER);
-}
-
-function decorateImageEmbedMarkers(root: HTMLElement): void {
-  const walker = activeDocument.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-  const textNodes: Text[] = [];
-  let n: Node | null;
-  while ((n = walker.nextNode())) {
-    if ((n as Text).data.includes(IMAGE_EMBED_PLACEHOLDER)) {
-      textNodes.push(n as Text);
+/** One pass per marker: a text node holding two kinds of placeholder is split by both. */
+function decoratePreviewMarkers(root: HTMLElement): void {
+  for (const marker of PREVIEW_MARKERS) {
+    const walker = activeDocument.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    const textNodes: Text[] = [];
+    let n: Node | null;
+    while ((n = walker.nextNode())) {
+      if ((n as Text).data.includes(marker.placeholder)) textNodes.push(n as Text);
     }
-  }
-  for (const tn of textNodes) {
-    const parent = tn.parentNode;
-    if (!parent) continue;
-    const parts = tn.data.split(IMAGE_EMBED_PLACEHOLDER);
-    const frag = createFragment();
-    parts.forEach((part, i) => {
-      if (part) frag.appendChild(activeDocument.createTextNode(part));
-      if (i < parts.length - 1) {
-        const span = createSpan();
-        span.className = "wr-quote-image-marker";
-        const iconEl = createSpan();
-        iconEl.className = "wr-quote-image-marker-icon";
-        setIcon(iconEl, "image");
-        span.appendChild(iconEl);
-        span.appendChild(activeDocument.createTextNode(" image"));
-        frag.appendChild(span);
-      }
-    });
-    parent.replaceChild(frag, tn);
-  }
-}
-
-function decorateMathBlockMarkers(root: HTMLElement): void {
-  const walker = activeDocument.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-  const textNodes: Text[] = [];
-  let n: Node | null;
-  while ((n = walker.nextNode())) {
-    if ((n as Text).data.includes(MATH_BLOCK_PLACEHOLDER)) {
-      textNodes.push(n as Text);
+    for (const tn of textNodes) {
+      const parent = tn.parentNode;
+      if (!parent) continue;
+      const parts = tn.data.split(marker.placeholder);
+      const frag = createFragment();
+      parts.forEach((part, i) => {
+        if (part) frag.appendChild(activeDocument.createTextNode(part));
+        if (i < parts.length - 1) frag.appendChild(markerSpan(marker));
+      });
+      parent.replaceChild(frag, tn);
     }
-  }
-  for (const tn of textNodes) {
-    const parent = tn.parentNode;
-    if (!parent) continue;
-    const parts = tn.data.split(MATH_BLOCK_PLACEHOLDER);
-    const frag = createFragment();
-    parts.forEach((part, i) => {
-      if (part) frag.appendChild(activeDocument.createTextNode(part));
-      if (i < parts.length - 1) {
-        const span = createSpan();
-        span.className = "wr-quote-math-marker";
-        const iconEl = createSpan();
-        iconEl.className = "wr-quote-math-marker-icon";
-        setIcon(iconEl, "sigma");
-        span.appendChild(iconEl);
-        span.appendChild(activeDocument.createTextNode(" math"));
-        frag.appendChild(span);
-      }
-    });
-    parent.replaceChild(frag, tn);
-  }
-}
-
-function decorateCodeBlockMarkers(root: HTMLElement): void {
-  const walker = activeDocument.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-  const textNodes: Text[] = [];
-  let n: Node | null;
-  while ((n = walker.nextNode())) {
-    if ((n as Text).data.includes(CODE_BLOCK_PLACEHOLDER)) {
-      textNodes.push(n as Text);
-    }
-  }
-  for (const tn of textNodes) {
-    const parent = tn.parentNode;
-    if (!parent) continue;
-    const parts = tn.data.split(CODE_BLOCK_PLACEHOLDER);
-    const frag = createFragment();
-    parts.forEach((part, i) => {
-      if (part) frag.appendChild(activeDocument.createTextNode(part));
-      if (i < parts.length - 1) {
-        const span = createSpan();
-        span.className = "wr-quote-code-marker";
-        const iconEl = createSpan();
-        iconEl.className = "wr-quote-code-marker-icon";
-        setIcon(iconEl, "code");
-        span.appendChild(iconEl);
-        span.appendChild(activeDocument.createTextNode(" code"));
-        frag.appendChild(span);
-      }
-    });
-    parent.replaceChild(frag, tn);
-  }
-}
-
-function decorateNestedQuoteMarkers(root: HTMLElement): void {
-  const walker = activeDocument.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-  const textNodes: Text[] = [];
-  let n: Node | null;
-  while ((n = walker.nextNode())) {
-    if ((n as Text).data.includes(NESTED_QUOTE_PLACEHOLDER)) {
-      textNodes.push(n as Text);
-    }
-  }
-  for (const tn of textNodes) {
-    const parent = tn.parentNode;
-    if (!parent) continue;
-    const parts = tn.data.split(NESTED_QUOTE_PLACEHOLDER);
-    const frag = createFragment();
-    parts.forEach((part, i) => {
-      if (part) frag.appendChild(activeDocument.createTextNode(part));
-      if (i < parts.length - 1) {
-        const span = createSpan();
-        span.className = "wr-nested-quote-marker";
-        span.textContent = NESTED_QUOTE_DISPLAY;
-        frag.appendChild(span);
-      }
-    });
-    parent.replaceChild(frag, tn);
   }
 }
 
@@ -314,12 +255,7 @@ function renderPreviewLines(
   app: App,
   checkStrikethrough?: boolean
 ): void {
-  const sanitized = sanitizeCodeBlocks(
-    sanitizeMathBlocks(
-      sanitizeImageEmbeds(sanitizeNestedQuotes(content))
-    )
-  );
-  const lines = sanitized
+  const lines = sanitizeForPreview(content)
     .split("\n")
     .filter((l) => l.trim().length > 0)
     .slice(0, PREVIEW_MAX_LINES);
@@ -385,10 +321,7 @@ function renderPreviewLines(
     }
   }
 
-  decorateNestedQuoteMarkers(bodyEl);
-  decorateImageEmbedMarkers(bodyEl);
-  decorateMathBlockMarkers(bodyEl);
-  decorateCodeBlockMarkers(bodyEl);
+  decoratePreviewMarkers(bodyEl);
 }
 
 function fillCardBody(

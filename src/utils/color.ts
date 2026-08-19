@@ -2,7 +2,8 @@ import { HEX_COLOR_RE } from "./patterns";
 
 /** Hex color arithmetic for the user-configurable palette. All inputs are #rrggbb. */
 
-function toHex(n: number): string {
+/** One channel as a two-digit hex pair. */
+export function toHex(n: number): string {
   return n.toString(16).padStart(2, "0");
 }
 

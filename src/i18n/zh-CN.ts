@@ -86,6 +86,15 @@ const zhCN = {
   "settings.item.showPostDelete.desc":
     "在笔记菜单中显示“删除”按钮。 \n删除后无法恢复。 \n笔记中的图片不会被删除。",
 
+  "settings.item.useCustomAttachmentFolder.name": "指定图片保存位置",
+  "settings.item.useCustomAttachmentFolder.desc":
+    "将从 Wrot 添加的图片保存到指定文件夹， \n不受 Obsidian 附件设置的影响。",
+
+  "settings.item.attachmentFolder.name": "保存文件夹",
+  "settings.item.attachmentFolder.desc":
+    "选择保存图片的文件夹。 \n若文件夹不存在，则遵循 Obsidian 的附件设置。",
+  "settings.item.attachmentFolder.placeholder": "选择文件夹",
+
   "settings.item.tagColorRules.name": "使用标签规则",
   "settings.item.tagColorRules.desc":
     "按标签设置颜色与标签集成。颜色以正文中先出现的标签为准。",

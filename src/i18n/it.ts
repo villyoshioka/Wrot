@@ -88,6 +88,15 @@ const it = {
   "settings.item.showPostDelete.desc":
     "Aggiunge il pulsante «Elimina» al menu del memo. \nUn memo eliminato non è recuperabile. \nLe immagini del memo non vengono eliminate.",
 
+  "settings.item.useCustomAttachmentFolder.name": "Specifica la cartella delle immagini",
+  "settings.item.useCustomAttachmentFolder.desc":
+    "Salva le immagini aggiunte da Wrot in una cartella a tua scelta, \nindipendentemente dall'impostazione degli allegati di Obsidian.",
+
+  "settings.item.attachmentFolder.name": "Cartella di destinazione",
+  "settings.item.attachmentFolder.desc":
+    "Seleziona la cartella in cui salvare le immagini. \nSe la cartella non esiste, viene usata l'impostazione degli allegati di Obsidian.",
+  "settings.item.attachmentFolder.placeholder": "Seleziona una cartella",
+
   "settings.item.tagColorRules.name": "Usa le regole per tag",
   "settings.item.tagColorRules.desc":
     "Imposta colori e integrazione per tag. Per i colori vince il tag che compare per primo nel testo.",

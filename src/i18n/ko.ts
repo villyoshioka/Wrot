@@ -86,6 +86,15 @@ const ko = {
   "settings.item.showPostDelete.desc":
     "게시물 메뉴에 '삭제' 버튼을 표시합니다. \n삭제한 게시물은 되돌릴 수 없습니다. \n게시물에 넣은 이미지는 삭제되지 않습니다.",
 
+  "settings.item.useCustomAttachmentFolder.name": "이미지 저장 위치 지정",
+  "settings.item.useCustomAttachmentFolder.desc":
+    "Wrot에서 추가한 이미지를 Obsidian의 첨부 파일 설정과 별개로 지정한 폴더에 저장합니다.",
+
+  "settings.item.attachmentFolder.name": "저장 폴더",
+  "settings.item.attachmentFolder.desc":
+    "이미지를 저장할 폴더를 선택합니다. \n지정한 폴더가 없으면 Obsidian의 첨부 파일 설정을 따릅니다.",
+  "settings.item.attachmentFolder.placeholder": "폴더 선택",
+
   "settings.item.tagColorRules.name": "태그별 규칙 사용",
   "settings.item.tagColorRules.desc":
     "태그별로 색과 태그 통합을 설정합니다. 색은 본문에서 먼저 나온 태그가 우선합니다.",

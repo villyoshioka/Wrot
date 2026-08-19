@@ -41,6 +41,7 @@ You can paste images directly into the post form. This makes it easy to take a s
 
 - Images are saved only at the time of posting. If you close the form without posting, the image will not be saved anywhere.
 - The storage location follows Obsidian's settings: Settings → Files & Links → Default location for new attachments.
+- Turning on "Image Folder" in Wrot's settings saves only the images added from Wrot to a folder of your choice. If that folder is missing, Obsidian's setting is used instead (the folder is never created automatically).
 - File names are automatically generated in the format `Pasted Image YYYYMMDDHHmmss.<extension>`.
 
 ### Important Notes

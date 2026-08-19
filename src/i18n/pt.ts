@@ -87,6 +87,15 @@ const pt = {
   "settings.item.showPostDelete.desc":
     "Adiciona o botão «Excluir» ao menu do memo. \nUm memo excluído não pode ser recuperado. \nAs imagens do memo não são excluídas.",
 
+  "settings.item.useCustomAttachmentFolder.name": "Especificar a pasta de imagens",
+  "settings.item.useCustomAttachmentFolder.desc":
+    "Salva as imagens adicionadas pelo Wrot na pasta que você escolher, \nindependentemente da configuração de anexos do Obsidian.",
+
+  "settings.item.attachmentFolder.name": "Pasta de destino",
+  "settings.item.attachmentFolder.desc":
+    "Selecione a pasta onde as imagens são salvas. \nSe a pasta não existir, a configuração de anexos do Obsidian é usada.",
+  "settings.item.attachmentFolder.placeholder": "Selecione uma pasta",
+
   "settings.item.tagColorRules.name": "Usar regras por tag",
   "settings.item.tagColorRules.desc":
     "Define cores e integração por tag. Nas cores, vence a tag que aparece primeiro no texto.",

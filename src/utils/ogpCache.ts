@@ -120,31 +120,19 @@ export class OGPCache {
     }
   }
 
+  // Parsed with DOMParser rather than by regex: attribute order and quoting stop mattering,
+  // and the resulting document is inert (no scripts run, no subresources load).
   private parseOGP(html: string, url: string): OGPData {
+    const doc = new DOMParser().parseFromString(html, "text/html");
     const get = (prop: string): string | undefined => {
-      // Match property= or name=, single or double quotes
-      const re = new RegExp(
-        `<meta[^>]*(?:property|name)=["']og:${prop}["'][^>]*content=["']([^"']*)["']`,
-        "i"
+      const meta = doc.querySelector<HTMLMetaElement>(
+        `meta[property="og:${prop}"], meta[name="og:${prop}"]`
       );
-      const match = html.match(re);
-      if (match) return match[1];
-
-      // Handle reversed attribute order (content before property)
-      const re2 = new RegExp(
-        `<meta[^>]*content=["']([^"']*)["'][^>]*(?:property|name)=["']og:${prop}["']`,
-        "i"
-      );
-      const match2 = html.match(re2);
-      return match2?.[1];
+      return meta?.content || undefined;
     };
 
-    const title =
-      get("title") ||
-      html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1]?.trim();
-
     return {
-      title,
+      title: get("title") || doc.querySelector("title")?.textContent?.trim() || undefined,
       description: get("description"),
       image: get("image"),
       siteName: get("site_name"),

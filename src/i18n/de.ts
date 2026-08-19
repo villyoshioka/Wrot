@@ -86,6 +86,15 @@ const de = {
   "settings.item.showPostDelete.desc":
     "Fügt dem Memo-Menü einen „Löschen“-Button hinzu. \nEin gelöschtes Memo lässt sich nicht wiederherstellen. \nBilder im Memo werden nicht gelöscht.",
 
+  "settings.item.useCustomAttachmentFolder.name": "Bildordner festlegen",
+  "settings.item.useCustomAttachmentFolder.desc":
+    "Speichert über Wrot hinzugefügte Bilder in einem selbst gewählten Ordner, \nunabhängig von der Anhang-Einstellung von Obsidian.",
+
+  "settings.item.attachmentFolder.name": "Zielordner",
+  "settings.item.attachmentFolder.desc":
+    "Wähle den Ordner, in dem Bilder gespeichert werden. \nFehlt der Ordner, gilt die Anhang-Einstellung von Obsidian.",
+  "settings.item.attachmentFolder.placeholder": "Ordner wählen",
+
   "settings.item.tagColorRules.name": "Tag-Regeln verwenden",
   "settings.item.tagColorRules.desc":
     "Legt Farben und Tag-Integration pro Tag fest. Bei Farben gewinnt der zuerst genannte Tag.",

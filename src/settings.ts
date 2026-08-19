@@ -10,7 +10,8 @@ import {
 } from "obsidian";
 import type WrotPlugin from "./main";
 import { t } from "./i18n";
-import { blendColor } from "./utils/color";
+import { blendColor, toHex } from "./utils/color";
+import { HEX_COLOR_RE } from "./utils/patterns";
 
 export interface SubColorScope {
   buttons?: boolean;
@@ -60,6 +61,10 @@ export interface WrotSettings {
   // Submit-button icon while editing a post. Empty shares submitIcon.
   updateIcon: string;
   inputPlaceholder: string;
+  // Saves attached images into attachmentFolder instead of following Obsidian's own
+  // attachment setting. The folder is never created here: a missing one falls back.
+  useCustomAttachmentFolder: boolean;
+  attachmentFolder: string;
   enableOgpFetch: boolean;
   checkStrikethrough: boolean;
   tagSuggestEnabled: boolean;
@@ -94,6 +99,8 @@ export const DEFAULT_SETTINGS: WrotSettings = {
   updateLabel: "更新",
   updateIcon: "send",
   inputPlaceholder: "あなたが書くのを待っています...",
+  useCustomAttachmentFolder: false,
+  attachmentFolder: "",
   enableOgpFetch: true,
   checkStrikethrough: false,
   tagSuggestEnabled: true,
@@ -107,8 +114,6 @@ export const DEFAULT_SETTINGS: WrotSettings = {
   pins: [],
   pinLimit: 3,
 };
-
-const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
 
 // Locale strings carry authored line breaks as "\n". They are desktop-only formatting:
 // mobile columns are narrow enough that natural wrapping reads better, so the CSS hides
@@ -179,86 +184,59 @@ export class WrotSettingTab extends PluginSettingTab {
     return settings[key as keyof WrotSettings];
   }
 
-  async setControlValue(key: string, value: unknown): Promise<void> {
+  /**
+   * What each control needs beyond storing its value. Membership decides ownership too:
+   * a key absent here is left to the base class.
+   *
+   * Runs after the value is written to `settings` but before the save, so an entry may still
+   * adjust the settings it is reacting to.
+   */
+  private controlEffects(): Record<string, () => void | Promise<void>> {
     const settings = this.plugin.settings;
-    switch (key) {
-      case "viewPlacement":
-        settings.viewPlacement = value as WrotSettings["viewPlacement"];
-        await this.plugin.saveSettings();
-        return;
+    return {
+      viewPlacement: () => undefined,
+      enableOgpFetch: () => undefined,
+      attachmentFolder: () => undefined,
+      // The folder row is only offered while this is on.
+      useCustomAttachmentFolder: () => this.update(),
+      followObsidianFontSize: () => this.plugin.applyFontFollow(),
+      calendarDayShape: () => this.plugin.applyCalendarDayShape(),
+      checkStrikethrough: () => this.plugin.refreshViews(),
 
-      case "followObsidianFontSize":
-        settings.followObsidianFontSize = value as boolean;
-        await this.plugin.saveSettings();
-        this.plugin.applyFontFollow();
-        return;
-
-      case "pinLimit": {
-        const limit = Number(value) as PinLimit;
-        settings.pinLimit = limit;
-        if (settings.pins.length > limit) {
-          settings.pins = settings.pins.slice(0, limit);
+      pinLimit: () => {
+        if (settings.pins.length > settings.pinLimit) {
+          settings.pins = settings.pins.slice(0, settings.pinLimit);
         }
-        await this.plugin.saveSettings();
         this.plugin.refreshViews();
-        return;
-      }
+      },
 
-      case "tagSuggestEnabled":
-        settings.tagSuggestEnabled = value as boolean;
-        await this.plugin.saveSettings();
-        // Switching off is also how the remembered candidates are discarded: an unused
-        // dictionary is dead weight, and posting rebuilds it once suggestions are back on.
-        if (!settings.tagSuggestEnabled) {
-          this.plugin.recentTags = [];
-          await this.plugin.saveRecentTags();
-        }
-        return;
+      // Switching off is also how the remembered candidates are discarded: an unused
+      // dictionary is dead weight, and posting rebuilds it once suggestions are back on.
+      tagSuggestEnabled: async () => {
+        if (settings.tagSuggestEnabled) return;
+        this.plugin.recentTags = [];
+        await this.plugin.saveRecentTags();
+      },
 
-      case "graphTagsEnabled":
-        settings.graphTagsEnabled = value as boolean;
-        await this.plugin.saveSettings();
+      graphTagsEnabled: async () => {
         await this.plugin.graphTags.applyEnabled();
         // The per-rule "exclude from integration" row is only offered while this is on.
         this.update();
-        return;
+      },
 
-      case "enableOgpFetch":
-        settings.enableOgpFetch = value as boolean;
-        await this.plugin.saveSettings();
-        return;
-
-      case "showPostDelete":
-        settings.showPostDelete = value as boolean;
-        await this.plugin.saveSettings();
+      showPostDelete: () => {
         this.plugin.refreshViews();
         // The per-rule "disable delete button" row is only offered while this is on.
         this.update();
-        return;
+      },
 
-      case "checkStrikethrough":
-        settings.checkStrikethrough = value as boolean;
-        await this.plugin.saveSettings();
-        this.plugin.refreshViews();
-        return;
-
-      case "showCalendarButton":
-        settings.showCalendarButton = value as boolean;
-        await this.plugin.saveSettings();
+      showCalendarButton: () => {
         this.plugin.updateCalendarButton();
         // The day-shape row only applies while the button is shown.
         this.refreshDomState();
-        return;
+      },
 
-      case "calendarDayShape":
-        settings.calendarDayShape = value as WrotSettings["calendarDayShape"];
-        await this.plugin.saveSettings();
-        this.plugin.applyCalendarDayShape();
-        return;
-
-      case "tagColorRulesEnabled": {
-        settings.tagColorRulesEnabled = value as boolean;
-        await this.plugin.saveSettings();
+      tagColorRulesEnabled: () => {
         this.plugin.applyTagColorRules();
         this.plugin.refreshAllWrDecorations();
         // Toggling rules also changes whether the "no integration" exclusion applies.
@@ -267,14 +245,23 @@ export class WrotSettingTab extends PluginSettingTab {
         const rules = settings.tagColorRules;
         const noMeaningfulRule =
           rules.length === 0 || (rules.length === 1 && rules[0].tag.trim() === "");
-        if (value && noMeaningfulRule) this.unlockedRules.add(0);
+        if (settings.tagColorRulesEnabled && noMeaningfulRule) this.unlockedRules.add(0);
         this.update();
-        return;
-      }
+      },
+    };
+  }
 
-      default:
-        await super.setControlValue(key, value);
+  async setControlValue(key: string, value: unknown): Promise<void> {
+    const effect = this.controlEffects()[key];
+    if (!effect) {
+      await super.setControlValue(key, value);
+      return;
     }
+    // Dropdowns hand back strings; pinLimit is the only numeric setting.
+    const stored = key === "pinLimit" ? (Number(value) as PinLimit) : value;
+    (this.plugin.settings as unknown as Record<string, unknown>)[key] = stored;
+    await effect();
+    await this.plugin.saveSettings();
   }
 
   // ---------------------------------------------------------------- colour helpers
@@ -297,21 +284,21 @@ export class WrotSettingTab extends PluginSettingTab {
   // so a fresh rule starts from the colour the user actually sees.
   private resolveRuleBg(value: string): string {
     const isLightDefault = value === DEFAULT_SETTINGS.bgColorLight;
-    return HEX_COLOR.test(value) && !(this.isDarkTheme() && isLightDefault)
+    return HEX_COLOR_RE.test(value) && !(this.isDarkTheme() && isLightDefault)
       ? value
       : this.defaultRuleBg();
   }
 
   private resolveRuleText(value: string): string {
     const isLightDefault = value === DEFAULT_SETTINGS.textColorLight;
-    return HEX_COLOR.test(value) && !(this.isDarkTheme() && isLightDefault)
+    return HEX_COLOR_RE.test(value) && !(this.isDarkTheme() && isLightDefault)
       ? value
       : this.defaultRuleText();
   }
 
   private defaultAccent(): string {
     const raw = getComputedStyle(activeDocument.body).getPropertyValue("--text-accent").trim();
-    if (HEX_COLOR.test(raw)) return raw;
+    if (HEX_COLOR_RE.test(raw)) return raw;
     // The theme may express the accent in any colour syntax; let the engine resolve it.
     const probe = createDiv();
     probe.setCssStyles({ color: raw || "var(--text-accent)", display: "none" });
@@ -320,8 +307,7 @@ export class WrotSettingTab extends PluginSettingTab {
     activeDocument.body.removeChild(probe);
     const m = resolved.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/);
     if (m) {
-      const toHex = (n: string) => parseInt(n, 10).toString(16).padStart(2, "0");
-      return `#${toHex(m[1])}${toHex(m[2])}${toHex(m[3])}`;
+      return `#${toHex(+m[1])}${toHex(+m[2])}${toHex(+m[3])}`;
     }
     return this.defaultRuleText();
   }
@@ -331,7 +317,7 @@ export class WrotSettingTab extends PluginSettingTab {
   }
 
   private isSubCustomized(rule: TagColorRule): boolean {
-    return !!rule.subColor && HEX_COLOR.test(rule.subColor);
+    return !!rule.subColor && HEX_COLOR_RE.test(rule.subColor);
   }
 
   // ---------------------------------------------------------------- imperative rows
@@ -507,7 +493,7 @@ export class WrotSettingTab extends PluginSettingTab {
           write: async (value) => {
             settings.submitLabel = value.trim();
             await this.plugin.saveSettings();
-            this.plugin.updateSubmitLabel();
+            this.plugin.updateSubmitButton();
           },
           resetValue: () => t("defaults.submitLabel"),
         }),
@@ -520,7 +506,7 @@ export class WrotSettingTab extends PluginSettingTab {
           write: async (value) => {
             settings.updateLabel = value.trim();
             await this.plugin.saveSettings();
-            this.plugin.updateSubmitLabel();
+            this.plugin.updateSubmitButton();
           },
           resetValue: () => t("defaults.updateLabel"),
         }),
@@ -594,6 +580,21 @@ export class WrotSettingTab extends PluginSettingTab {
           desc: desc(t("settings.item.showPostDelete.desc")),
           control: { type: "toggle", key: "showPostDelete" },
         },
+        {
+          name: t("settings.item.useCustomAttachmentFolder.name"),
+          desc: desc(t("settings.item.useCustomAttachmentFolder.desc")),
+          control: { type: "toggle", key: "useCustomAttachmentFolder" },
+        },
+        {
+          name: t("settings.item.attachmentFolder.name"),
+          desc: desc(t("settings.item.attachmentFolder.desc")),
+          visible: () => settings.useCustomAttachmentFolder,
+          control: {
+            type: "folder",
+            key: "attachmentFolder",
+            placeholder: t("settings.item.attachmentFolder.placeholder"),
+          },
+        },
       ],
     };
   }
@@ -644,7 +645,7 @@ export class WrotSettingTab extends PluginSettingTab {
               .onChange(async (value) => {
                 settings[key] = value.trim();
                 await this.plugin.saveSettings();
-                this.plugin.updateSubmitIcon();
+                this.plugin.updateSubmitButton();
               });
           })
           .addExtraButton((btn) =>
@@ -652,7 +653,7 @@ export class WrotSettingTab extends PluginSettingTab {
               settings[key] = DEFAULT_SETTINGS[key];
               await this.plugin.saveSettings();
               field.setValue(DEFAULT_SETTINGS[key]);
-              this.plugin.updateSubmitIcon();
+              this.plugin.updateSubmitButton();
             })
           );
       },
@@ -1009,6 +1010,7 @@ export class WrotSettingTab extends PluginSettingTab {
         bgPickerEl = pickerInputEl(picker);
         picker.setValue(this.resolveRuleBg(initial.bgColor)).onChange(async (v) => {
           await onBgChange(v);
+          syncSubDefault();
         });
       });
 
@@ -1021,6 +1023,7 @@ export class WrotSettingTab extends PluginSettingTab {
         fgPickerEl = pickerInputEl(picker);
         picker.setValue(this.resolveRuleText(initial.textColor)).onChange(async (v) => {
           await onFgChange(v);
+          syncSubDefault();
         });
       });
 
@@ -1035,7 +1038,7 @@ export class WrotSettingTab extends PluginSettingTab {
         accentPicker = picker;
         accentPickerEl = pickerInputEl(picker);
         const initialAccent =
-          initial.accentColor && HEX_COLOR.test(initial.accentColor)
+          initial.accentColor && HEX_COLOR_RE.test(initial.accentColor)
             ? initial.accentColor
             : this.defaultAccent();
         picker.setValue(initialAccent).onChange(async (v) => {
@@ -1129,6 +1132,16 @@ export class WrotSettingTab extends PluginSettingTab {
           });
         });
     }
+
+    // While the sub colour is left at its default it is derived from the rule's text and
+    // background, so editing either of those has to re-derive what the picker shows. A
+    // customised sub colour is the user's own value and stays put.
+    const syncSubDefault = (): void => {
+      if (this.isSubCustomized(initial)) return;
+      suppressSubChange = true;
+      subPicker.setValue(this.defaultSub(initial));
+      suppressSubChange = false;
+    };
 
     const renderScope = () => {
       scopeContainer.empty();

@@ -519,18 +519,6 @@ function renderInlineTokens(
   }
 }
 
-// Vanilla DOM only, so this works both in Obsidian views and inside CodeMirror widgets.
-function el<K extends keyof HTMLElementTagNameMap>(
-  tag: K,
-  cls?: string,
-  text?: string
-): HTMLElementTagNameMap[K] {
-  const e = createEl(tag);
-  if (cls) e.className = cls;
-  if (text) e.textContent = text;
-  return e;
-}
-
 function makeClickableLink(element: HTMLElement, url: string): void {
   element.addEventListener("click", (e) => {
     e.preventDefault();
@@ -544,13 +532,13 @@ export function renderImagePreview(
   url: string,
   resolveImagePath?: (fileName: string) => string | null
 ): void {
-  const wrapper = el("a", "wr-media-link");
+  const wrapper = createEl("a", { cls: "wr-media-link" });
   wrapper.href = url;
   wrapper.target = "_blank";
   wrapper.rel = "noopener";
   makeClickableLink(wrapper, url);
 
-  const img = el("img", "wr-inline-img");
+  const img = createEl("img", { cls: "wr-inline-img" });
   if (isSafeImageUrl(url)) {
     img.src = url;
   } else if (url.startsWith("obsidian://") && resolveImagePath) {
@@ -569,24 +557,24 @@ export function renderOGPCard(
   container: HTMLElement,
   data: OGPData
 ): void {
-  const card = el("a", "wr-ogp-card");
+  const card = createEl("a", { cls: "wr-ogp-card" });
   card.href = data.url;
   card.target = "_blank";
   card.rel = "noopener";
   makeClickableLink(card, data.url);
 
   if (data.image && isSafeImageUrl(data.image)) {
-    const thumb = el("img", "wr-ogp-thumb");
+    const thumb = createEl("img", { cls: "wr-ogp-thumb" });
     thumb.src = data.image;
     thumb.loading = "lazy";
     card.appendChild(thumb);
   }
 
-  const body = el("div", "wr-ogp-body");
-  if (data.title) body.appendChild(el("div", "wr-ogp-title", data.title));
-  if (data.description) body.appendChild(el("div", "wr-ogp-desc", data.description));
+  const body = createDiv({ cls: "wr-ogp-body" });
+  if (data.title) body.appendChild(createDiv({ cls: "wr-ogp-title", text: data.title }));
+  if (data.description) body.appendChild(createDiv({ cls: "wr-ogp-desc", text: data.description }));
   const siteName = data.siteName || extractDomain(data.url);
-  body.appendChild(el("div", "wr-ogp-site", siteName));
+  body.appendChild(createDiv({ cls: "wr-ogp-site", text: siteName }));
   card.appendChild(body);
   container.appendChild(card);
 }
@@ -595,23 +583,23 @@ export function renderTwitterCard(
   container: HTMLElement,
   data: OGPData
 ): void {
-  const card = el("a", "wr-ogp-card wr-twitter-card");
+  const card = createEl("a", { cls: "wr-ogp-card wr-twitter-card" });
   card.href = data.url;
   card.target = "_blank";
   card.rel = "noopener";
   makeClickableLink(card, data.url);
 
   if (data.image && isSafeImageUrl(data.image)) {
-    const thumb = el("img", "wr-ogp-thumb");
+    const thumb = createEl("img", { cls: "wr-ogp-thumb" });
     thumb.src = data.image;
     thumb.loading = "lazy";
     card.appendChild(thumb);
   }
 
-  const body = el("div", "wr-ogp-body");
-  if (data.title) body.appendChild(el("div", "wr-ogp-title", data.title));
-  if (data.description) body.appendChild(el("div", "wr-ogp-desc", data.description));
-  body.appendChild(el("div", "wr-ogp-site", "X (Twitter)"));
+  const body = createDiv({ cls: "wr-ogp-body" });
+  if (data.title) body.appendChild(createDiv({ cls: "wr-ogp-title", text: data.title }));
+  if (data.description) body.appendChild(createDiv({ cls: "wr-ogp-desc", text: data.description }));
+  body.appendChild(createDiv({ cls: "wr-ogp-site", text: "X (Twitter)" }));
   card.appendChild(body);
   container.appendChild(card);
 }
@@ -639,7 +627,7 @@ export function renderUrlPreviews(
       const cached = ogpCache.get(pu.url);
       if (cached) {
         if (!cached.title && !cached.description) continue;
-        const host = el("div", "wr-ogp-loading");
+        const host = createDiv({ cls: "wr-ogp-loading" });
         host.textContent = "";
         container.appendChild(host);
         render(host, cached);
@@ -648,7 +636,7 @@ export function renderUrlPreviews(
       // Already known to be unresolvable, or previews are off: no card, no loading flash.
       if (ogpCache.isResolved(pu.url) || !ogpCache.canFetch(pu.url)) continue;
 
-      const placeholder = el("div", "wr-ogp-loading");
+      const placeholder = createDiv({ cls: "wr-ogp-loading" });
       container.appendChild(placeholder);
       // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
       ogpCache.fetchOGP(pu.url).then((data) => {

@@ -268,9 +268,16 @@ export function buildPaletteCss(palette: WrPalette): string {
       body .cm-line.wr-codeblock-line .wr-url {
         color: var(--text-accent);
       }
+      /* A missing embed points at something that is not there, same as an unresolved link,
+         so both take the palette's faint colour. The tag-rule sheet groups them the same way;
+         without the embed selectors here they would fall back to the theme's muted colour,
+         which is unrelated to Wrot's own background. */
       body .cm-line.wr-codeblock-line .wr-internal-link.wr-internal-link-unresolved,
       body div.block-language-wr a.wr-internal-link.wr-internal-link-unresolved,
-      body .wr-internal-link.wr-internal-link-unresolved {
+      body .wr-internal-link.wr-internal-link-unresolved,
+      body .cm-line.wr-codeblock-line .wr-embed-missing,
+      body div.block-language-wr .wr-embed-missing,
+      body .wr-embed-missing {
         color: ${unresolvedLinkColor};
       }
       body .wr-submit-btn.wr-submit-active {

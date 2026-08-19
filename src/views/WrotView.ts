@@ -1016,6 +1016,13 @@ export class WrotView extends ItemView {
     }
   }
 
+  // The folder attached images go to, or undefined to leave the choice to Obsidian's
+  // own attachment setting.
+  private attachmentFolder(): string | undefined {
+    const { useCustomAttachmentFolder, attachmentFolder } = this.plugin.settings;
+    return useCustomAttachmentFolder ? attachmentFolder : undefined;
+  }
+
   // Writes the edited body back into the original memo block. The opening fence
   // line is untouched, so the timestamp and any block ID survive and quotes or
   // pins referencing this memo keep resolving.
@@ -1032,7 +1039,12 @@ export class WrotView extends ItemView {
     try {
       let bodyText = rawText;
       if (this.pendingImage) {
-        const savedFile = await saveImageToVault(this.app, this.pendingImage, file);
+        const savedFile = await saveImageToVault(
+          this.app,
+          this.pendingImage,
+          file,
+          this.attachmentFolder()
+        );
         const embed = buildEmbedLink(savedFile);
         bodyText = insertEmbedAboveBottomBlock(bodyText, embed);
       }
@@ -1081,7 +1093,12 @@ export class WrotView extends ItemView {
 
       let bodyText = rawText;
       if (this.pendingImage) {
-        const savedFile = await saveImageToVault(this.app, this.pendingImage, file);
+        const savedFile = await saveImageToVault(
+          this.app,
+          this.pendingImage,
+          file,
+          this.attachmentFolder()
+        );
         const embed = buildEmbedLink(savedFile);
         bodyText = insertEmbedAboveBottomBlock(bodyText, embed);
       }

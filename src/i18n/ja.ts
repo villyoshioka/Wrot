@@ -77,6 +77,15 @@ const ja = {
   "settings.item.showPostDelete.desc":
     "投稿のメニューに「削除」ボタンを表示します。\n削除した投稿は元に戻せません。\n投稿に添付した画像は削除されません。",
 
+  "settings.item.useCustomAttachmentFolder.name": "画像の保存先を指定",
+  "settings.item.useCustomAttachmentFolder.desc":
+    "Wrotから追加した画像の保存先を、Obsidianの添付ファイル設定とは別に指定します。",
+
+  "settings.item.attachmentFolder.name": "保存先フォルダ",
+  "settings.item.attachmentFolder.desc":
+    "画像を保存するフォルダを選びます。\n指定したフォルダがない場合はObsidianの添付ファイル設定に従います。",
+  "settings.item.attachmentFolder.placeholder": "フォルダを選択",
+
   "settings.item.tagColorRules.name": "タグ別ルールを使う",
   "settings.item.tagColorRules.desc":
     "タグごとに投稿の色や本体統合の扱いを設定します。色は本文で先に出たタグが優先されます。",

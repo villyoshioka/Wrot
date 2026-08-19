@@ -84,6 +84,15 @@ const ru = {
   "settings.item.showPostDelete.desc":
     "Добавляет кнопку «Удалить» в меню записи. \nУдалённую запись нельзя восстановить. \nИзображения из записи не удаляются.",
 
+  "settings.item.useCustomAttachmentFolder.name": "Папка для изображений",
+  "settings.item.useCustomAttachmentFolder.desc":
+    "Сохраняет изображения, добавленные из Wrot, в выбранную папку, \nнезависимо от настройки вложений Obsidian.",
+
+  "settings.item.attachmentFolder.name": "Папка назначения",
+  "settings.item.attachmentFolder.desc":
+    "Выберите папку для сохранения изображений. \nЕсли папки нет, используется настройка вложений Obsidian.",
+  "settings.item.attachmentFolder.placeholder": "Выберите папку",
+
   "settings.item.tagColorRules.name": "Правила для тегов",
   "settings.item.tagColorRules.desc":
     "Настройка цвета и интеграции для каждого тега. В цветах побеждает тег, идущий в тексте первым.",

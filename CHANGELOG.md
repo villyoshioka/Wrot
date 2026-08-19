@@ -1,5 +1,22 @@
 # Release Notes
 
+## 2.20.0 - 2026-08-20
+
+### New Features
+
+- Added a setting for the folder images added from Wrot are saved to.
+
+### Improvements
+
+- Improved the internal structure.
+
+### Bug Fixes
+
+- Fixed the sub colour of a tag rule not following a change of background or text colour in the settings right away.
+- Fixed the text for a missing embedded image not matching the colour of an unresolved link.
+
+---
+
 ## 2.19.1 - 2026-08-15
 
 ### Updates
