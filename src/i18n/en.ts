@@ -7,115 +7,89 @@ const en = {
   "settings.section.tagrules": "Tag Rules",
 
   "settings.item.viewPlacement.name": "Display Position",
-  "settings.item.viewPlacement.desc": "Select where to display the Wrot panel.",
+  "settings.item.viewPlacement.desc": "Applies the next time Wrot is opened.",
   "settings.option.viewPlacement.left": "Left Sidebar",
   "settings.option.viewPlacement.right": "Right Sidebar",
   "settings.option.viewPlacement.main": "Main Area",
 
   "settings.item.followFontSize.name": "Follow Obsidian Font Size",
-  "settings.item.followFontSize.desc":
-    "Match Wrot's text size to Obsidian's appearance settings.",
+  "settings.item.followFontSize.desc": "When on, matches the font size from Obsidian's appearance settings.",
 
   "settings.item.headerDateFormat.name": "Header Date Format",
-  "settings.item.headerDateFormat.desc":
-    "Specify the date format for the date navigation. (YYYY, MM, DD, etc. can be used) \nLeave blank to reset to default.",
+  "settings.item.headerDateFormat.desc": "YYYY, MM, DD, etc. can be used. \nLeave blank to reset to default.",
 
   "settings.item.timestampFormat.name": "Timestamp Format",
-  "settings.item.timestampFormat.desc":
-    "Specify the date and time format for posts. \n(YYYY, MM, DD, HH, mm, ss can be used)",
+  "settings.item.timestampFormat.desc": "YYYY, MM, DD, HH, mm, ss can be used.",
 
   "settings.item.bgColorLight.name": "Background Color (Light Mode)",
-  "settings.item.bgColorLight.desc":
-    "Set the background color for posts and the post form in light theme.",
+  "settings.item.bgColorLight.desc": "Used for posts and the post form.",
   "settings.item.textColorLight.name": "Text Color (Light Mode)",
-  "settings.item.textColorLight.desc":
-    "Set the color for text and icons in light theme.",
+  "settings.item.textColorLight.desc": "Used for text and icons.",
   "settings.item.bgColorDark.name": "Background Color (Dark Mode)",
-  "settings.item.bgColorDark.desc":
-    "Set the background color for posts and the post form in dark theme.",
+  "settings.item.bgColorDark.desc": "Used for posts and the post form.",
   "settings.item.textColorDark.name": "Text Color (Dark Mode)",
-  "settings.item.textColorDark.desc":
-    "Set the color for text and icons in dark theme.",
+  "settings.item.textColorDark.desc": "Used for text and icons.",
 
   "settings.item.submitLabel.name": "Post Button Text",
-  "settings.item.submitLabel.desc":
-    "Change the text displayed on the post button. \nLeave blank for an icon-only button (shown only if an icon is set).",
+  "settings.item.submitLabel.desc": "Leave blank for an icon-only button (only if an icon is set).",
   "settings.item.submitIcon.name": "Post Button Icon",
-  "settings.item.submitIcon.desc":
-    "Change the icon on the post button. \nCopy an icon name from {linkOpen}here{linkClose}. \nLeave blank to hide it.",
+  "settings.item.submitIcon.desc": "Copy an icon name from {linkOpen}here{linkClose}. \nLeave blank to hide it.",
   "settings.item.updateLabel.name": "Update Button Text",
-  "settings.item.updateLabel.desc":
-    "Change the text displayed on the post button while editing a post. \nLeave blank for an icon-only button (shown only if an icon is set).",
+  "settings.item.updateLabel.desc": "Used while editing a post. \nLeave blank for an icon-only button (only if an icon is set).",
   "settings.item.updateIcon.name": "Update Button Icon",
-  "settings.item.updateIcon.desc":
-    "Change the icon shown while editing a post. \nCopy an icon name from {linkOpen}here{linkClose}. \nLeave blank to use the post button's icon.",
+  "settings.item.updateIcon.desc": "Copy an icon name from {linkOpen}here{linkClose}. \nLeave blank to use the post button's icon.",
   "settings.item.inputPlaceholder.name": "Post Form Placeholder",
-  "settings.item.inputPlaceholder.desc":
-    "Change the text displayed when the post form is empty. \nLeave blank to hide it.",
+  "settings.item.inputPlaceholder.desc": "Leave blank to hide it.",
 
   "settings.item.tagSuggest.name": "Tag Autocomplete",
-  "settings.item.tagSuggest.desc":
-    "Typing # suggests tags from your past posts. Switching it off also clears the remembered tags.",
+  "settings.item.tagSuggest.desc": "Typing after # shows suggestions. \nSwitching it off also clears the remembered ones.",
 
   "settings.item.pinLimit.name": "Pin Limit",
-  "settings.item.pinLimit.desc":
-    "Set the maximum number of notes that can be pinned to the timeline.",
+  "settings.item.pinLimit.desc": "Lowering the limit unpins anything over it.",
   "settings.option.pinLimit.1": "1 Post",
   "settings.option.pinLimit.3": "3 Posts",
   "settings.option.pinLimit.5": "5 Posts",
 
   "settings.item.ogp.name": "URL Preview",
-  "settings.item.ogp.desc":
-    "Automatically retrieve and display OGP information from URLs in notes. \nIf turned off, no external communication will occur.",
+  "settings.item.ogp.desc": "Fetches preview details from URLs. \nSwitching it off stops all outside connections.",
 
   "settings.item.checkStrikethrough.name": "Strikethrough for Checked Items",
-  "settings.item.checkStrikethrough.desc":
-    "Display a strikethrough for items with a checked checkbox.",
+  "settings.item.checkStrikethrough.desc": "Left off, the text stays as it is.",
 
   "settings.item.calendarDayShape.name": "Date Button Shape",
-  "settings.item.calendarDayShape.desc": "Select the shape of the date buttons in the calendar.",
+  "settings.item.calendarDayShape.desc": "Applies to the days in the calendar.",
   "settings.option.calendarDayShape.circle": "Circle",
   "settings.option.calendarDayShape.rounded": "Rounded",
   "settings.option.calendarDayShape.square": "Square",
 
   "settings.item.showCalendarButton.name": "Calendar Button",
-  "settings.item.showCalendarButton.desc":
-    "Adds a calendar button to the date nav, \nletting you jump to any date with a quick tap.",
+  "settings.item.showCalendarButton.desc": "When on, you can jump to any date from the date nav.",
 
   "settings.item.showPostDelete.name": "Delete Button",
-  "settings.item.showPostDelete.desc":
-    "Adds a “Delete” button to the post menu. \nA deleted post cannot be brought back. \nImages attached to the post are not deleted.",
+  "settings.item.showPostDelete.desc": "When on, a delete button is added to the post menu. \nA deleted post cannot be brought back. Attached images are not deleted.",
 
   "settings.item.useCustomAttachmentFolder.name": "Image Folder",
-  "settings.item.useCustomAttachmentFolder.desc":
-    "Saves images added from Wrot to a folder of your choice, \nseparate from Obsidian's attachment setting.",
+  "settings.item.useCustomAttachmentFolder.desc": "Applies only to images added from Wrot.",
 
   "settings.item.attachmentFolder.name": "Destination Folder",
-  "settings.item.attachmentFolder.desc":
-    "Select the folder images are saved to. \nIf the folder is missing, Obsidian's attachment setting is used.",
+  "settings.item.attachmentFolder.desc": "If the folder is missing, Obsidian's own setting is used.",
   "settings.item.attachmentFolder.placeholder": "Select a folder",
 
   "settings.item.tagColorRules.name": "Use Tag Rules",
-  "settings.item.tagColorRules.desc":
-    "Set colors and tag integration per tag. For colors, the tag appearing first in the text wins.",
+  "settings.item.tagColorRules.desc": "Lets you change the color, tag integration and more per tag. \nFor color, the tag appearing first in the text wins.",
 
   "settings.tagRule.label": "Rule {n}",
   "settings.tagRule.tag.name": "Tag",
-  "settings.tagRule.tag.desc":
-    "Enter the tag name you want to color. (The # symbol can be omitted)",
+  "settings.tagRule.tag.desc": "The # symbol can be omitted.",
   "settings.tagRule.tag.placeholder": "Tag name",
   "settings.tagRule.bg.name": "Background Color",
-  "settings.tagRule.bg.desc":
-    "Set the background color for posts containing this tag.",
+  "settings.tagRule.bg.desc": "Used for the post background.",
   "settings.tagRule.fg.name": "Text Color",
-  "settings.tagRule.fg.desc":
-    "Set the text color for the body of posts containing this tag. (Tags, links, and URLs are set using the accent color)",
+  "settings.tagRule.fg.desc": "Tags, links and URLs are set using the accent color.",
   "settings.tagRule.accent.name": "Accent Color",
-  "settings.tagRule.accent.desc":
-    "Color for tags, links, and URLs. Uses the theme's accent color if unset.",
+  "settings.tagRule.accent.desc": "Uses the theme's accent color if unset.",
   "settings.tagRule.sub.name": "Sub Color",
-  "settings.tagRule.sub.desc":
-    "Color for secondary elements like timestamps and list markers. \nCalculated automatically if unset.",
+  "settings.tagRule.sub.desc": "The color of timestamps, list markers and the like. \nWorked out automatically if unset.",
   "settings.tagRule.scope.buttons.name":
     "Apply Sub Color to Timestamp, Menu, and Pins",
   "settings.tagRule.scope.buttons.desc":
@@ -130,17 +104,13 @@ const en = {
   "settings.tagRule.scope.ogp.desc":
     "When off, automatically determined colors will be used.",
   "settings.item.graphTags.name": "Tag Integration",
-  "settings.item.graphTags.desc":
-    "Makes memo tags count for the graph view and tag: search. \nWhen off, tags stay inside Wrot.",
+  "settings.item.graphTags.desc": "Tags become part of graph view and tag: search. \nLeft off, they stay inside Wrot.",
   "settings.tagRule.noIntegration.name": "Exclude from Tag Integration",
-  "settings.tagRule.noIntegration.desc":
-    "When on, this rule's tag written inside memos is left out of Tag Integration \nand stays inside Wrot.",
+  "settings.tagRule.noIntegration.desc": "When on, this tag stays inside Wrot.",
   "settings.tagRule.hideTimeline.name": "Hide from timeline",
-  "settings.tagRule.hideTimeline.desc":
-    "When on, memos with this tag no longer appear in the timeline. They stay in the daily note.",
+  "settings.tagRule.hideTimeline.desc": "When on, posts with this tag no longer appear in the timeline. \nThey stay in the daily note.",
   "settings.tagRule.protectDelete.name": "Disable delete button",
-  "settings.tagRule.protectDelete.desc":
-    "Greys out the “Delete” button on memos carrying this tag.",
+  "settings.tagRule.protectDelete.desc": "When on, posts with this tag cannot be deleted.",
   "settings.tagRule.button.add": "Add Rule",
 
   "view.formatMenu.code": "Code",

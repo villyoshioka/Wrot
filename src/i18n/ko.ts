@@ -7,115 +7,89 @@ const ko = {
   "settings.section.tagrules": "태그별 규칙 설정",
 
   "settings.item.viewPlacement.name": "표시 위치",
-  "settings.item.viewPlacement.desc": "Wrot 패널의 표시 위치를 선택합니다.",
+  "settings.item.viewPlacement.desc": "Wrot을 닫았다 다시 열면 반영됩니다.",
   "settings.option.viewPlacement.left": "왼쪽 사이드바",
   "settings.option.viewPlacement.right": "오른쪽 사이드바",
   "settings.option.viewPlacement.main": "메인 영역",
 
   "settings.item.followFontSize.name": "Obsidian 글꼴 크기 동기화",
-  "settings.item.followFontSize.desc":
-    "Obsidian의 외관 설정에 Wrot의 글자 크기를 맞춥니다.",
+  "settings.item.followFontSize.desc": "켜면 Obsidian 외관 설정의 글자 크기에 맞춥니다.",
 
   "settings.item.headerDateFormat.name": "헤더 날짜 표시 형식",
-  "settings.item.headerDateFormat.desc":
-    "날짜 내비게이션에 표시할 형식을 지정합니다. (YYYY, MM, DD 등을 사용 가능) \n비워두면 기본값으로 돌아갑니다.",
+  "settings.item.headerDateFormat.desc": "YYYY, MM, DD 등을 사용할 수 있습니다. \n비워두면 기본값으로 돌아갑니다.",
 
   "settings.item.timestampFormat.name": "타임스탬프 형식",
-  "settings.item.timestampFormat.desc":
-    "게시물의 날짜와 시간 형식을 지정합니다. \n(YYYY, MM, DD, HH, mm, ss 사용 가능)",
+  "settings.item.timestampFormat.desc": "YYYY, MM, DD, HH, mm, ss 를 사용할 수 있습니다.",
 
   "settings.item.bgColorLight.name": "배경색 (라이트 모드)",
-  "settings.item.bgColorLight.desc":
-    "라이트 테마의 게시물 및 입력창 배경색을 설정합니다.",
+  "settings.item.bgColorLight.desc": "게시물과 입력창에 사용됩니다.",
   "settings.item.textColorLight.name": "글자색 (라이트 모드)",
-  "settings.item.textColorLight.desc":
-    "라이트 테마의 텍스트 및 아이콘 색상을 설정합니다.",
+  "settings.item.textColorLight.desc": "텍스트와 아이콘에 사용됩니다.",
   "settings.item.bgColorDark.name": "배경색 (다크 모드)",
-  "settings.item.bgColorDark.desc":
-    "다크 테마의 게시물 및 입력창 배경색을 설정합니다.",
+  "settings.item.bgColorDark.desc": "게시물과 입력창에 사용됩니다.",
   "settings.item.textColorDark.name": "글자색 (다크 모드)",
-  "settings.item.textColorDark.desc":
-    "다크 테마의 텍스트 및 아이콘 색상을 설정합니다.",
+  "settings.item.textColorDark.desc": "텍스트와 아이콘에 사용됩니다.",
 
   "settings.item.submitLabel.name": "게시 버튼 텍스트",
-  "settings.item.submitLabel.desc":
-    "게시 버튼에 표시될 문구를 변경할 수 있습니다. \n아이콘이 설정된 경우에 한해 비워두면 아이콘만 표시됩니다.",
+  "settings.item.submitLabel.desc": "비워두면 아이콘만 표시됩니다(아이콘이 설정된 경우에 한해).",
   "settings.item.submitIcon.name": "게시 버튼 아이콘",
-  "settings.item.submitIcon.desc":
-    "게시 버튼의 아이콘을 변경합니다. \n아이콘 이름은 {linkOpen}여기{linkClose}에서 복사하세요. \n비우면 숨겨집니다.",
+  "settings.item.submitIcon.desc": "아이콘 이름은 {linkOpen}여기{linkClose}에서 복사하세요. \n비우면 숨겨집니다.",
   "settings.item.updateLabel.name": "수정 버튼 텍스트",
-  "settings.item.updateLabel.desc":
-    "게시물을 수정하는 동안 게시 버튼에 표시될 문구를 변경할 수 있습니다. \n아이콘이 설정된 경우에 한해 비워두면 아이콘만 표시됩니다.",
+  "settings.item.updateLabel.desc": "게시물을 수정하는 동안 사용됩니다. \n비워두면 아이콘만 표시됩니다(아이콘이 설정된 경우에 한해).",
   "settings.item.updateIcon.name": "수정 버튼 아이콘",
-  "settings.item.updateIcon.desc":
-    "게시물을 수정하는 동안 표시될 아이콘을 변경합니다. \n아이콘 이름은 {linkOpen}여기{linkClose}에서 복사하세요. \n비워두면 게시 버튼과 같은 아이콘이 사용됩니다.",
+  "settings.item.updateIcon.desc": "아이콘 이름은 {linkOpen}여기{linkClose}에서 복사하세요. \n비워두면 게시 버튼과 같은 아이콘이 사용됩니다.",
   "settings.item.inputPlaceholder.name": "입력창 안내 문구",
-  "settings.item.inputPlaceholder.desc":
-    "입력창이 비어 있을 때 표시되는 텍스트를 변경할 수 있습니다. \n비워두면 표시되지 않습니다.",
+  "settings.item.inputPlaceholder.desc": "비워두면 표시되지 않습니다.",
 
   "settings.item.tagSuggest.name": "태그 자동 완성",
-  "settings.item.tagSuggest.desc":
-    "# 뒤에 입력하면 이전에 쓴 태그를 추천합니다. 끄면 기억한 후보도 지워집니다.",
+  "settings.item.tagSuggest.desc": "# 뒤에 입력하면 후보가 표시됩니다. \n끄면 기억한 후보도 지워집니다.",
 
   "settings.item.pinLimit.name": "고정 개수 제한",
-  "settings.item.pinLimit.desc":
-    "타임라인 상단에 고정할 수 있는 게시물의 최대 개수를 설정합니다.",
+  "settings.item.pinLimit.desc": "상한을 낮추면 초과한 고정은 해제됩니다.",
   "settings.option.pinLimit.1": "1개",
   "settings.option.pinLimit.3": "3개",
   "settings.option.pinLimit.5": "5개",
 
   "settings.item.ogp.name": "URL 미리보기 (OGP)",
-  "settings.item.ogp.desc":
-    "게시물 내 URL의 미리보기 정보를 가져옵니다. \n끄면 외부와 통신하지 않습니다.",
+  "settings.item.ogp.desc": "URL에서 미리보기 정보를 가져옵니다. \n끄면 외부와 통신하지 않습니다.",
 
   "settings.item.checkStrikethrough.name": "체크된 항목 취소선",
-  "settings.item.checkStrikethrough.desc":
-    "체크박스가 완료된 항목에 취소선을 표시합니다.",
+  "settings.item.checkStrikethrough.desc": "끄면 글자 그대로 남습니다.",
 
   "settings.item.calendarDayShape.name": "날짜 버튼 모양",
-  "settings.item.calendarDayShape.desc": "달력의 날짜 버튼 모양을 선택합니다.",
+  "settings.item.calendarDayShape.desc": "캘린더의 날짜에 적용됩니다.",
   "settings.option.calendarDayShape.circle": "원형",
   "settings.option.calendarDayShape.rounded": "둥근 모서리",
   "settings.option.calendarDayShape.square": "사각형",
 
   "settings.item.showCalendarButton.name": "캘린더 버튼 표시",
-  "settings.item.showCalendarButton.desc":
-    "날짜 네비게이션에 캘린더 버튼을 추가합니다. \n버튼을 눌러 원하는 날짜로 바로 이동할 수 있습니다.",
+  "settings.item.showCalendarButton.desc": "켜면 날짜 내비게이션에서 원하는 날짜로 이동할 수 있습니다.",
 
   "settings.item.showPostDelete.name": "삭제 버튼 표시",
-  "settings.item.showPostDelete.desc":
-    "게시물 메뉴에 '삭제' 버튼을 표시합니다. \n삭제한 게시물은 되돌릴 수 없습니다. \n게시물에 넣은 이미지는 삭제되지 않습니다.",
+  "settings.item.showPostDelete.desc": "켜면 게시물 메뉴에 삭제 버튼이 추가됩니다. \n삭제한 게시물은 되돌릴 수 없습니다. 첨부한 이미지는 삭제되지 않습니다.",
 
   "settings.item.useCustomAttachmentFolder.name": "이미지 저장 위치 지정",
-  "settings.item.useCustomAttachmentFolder.desc":
-    "Wrot에서 추가한 이미지를 Obsidian의 첨부 파일 설정과 별개로 지정한 폴더에 저장합니다.",
+  "settings.item.useCustomAttachmentFolder.desc": "Wrot에서 추가한 이미지에만 적용됩니다.",
 
   "settings.item.attachmentFolder.name": "저장 폴더",
-  "settings.item.attachmentFolder.desc":
-    "이미지를 저장할 폴더를 선택합니다. \n지정한 폴더가 없으면 Obsidian의 첨부 파일 설정을 따릅니다.",
+  "settings.item.attachmentFolder.desc": "지정한 폴더가 없으면 Obsidian의 설정을 따릅니다.",
   "settings.item.attachmentFolder.placeholder": "폴더 선택",
 
   "settings.item.tagColorRules.name": "태그별 규칙 사용",
-  "settings.item.tagColorRules.desc":
-    "태그별로 색과 태그 통합을 설정합니다. 색은 본문에서 먼저 나온 태그가 우선합니다.",
+  "settings.item.tagColorRules.desc": "태그마다 색과 태그 통합 등을 다르게 설정할 수 있습니다. \n색은 본문에서 먼저 나온 태그가 우선합니다.",
 
   "settings.tagRule.label": "규칙 {n}",
   "settings.tagRule.tag.name": "태그",
-  "settings.tagRule.tag.desc":
-    "색상을 변경할 태그를 입력하세요. (#은 생략 가능합니다)",
+  "settings.tagRule.tag.desc": "#은 생략 가능합니다.",
   "settings.tagRule.tag.placeholder": "태그명",
   "settings.tagRule.bg.name": "배경색",
-  "settings.tagRule.bg.desc":
-    "해당 태그를 포함한 게시물의 배경색을 설정합니다.",
+  "settings.tagRule.bg.desc": "게시물 배경에 사용됩니다.",
   "settings.tagRule.fg.name": "글자색",
-  "settings.tagRule.fg.desc":
-    "해당 태그를 포함한 게시물의 본문 글자색을 설정합니다. (태그, 링크 등은 액센트 컬러에서 설정)",
+  "settings.tagRule.fg.desc": "태그, 링크 등은 액센트 컬러에서 설정합니다.",
   "settings.tagRule.accent.name": "액센트 컬러",
-  "settings.tagRule.accent.desc":
-    "태그·링크·URL 등에 쓰는 색입니다. 설정하지 않으면 테마의 강조색을 사용합니다.",
+  "settings.tagRule.accent.desc": "설정하지 않으면 테마의 강조색을 사용합니다.",
   "settings.tagRule.sub.name": "서브 컬러",
-  "settings.tagRule.sub.desc":
-    "타임스탬프·리스트 마커 등 보조 요소의 색입니다. \n설정하지 않으면 자동 계산됩니다.",
+  "settings.tagRule.sub.desc": "타임스탬프·리스트 마커 등의 색입니다. \n설정하지 않으면 자동 계산됩니다.",
   "settings.tagRule.scope.buttons.name": "버튼 및 고정 아이콘에 서브 컬러 적용",
   "settings.tagRule.scope.buttons.desc":
     "끄면 시스템 기본 색상으로 표시됩니다.",
@@ -126,16 +100,13 @@ const ko = {
   "settings.tagRule.scope.ogp.name": "OGP 카드에 서브 컬러 적용",
   "settings.tagRule.scope.ogp.desc": "끄면 시스템 기본 색상으로 표시됩니다.",
   "settings.item.graphTags.name": "태그 통합",
-  "settings.item.graphTags.desc":
-    "메모의 태그를 그래프 뷰와 태그 검색(tag:) 대상에 포함합니다. \n끄면 Wrot 안에서만 쓰입니다.",
+  "settings.item.graphTags.desc": "그래프 뷰와 태그 검색(tag:)의 대상이 됩니다. \n끄면 Wrot 안에서만 쓰입니다.",
   "settings.tagRule.noIntegration.name": "태그 통합에서 제외",
-  "settings.tagRule.noIntegration.desc": "켜면 메모 안에 쓴 이 규칙의 태그는 태그 통합에서 제외되어 \nWrot 안에서만 사용됩니다.",
+  "settings.tagRule.noIntegration.desc": "켜면 이 태그는 Wrot 안에서만 사용됩니다.",
   "settings.tagRule.hideTimeline.name": "타임라인에서 숨기기",
-  "settings.tagRule.hideTimeline.desc":
-    "켜면 이 태그가 있는 게시물이 타임라인에 나오지 않습니다. 데일리 노트에는 남아 있습니다.",
+  "settings.tagRule.hideTimeline.desc": "켜면 이 태그가 있는 게시물이 타임라인에 나오지 않습니다. \n데일리 노트에는 남아 있습니다.",
   "settings.tagRule.protectDelete.name": "삭제 버튼 비활성화",
-  "settings.tagRule.protectDelete.desc":
-    "이 태그가 있는 게시물의 '삭제' 버튼을 누를 수 없게 합니다.",
+  "settings.tagRule.protectDelete.desc": "켜면 이 태그가 있는 게시물은 삭제할 수 없습니다.",
   "settings.tagRule.button.add": "규칙 추가",
 
   "view.formatMenu.code": "코드",

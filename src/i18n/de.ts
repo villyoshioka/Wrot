@@ -7,114 +7,89 @@ const de = {
   "settings.section.tagrules": "Tag-Regeleinstellungen",
 
   "settings.item.viewPlacement.name": "Anzeigeposition",
-  "settings.item.viewPlacement.desc": "Wählen Sie die Anzeigeposition für das Wrot-Panel aus.",
+  "settings.item.viewPlacement.desc": "Wirkt sich beim nächsten Öffnen von Wrot aus.",
   "settings.option.viewPlacement.left": "Linke Seitenleiste",
   "settings.option.viewPlacement.right": "Rechte Seitenleiste",
   "settings.option.viewPlacement.main": "Hauptbereich",
 
   "settings.item.followFontSize.name": "Schriftgröße von Obsidian folgen",
-  "settings.item.followFontSize.desc":
-    "Passt die Textgröße von Wrot an die Darstellungseinstellungen von Obsidian an.",
+  "settings.item.followFontSize.desc": "Wenn aktiviert, wird die Schriftgröße aus den Darstellungseinstellungen von Obsidian übernommen.",
 
   "settings.item.headerDateFormat.name": "Datumsformat der Kopfzeile",
-  "settings.item.headerDateFormat.desc":
-    "Geben Sie das Format für das Datum in der Datumsnavigation an. (YYYY, MM, DD usw. können verwendet werden) \nLeer lassen, um auf den Standardwert zurückzusetzen.",
+  "settings.item.headerDateFormat.desc": "YYYY, MM, DD usw. können verwendet werden. \nLeer lassen, um auf den Standardwert zurückzusetzen.",
 
   "settings.item.timestampFormat.name": "Zeitstempel-Format",
-  "settings.item.timestampFormat.desc":
-    "Geben Sie das Format für Datum und Uhrzeit der Beiträge an. \n(YYYY, MM, DD, HH, mm, ss können verwendet werden)",
+  "settings.item.timestampFormat.desc": "YYYY, MM, DD, HH, mm, ss können verwendet werden.",
 
   "settings.item.bgColorLight.name": "Hintergrundfarbe (Heller Modus)",
-  "settings.item.bgColorLight.desc":
-    "Legt die Hintergrundfarbe für Beiträge und das Beitragsformular im hellen Design fest.",
+  "settings.item.bgColorLight.desc": "Gilt für Beiträge und das Eingabefeld.",
   "settings.item.textColorLight.name": "Textfarbe (Heller Modus)",
-  "settings.item.textColorLight.desc":
-    "Legt die Farbe für Text und Symbole im hellen Design fest.",
+  "settings.item.textColorLight.desc": "Gilt für Text und Symbole.",
   "settings.item.bgColorDark.name": "Hintergrundfarbe (Dunkler Modus)",
-  "settings.item.bgColorDark.desc":
-    "Legt die Hintergrundfarbe für Beiträge und das Beitragsformular im dunklen Design fest.",
+  "settings.item.bgColorDark.desc": "Gilt für Beiträge und das Eingabefeld.",
   "settings.item.textColorDark.name": "Textfarbe (Dunkler Modus)",
-  "settings.item.textColorDark.desc":
-    "Legt die Farbe für Text und Symbole im dunklen Design fest.",
+  "settings.item.textColorDark.desc": "Gilt für Text und Symbole.",
 
   "settings.item.submitLabel.name": "Text der Posten-Schaltfläche",
-  "settings.item.submitLabel.desc":
-    "Sie können den Text ändern, der auf der Posten-Schaltfläche angezeigt wird. \nLeer lassen für eine reine Symbol-Schaltfläche (nur wenn ein Symbol festgelegt ist).",
+  "settings.item.submitLabel.desc": "Leer lassen für eine reine Symbol-Schaltfläche (nur wenn ein Symbol festgelegt ist).",
   "settings.item.submitIcon.name": "Symbol der Posten-Schaltfläche",
-  "settings.item.submitIcon.desc":
-    "Ändert das Symbol der Beitragsschaltfläche. \nSymbolnamen {linkOpen}hier{linkClose} kopieren. \nLeer lassen blendet es aus.",
+  "settings.item.submitIcon.desc": "Symbolnamen {linkOpen}hier{linkClose} kopieren. \nLeer lassen blendet es aus.",
   "settings.item.updateLabel.name": "Text der Aktualisieren-Schaltfläche",
-  "settings.item.updateLabel.desc":
-    "Sie können den Text ändern, der während der Bearbeitung eines Beitrags auf der Posten-Schaltfläche angezeigt wird. \nLeer lassen für eine reine Symbol-Schaltfläche (nur wenn ein Symbol festgelegt ist).",
+  "settings.item.updateLabel.desc": "Wird während der Bearbeitung eines Beitrags verwendet. \nLeer lassen für eine reine Symbol-Schaltfläche (nur wenn ein Symbol festgelegt ist).",
   "settings.item.updateIcon.name": "Symbol der Aktualisieren-Schaltfläche",
-  "settings.item.updateIcon.desc":
-    "Ändert das Symbol, das während der Bearbeitung eines Beitrags angezeigt wird. \nSymbolnamen {linkOpen}hier{linkClose} kopieren. \nLeer lassen übernimmt das Symbol der Posten-Schaltfläche.",
+  "settings.item.updateIcon.desc": "Symbolnamen {linkOpen}hier{linkClose} kopieren. \nLeer lassen übernimmt das Symbol der Posten-Schaltfläche.",
   "settings.item.inputPlaceholder.name": "Platzhaltertext im Eingabefeld",
-  "settings.item.inputPlaceholder.desc":
-    "Sie können den Text ändern, der angezeigt wird, wenn das Eingabefeld leer ist. \nLassen Sie das Feld leer, um ihn auszublenden.",
+  "settings.item.inputPlaceholder.desc": "Lassen Sie das Feld leer, um ihn auszublenden.",
 
   "settings.item.tagSuggest.name": "Tag-Autovervollständigung",
-  "settings.item.tagSuggest.desc":
-    "Nach # werden bereits genutzte Tags vorgeschlagen. Beim Ausschalten werden die gemerkten Tags gelöscht.",
+  "settings.item.tagSuggest.desc": "Nach dem # erscheinen Vorschläge. \nBeim Ausschalten werden die gemerkten Vorschläge gelöscht.",
 
   "settings.item.pinLimit.name": "Limit für angepinnte Beiträge",
-  "settings.item.pinLimit.desc":
-    "Legt die maximale Anzahl von Notizen fest, die in der Timeline fixiert werden können.",
+  "settings.item.pinLimit.desc": "Wird das Limit gesenkt, werden überzählige Anheftungen gelöst.",
   "settings.option.pinLimit.1": "1 Beitrag",
   "settings.option.pinLimit.3": "3 Beiträge",
   "settings.option.pinLimit.5": "5 Beiträge",
 
   "settings.item.ogp.name": "URL-Vorschau",
-  "settings.item.ogp.desc":
-    "Ruft automatisch OGP-Informationen von URLs in Notizen ab und zeigt sie an. \nWenn deaktiviert, findet keine externe Kommunikation statt.",
+  "settings.item.ogp.desc": "Ruft Vorschaudaten von URLs ab. \nAusgeschaltet findet keine Verbindung nach außen statt.",
 
   "settings.item.checkStrikethrough.name": "Durchstreichen bei aktiviertem Kontrollkästchen",
-  "settings.item.checkStrikethrough.desc":
-    "Zeigt eine Durchstreichung für Elemente an, deren Kontrollkästchen aktiviert ist.",
+  "settings.item.checkStrikethrough.desc": "Ausgeschaltet bleibt der Text unverändert.",
 
   "settings.item.calendarDayShape.name": "Form der Datumstasten",
-  "settings.item.calendarDayShape.desc": "Wähle die Form der Datumstasten im Kalender.",
+  "settings.item.calendarDayShape.desc": "Gilt für die Tage im Kalender.",
   "settings.option.calendarDayShape.circle": "Rund",
   "settings.option.calendarDayShape.rounded": "Abgerundet",
   "settings.option.calendarDayShape.square": "Eckig",
 
   "settings.item.showCalendarButton.name": "Kalender-Button einblenden",
-  "settings.item.showCalendarButton.desc":
-    "Zeigt einen Button in der Datumsnavigation an, \nmit dem Sie per Fingertipp direkt zu einem beliebigen Datum springen können.",
+  "settings.item.showCalendarButton.desc": "Wenn aktiviert, springen Sie aus der Datumsnavigation zu einem beliebigen Datum.",
 
   "settings.item.showPostDelete.name": "Löschen-Button einblenden",
-  "settings.item.showPostDelete.desc":
-    "Fügt dem Memo-Menü einen „Löschen“-Button hinzu. \nEin gelöschtes Memo lässt sich nicht wiederherstellen. \nBilder im Memo werden nicht gelöscht.",
+  "settings.item.showPostDelete.desc": "Wenn aktiviert, kommt im Memo-Menü eine Löschen-Schaltfläche hinzu. \nEin gelöschtes Memo lässt sich nicht wiederherstellen. Angehängte Bilder werden nicht gelöscht.",
 
   "settings.item.useCustomAttachmentFolder.name": "Bildordner festlegen",
-  "settings.item.useCustomAttachmentFolder.desc":
-    "Speichert über Wrot hinzugefügte Bilder in einem selbst gewählten Ordner, \nunabhängig von der Anhang-Einstellung von Obsidian.",
+  "settings.item.useCustomAttachmentFolder.desc": "Gilt nur für über Wrot hinzugefügte Bilder.",
 
   "settings.item.attachmentFolder.name": "Zielordner",
-  "settings.item.attachmentFolder.desc":
-    "Wähle den Ordner, in dem Bilder gespeichert werden. \nFehlt der Ordner, gilt die Anhang-Einstellung von Obsidian.",
+  "settings.item.attachmentFolder.desc": "Fehlt der Ordner, gilt die Einstellung von Obsidian.",
   "settings.item.attachmentFolder.placeholder": "Ordner wählen",
 
   "settings.item.tagColorRules.name": "Tag-Regeln verwenden",
-  "settings.item.tagColorRules.desc":
-    "Legt Farben und Tag-Integration pro Tag fest. Bei Farben gewinnt der zuerst genannte Tag.",
+  "settings.item.tagColorRules.desc": "Farbe, Tag-Integration und mehr lassen sich je Tag festlegen. \nBei der Farbe gewinnt das zuerst im Text stehende Tag.",
 
   "settings.tagRule.label": "Regel {n}",
   "settings.tagRule.tag.name": "Tag",
-  "settings.tagRule.tag.desc":
-    "Geben Sie den Namen des Tags ein, dessen Farbe Sie ändern möchten. (# kann weggelassen werden)",
+  "settings.tagRule.tag.desc": "# kann weggelassen werden.",
   "settings.tagRule.tag.placeholder": "Tag-Name",
   "settings.tagRule.bg.name": "Hintergrundfarbe",
-  "settings.tagRule.bg.desc": "Legt die Hintergrundfarbe für Beiträge fest, die dieses Tag enthalten.",
+  "settings.tagRule.bg.desc": "Gilt für den Hintergrund des Beitrags.",
   "settings.tagRule.fg.name": "Textfarbe",
-  "settings.tagRule.fg.desc":
-    "Legt die Textfarbe für Beiträge fest, die dieses Tag enthalten. (Tags, Links und URLs werden über die Akzentfarbe eingestellt)",
+  "settings.tagRule.fg.desc": "Tags, Links und URLs werden über die Akzentfarbe eingestellt.",
   "settings.tagRule.accent.name": "Akzentfarbe",
-  "settings.tagRule.accent.desc":
-    "Farbe für Tags, Links und URLs. Ohne Angabe wird die Akzentfarbe des Themes verwendet.",
+  "settings.tagRule.accent.desc": "Ohne Angabe wird die Akzentfarbe des Themes verwendet.",
   "settings.tagRule.sub.name": "Subfarbe",
-  "settings.tagRule.sub.desc":
-    "Farbe für Nebenelemente wie Zeitstempel und Listenpunkte. \nOhne Angabe automatisch berechnet.",
+  "settings.tagRule.sub.desc": "Die Farbe von Zeitstempeln, Listenzeichen und Ähnlichem. \nOhne Angabe wird sie automatisch berechnet.",
   "settings.tagRule.scope.buttons.name": "Subfarbe auf Zeitstempel, Menüs und Pins anwenden",
   "settings.tagRule.scope.buttons.desc": "Wenn deaktiviert, wird die automatisch festgelegte Farbe verwendet.",
   "settings.tagRule.scope.quote.name": "Subfarbe auf Zitate anwenden",
@@ -124,16 +99,13 @@ const de = {
   "settings.tagRule.scope.ogp.name": "Subfarbe auf OGP-Karten anwenden",
   "settings.tagRule.scope.ogp.desc": "Wenn deaktiviert, wird die automatisch festgelegte Farbe verwendet.",
   "settings.item.graphTags.name": "Tag-Integration",
-  "settings.item.graphTags.desc":
-    "Lässt Memo-Tags in der Graphansicht und der tag:-Suche zählen. \nAus bleiben sie nur in Wrot.",
+  "settings.item.graphTags.desc": "Tags werden Teil von Graphansicht und tag:-Suche. \nAusgeschaltet bleiben sie nur in Wrot.",
   "settings.tagRule.noIntegration.name": "Von der Tag-Integration ausschließen",
-  "settings.tagRule.noIntegration.desc": "Wenn aktiviert, wird der in Memos geschriebene Tag dieser Regel von der Tag-Integration ausgenommen \nund bleibt nur innerhalb von Wrot.",
+  "settings.tagRule.noIntegration.desc": "Wenn aktiviert, bleibt dieses Tag nur in Wrot.",
   "settings.tagRule.hideTimeline.name": "In der Timeline ausblenden",
-  "settings.tagRule.hideTimeline.desc":
-    "Wenn aktiviert, erscheinen Memos mit diesem Tag nicht mehr in der Timeline. In der Tagesnotiz bleiben sie.",
+  "settings.tagRule.hideTimeline.desc": "Wenn aktiviert, erscheinen Memos mit diesem Tag nicht mehr in der Timeline. \nIn der Tagesnotiz bleiben sie.",
   "settings.tagRule.protectDelete.name": "Löschen-Button deaktivieren",
-  "settings.tagRule.protectDelete.desc":
-    "Deaktiviert den „Löschen“-Button bei Memos mit diesem Tag.",
+  "settings.tagRule.protectDelete.desc": "Wenn aktiviert, lassen sich Memos mit diesem Tag nicht löschen.",
   "settings.tagRule.button.add": "Regel hinzufügen",
 
   "view.formatMenu.code": "Code",

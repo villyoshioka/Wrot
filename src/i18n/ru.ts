@@ -7,112 +7,89 @@ const ru = {
   "settings.section.tagrules": "Настройки правил по тегам",
 
   "settings.item.viewPlacement.name": "Позиция отображения",
-  "settings.item.viewPlacement.desc": "Выберите положение панели Wrot.",
+  "settings.item.viewPlacement.desc": "Применяется при следующем открытии Wrot.",
   "settings.option.viewPlacement.left": "Левая боковая панель",
   "settings.option.viewPlacement.right": "Правая боковая панель",
   "settings.option.viewPlacement.main": "Основная область",
 
   "settings.item.followFontSize.name": "Использовать размер шрифта Obsidian",
-  "settings.item.followFontSize.desc":
-    "Подстраивает размер текста Wrot под настройки внешнего вида Obsidian.",
+  "settings.item.followFontSize.desc": "Если включено, используется размер шрифта из настроек внешнего вида Obsidian.",
 
   "settings.item.headerDateFormat.name": "Формат даты в заголовке",
-  "settings.item.headerDateFormat.desc":
-    "Укажите формат даты для навигации. (Можно использовать YYYY, MM, DD и т. д.) \nОставьте пустым, чтобы вернуть значение по умолчанию.",
+  "settings.item.headerDateFormat.desc": "Можно использовать YYYY, MM, DD и т. д. \nОставьте пустым, чтобы вернуть значение по умолчанию.",
 
   "settings.item.timestampFormat.name": "Формат временной метки",
-  "settings.item.timestampFormat.desc":
-    "Укажите формат даты и времени для записей. \n(Например: YYYY, MM, DD, HH, mm, ss)",
+  "settings.item.timestampFormat.desc": "Например: YYYY, MM, DD, HH, mm, ss.",
 
   "settings.item.bgColorLight.name": "Цвет фона (Светлая тема)",
-  "settings.item.bgColorLight.desc":
-    "Цвет фона для записей и поля ввода в светлой теме.",
+  "settings.item.bgColorLight.desc": "Используется для записей и поля ввода.",
   "settings.item.textColorLight.name": "Цвет текста (Светлая тема)",
-  "settings.item.textColorLight.desc": "Цвет текста и иконок в светлой теме.",
+  "settings.item.textColorLight.desc": "Используется для текста и значков.",
   "settings.item.bgColorDark.name": "Цвет фона (Темная тема)",
-  "settings.item.bgColorDark.desc":
-    "Цвет фона для записей и поля ввода в темной теме.",
+  "settings.item.bgColorDark.desc": "Используется для записей и поля ввода.",
   "settings.item.textColorDark.name": "Цвет текста (Темная тема)",
-  "settings.item.textColorDark.desc": "Цвет текста и иконок в темной теме.",
+  "settings.item.textColorDark.desc": "Используется для текста и значков.",
 
   "settings.item.submitLabel.name": "Текст кнопки поста",
-  "settings.item.submitLabel.desc":
-    "Вы можете изменить текст, отображаемый на кнопке поста. \nОставьте пустым для кнопки только с иконкой (только если иконка задана).",
+  "settings.item.submitLabel.desc": "Оставьте пустым для кнопки только с иконкой (только если иконка задана).",
   "settings.item.submitIcon.name": "Иконка кнопки поста",
-  "settings.item.submitIcon.desc":
-    "Меняет значок кнопки публикации. \nНазвание значка скопируйте {linkOpen}здесь{linkClose}. \nПустое поле скрывает значок.",
+  "settings.item.submitIcon.desc": "Название значка скопируйте {linkOpen}здесь{linkClose}. \nПустое поле скрывает значок.",
   "settings.item.updateLabel.name": "Текст кнопки обновления",
-  "settings.item.updateLabel.desc":
-    "Вы можете изменить текст, отображаемый на кнопке поста во время редактирования записи. \nОставьте пустым для кнопки только с иконкой (только если иконка задана).",
+  "settings.item.updateLabel.desc": "Используется во время редактирования записи. \nОставьте пустым для кнопки только с иконкой (только если иконка задана).",
   "settings.item.updateIcon.name": "Иконка кнопки обновления",
-  "settings.item.updateIcon.desc":
-    "Меняет значок, отображаемый во время редактирования записи. \nНазвание значка скопируйте {linkOpen}здесь{linkClose}. \nОставьте пустым, чтобы использовать значок кнопки поста.",
+  "settings.item.updateIcon.desc": "Название значка скопируйте {linkOpen}здесь{linkClose}. \nОставьте пустым, чтобы использовать значок кнопки поста.",
   "settings.item.inputPlaceholder.name": "Подсказка в пустом поле",
-  "settings.item.inputPlaceholder.desc":
-    "Текст, отображаемый в пустом поле ввода. \nОставьте поле пустым, чтобы скрыть подсказку.",
+  "settings.item.inputPlaceholder.desc": "Оставьте поле пустым, чтобы скрыть подсказку.",
 
   "settings.item.tagSuggest.name": "Автодополнение тегов",
-  "settings.item.tagSuggest.desc":
-    "После # предлагаются ранее использованные теги. При выключении сохранённые теги удаляются.",
+  "settings.item.tagSuggest.desc": "При вводе после # появляются подсказки. \nПри отключении сохранённые подсказки удаляются.",
 
   "settings.item.pinLimit.name": "Лимит закрепления",
-  "settings.item.pinLimit.desc":
-    "Максимальное количество заметок, которые можно закрепить в ленте.",
+  "settings.item.pinLimit.desc": "При уменьшении лимита лишние закрепления снимаются.",
   "settings.option.pinLimit.1": "1 запись",
   "settings.option.pinLimit.3": "3 записи",
   "settings.option.pinLimit.5": "5 записей",
 
   "settings.item.ogp.name": "Предпросмотр URL",
-  "settings.item.ogp.desc":
-    "Автоматическое получение OGP-информации из ссылок. \nЕсли выключено, внешние соединения не выполняются.",
+  "settings.item.ogp.desc": "Загружает данные предпросмотра по ссылкам. \nПри отключении внешние подключения не выполняются.",
 
   "settings.item.checkStrikethrough.name": "Зачеркивание выполненных пунктов",
-  "settings.item.checkStrikethrough.desc":
-    "Отображать зачеркивание для пунктов с отмеченными чекбоксами.",
+  "settings.item.checkStrikethrough.desc": "Если выключено, текст остаётся без изменений.",
 
   "settings.item.calendarDayShape.name": "Форма кнопок дня",
-  "settings.item.calendarDayShape.desc": "Выберите форму кнопок дней в календаре.",
+  "settings.item.calendarDayShape.desc": "Применяется к дням в календаре.",
   "settings.option.calendarDayShape.circle": "Круг",
   "settings.option.calendarDayShape.rounded": "Скруглённый",
   "settings.option.calendarDayShape.square": "Квадрат",
 
   "settings.item.showCalendarButton.name": "Кнопка календаря",
-  "settings.item.showCalendarButton.desc":
-    "Отображать кнопку календаря в панели навигации. \nНажмите, чтобы быстро перейти к нужной дате.",
+  "settings.item.showCalendarButton.desc": "Если включено, из панели навигации можно перейти к любой дате.",
 
   "settings.item.showPostDelete.name": "Кнопка удаления",
-  "settings.item.showPostDelete.desc":
-    "Добавляет кнопку «Удалить» в меню записи. \nУдалённую запись нельзя восстановить. \nИзображения из записи не удаляются.",
+  "settings.item.showPostDelete.desc": "Если включено, в меню записи появляется кнопка удаления. \nУдалённую запись нельзя восстановить. Вложенные изображения не удаляются.",
 
   "settings.item.useCustomAttachmentFolder.name": "Папка для изображений",
-  "settings.item.useCustomAttachmentFolder.desc":
-    "Сохраняет изображения, добавленные из Wrot, в выбранную папку, \nнезависимо от настройки вложений Obsidian.",
+  "settings.item.useCustomAttachmentFolder.desc": "Касается только изображений, добавленных из Wrot.",
 
   "settings.item.attachmentFolder.name": "Папка назначения",
-  "settings.item.attachmentFolder.desc":
-    "Выберите папку для сохранения изображений. \nЕсли папки нет, используется настройка вложений Obsidian.",
+  "settings.item.attachmentFolder.desc": "Если папки нет, используется настройка Obsidian.",
   "settings.item.attachmentFolder.placeholder": "Выберите папку",
 
   "settings.item.tagColorRules.name": "Правила для тегов",
-  "settings.item.tagColorRules.desc":
-    "Настройка цвета и интеграции для каждого тега. В цветах побеждает тег, идущий в тексте первым.",
+  "settings.item.tagColorRules.desc": "Позволяет задавать цвет, интеграцию тегов и другое для каждого тега. \nДля цвета побеждает тег, который встречается в тексте первым.",
 
   "settings.tagRule.label": "Правило {n}",
   "settings.tagRule.tag.name": "Тег",
-  "settings.tagRule.tag.desc":
-    "Введите тег для применения правила (символ # можно опустить).",
+  "settings.tagRule.tag.desc": "Символ # можно опустить.",
   "settings.tagRule.tag.placeholder": "Название тега",
   "settings.tagRule.bg.name": "Цвет фона",
-  "settings.tagRule.bg.desc": "Цвет фона для записей с этим тегом.",
+  "settings.tagRule.bg.desc": "Используется для фона записи.",
   "settings.tagRule.fg.name": "Цвет текста",
-  "settings.tagRule.fg.desc":
-    "Цвет основного текста (для тегов и ссылок используется акцентный цвет).",
+  "settings.tagRule.fg.desc": "Для тегов и ссылок используется акцентный цвет.",
   "settings.tagRule.accent.name": "Акцентный цвет",
-  "settings.tagRule.accent.desc":
-    "Цвет тегов, ссылок и URL. Если не задан, используется акцентный цвет темы.",
+  "settings.tagRule.accent.desc": "Если не задан, используется акцентный цвет темы.",
   "settings.tagRule.sub.name": "Дополнительный цвет",
-  "settings.tagRule.sub.desc":
-    "Цвет вспомогательных элементов: отметок времени, маркеров списка. \nЕсли не задан, вычисляется автоматически.",
+  "settings.tagRule.sub.desc": "Цвет отметок времени, маркеров списка и подобного. \nЕсли не задан, вычисляется автоматически.",
   "settings.tagRule.scope.buttons.name": "Применять доп. цвет к метаданным",
   "settings.tagRule.scope.buttons.desc":
     "Временные метки, меню и кнопки закрепления.",
@@ -123,16 +100,13 @@ const ru = {
   "settings.tagRule.scope.ogp.name": "Применять доп. цвет к карточкам OGP",
   "settings.tagRule.scope.ogp.desc": "Рамки и фон предпросмотра ссылок.",
   "settings.item.graphTags.name": "Интеграция тегов",
-  "settings.item.graphTags.desc":
-    "Учитывает теги заметок в графе и поиске tag:. \nЕсли выключено, теги остаются только внутри Wrot.",
+  "settings.item.graphTags.desc": "Теги попадают в граф и поиск tag:. \nЕсли выключено, они остаются только внутри Wrot.",
   "settings.tagRule.noIntegration.name": "Исключить из интеграции тегов",
-  "settings.tagRule.noIntegration.desc": "Если включено, тег этого правила, написанный в заметках, исключается из интеграции тегов \nи остаётся только внутри Wrot.",
+  "settings.tagRule.noIntegration.desc": "Если включено, этот тег остаётся только внутри Wrot.",
   "settings.tagRule.hideTimeline.name": "Скрыть в ленте",
-  "settings.tagRule.hideTimeline.desc":
-    "Если включено, заметки с этим тегом не отображаются в ленте. В ежедневной заметке они остаются.",
+  "settings.tagRule.hideTimeline.desc": "Если включено, записи с этим тегом не отображаются в ленте. \nВ ежедневной заметке они остаются.",
   "settings.tagRule.protectDelete.name": "Отключить кнопку удаления",
-  "settings.tagRule.protectDelete.desc":
-    "Отключает кнопку «Удалить» у записей с этим тегом.",
+  "settings.tagRule.protectDelete.desc": "Если включено, записи с этим тегом нельзя удалить.",
   "settings.tagRule.button.add": "Добавить правило",
 
   "view.formatMenu.code": "Код",

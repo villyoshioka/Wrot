@@ -7,115 +7,89 @@ const zhCN = {
   "settings.section.tagrules": "标签规则设置",
 
   "settings.item.viewPlacement.name": "显示位置",
-  "settings.item.viewPlacement.desc": "选择 Wrot 面板的显示位置。",
+  "settings.item.viewPlacement.desc": "关闭并重新打开 Wrot 后生效。",
   "settings.option.viewPlacement.left": "左侧边栏",
   "settings.option.viewPlacement.right": "右侧边栏",
   "settings.option.viewPlacement.main": "主工作区",
 
   "settings.item.followFontSize.name": "跟随 Obsidian 字体大小",
-  "settings.item.followFontSize.desc":
-    "Wrot 的字体大小将与 Obsidian 的外观设置保持一致。",
+  "settings.item.followFontSize.desc": "开启后，跟随 Obsidian 外观设置的字号。",
 
   "settings.item.headerDateFormat.name": "页眉日期格式",
-  "settings.item.headerDateFormat.desc":
-    "指定日期导航栏中显示的日期格式。（支持 YYYY, MM, DD 等）\n留空则恢复默认值。",
+  "settings.item.headerDateFormat.desc": "支持 YYYY, MM, DD 等。 \n留空则恢复默认值。",
 
   "settings.item.timestampFormat.name": "时间戳格式",
-  "settings.item.timestampFormat.desc":
-    "指定记录的日期时间格式。\n（支持 YYYY, MM, DD, HH, mm, ss）",
+  "settings.item.timestampFormat.desc": "支持 YYYY, MM, DD, HH, mm, ss。",
 
   "settings.item.bgColorLight.name": "背景颜色（浅色模式）",
-  "settings.item.bgColorLight.desc":
-    "设置浅色模式下记录与输入框的背景颜色。",
+  "settings.item.bgColorLight.desc": "用于记录和输入框。",
   "settings.item.textColorLight.name": "文字颜色（浅色模式）",
-  "settings.item.textColorLight.desc":
-    "设置浅色模式下文本与图标的颜色。",
+  "settings.item.textColorLight.desc": "用于文字和图标。",
   "settings.item.bgColorDark.name": "背景颜色（深色模式）",
-  "settings.item.bgColorDark.desc":
-    "设置深色模式下记录与输入框的背景颜色。",
+  "settings.item.bgColorDark.desc": "用于记录和输入框。",
   "settings.item.textColorDark.name": "文字颜色（深色模式）",
-  "settings.item.textColorDark.desc":
-    "设置深色模式下文本与图标的颜色。",
+  "settings.item.textColorDark.desc": "用于文字和图标。",
 
   "settings.item.submitLabel.name": "发布按钮文本",
-  "settings.item.submitLabel.desc":
-    "自定义发布按钮上显示的文字。\n留空可仅显示图标(仅当已设置图标时)。",
+  "settings.item.submitLabel.desc": "留空则仅显示图标（仅当已设置图标时）。",
   "settings.item.submitIcon.name": "发布按钮图标",
-  "settings.item.submitIcon.desc":
-    "更改发布按钮的图标。\n图标名称可从{linkOpen}这里{linkClose}复制。\n留空则隐藏图标。",
+  "settings.item.submitIcon.desc": "图标名称可从{linkOpen}这里{linkClose}复制。 \n留空则隐藏图标。",
   "settings.item.updateLabel.name": "更新按钮文本",
-  "settings.item.updateLabel.desc":
-    "自定义编辑内容时发布按钮上显示的文字。\n留空可仅显示图标(仅当已设置图标时)。",
+  "settings.item.updateLabel.desc": "编辑内容时使用。 \n留空则仅显示图标（仅当已设置图标时）。",
   "settings.item.updateIcon.name": "更新按钮图标",
-  "settings.item.updateIcon.desc":
-    "更改编辑内容时显示的图标。\n图标名称可从{linkOpen}这里{linkClose}复制。\n留空则使用发布按钮的图标。",
+  "settings.item.updateIcon.desc": "图标名称可从{linkOpen}这里{linkClose}复制。 \n留空则使用发布按钮的图标。",
   "settings.item.inputPlaceholder.name": "输入框占位文本",
-  "settings.item.inputPlaceholder.desc":
-    "可以自定义输入框为空时显示的提示文字。\n留空则不显示。",
+  "settings.item.inputPlaceholder.desc": "留空则不显示。",
 
   "settings.item.tagSuggest.name": "标签自动补全",
-  "settings.item.tagSuggest.desc":
-    "输入 # 后会推荐用过的标签。关闭后已记住的候选也会清除。",
+  "settings.item.tagSuggest.desc": "在 # 后输入时会显示候选。 \n关闭后会清除已记住的候选。",
 
   "settings.item.pinLimit.name": "置顶上限",
-  "settings.item.pinLimit.desc":
-    "设置时间轴中最多可以置顶的笔记数量。",
+  "settings.item.pinLimit.desc": "调低上限时，超出的固定会被解除。",
   "settings.option.pinLimit.1": "1 条",
   "settings.option.pinLimit.3": "3 条",
   "settings.option.pinLimit.5": "5 条",
 
   "settings.item.ogp.name": "URL 预览",
-  "settings.item.ogp.desc":
-    "自动获取并显示笔记内 URL 的 OGP 信息。\n关闭后将不再访问外部网络。",
+  "settings.item.ogp.desc": "从 URL 获取预览信息。 \n关闭后不进行外部通信。",
 
   "settings.item.checkStrikethrough.name": "已完成项目显示删除线",
-  "settings.item.checkStrikethrough.desc":
-    "为已勾选复选框的项目添加删除线。",
+  "settings.item.checkStrikethrough.desc": "关闭时文字保持原样。",
 
   "settings.item.calendarDayShape.name": "日期按钮形状",
-  "settings.item.calendarDayShape.desc": "选择日历中日期按钮的形状。",
+  "settings.item.calendarDayShape.desc": "应用于日历中的日期。",
   "settings.option.calendarDayShape.circle": "圆形",
   "settings.option.calendarDayShape.rounded": "圆角",
   "settings.option.calendarDayShape.square": "方形",
 
   "settings.item.showCalendarButton.name": "显示日历按钮",
-  "settings.item.showCalendarButton.desc":
-    "在日期导航栏中显示日历图标，\n方便你直接跳转到任何日期。",
+  "settings.item.showCalendarButton.desc": "开启后，可从日期导航栏跳转到任意日期。",
 
   "settings.item.showPostDelete.name": "显示删除按钮",
-  "settings.item.showPostDelete.desc":
-    "在笔记菜单中显示“删除”按钮。 \n删除后无法恢复。 \n笔记中的图片不会被删除。",
+  "settings.item.showPostDelete.desc": "开启后，笔记菜单中会增加删除按钮。 \n删除后无法恢复。附加的图片不会被删除。",
 
   "settings.item.useCustomAttachmentFolder.name": "指定图片保存位置",
-  "settings.item.useCustomAttachmentFolder.desc":
-    "将从 Wrot 添加的图片保存到指定文件夹， \n不受 Obsidian 附件设置的影响。",
+  "settings.item.useCustomAttachmentFolder.desc": "仅适用于从 Wrot 添加的图片。",
 
   "settings.item.attachmentFolder.name": "保存文件夹",
-  "settings.item.attachmentFolder.desc":
-    "选择保存图片的文件夹。 \n若文件夹不存在，则遵循 Obsidian 的附件设置。",
+  "settings.item.attachmentFolder.desc": "若文件夹不存在，则遵循 Obsidian 的设置。",
   "settings.item.attachmentFolder.placeholder": "选择文件夹",
 
   "settings.item.tagColorRules.name": "使用标签规则",
-  "settings.item.tagColorRules.desc":
-    "按标签设置颜色与标签集成。颜色以正文中先出现的标签为准。",
+  "settings.item.tagColorRules.desc": "可按标签分别设置颜色和标签集成等。 \n颜色以正文中先出现的标签为准。",
 
   "settings.tagRule.label": "规则 {n}",
   "settings.tagRule.tag.name": "标签",
-  "settings.tagRule.tag.desc":
-    "输入需要自定义颜色的标签名。（可省略 #）",
+  "settings.tagRule.tag.desc": "可省略 #。",
   "settings.tagRule.tag.placeholder": "标签名",
   "settings.tagRule.bg.name": "背景颜色",
-  "settings.tagRule.bg.desc":
-    "设置包含此标签的记录背景色。",
+  "settings.tagRule.bg.desc": "用于记录的背景。",
   "settings.tagRule.fg.name": "文字颜色",
-  "settings.tagRule.fg.desc":
-    "设置包含此标签的记录正文颜色。（标签、链接、URL 将使用强调色）",
+  "settings.tagRule.fg.desc": "标签、链接、URL 由强调色设置。",
   "settings.tagRule.accent.name": "强调色",
-  "settings.tagRule.accent.desc":
-    "标签、链接、网址等使用的颜色。未设置时使用主题的强调色。",
+  "settings.tagRule.accent.desc": "未设置时使用主题的强调色。",
   "settings.tagRule.sub.name": "辅助色",
-  "settings.tagRule.sub.desc":
-    "时间戳、列表标记等次要元素的颜色。\n未设置时会自动计算。",
+  "settings.tagRule.sub.desc": "时间戳、列表标记等的颜色。 \n未设置时自动计算。",
   "settings.tagRule.scope.buttons.name":
     "将辅助色应用于时间戳、菜单及置顶图标",
   "settings.tagRule.scope.buttons.desc":
@@ -130,16 +104,13 @@ const zhCN = {
   "settings.tagRule.scope.ogp.desc":
     "关闭时将使用系统自动计算的颜色。",
   "settings.item.graphTags.name": "标签集成",
-  "settings.item.graphTags.desc":
-    "让备忘录中的标签出现在图谱视图与标签搜索（tag:）中。\n关闭后标签仅存在于 Wrot 内。",
+  "settings.item.graphTags.desc": "标签会纳入图谱视图和标签搜索（tag:）。 \n关闭时仅在 Wrot 内使用。",
   "settings.tagRule.noIntegration.name": "从标签集成中排除",
-  "settings.tagRule.noIntegration.desc": "开启后，写在备忘录内的此规则标签将不参与标签集成，\n仅保留在 Wrot 内。",
+  "settings.tagRule.noIntegration.desc": "开启后，此标签仅在 Wrot 内使用。",
   "settings.tagRule.hideTimeline.name": "在时间轴中隐藏",
-  "settings.tagRule.hideTimeline.desc":
-    "开启后，含有此标签的备忘录不再显示在时间轴中。每日笔记中仍会保留。",
+  "settings.tagRule.hideTimeline.desc": "开启后，含有此标签的记录不再显示在时间轴中。 \n每日笔记中仍会保留。",
   "settings.tagRule.protectDelete.name": "停用删除按钮",
-  "settings.tagRule.protectDelete.desc":
-    "让含有此标签的笔记无法按下“删除”按钮。",
+  "settings.tagRule.protectDelete.desc": "开启后，含有此标签的记录无法删除。",
   "settings.tagRule.button.add": "添加规则",
 
   "view.formatMenu.code": "代码",

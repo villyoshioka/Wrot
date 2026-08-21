@@ -132,7 +132,7 @@ A given memo shows the same colors in every view.
 
 ### The colors don't change
 
-- Check that "Change Color by Tag" is turned on.
+- Check that "Use Tag Rules" is turned on.
 - Check that the rule's tag name matches the tag on your memo.
 - Check whether the memo also carries another rule's tag (the tag that appears first takes priority).
 

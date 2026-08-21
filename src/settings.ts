@@ -576,11 +576,6 @@ export class WrotSettingTab extends PluginSettingTab {
           },
         },
         {
-          name: t("settings.item.showPostDelete.name"),
-          desc: desc(t("settings.item.showPostDelete.desc")),
-          control: { type: "toggle", key: "showPostDelete" },
-        },
-        {
           name: t("settings.item.useCustomAttachmentFolder.name"),
           desc: desc(t("settings.item.useCustomAttachmentFolder.desc")),
           control: { type: "toggle", key: "useCustomAttachmentFolder" },
@@ -594,6 +589,11 @@ export class WrotSettingTab extends PluginSettingTab {
             key: "attachmentFolder",
             placeholder: t("settings.item.attachmentFolder.placeholder"),
           },
+        },
+        {
+          name: t("settings.item.showPostDelete.name"),
+          desc: desc(t("settings.item.showPostDelete.desc")),
+          control: { type: "toggle", key: "showPostDelete" },
         },
       ],
     };
@@ -762,6 +762,8 @@ export class WrotSettingTab extends PluginSettingTab {
             kind: "delete" as const,
             handler: async () => {
               this.plugin.settings.tagColorRules.splice(idx, 1);
+              // Unlock state is keyed by position, which the splice shifts.
+              this.unlockedRules.clear();
               await this.plugin.saveSettings();
               // Rules are identified by position, so later rules' generated classes shift.
               this.plugin.applyTagColorRules();

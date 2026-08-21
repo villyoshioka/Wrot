@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       # Obsidian は manifest.json の version と同名のタグからアセットを取得する。
       # タグ名がずれるとリリースページは正常に見えたまま配信だけが 404 になるため、
@@ -62,7 +62,7 @@ jobs:
           echo "タグ ${TAG} / manifest / package / versions.json の整合を確認しました。"
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '24'
           cache: 'npm'

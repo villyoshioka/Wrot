@@ -1,5 +1,18 @@
 # Release Notes
 
+## 2.21.0 - 2026-08-21
+
+### Improvements
+
+- Tidied up and simplified the descriptions in the settings.
+- Moved the image folder settings below the calendar settings.
+
+### Bug Fixes
+
+- Fixed the lock on a tag rule ending up on a different rule after one was deleted.
+
+---
+
 ## 2.20.0 - 2026-08-20
 
 ### New Features
