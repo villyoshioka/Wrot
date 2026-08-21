@@ -1,5 +1,17 @@
 # Release Notes
 
+## 2.21.1 - 2026-08-22
+
+### Updates
+
+- Updated dependencies.
+
+### Bug Fixes
+
+- Fixed the link card breaking up on a phone or in a narrow pane, where lines were cut in half or ran into each other.
+
+---
+
 ## 2.21.0 - 2026-08-21
 
 ### Improvements

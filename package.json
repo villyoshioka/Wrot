@@ -1,6 +1,6 @@
 {
   "name": "wrot",
-  "version": "2.21.0",
+  "version": "2.21.1",
   "description": "Micro-journal your day in a timeline, one \"tweet\" at a time.",
   "type": "module",
   "scripts": {
@@ -15,7 +15,7 @@
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.2.0",
     "esbuild": "^0.28.2",
-    "eslint": "^10.8.1",
+    "eslint": "^10.9.0",
     "globals": "^17.11.0",
     "obsidian": "^1.13.1",
     "tslib": "^2.7.0",

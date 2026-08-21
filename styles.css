@@ -1746,12 +1746,15 @@ body .wr-ogp-card {
 }
 
 /* Reset link defaults (color, spacing, display), beating the theme's rules for a elements */
+/* min-height rather than height: how many lines the text takes depends on the column width,
+   so a narrow pane needs more of them for the same card. A fixed height squeezes the body's
+   children below their own content height and clips them mid-line. */
 body .wr-ogp-card:not(#x) {
   display: flex;
   flex-direction: row;
   align-items: stretch;
   color: inherit;
-  height: 120px;
+  min-height: 120px;
   padding: 0;
 }
 
@@ -1768,9 +1771,12 @@ body .wr-ogp-thumb {
   margin: 0;
 }
 
+/* Stretched rather than fixed at 120px, so the thumbnail still fills the card when the
+   text grows it taller. object-fit keeps the crop centred. */
 body .wr-ogp-thumb:not(#x) {
   width: 120px;
-  height: 120px;
+  height: auto;
+  align-self: stretch;
   flex-shrink: 0;
   border-radius: 0;
   padding: 0;
@@ -1818,10 +1824,18 @@ body .wr-ogp-desc:not(#x) {
   display: -webkit-box;
 }
 
+/* Held to one line like the title and description above it. A site name long enough to wrap
+   ("坂ノ途中 | 100年先もつづく、農業を。") would otherwise take a second line on its own. */
 body .wr-ogp-site {
   font-size: calc(var(--wr-font-ui-smaller) - 1px);
   color: var(--text-faint);
   margin-top: 4px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body .wr-ogp-site:not(#x) {
+  overflow: hidden;
 }
 
 .wr-twitter-card {
