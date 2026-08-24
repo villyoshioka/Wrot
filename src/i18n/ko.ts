@@ -45,7 +45,7 @@ const ko = {
   "settings.item.tagSuggest.desc": "# 뒤에 입력하면 후보가 표시됩니다. \n끄면 기억한 후보도 지워집니다.",
 
   "settings.item.pinLimit.name": "고정 개수 제한",
-  "settings.item.pinLimit.desc": "상한을 낮추면 초과한 고정은 해제됩니다.",
+  "settings.item.pinLimit.desc": "「상단 고정」과 「나중에 상단 고정」의 상한은 각각 설정됩니다.\n상한을 낮추면 초과한 고정은 해제됩니다.",
   "settings.option.pinLimit.1": "1개",
   "settings.option.pinLimit.3": "3개",
   "settings.option.pinLimit.5": "5개",
@@ -124,6 +124,7 @@ const ko = {
   "view.postMenu.unpin": "고정 해제",
   "view.postMenu.pin": "상단 고정",
   "view.postMenu.pinLimitHint": "최대 {limit}개까지만 고정할 수 있습니다.",
+  "view.postMenu.schedulePin": "나중에 상단 고정",
   "view.postMenu.delete": "삭제",
   // Shown on the same row after the first press, in place of the label above.
   "view.postMenu.deleteConfirm": "한 번 더 누르면 삭제",

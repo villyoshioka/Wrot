@@ -45,7 +45,7 @@ const zhTW = {
   "settings.item.tagSuggest.desc": "在 # 後輸入時會顯示候選。 \n關閉後會清除已記住的候選。",
 
   "settings.item.pinLimit.name": "釘選上限",
-  "settings.item.pinLimit.desc": "調低上限時，超出的釘選會被解除。",
+  "settings.item.pinLimit.desc": "「釘選」與「稍後釘選」的上限分別計算。\n調低上限時，超出的釘選會被解除。",
   "settings.option.pinLimit.1": "1 件",
   "settings.option.pinLimit.3": "3 件",
   "settings.option.pinLimit.5": "5 件",
@@ -128,6 +128,7 @@ const zhTW = {
   "view.postMenu.unpin": "取消釘選",
   "view.postMenu.pin": "釘選",
   "view.postMenu.pinLimitHint": "釘選上限為 {limit} 件。",
+  "view.postMenu.schedulePin": "稍後釘選",
   "view.postMenu.delete": "刪除",
   // Shown on the same row after the first press, in place of the label above.
   "view.postMenu.deleteConfirm": "再按一次即刪除",

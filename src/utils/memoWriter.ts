@@ -133,11 +133,12 @@ export async function deleteMemo(
 
 declare const moment: typeof import("moment");
 
+/** Appends a memo and returns the timestamp it was filed under, which is its identity. */
 export async function appendMemo(
   app: App,
   file: TFile,
   content: string
-): Promise<void> {
+): Promise<string> {
   const time = moment().format("YYYY-MM-DDTHH:mm:ss.SSSZ");
 
   const memoBlock = "```wr " + time + "\n" + content + "\n```";
@@ -151,4 +152,6 @@ export async function appendMemo(
         : "\n\n";
     return data + separator + memoBlock;
   });
+
+  return time;
 }

@@ -45,7 +45,7 @@ const es = {
   "settings.item.tagSuggest.desc": "Al escribir después de #, aparecen sugerencias. \nAl desactivarlo también se borran las recordadas.",
 
   "settings.item.pinLimit.name": "Límite de fijados",
-  "settings.item.pinLimit.desc": "Si bajas el límite, se desfijan los que sobren.",
+  "settings.item.pinLimit.desc": "«Fijar» y «Fijar más tarde» tienen cada uno su propio límite.\nSi bajas el límite, se desfijan los que sobren.",
   "settings.option.pinLimit.1": "1 elemento",
   "settings.option.pinLimit.3": "3 elementos",
   "settings.option.pinLimit.5": "5 elementos",
@@ -129,6 +129,7 @@ const es = {
   "view.postMenu.unpin": "Desfijar",
   "view.postMenu.pin": "Fijar",
   "view.postMenu.pinLimitHint": "El límite es de {limit} elementos fijados.",
+  "view.postMenu.schedulePin": "Fijar más tarde",
   "view.postMenu.delete": "Eliminar",
   // Shown on the same row after the first press, in place of the label above.
   "view.postMenu.deleteConfirm": "Pulsa otra vez para eliminar",

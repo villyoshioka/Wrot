@@ -333,6 +333,17 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
   font-weight: 600;
 }
 
+/* Out of range for this picker: still readable, but inert. Declared after the
+   today rule so a disabled today loses the accent too. */
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-disabled,
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-disabled:hover {
+  color: var(--text-faint);
+  font-weight: inherit;
+  background: none;
+  cursor: default;
+  pointer-events: none;
+}
+
 /* Selected beats the today highlight (hence the compound selector) */
 .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-selected,
 .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-selected.wr-calendar-day-today {
@@ -519,6 +530,17 @@ body .wr-input-toolbar.wr-toolbar-wrapped .wr-toolbar-btn:not(#x):not(#y):not(#z
   color: var(--text-accent);
 }
 
+/* Press feedback rides on opacity, not colour: the palette stamp sits above the
+   colour rules right here, so a colour swap alone never lands. Hover is skipped
+   on mobile, where it sticks to the last-tapped button after the touch ends. */
+body:not(.is-mobile) .wr-toolbar-btn:hover {
+  opacity: 0.8;
+}
+
+body .wr-toolbar-btn:active {
+  opacity: 0.55;
+}
+
 .wr-toolbar-btn.wr-toolbar-active {
   color: var(--text-accent);
 }
@@ -606,6 +628,30 @@ body .wr-submit-btn {
   color: var(--text-muted);
 }
 
+/* Cancel borrows the toolbar button's look, so it reads as one of the form's own
+   icons rather than a second action competing with submit. Pushed to the left
+   edge by the auto margin against the header's flex-end. */
+/* Pushed to the left edge by the auto margin against the header's flex-end, and
+   flush with the textarea's edge. Declared at the same ID-level specificity as
+   the shared toolbar metrics, which otherwise zero the margin out. */
+body .wr-cancel-btn:not(#x):not(#y):not(#z) {
+  margin-right: auto;
+  padding-left: 0;
+  padding-right: 6px;
+}
+
+/* Same size as the toolbar glyphs; only the stroke is nudged, since a bare ×
+   carries fewer strokes and reads thinner at the shared weight. */
+body .wr-cancel-btn .svg-icon {
+  stroke-width: 2.2;
+}
+
+/* Obsidian gives buttons an author-level display, which beats the user agent's
+   [hidden] rule — outside edit mode the button needs this to actually go away. */
+body .wr-cancel-btn[hidden] {
+  display: none;
+}
+
 /* When the input is empty (inactive), keep the look but disable pressing */
 body .wr-submit-btn:not(.wr-submit-active) {
   cursor: default;
@@ -643,7 +689,17 @@ body .wr-submit-btn.wr-submit-active {
   flex: 1;
   overflow-y: auto;
   min-height: 0;
-  padding-bottom: 4px;
+  /* The floor is empty space the schedule picker adds under the last card when it
+     needs somewhere to open into. Zero at rest; its height is measured, so only the
+     value comes from script. */
+  padding-bottom: calc(4px + var(--wr-list-floor, 0px));
+}
+
+/* Held still while the schedule picker is open: it is placed against the card's
+   position at the time, so scrolling either way would slide the card out from
+   under it. */
+.wr-list.wr-list-held {
+  overflow-y: hidden;
 }
 
 .wr-empty {
@@ -1457,6 +1513,17 @@ body .wr-copy-btn.wr-copy-done .svg-icon {
   color: var(--text-normal);
 }
 
+/* Same press feedback as the toolbar icons: opacity, since the palette stamp
+   sits above the colour rule above. Hover is skipped on mobile, where it sticks
+   to the last-tapped button after the touch ends. */
+body:not(.is-mobile) .wr-menu-btn:hover {
+  opacity: 0.8;
+}
+
+body .wr-menu-btn:active {
+  opacity: 0.55;
+}
+
 .wr-menu-btn .svg-icon {
   width: 14px;
   height: 14px;
@@ -1499,6 +1566,95 @@ body .wr-menu-btn.wr-toolbar-active .svg-icon:not(#x) {
 body.wr-font-follow .wr-pin-indicator .svg-icon {
   width: max(14px, var(--wr-font-text));
   height: max(14px, var(--wr-font-text));
+}
+
+/* Arrived from an "pin later": the same pin, filled in. Lucide draws its icons as
+   outlines, so filling the path is all it takes to tell the two apart. */
+.wr-pin-indicator-filled .svg-icon {
+  fill: currentColor;
+}
+
+/* Waiting for its day: same corner and size as the pin, held back so a memo that
+   has already arrived reads as the stronger of the two. Held back by opacity, not
+   by a colour of its own — a tag rule paints this corner, and naming a colour here
+   would throw that away. */
+.wr-schedule-indicator {
+  opacity: 0.55;
+}
+
+/* The date drums inside the schedule menu. The menu is only the shell, so the row
+   drops its item look and hosts the three columns instead. */
+.wr-menu .wr-menu-drum {
+  padding: 2px 6px 6px;
+}
+
+.wr-drum-row {
+  display: flex;
+  gap: 4px;
+  position: relative;
+}
+
+/* The band the rows come to rest in, drawn once behind all three columns. */
+.wr-drum-row::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 28px;
+  transform: translateY(-50%);
+  border-radius: 6px;
+  background: rgba(var(--mono-rgb-100), 0.06);
+  pointer-events: none;
+}
+
+.wr-drum-col {
+  height: 140px; /* five rows of 28px: one at rest, two visible either side */
+  overflow-y: auto;
+  /* Keeps a roll that reaches the floor from handing the rest of its momentum to
+     the menu behind it. */
+  overscroll-behavior: contain;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+  text-align: center;
+  flex: 1;
+}
+
+.wr-drum-col::-webkit-scrollbar {
+  display: none;
+}
+
+.wr-drum-col-year {
+  flex: 1.3; /* four digits against one or two elsewhere */
+}
+
+.wr-drum-item {
+  height: 28px;
+  line-height: 28px;
+  scroll-snap-align: center;
+  font-size: var(--wr-font-ui-small);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* Already gone: still rolls past, but the drum will not come to rest here. */
+.wr-drum-item-disabled {
+  color: var(--text-faint);
+}
+
+/* Half the visible height at each end, so the first and last rows can reach the band. */
+.wr-drum-pad {
+  height: 56px;
+}
+
+/* The top run-up doubles as the window on to the days already gone: they sit at its
+   bottom edge, just above the band, and the drum stops before it can reach them. */
+.wr-drum-pad-top {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+  flex: none;
 }
 
 /* Menu hint line used when the pin-limit is reached. Renders as an

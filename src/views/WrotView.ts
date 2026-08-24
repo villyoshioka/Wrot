@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, Notice, TFile, EventRef, setIcon, Menu, Scope, MarkdownRenderer, renderMath, finishRenderMath } from "obsidian";
+import { ItemView, WorkspaceLeaf, Notice, TFile, EventRef, setIcon, Menu, MenuItem, Platform, Scope, MarkdownRenderer, renderMath, finishRenderMath } from "obsidian";
 import { VIEW_TYPE_WROT } from "../constants";
 import { parseMemos, Memo } from "../utils/memoParser";
 import { appendMemo, deleteMemo, toggleCheckbox, updateMemo } from "../utils/memoWriter";
@@ -8,6 +8,7 @@ import { invalidateMemoCache, renderQuoteCard } from "../utils/quoteCard";
 import { ensureBlockIdOnFence } from "../utils/memoWriter";
 import { isImageFile, saveImageToVault, buildEmbedLink } from "../utils/imageAttachment";
 import { openCalendarPopover, CalendarPopoverHandle } from "../utils/calendarPopover";
+import { buildDateDrum } from "../utils/dateDrum";
 import { TagSuggest, extractTagsForHistory, mergeRecentTags } from "../utils/tagSuggest";
 import { isMathJaxReady, requestMathJax } from "../utils/mathjax";
 import { quoteMarkerPattern } from "../utils/patterns";
@@ -28,7 +29,7 @@ import {
   wrapSelectionWithEmbedBrackets,
 } from "../utils/textareaEditor";
 import type WrotPlugin from "../main";
-import type { PinEntry } from "../settings";
+import type { PinEntry, ScheduledPinEntry } from "../settings";
 import { t } from "../i18n";
 
 declare const moment: typeof import("moment");
@@ -81,6 +82,13 @@ export class WrotView extends ItemView {
   private dateNavEl!: HTMLElement;
   private calendarBtnEl: HTMLElement | null = null;
   private calendarPopover: CalendarPopoverHandle | null = null;
+  // Separate handle from the date-nav calendar: this one hangs off a card's menu.
+  private schedulePopover: CalendarPopoverHandle | null = null;
+  // Timestamp of the memo whose day is being chosen, if any.
+  private schedulingTime: string | null = null;
+  // Day armed on the post being written, applied the moment it is posted.
+  private armedSchedule: string | null = null;
+  private scheduleArmBtn: HTMLButtonElement | null = null;
   private tagSuggest: TagSuggest | null = null;
   textarea!: HTMLTextAreaElement;
   submitLabelEl!: HTMLElement;
@@ -111,6 +119,8 @@ export class WrotView extends ItemView {
   private thumbnailContainer: HTMLElement | null = null;
   private imageAddBtn: HTMLButtonElement | null = null;
   private submitBtnEl: HTMLButtonElement | null = null;
+  // Sits at the left edge of the input header and only shows while editing.
+  private cancelBtnEl: HTMLButtonElement | null = null;
   // Edit mode: the memo whose body the form is rewriting. time is the unique key;
   // filePath keeps the write target stable across date navigation and for pinned
   // memos living in another file.
@@ -252,7 +262,14 @@ export class WrotView extends ItemView {
 
   /** Whether a pinned memo lives in this note, which the timeline shows on every date. */
   private holdsPinnedMemo(path: string): boolean {
-    return (this.plugin.settings.pins ?? []).some((pin) => pin.file === path);
+    // Scheduled pins count too: their memo can be edited away before its day arrives.
+    return this.allPinEntries().some((pin) => pin.file === path);
+  }
+
+  /** Both pin lists as one, for the checks that treat a pin as a pin. */
+  private allPinEntries(): PinEntry[] {
+    const { pins, scheduledPins } = this.plugin.settings;
+    return [...(pins ?? []), ...(scheduledPins ?? [])];
   }
 
   private unregisterFileWatcher(): void {
@@ -420,12 +437,25 @@ export class WrotView extends ItemView {
     if (icon) {
       setIcon(this.submitIconEl, icon);
     }
+    // The cancel button rides along: it exists on screen only while an edit is
+    // in progress, which is what makes a bare × read as "stop editing".
+    if (this.cancelBtnEl) this.cancelBtnEl.hidden = !editing;
+    // An edit takes the form over; anything armed for a new post steps aside with it.
+    if (editing && this.armedSchedule) this.setArmedSchedule(null);
+    else this.setArmedSchedule(this.armedSchedule);
   }
 
   private buildInputArea(container: HTMLElement): void {
     const inputArea = container.createDiv({ cls: "wr-input-area" });
 
     const header = inputArea.createDiv({ cls: "wr-input-header" });
+    // Third way out of edit mode, next to Escape and the card menu's cancel item:
+    // both of those can be out of reach on mobile or with the card scrolled away.
+    const cancelBtn = header.createEl("button", { cls: "wr-toolbar-btn wr-cancel-btn" });
+    setIcon(cancelBtn, "x");
+    cancelBtn.setAttr("aria-label", t("view.postMenu.cancelEdit"));
+    this.cancelBtnEl = cancelBtn;
+    cancelBtn.addEventListener("click", () => this.exitEditMode());
     const submitBtn = header.createEl("button", {
       cls: "wr-submit-btn",
     });
@@ -665,6 +695,25 @@ export class WrotView extends ItemView {
       this.insertAtLineStart("1. ");
       this.updateToolbarActive(listBtn, checkBtn, olBtn);
     });
+    // Arms a day on the post being written, so a memo that is already known to be
+    // wanted later does not have to be found again once it exists. Lit while armed:
+    // the button is the only sign the post carries one, so it has to hold it.
+    const scheduleBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn" });
+    setIcon(scheduleBtn, "clock-fading");
+    scheduleBtn.setAttr("aria-label", t("view.postMenu.schedulePin"));
+    this.scheduleArmBtn = scheduleBtn;
+    scheduleBtn.addEventListener("mousedown", (e) => e.preventDefault());
+    scheduleBtn.addEventListener("click", (e) => {
+      if (toolbarSuppressed()) return;
+      // Editing rewrites a post that already exists; its day is set from its own card.
+      if (this.editingMemo) return;
+      if (this.armedSchedule) {
+        this.setArmedSchedule(null);
+        return;
+      }
+      this.openSchedulePicker(scheduleBtn, e, null, (from) => this.setArmedSchedule(from));
+    });
+
     const formatBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn wr-format-btn" });
     setIcon(formatBtn, "ellipsis");
     formatBtn.addEventListener("mousedown", (e) => e.preventDefault());
@@ -1104,7 +1153,19 @@ export class WrotView extends ItemView {
       }
 
       this.ignoreNextModify = true;
-      await appendMemo(this.app, file, bodyText);
+      const postedTime = await appendMemo(this.app, file, bodyText);
+
+      // The armed day lands on the post the moment it exists. Its place was taken
+      // when it was armed, so there is nothing left to check here.
+      if (this.armedSchedule) {
+        const settings = this.plugin.settings;
+        settings.scheduledPins = [
+          { timestamp: postedTime, file: file.path, from: this.armedSchedule },
+          ...(settings.scheduledPins ?? []),
+        ];
+        await this.plugin.saveSettings();
+        this.setArmedSchedule(null);
+      }
 
       // Record used tags only after a successful post. rawText already has fullwidth #
       // normalized; extraction matches the display-side tag rules.
@@ -1146,10 +1207,25 @@ export class WrotView extends ItemView {
       this.clearPinnedContainer();
 
       // Resolve pins first; they render at the top independent of the current date.
-      const pinnedResolved = await this.resolvePinnedMemos();
+      // Scheduled pins whose day has come join them, below the ones pinned by hand:
+      // those arrive on their own, so keeping them out of the manual order means the
+      // top of the section stays as it was left.
+      const { pins, scheduledPins } = this.plugin.settings;
+      const arrived: ScheduledPinEntry[] = [];
+      const waiting = new Set<string>();
+      for (const entry of scheduledPins ?? []) {
+        if (this.isScheduleDue(entry)) arrived.push(entry);
+        else waiting.add(entry.timestamp);
+      }
+      const byHand = await this.resolvePinEntries(pins);
+      const bySchedule = await this.resolvePinEntries(arrived);
+      const pinnedResolved = [
+        ...byHand.map((p) => ({ ...p, fromSchedule: false })),
+        ...bySchedule.map((p) => ({ ...p, fromSchedule: true })),
+      ];
       const pinnedTimestamps = new Set(pinnedResolved.map((p) => p.memo.time));
-      for (const { memo, filePath } of pinnedResolved) {
-        this.renderMemoCard(memo, { pinned: true, filePath });
+      for (const { memo, filePath, fromSchedule } of pinnedResolved) {
+        this.renderMemoCard(memo, { pinned: true, filePath, fromSchedule });
       }
 
       const file = getDailyNoteFile(
@@ -1171,7 +1247,11 @@ export class WrotView extends ItemView {
         // Pinned memos above are deliberately exempt: pinning names a single memo,
         // which outranks a rule that hides a whole tag.
         if (this.plugin.isHiddenFromTimeline(memo.tags)) continue;
-        this.renderMemoCard(memo, { pinned: false, filePath: file.path });
+        this.renderMemoCard(memo, {
+          pinned: false,
+          filePath: file.path,
+          waitingSchedule: waiting.has(memo.time),
+        });
         rendered++;
       }
 
@@ -1179,6 +1259,8 @@ export class WrotView extends ItemView {
       // the same message reads for either, and the list never ends up blank.
       if (pinnedResolved.length === 0 && rendered === 0) this.renderEmptyState();
     } finally {
+      // Pins may have been added or taken down; the arm button's reach follows them.
+      this.setArmedSchedule(this.armedSchedule);
       this.refreshing = false;
       await this.releaseEditModeIfTargetGone().catch(() => {});
       if (this.refreshQueued) {
@@ -1235,9 +1317,10 @@ export class WrotView extends ItemView {
     return container;
   }
 
-  // Resolves pinned memos from settings; orphan cleanup happens on pin add/remove.
-  private async resolvePinnedMemos(): Promise<{ memo: Memo; filePath: string }[]> {
-    const pins = this.plugin.settings.pins;
+  // Resolves the memos behind pin entries; orphan cleanup happens on pin add/remove.
+  private async resolvePinEntries(
+    pins: PinEntry[] | undefined
+  ): Promise<{ memo: Memo; filePath: string }[]> {
     if (!pins || pins.length === 0) return [];
 
     const resolved: { memo: Memo; filePath: string }[] = [];
@@ -1269,32 +1352,61 @@ export class WrotView extends ItemView {
     return this.plugin.settings.pins.some((p) => p.timestamp === memo.time);
   }
 
-  private async cleanupOrphanPins(): Promise<boolean> {
-    const pins = this.plugin.settings.pins;
-    if (pins.length === 0) return false;
+  /** The scheduled pin on this memo, whether its day has come or not. */
+  private findScheduledPin(memo: Memo): ScheduledPinEntry | undefined {
+    return (this.plugin.settings.scheduledPins ?? []).find(
+      (p) => p.timestamp === memo.time
+    );
+  }
 
+  /**
+   * How much of the scheduled allowance is spoken for. A day armed on the post being
+   * written holds a place of its own: it is claimed the moment it is armed, so the
+   * post it was armed for cannot find the allowance gone by the time it is written.
+   */
+  private scheduledClaimCount(): number {
+    return (this.plugin.settings.scheduledPins?.length ?? 0) + (this.armedSchedule ? 1 : 0);
+  }
+
+  /** Whether a scheduled pin's day has arrived. Compared by day, never by clock time. */
+  private isScheduleDue(entry: ScheduledPinEntry): boolean {
+    return moment(entry.from, "YYYY-MM-DD").isSameOrBefore(moment(), "day");
+  }
+
+  private async cleanupOrphanPins(): Promise<boolean> {
+    const settings = this.plugin.settings;
     const cache = new Map<string, Memo[] | null>();
-    const surviving: PinEntry[] = [];
-    for (const pin of pins) {
+    // One cache across both lists: the same note commonly holds pins of either kind.
+    const alive = async (pin: PinEntry): Promise<boolean> => {
       let memos = cache.get(pin.file);
       if (memos === undefined) {
         const file = this.app.vault.getAbstractFileByPath(pin.file);
         if (!(file instanceof TFile)) {
           cache.set(pin.file, null);
-          continue;
+          return false;
         }
         const content = await this.app.vault.cachedRead(file);
         memos = parseMemos(content);
         cache.set(pin.file, memos);
       }
-      if (!memos) continue;
-      if (memos.some((m) => m.time === pin.timestamp)) {
-        surviving.push(pin);
-      }
+      return memos !== null && memos.some((m) => m.time === pin.timestamp);
+    };
+
+    const survivingPins: PinEntry[] = [];
+    for (const pin of settings.pins) {
+      if (await alive(pin)) survivingPins.push(pin);
+    }
+    const survivingScheduled: ScheduledPinEntry[] = [];
+    for (const pin of settings.scheduledPins ?? []) {
+      if (await alive(pin)) survivingScheduled.push(pin);
     }
 
-    if (surviving.length === pins.length) return false;
-    this.plugin.settings.pins = surviving;
+    const changed =
+      survivingPins.length !== settings.pins.length ||
+      survivingScheduled.length !== (settings.scheduledPins?.length ?? 0);
+    if (!changed) return false;
+    settings.pins = survivingPins;
+    settings.scheduledPins = survivingScheduled;
     await this.plugin.saveSettings();
     return true;
   }
@@ -1303,7 +1415,7 @@ export class WrotView extends ItemView {
     await this.cleanupOrphanPins();
     const limit = this.plugin.settings.pinLimit;
     if (this.plugin.settings.pins.length >= limit) return;
-    if (this.isPinned(memo)) return;
+    if (this.isPinned(memo) || this.findScheduledPin(memo)) return;
     this.plugin.settings.pins = [
       { timestamp: memo.time, file: filePath },
       ...this.plugin.settings.pins,
@@ -1312,12 +1424,29 @@ export class WrotView extends ItemView {
     await this.refresh();
   }
 
+  private async addScheduledPin(memo: Memo, filePath: string, from: string): Promise<void> {
+    await this.cleanupOrphanPins();
+    const settings = this.plugin.settings;
+    if (this.scheduledClaimCount() >= settings.pinLimit) return;
+    if (this.isPinned(memo) || this.findScheduledPin(memo)) return;
+    settings.scheduledPins = [
+      { timestamp: memo.time, file: filePath, from },
+      ...(settings.scheduledPins ?? []),
+    ];
+    await this.plugin.saveSettings();
+    await this.refresh();
+  }
+
+  // Clears the memo from both lists: once a scheduled pin has arrived it is just a
+  // pin, and taking it down is the same gesture as unpinning one placed by hand.
   private async removePin(memo: Memo): Promise<void> {
-    const before = this.plugin.settings.pins.length;
-    this.plugin.settings.pins = this.plugin.settings.pins.filter(
+    const settings = this.plugin.settings;
+    const before = settings.pins.length + (settings.scheduledPins?.length ?? 0);
+    settings.pins = settings.pins.filter((p) => p.timestamp !== memo.time);
+    settings.scheduledPins = (settings.scheduledPins ?? []).filter(
       (p) => p.timestamp !== memo.time
     );
-    if (this.plugin.settings.pins.length !== before) {
+    if (settings.pins.length + settings.scheduledPins.length !== before) {
       await this.plugin.saveSettings();
     }
     await this.cleanupOrphanPins();
@@ -1362,11 +1491,13 @@ export class WrotView extends ItemView {
           // Quote cards read a per-file memo cache; drop it so this refresh
           // cannot repaint a quote of the memo we just removed.
           invalidateMemoCache(file.path);
-          const before = this.plugin.settings.pins.length;
-          this.plugin.settings.pins = this.plugin.settings.pins.filter(
+          const settings = this.plugin.settings;
+          const before = settings.pins.length + (settings.scheduledPins?.length ?? 0);
+          settings.pins = settings.pins.filter((p) => p.timestamp !== memo.time);
+          settings.scheduledPins = (settings.scheduledPins ?? []).filter(
             (p) => p.timestamp !== memo.time
           );
-          if (this.plugin.settings.pins.length !== before) {
+          if (settings.pins.length + settings.scheduledPins.length !== before) {
             await this.plugin.saveSettings();
           }
         }
@@ -1379,7 +1510,189 @@ export class WrotView extends ItemView {
     this.plugin.refreshViews();
   }
 
-  private renderMemoCard(memo: Memo, options: { pinned: boolean; filePath: string }): void {
+  // Last year a memo can be sent to. Far enough that the drum never feels like it
+  // runs out under the finger.
+  private static readonly SCHEDULE_LAST_YEAR = 2099;
+
+  /**
+   * The day is rolled to rather than picked off a grid or typed: a scheduled day is
+   * usually one nobody has the date of in their head, so reaching it by eye beats
+   * both aiming at a cramped month grid and counting the date out to type it.
+   *
+   * The menu is only the shell — Obsidian places it beside the button on desktop and
+   * raises it from the bottom of the screen on mobile, so a card near the end of the
+   * timeline can still reach it, which an anchored popover could not.
+   */
+  private openSchedulePicker(
+    trigger: HTMLElement,
+    evt: MouseEvent,
+    memo: Memo | null,
+    onPick: (from: string) => void
+  ): void {
+    const earliest = moment().add(1, "day").startOf("day");
+    // Only a card's picker locks the timeline behind it. Armed from the toolbar there
+    // is no card yet, so there is nothing for the other cards to be locked out of.
+    if (memo) this.beginScheduling(memo);
+    // Closing puts the trigger's light out, which for the toolbar button is the light
+    // that says a day is armed. Restore it once the picker is gone.
+    const afterClose = () => {
+      this.endScheduling();
+      this.setArmedSchedule(this.armedSchedule);
+    };
+    // Touch rolls; a pointer clicks. On desktop the month grid is quicker to aim at
+    // and there is room beside the button to hang it, so the drums are the mobile
+    // and tablet shape only.
+    if (!Platform.isMobile) {
+      this.schedulePopover?.close();
+      // The card menu is still closing as its item fires, and its own hide handler
+      // puts the button's lit state out. Light it again once that has run: the
+      // picker is still the same card's.
+      window.setTimeout(() => trigger.toggleClass("wr-toolbar-active", true), 0);
+      // The popover is placed once, against the button's position at the time, so the
+      // list is held still while it is open — scrolling either way would slide the
+      // card out from under it. Before locking, the list is sent down far enough for
+      // the whole calendar to clear the bottom edge, which a card near the end of the
+      // timeline never does on its own.
+      const fitIntoView = () => {
+        const popover = this.schedulePopover;
+        if (!popover) return;
+        const overflow =
+          popover.el.getBoundingClientRect().bottom -
+          this.contentEl.getBoundingClientRect().bottom +
+          8;
+        if (overflow > 0) {
+          // The last card in the timeline has no scroll left underneath it, so the
+          // room is made rather than found: the list grows a floor of empty space for
+          // as long as the calendar is open. Opening upward instead would put the
+          // calendar over the very post the day is being chosen for.
+          // The floor's height is measured, so it is the one value that has to be
+          // written as a property rather than carried by a class.
+          this.listContainer.setCssProps({ "--wr-list-floor": `${overflow}px` });
+          this.listContainer.scrollTop += overflow;
+          popover.reposition();
+        }
+        // Held by refusing the scroll outright rather than by putting it back: undoing
+        // each frame fights the momentum and the list shudders.
+        this.listContainer.addClass("wr-list-held");
+      };
+      this.schedulePopover = openCalendarPopover({
+        anchor: trigger,
+        container: this.contentEl,
+        initialDate: earliest,
+        minDate: earliest,
+        onSelect: (date) => onPick(date.format("YYYY-MM-DD")),
+        onClose: () => {
+          this.listContainer.removeClass("wr-list-held");
+          this.listContainer.setCssProps({ "--wr-list-floor": "0px" });
+          this.schedulePopover = null;
+          trigger.toggleClass("wr-toolbar-active", false);
+          afterClose();
+        },
+      });
+      // The handle has to exist before the fit can measure it, and the popover needs
+      // a frame on screen before its box is worth measuring.
+      window.requestAnimationFrame(fitIntoView);
+      return;
+    }
+    this.openMenu(
+      trigger,
+      (menu) => {
+        let chosen = earliest.clone();
+        let confirmItem: MenuItem | null = null;
+        const renderChosen = () => {
+          confirmItem?.setTitle(chosen.format(this.plugin.settings.headerDateFormat));
+        };
+
+        menu.addItem((item) => {
+          const itemDom = (item as { dom?: HTMLElement }).dom;
+          if (!itemDom) return;
+          // The row is only a mounting point; its menu-item behaviour is dropped so
+          // rolling a drum cannot dismiss the menu out from under the finger.
+          itemDom.empty();
+          itemDom.className = "wr-menu-drum";
+          itemDom.addEventListener("click", (e) => e.stopPropagation());
+          buildDateDrum(itemDom, {
+            earliest,
+            lastYear: WrotView.SCHEDULE_LAST_YEAR,
+            onChange: (date) => {
+              chosen = date;
+              renderChosen();
+            },
+          });
+        });
+
+        menu.addItem((item) => {
+          confirmItem = item;
+          (item as { dom?: HTMLElement }).dom?.classList.add("wr-menu-schedule-confirm");
+          item.setIcon("clock-fading").onClick(() => {
+            onPick(chosen.format("YYYY-MM-DD"));
+          });
+          renderChosen();
+        });
+      },
+      evt,
+      0,
+      afterClose
+    );
+  }
+
+  // The armed day lives on the toolbar button and nowhere else: lit means the post
+  // being written carries one. Its tooltip names the day, for anyone who wants to
+  // check without taking it off.
+  private setArmedSchedule(from: string | null): void {
+    this.armedSchedule = from;
+    if (!this.scheduleArmBtn) return;
+    this.scheduleArmBtn.toggleClass("wr-toolbar-active", from !== null);
+    // Out of reach while an edit is running — that rewrites a post which already
+    // exists, and its day is set from its own card — and while the allowance is
+    // full, since there would be nowhere for the armed day to land. A day already
+    // armed keeps the button live: taking it back off has to stay possible.
+    const full = this.scheduledClaimCount() >= this.plugin.settings.pinLimit;
+    const disabled = this.editingMemo !== null || (full && from === null);
+    this.scheduleArmBtn.toggleClass("wr-toolbar-disabled", disabled);
+    this.scheduleArmBtn.disabled = disabled;
+    this.scheduleArmBtn.setAttr(
+      "aria-label",
+      from
+        ? moment(from, "YYYY-MM-DD").format(this.plugin.settings.headerDateFormat)
+        : t("view.postMenu.schedulePin")
+    );
+  }
+
+  // While a day is being chosen, the card that opened the picker keeps its menu
+  // button lit and every other card's is out of reach — the same shape as editing,
+  // where one card holds the form and the rest step back.
+  private beginScheduling(memo: Memo): void {
+    this.schedulingTime = memo.time;
+    this.applySchedulingClasses();
+  }
+
+  private endScheduling(): void {
+    if (!this.schedulingTime) return;
+    this.schedulingTime = null;
+    this.applySchedulingClasses();
+  }
+
+  private applySchedulingClasses(): void {
+    const time = this.schedulingTime;
+    const targetClass = time
+      ? `wr-block-id-wr-${time.replace(/[-:.TZ+]/g, "").slice(0, 17)}`
+      : null;
+    this.contentEl.querySelectorAll<HTMLElement>(".wr-card").forEach((card) => {
+      const isTarget = targetClass !== null && card.classList.contains(targetClass);
+      card.classList.toggle("wr-card-menu-locked", time !== null && !isTarget);
+    });
+  }
+
+  private renderMemoCard(
+    memo: Memo,
+    options: {
+      pinned: boolean;
+      filePath: string;
+      waitingSchedule?: boolean;
+      fromSchedule?: boolean;
+    }
+  ): void {
     const host = options.pinned
       ? this.ensurePinnedContainer()
       : this.listContainer;
@@ -1497,11 +1810,19 @@ export class WrotView extends ItemView {
       // While editing, every other card's menu is locked; only the card being
       // edited keeps its menu (it carries the cancel action).
       if (this.editingMemo && !this.isEditingTarget(memo)) return;
+      // Same while a day is being chosen: the picker belongs to one card, and the
+      // menu behind it stays that card's.
+      if (this.schedulingTime && this.schedulingTime !== memo.time) return;
       // Drop orphaned pins before evaluating the pin limit.
       await this.cleanupOrphanPins();
       const pinned = this.isPinned(memo);
+      const scheduled = this.findScheduledPin(memo);
+      // An arrived schedule is a pin in every way the menu cares about.
+      const onBoard = pinned || (scheduled !== undefined && this.isScheduleDue(scheduled));
       const pinLimit = this.plugin.settings.pinLimit;
-      const limitReached = !pinned && this.plugin.settings.pins.length >= pinLimit;
+      const claimed = pinned || scheduled !== undefined;
+      const limitReached = !claimed && this.plugin.settings.pins.length >= pinLimit;
+      const scheduleLimitReached = !claimed && this.scheduledClaimCount() >= pinLimit;
       this.openMenu(menuBtn, (menu) => {
         menu.addItem((item) =>
           item.setTitle(t("view.postMenu.copy")).setIcon("copy").onClick(async () => {
@@ -1529,29 +1850,57 @@ export class WrotView extends ItemView {
             })
           );
         }
-        if (pinned) {
-          menu.addItem((item) =>
+        // Three groups: what the memo's text can do, where the memo sits, and the
+        // one action that cannot be taken back.
+        menu.addSeparator();
+        // One wording for both allowances: they hold the same number, and which one
+        // is full is already said by which item above it went grey.
+        const addLimitHint = () => {
+          menu.addItem((item) => {
+            item.setTitle(t("view.postMenu.pinLimitHint", { limit: pinLimit })).setDisabled(true);
+            const itemDom = (item as { dom?: HTMLElement }).dom;
+            itemDom?.classList.add("wr-menu-hint", "is-label");
+          });
+        };
+        // Taking a pin down is worded the same whether it is already up or still
+        // waiting for its day: one gesture, one name. A memo still waiting is offered
+        // nothing else — changing the day means taking it down and setting it again,
+        // which keeps this menu the same height as every other card's.
+        // An edit in progress puts the whole group out of reach: an edit and a day
+        // being chosen both take over the card, and holding one while starting the
+        // other only muddles which of them the card is currently in.
+        const editingThis = this.isEditingTarget(memo);
+        if (onBoard || scheduled) {
+          menu.addItem((item) => {
             item.setTitle(t("view.postMenu.unpin")).setIcon("pin-off").onClick(async () => {
+              if (editingThis) return;
               await this.removePin(memo);
-            })
-          );
+            });
+            if (editingThis) item.setDisabled(true);
+          });
         } else {
           menu.addItem((item) => {
             item.setTitle(t("view.postMenu.pin")).setIcon("pin").onClick(async () => {
-              if (limitReached) return;
+              if (limitReached || editingThis) return;
               await this.addPin(memo, options.filePath);
             });
-            if (limitReached) item.setDisabled(true);
+            if (limitReached || editingThis) item.setDisabled(true);
           });
-          if (limitReached) {
-            menu.addItem((item) => {
-              item
-                .setTitle(t("view.postMenu.pinLimitHint", { limit: pinLimit }))
-                .setDisabled(true);
-              const itemDom = (item as { dom?: HTMLElement }).dom;
-              itemDom?.classList.add("wr-menu-hint", "is-label");
-            });
-          }
+          if (limitReached && !editingThis) addLimitHint();
+          menu.addItem((item) => {
+            item
+              .setTitle(t("view.postMenu.schedulePin"))
+              .setIcon("clock-fading")
+              .onClick(() => {
+                if (scheduleLimitReached || editingThis) return;
+                this.openSchedulePicker(menuBtn, e, memo, (from) => {
+                  // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure leaves the memo unscheduled
+                  this.addScheduledPin(memo, options.filePath, from);
+                });
+              });
+            if (scheduleLimitReached || editingThis) item.setDisabled(true);
+          });
+          if (scheduleLimitReached && !editingThis) addLimitHint();
         }
         // Deleting is irreversible and there is no undo, so the item only exists
         // once it has been asked for in the settings, and then only fires on the
@@ -1563,9 +1912,11 @@ export class WrotView extends ItemView {
             // ("Cancel edit" sits one item above), it is pinned (unpin first —
             // pinning is what marks a memo worth keeping), or one of its tags
             // carries a rule that protects it.
+            // A scheduled memo counts as claimed too: deleting it would take the
+            // reservation with it, before the day it was made for ever arrives.
             const locked =
               this.isEditingTarget(memo) ||
-              pinned ||
+              claimed ||
               this.plugin.isProtectedFromDelete(memo.tags);
             // Armed already when a previous opening took the first press.
             let armed = this.isDeleteArmed(memo);
@@ -1626,7 +1977,17 @@ export class WrotView extends ItemView {
 
     if (options.pinned) {
       const pinIndicator = card.createSpan({ cls: "wr-pin-indicator" });
+      // A pin that arrived on its own is drawn solid. The two kinds hold separate
+      // allowances, so which one a card is spending has to be readable from the card.
+      if (options.fromSchedule) pinIndicator.addClass("wr-pin-indicator-filled");
       setIcon(pinIndicator, "pin");
+    } else if (options.waitingSchedule) {
+      // Same corner as the pin, a different shape: the memo is spoken for, but its
+      // day has not come. Once it does, this card renders as a pin instead.
+      const scheduleIndicator = card.createSpan({
+        cls: "wr-pin-indicator wr-schedule-indicator",
+      });
+      setIcon(scheduleIndicator, "clock-fading");
     }
   }
 
@@ -1714,7 +2075,13 @@ export class WrotView extends ItemView {
 
   // Only one menu open at a time; the trigger keeps an active class while open.
   // yOffset nudges the menu vertically (positive = down).
-  openMenu(trigger: HTMLElement, buildMenu: (m: Menu) => void, evt: MouseEvent, yOffset = 0): void {
+  openMenu(
+    trigger: HTMLElement,
+    buildMenu: (m: Menu) => void,
+    evt: MouseEvent,
+    yOffset = 0,
+    onHide?: () => void
+  ): void {
     if (this.currentMenu) {
       this.currentMenu.hide();
     }
@@ -1729,9 +2096,13 @@ export class WrotView extends ItemView {
     this.currentMenu = menu;
 
     menu.onHide(() => {
-      trigger.toggleClass("wr-toolbar-active", false);
+      // A menu opened from another menu's item outlives it, and on mobile the old
+      // one finishes closing well after. Only the menu still holding the trigger
+      // puts its light out; an older one leaves it to whoever took over.
       if (this.currentMenu === menu) {
+        trigger.toggleClass("wr-toolbar-active", false);
         this.currentMenu = null;
+        onHide?.();
       }
     });
 

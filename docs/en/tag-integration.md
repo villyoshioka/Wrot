@@ -22,6 +22,14 @@ Searches in the form `tag:#tagname` now match notes containing memos with that t
 - Clicking a tag node in the graph view opens a search that finds your memos the same way.
 - Clicking or tapping a memo tag in the timeline, Reading View, or Live Preview opens the same kind of tag search.
 
+### Tags join Obsidian's own tag list
+
+Tags inside your memos are added to the list of tags Obsidian knows about.
+
+- They appear in the tag pane in the left sidebar, alongside regular tags.
+- They are offered as suggestions after `tag:` in the search field.
+- They are offered by Obsidian's own autocomplete when you type `#` in an ordinary note.
+
 ---
 
 ## Which Tags Are Included

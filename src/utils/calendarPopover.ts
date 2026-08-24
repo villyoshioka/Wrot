@@ -13,6 +13,8 @@ export interface CalendarPopoverOptions {
   container: HTMLElement;
   // Date used for the initial view and the selected-day highlight.
   initialDate: Moment;
+  // Earliest selectable day. Days before it render greyed out and do not respond.
+  minDate?: Moment;
   // Called with the tapped day as a moment at 00:00.
   onSelect: (date: Moment) => void;
   // Cleanup, called on any close (select, outside click, Esc).
@@ -21,6 +23,11 @@ export interface CalendarPopoverOptions {
 
 export interface CalendarPopoverHandle {
   close: () => void;
+  // The popover is placed against the anchor's position at the time. Call this after
+  // moving the anchor — scrolling the list under it — to place it again.
+  reposition: () => void;
+  // The popover element itself, for a caller that needs to measure where it landed.
+  el: HTMLElement;
 }
 
 const GRID_CELLS = 6 * 7; // fixed 6 weeks so the height never changes per month
@@ -30,7 +37,7 @@ const GRID_CELLS = 6 * 7; // fixed 6 weeks so the height never changes per month
 export function openCalendarPopover(
   opts: CalendarPopoverOptions
 ): CalendarPopoverHandle {
-  const { anchor, container, initialDate, onSelect, onClose } = opts;
+  const { anchor, container, initialDate, minDate, onSelect, onClose } = opts;
 
   // Month being shown, normalized to its first day.
   let viewMonth = initialDate.clone().startOf("month");
@@ -147,6 +154,10 @@ export function openCalendarPopover(
       if (day.isSame(initialDate, "day")) {
         cell.addClass("wr-calendar-day-selected");
       }
+      if (minDate && day.isBefore(minDate, "day")) {
+        cell.addClass("wr-calendar-day-disabled");
+        continue;
+      }
       cell.addEventListener("click", () => {
         onSelect(day.clone().startOf("day"));
         close();
@@ -226,5 +237,5 @@ export function openCalendarPopover(
   activeDocument.addEventListener("pointerdown", onOutside, true);
   activeDocument.addEventListener("keydown", onKeydown, true);
 
-  return { close };
+  return { close, reposition: positionPopover, el: popover };
 }

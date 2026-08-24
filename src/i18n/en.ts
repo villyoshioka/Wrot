@@ -45,7 +45,7 @@ const en = {
   "settings.item.tagSuggest.desc": "Typing after # shows suggestions. \nSwitching it off also clears the remembered ones.",
 
   "settings.item.pinLimit.name": "Pin Limit",
-  "settings.item.pinLimit.desc": "Lowering the limit unpins anything over it.",
+  "settings.item.pinLimit.desc": "\"Pin\" and \"Pin Later\" each have their own limit.\nLowering the limit unpins anything over it.",
   "settings.option.pinLimit.1": "1 Post",
   "settings.option.pinLimit.3": "3 Posts",
   "settings.option.pinLimit.5": "5 Posts",
@@ -128,6 +128,7 @@ const en = {
   "view.postMenu.unpin": "Unpin",
   "view.postMenu.pin": "Pin",
   "view.postMenu.pinLimitHint": "You can pin up to {limit} posts.",
+  "view.postMenu.schedulePin": "Pin Later",
   "view.postMenu.delete": "Delete",
   // Shown on the same row after the first press, in place of the label above.
   "view.postMenu.deleteConfirm": "Press again to delete",

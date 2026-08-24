@@ -20,7 +20,7 @@ Everything you write is saved directly into your Daily Notes. This means it work
 ## Features
 
 - **Rich UI** — A post editor with a dedicated toolbar for formatting, lists, links, and quotes. The timeline view makes writing and revisiting your notes feel intuitive and satisfying. See [Formatting Guide](https://github.com/villyoshioka/Wrot/blob/main/docs/en/formatting-guide.md) for more details.
-- **Pin Important Notes** — Keep essential memos at the top of your timeline regardless of the date. Perfect for shopping lists, active tasks, or reminders you don't want to lose track of.
+- **Pin Important Notes** — Keep essential memos at the top of your timeline regardless of the date. Perfect for shopping lists, active tasks, or reminders you don't want to lose track of. Set a day instead, and the memo is pinned when that day comes around. See [Using Pins](https://github.com/villyoshioka/Wrot/blob/main/docs/en/pinning.md) for more details.
 - **Tag Integration** — Tags inside your memos appear in the graph view and match tag searches, just like regular tags. Simply click a `#tag` to instantly view all related notes via Obsidian's built-in search. See [Using Tag Integration](https://github.com/villyoshioka/Wrot/blob/main/docs/en/tag-integration.md) for more details.
 - **Tag Autocomplete** — Typing `#` in the post form suggests tags from your past posts, so you can reuse your usual tags quickly and accurately. See [Using Tag Autocomplete](https://github.com/villyoshioka/Wrot/blob/main/docs/en/tag-autocomplete.md) for more details.
 - **Color-Coded Tags** — Assign custom background and text colors to your most-used tags. Posts will automatically highlight based on your rules, making it easy to categorize by mood, priority, or project at a glance. See [Using Tag Rules](https://github.com/villyoshioka/Wrot/blob/main/docs/en/tag-rules.md) for more details.
@@ -104,7 +104,7 @@ Wrot is highly customizable. Key settings include:
 - **View Placement** — Choose between the left/right sidebar or the main editor area.
 - **Themes** — Custom background and text colors for both Light and Dark modes.
 - **Tag Styling** — Set specific colors for tags to categorize your timeline visually.
-- **Pin Limits** — Choose to pin 1, 3, or 5 notes to the top.
+- **Pin Limits** — Choose to pin 1, 3, or 5 notes to the top. Pin and Pin Later are counted separately.
 - **Button Customization** — Change the post and update buttons’ labels and icons.
 - **Delete Button** — Choose whether a post's menu offers deletion (hidden by default).
 - **Time Formats** — Customize how timestamps appear (e.g., `YYYY/MM/DD HH:mm:ss`).

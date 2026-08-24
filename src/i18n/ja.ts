@@ -46,7 +46,7 @@ const ja = {
     "# に続けて入力すると候補が表示されます。\nオフにすると覚えた候補も消えます。",
 
   "settings.item.pinLimit.name": "ピン留めの上限",
-  "settings.item.pinLimit.desc": "上限を下げると、超えた分のピンは外れます。",
+  "settings.item.pinLimit.desc": "「ピン留め」機能と「あとでピン留め」機能の上限は別に設定されます。\n上限を下げると、超えた分のピンは外れます。",
   "settings.option.pinLimit.1": "1 件",
   "settings.option.pinLimit.3": "3 件",
   "settings.option.pinLimit.5": "5 件",
@@ -129,6 +129,7 @@ const ja = {
   "view.postMenu.unpin": "ピンを外す",
   "view.postMenu.pin": "ピン留め",
   "view.postMenu.pinLimitHint": "ピン留めは{limit}件までです。",
+  "view.postMenu.schedulePin": "あとでピン留め",
   "view.postMenu.delete": "削除",
   // Shown on the same row after the first press, in place of the label above.
   "view.postMenu.deleteConfirm": "もう一度押すと削除",

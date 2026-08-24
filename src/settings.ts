@@ -43,6 +43,18 @@ export interface PinEntry {
   file: string;
 }
 
+/**
+ * A pin that starts showing on a chosen day. Until then the memo stays in its own
+ * day's timeline, marked but not pinned. Scheduled pins hold their own allowance,
+ * separate from `pins` but capped by the same `pinLimit`, and they keep occupying
+ * it after the day arrives — moving them across would let a full pin list block a
+ * schedule that was made when there was still room.
+ */
+export interface ScheduledPinEntry extends PinEntry {
+  // Day the pin starts showing, as YYYY-MM-DD.
+  from: string;
+}
+
 export type PinLimit = 1 | 3 | 5;
 
 export interface WrotSettings {
@@ -80,6 +92,7 @@ export interface WrotSettings {
   showCalendarButton: boolean;
   calendarDayShape: "circle" | "rounded" | "square";
   pins: PinEntry[];
+  scheduledPins: ScheduledPinEntry[];
   pinLimit: PinLimit;
   // Locale at last save, used to detect an Obsidian language change on startup.
   // When absent (pre-existing users), loadSettings adopts the current locale without resetting.
@@ -112,6 +125,7 @@ export const DEFAULT_SETTINGS: WrotSettings = {
   showCalendarButton: true,
   calendarDayShape: "rounded",
   pins: [],
+  scheduledPins: [],
   pinLimit: 3,
 };
 
@@ -206,6 +220,10 @@ export class WrotSettingTab extends PluginSettingTab {
       pinLimit: () => {
         if (settings.pins.length > settings.pinLimit) {
           settings.pins = settings.pins.slice(0, settings.pinLimit);
+        }
+        // Scheduled pins hold their own allowance of the same size, trimmed the same way.
+        if (settings.scheduledPins.length > settings.pinLimit) {
+          settings.scheduledPins = settings.scheduledPins.slice(0, settings.pinLimit);
         }
         this.plugin.refreshViews();
       },

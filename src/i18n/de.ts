@@ -45,7 +45,7 @@ const de = {
   "settings.item.tagSuggest.desc": "Nach dem # erscheinen Vorschläge. \nBeim Ausschalten werden die gemerkten Vorschläge gelöscht.",
 
   "settings.item.pinLimit.name": "Limit für angepinnte Beiträge",
-  "settings.item.pinLimit.desc": "Wird das Limit gesenkt, werden überzählige Anheftungen gelöst.",
+  "settings.item.pinLimit.desc": "„Anpinnen“ und „Später anpinnen“ haben jeweils ein eigenes Limit.\nWird das Limit gesenkt, werden überzählige Anheftungen gelöst.",
   "settings.option.pinLimit.1": "1 Beitrag",
   "settings.option.pinLimit.3": "3 Beiträge",
   "settings.option.pinLimit.5": "5 Beiträge",
@@ -123,6 +123,7 @@ const de = {
   "view.postMenu.unpin": "Anpinnen aufheben",
   "view.postMenu.pin": "Anpinnen",
   "view.postMenu.pinLimitHint": "Sie können maximal {limit} Beiträge anpinnen.",
+  "view.postMenu.schedulePin": "Später anpinnen",
   "view.postMenu.delete": "Löschen",
   // Shown on the same row after the first press, in place of the label above.
   "view.postMenu.deleteConfirm": "Zum Löschen erneut drücken",

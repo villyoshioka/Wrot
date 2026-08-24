@@ -1,5 +1,20 @@
 # Release Notes
 
+## 2.22.0 - 2026-08-25
+
+### New Features
+
+- Added Pin Later, which pins a post on a day you choose. Its limit is counted separately from ordinary pins.
+- Pin Later can also be set from the post form's toolbar while you are still writing.
+
+### Improvements
+
+- The post form now offers a button for backing out of an edit.
+- Added press feedback to the toolbar buttons and the post menu buttons.
+- Split the post menu into three groups so items are easier to find.
+
+---
+
 ## 2.21.1 - 2026-08-22
 
 ### Updates

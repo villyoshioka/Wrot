@@ -45,7 +45,7 @@ const ru = {
   "settings.item.tagSuggest.desc": "При вводе после # появляются подсказки. \nПри отключении сохранённые подсказки удаляются.",
 
   "settings.item.pinLimit.name": "Лимит закрепления",
-  "settings.item.pinLimit.desc": "При уменьшении лимита лишние закрепления снимаются.",
+  "settings.item.pinLimit.desc": "«Закрепить» и «Закрепить позже» имеют отдельные лимиты.\nПри уменьшении лимита лишние закрепления снимаются.",
   "settings.option.pinLimit.1": "1 запись",
   "settings.option.pinLimit.3": "3 записи",
   "settings.option.pinLimit.5": "5 записей",
@@ -124,6 +124,7 @@ const ru = {
   "view.postMenu.unpin": "Открепить",
   "view.postMenu.pin": "Закрепить",
   "view.postMenu.pinLimitHint": "Максимум закрепленных записей: {limit}.",
+  "view.postMenu.schedulePin": "Закрепить позже",
   "view.postMenu.delete": "Удалить",
   // Shown on the same row after the first press, in place of the label above.
   "view.postMenu.deleteConfirm": "Нажмите ещё раз для удаления",

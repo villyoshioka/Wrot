@@ -46,7 +46,7 @@ const it = {
   "settings.item.tagSuggest.desc": "Digitando dopo # compaiono i suggerimenti. \nDisattivandolo si cancellano anche quelli memorizzati.",
 
   "settings.item.pinLimit.name": "Limite post fissati",
-  "settings.item.pinLimit.desc": "Abbassando il limite, i fissaggi in eccesso vengono rimossi.",
+  "settings.item.pinLimit.desc": "«Fissa in alto» e «Fissa più tardi» hanno ciascuno un proprio limite.\nAbbassando il limite, i fissaggi in eccesso vengono rimossi.",
   "settings.option.pinLimit.1": "1 elemento",
   "settings.option.pinLimit.3": "3 elementi",
   "settings.option.pinLimit.5": "5 elementi",
@@ -132,6 +132,7 @@ const it = {
   "view.postMenu.unpin": "Rimuovi pin",
   "view.postMenu.pin": "Fissa in alto",
   "view.postMenu.pinLimitHint": "Il limite per i pin è di {limit} elementi.",
+  "view.postMenu.schedulePin": "Fissa più tardi",
   "view.postMenu.delete": "Elimina",
   // Shown on the same row after the first press, in place of the label above.
   "view.postMenu.deleteConfirm": "Premi di nuovo per eliminare",

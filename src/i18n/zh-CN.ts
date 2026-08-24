@@ -45,7 +45,7 @@ const zhCN = {
   "settings.item.tagSuggest.desc": "在 # 后输入时会显示候选。 \n关闭后会清除已记住的候选。",
 
   "settings.item.pinLimit.name": "置顶上限",
-  "settings.item.pinLimit.desc": "调低上限时，超出的固定会被解除。",
+  "settings.item.pinLimit.desc": "「置顶」与「稍后置顶」的上限分别计算。\n调低上限时，超出的固定会被解除。",
   "settings.option.pinLimit.1": "1 条",
   "settings.option.pinLimit.3": "3 条",
   "settings.option.pinLimit.5": "5 条",
@@ -128,6 +128,7 @@ const zhCN = {
   "view.postMenu.unpin": "取消置顶",
   "view.postMenu.pin": "置顶",
   "view.postMenu.pinLimitHint": "置顶条数已达上限（最多 {limit} 条）。",
+  "view.postMenu.schedulePin": "稍后置顶",
   "view.postMenu.delete": "删除",
   // Shown on the same row after the first press, in place of the label above.
   "view.postMenu.deleteConfirm": "再按一次即删除",

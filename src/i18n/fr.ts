@@ -46,7 +46,7 @@ const fr = {
   "settings.item.tagSuggest.desc": "Taper après # affiche des suggestions. \nLa désactivation efface aussi celles mémorisées.",
 
   "settings.item.pinLimit.name": "Limite d'épinglage",
-  "settings.item.pinLimit.desc": "En abaissant la limite, les épingles en trop sont retirées.",
+  "settings.item.pinLimit.desc": "« Épingler » et « Épingler plus tard » ont chacun leur propre limite.\nEn abaissant la limite, les épingles en trop sont retirées.",
   "settings.option.pinLimit.1": "1 élément",
   "settings.option.pinLimit.3": "3 éléments",
   "settings.option.pinLimit.5": "5 éléments",
@@ -129,6 +129,7 @@ const fr = {
   "view.postMenu.unpin": "Désépingler",
   "view.postMenu.pin": "Épingler",
   "view.postMenu.pinLimitHint": "La limite est de {limit} épingles.",
+  "view.postMenu.schedulePin": "Épingler plus tard",
   "view.postMenu.delete": "Supprimer",
   // Shown on the same row after the first press, in place of the label above.
   "view.postMenu.deleteConfirm": "Appuyez encore pour supprimer",

@@ -68,7 +68,7 @@ export function buildPaletteCss(palette: WrPalette): string {
       body .wr-textarea,
       body .wr-date-label,
       body .wr-calendar-month-label,
-      body .wr-calendar-day:not(.wr-calendar-day-selected):not(.wr-calendar-day-today):not(.wr-calendar-day-outside),
+      body .wr-calendar-day:not(.wr-calendar-day-selected):not(.wr-calendar-day-today):not(.wr-calendar-day-outside):not(.wr-calendar-day-disabled),
       body .wr-calendar-year:not(.wr-calendar-day-selected):not(.wr-calendar-day-today),
       body .wr-inline-code,
       body .wr-plain-text,
@@ -88,6 +88,14 @@ export function buildPaletteCss(palette: WrPalette): string {
       }
       body .wr-calendar-day-outside {
         color: ${faintColor};
+      }
+      /* Out of range for this picker. Declared after the today rule so a day that is
+         both today and out of reach reads as out of reach. */
+      body .wr-calendar-day-disabled,
+      body .wr-calendar-day-disabled.wr-calendar-day-today,
+      body .wr-calendar-day-disabled.wr-calendar-day-selected {
+        color: ${faintColor};
+        font-weight: inherit;
       }
       /* Restore Prism token colors inside nested code blocks */
       body .wr-codeblock-display code[class*="language-"],
@@ -309,6 +317,22 @@ export function buildPaletteCss(palette: WrPalette): string {
       body .wr-menu .menu-item:not(.is-disabled).is-selected,
       body .wr-menu .menu-item:not(.is-disabled):active {
         background-color: ${hoverColor};
+      }
+      /* The chosen day below the drums: it reads as a label, so it takes no hover
+         fill like the rows above it — only the text answers the pointer. Declared
+         here to land after the shared hover rule. */
+      .is-mobile body .wr-menu .menu-item.wr-menu-schedule-confirm:hover,
+      .is-mobile body .wr-menu .menu-item.wr-menu-schedule-confirm:active,
+      body .wr-menu .menu-item.wr-menu-schedule-confirm:hover,
+      body .wr-menu .menu-item.wr-menu-schedule-confirm.selected,
+      body .wr-menu .menu-item.wr-menu-schedule-confirm.is-selected,
+      body .wr-menu .menu-item.wr-menu-schedule-confirm:active {
+        background-color: ${bgColor};
+        color: ${mutedColor};
+      }
+      body .wr-menu .menu-item.wr-menu-schedule-confirm:hover .menu-item-icon .svg-icon {
+        color: ${mutedColor};
+        stroke: ${mutedColor};
       }
       body .wr-menu .menu-separator {
         border-color: ${hoverColor};
