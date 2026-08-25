@@ -116,18 +116,18 @@ export function buildTagRuleCss(rules: TagColorRule[]): string {
       }
       /* Re-declared at ID-equivalent specificity so tag-rule sub colors win in LV widget DOM.
          wr-check-done excluded: static CSS muted wins in RV, so LV defers to static CSS too */
-      body .cm-line.${cls} .wr-lp-marker:not(#x):not(#y):not(#z),
-      body .cm-line.${cls} .wr-list-highlight:not(#x):not(#y):not(#z),
-      body .cm-line.${cls} .wr-check-unchecked:not(#x):not(#y):not(#z),
-      body .cm-line.${cls} .wr-check-checked:not(#x):not(#y):not(#z),
-      body .cm-line.${cls} .wr-ol-highlight:not(#x):not(#y):not(#z) {
+      body .cm-line.${cls} .wr-lp-marker:not(#x#y#z),
+      body .cm-line.${cls} .wr-list-highlight:not(#x#y#z),
+      body .cm-line.${cls} .wr-check-unchecked:not(#x#y#z),
+      body .cm-line.${cls} .wr-check-checked:not(#x#y#z),
+      body .cm-line.${cls} .wr-ol-highlight:not(#x#y#z) {
         color: ${mList};
       }
       /* ID-equivalent specificity so quote text and bars take the rule's quote color in LV widget DOM */
-      body .cm-line.${cls}.wr-blockquote-line:not(#x):not(#y):not(#z),
-      body .cm-line.${cls} .wr-blockquote-wrap:not(#x):not(#y):not(#z),
-      body .cm-line.${cls} .wr-blockquote-wrap:not(#x):not(#y):not(#z) *,
-      body .cm-line.${cls} .wr-quote-highlight:not(#x):not(#y):not(#z) {
+      body .cm-line.${cls}.wr-blockquote-line:not(#x#y#z),
+      body .cm-line.${cls} .wr-blockquote-wrap:not(#x#y#z),
+      body .cm-line.${cls} .wr-blockquote-wrap:not(#x#y#z) *,
+      body .cm-line.${cls} .wr-quote-highlight:not(#x#y#z) {
         color: ${mQuote};
       }
       /* Checkbox border uses the sub color; checked fill uses the rule accent */
@@ -149,12 +149,12 @@ export function buildTagRuleCss(rules: TagColorRule[]): string {
         color: ${mQuote};
       }
       /* ID-equivalent re-declaration in case the text-color stamp wins on specificity (quote-card content excluded) */
-      body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote):not(#x):not(#y):not(#z),
-      body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote):not(#x):not(#y):not(#z) *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url),
-      body div.block-language-wr.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote):not(#x):not(#y):not(#z),
-      body div.block-language-wr.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote):not(#x):not(#y):not(#z) *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url),
-      body pre.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote):not(#x):not(#y):not(#z),
-      body pre.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote):not(#x):not(#y):not(#z) *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url) {
+      body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote):not(#x#y#z),
+      body .wr-card.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote):not(#x#y#z) *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url),
+      body div.block-language-wr.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote):not(#x#y#z),
+      body div.block-language-wr.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote):not(#x#y#z) *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url),
+      body pre.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote):not(#x#y#z),
+      body pre.${cls} .wr-blockquote:not(.wr-quote-card-slot .wr-blockquote):not(#x#y#z) *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url) {
         color: ${mQuote};
       }
       body .cm-line.wr-codeblock-line.${cls} .wr-tag-highlight .wr-blockquote-wrap,
@@ -213,8 +213,8 @@ export function buildTagRuleCss(rules: TagColorRule[]): string {
         color: ${mQuote};
       }
       /* ID-equivalent re-declaration against the base quote-card mutedColor rule */
-      body .wr-quote-card-slot .wr-quote-card.${cls}:not(#x):not(#y):not(#z) .wr-quote-card-body .wr-blockquote,
-      body .wr-quote-card-slot .wr-quote-card.${cls}:not(#x):not(#y):not(#z) .wr-quote-card-body .wr-blockquote * {
+      body .wr-quote-card-slot .wr-quote-card.${cls}:not(#x#y#z) .wr-quote-card-body .wr-blockquote,
+      body .wr-quote-card-slot .wr-quote-card.${cls}:not(#x#y#z) .wr-quote-card-body .wr-blockquote * {
         color: ${mQuote};
       }
       /* Markers mirror the base muted rule's :not() chain to avoid losing on specificity */
@@ -362,22 +362,22 @@ export function buildTagRuleCss(rules: TagColorRule[]): string {
         color: ${mOgp};
       }
       /* ID-equivalent re-declaration in case the parent text-color stamp wins on specificity */
-      body .wr-card.${cls} .wr-ogp-title:not(#x):not(#y):not(#z),
-      body .wr-card.${cls} .wr-ogp-desc:not(#x):not(#y):not(#z),
-      body .wr-card.${cls} .wr-ogp-site:not(#x):not(#y):not(#z),
-      body .wr-card.${cls} .wr-ogp-loading:not(#x):not(#y):not(#z),
-      body div.block-language-wr.${cls} .wr-ogp-title:not(#x):not(#y):not(#z),
-      body div.block-language-wr.${cls} .wr-ogp-desc:not(#x):not(#y):not(#z),
-      body div.block-language-wr.${cls} .wr-ogp-site:not(#x):not(#y):not(#z),
-      body div.block-language-wr.${cls} .wr-ogp-loading:not(#x):not(#y):not(#z),
-      body pre.${cls} .wr-ogp-title:not(#x):not(#y):not(#z),
-      body pre.${cls} .wr-ogp-desc:not(#x):not(#y):not(#z),
-      body pre.${cls} .wr-ogp-site:not(#x):not(#y):not(#z),
-      body pre.${cls} .wr-ogp-loading:not(#x):not(#y):not(#z),
-      body .wr-lp-media.${cls} .wr-ogp-title:not(#x):not(#y):not(#z),
-      body .wr-lp-media.${cls} .wr-ogp-desc:not(#x):not(#y):not(#z),
-      body .wr-lp-media.${cls} .wr-ogp-site:not(#x):not(#y):not(#z),
-      body .wr-lp-media.${cls} .wr-ogp-loading:not(#x):not(#y):not(#z) {
+      body .wr-card.${cls} .wr-ogp-title:not(#x#y#z),
+      body .wr-card.${cls} .wr-ogp-desc:not(#x#y#z),
+      body .wr-card.${cls} .wr-ogp-site:not(#x#y#z),
+      body .wr-card.${cls} .wr-ogp-loading:not(#x#y#z),
+      body div.block-language-wr.${cls} .wr-ogp-title:not(#x#y#z),
+      body div.block-language-wr.${cls} .wr-ogp-desc:not(#x#y#z),
+      body div.block-language-wr.${cls} .wr-ogp-site:not(#x#y#z),
+      body div.block-language-wr.${cls} .wr-ogp-loading:not(#x#y#z),
+      body pre.${cls} .wr-ogp-title:not(#x#y#z),
+      body pre.${cls} .wr-ogp-desc:not(#x#y#z),
+      body pre.${cls} .wr-ogp-site:not(#x#y#z),
+      body pre.${cls} .wr-ogp-loading:not(#x#y#z),
+      body .wr-lp-media.${cls} .wr-ogp-title:not(#x#y#z),
+      body .wr-lp-media.${cls} .wr-ogp-desc:not(#x#y#z),
+      body .wr-lp-media.${cls} .wr-ogp-site:not(#x#y#z),
+      body .wr-lp-media.${cls} .wr-ogp-loading:not(#x#y#z) {
         color: ${mOgp};
       }
       `);

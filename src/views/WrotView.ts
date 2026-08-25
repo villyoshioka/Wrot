@@ -76,6 +76,10 @@ export class WrotView extends ItemView {
   private currentDate: ReturnType<typeof moment>;
   // While true, the view auto-follows the date rollover to today.
   private anchoredToToday: boolean = true;
+  // Calendar day the list was last drawn on, as YYYY-MM-DD. A scheduled pin comes due by
+  // the day turning over rather than by anything happening, so this is what tells a
+  // catch-up whether there is anything to pick up.
+  private lastRenderedDay: string | null = null;
   private listContainer!: HTMLElement;
   private pinnedContainer: HTMLElement | null = null;
   private dateLabel!: HTMLElement;
@@ -84,6 +88,8 @@ export class WrotView extends ItemView {
   private calendarPopover: CalendarPopoverHandle | null = null;
   // Separate handle from the date-nav calendar: this one hangs off a card's menu.
   private schedulePopover: CalendarPopoverHandle | null = null;
+  // The button the open schedule picker belongs to, so that button can close it again.
+  private schedulePickerAnchor: HTMLElement | null = null;
   // Timestamp of the memo whose day is being chosen, if any.
   private schedulingTime: string | null = null;
   // Day armed on the post being written, applied the moment it is posted.
@@ -181,13 +187,22 @@ export class WrotView extends ItemView {
     // Register after the initial render to avoid refresh races.
     this.registerFileWatcher();
 
+    // The view has no clock of its own, so it catches up at the moments attention lands
+    // on it: the panel being reached for, and the window being come back to. Both are
+    // cheap when the day has not turned -- catchUpToToday compares a date and stops.
     this.registerEvent(
       this.app.workspace.on("active-leaf-change", (leaf) => {
         if (leaf !== this.leaf) return;
         // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
-        this.maybeRollToToday();
+        this.catchUpToToday();
       })
     );
+    // The view's own window, not the main one: a timeline living in a popout is come
+    // back to by focusing that popout.
+    this.registerDomEvent(this.containerEl.win, "focus", () => {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
+      this.catchUpToToday();
+    });
   }
 
   onClose(): Promise<void> {
@@ -287,11 +302,25 @@ export class WrotView extends ItemView {
     }
   }
 
-  private async maybeRollToToday(): Promise<void> {
-    if (!this.anchoredToToday) return;
+  /**
+   * Brings the view up to date with the calendar. Called whenever attention lands on it.
+   *
+   * Two things go stale while the view sits untouched: the day it is showing, and a
+   * scheduled pin whose day has come. The first only moves while the view is still
+   * following today; the second has to be picked up either way, since pins sit above the
+   * timeline whatever date is open.
+   *
+   * Nothing here watches the clock. The day is checked when the view is looked at, which
+   * is the only moment the answer is worth anything.
+   */
+  private async catchUpToToday(): Promise<void> {
+    // A redraw would take an edit in progress or an open picker with it. Whatever lands
+    // on the view next catches up instead.
+    if (this.editingMemo || this.schedulingTime || this.schedulePopover) return;
     const now = moment();
-    if (this.currentDate.isSame(now, "day")) return;
-    this.currentDate = now;
+    const rollTo = this.anchoredToToday && !this.currentDate.isSame(now, "day");
+    if (!rollTo && this.lastRenderedDay === now.format("YYYY-MM-DD")) return;
+    if (rollTo) this.currentDate = now;
     await this.refresh();
   }
 
@@ -707,6 +736,13 @@ export class WrotView extends ItemView {
       if (toolbarSuppressed()) return;
       // Editing rewrites a post that already exists; its day is set from its own card.
       if (this.editingMemo) return;
+      // The picker this button opened closes on the same button, the way the date
+      // nav's calendar does. The popover ignores presses on its own anchor so a day
+      // cell's click can land, which leaves the press to fall through to here.
+      if (this.schedulePickerAnchor === scheduleBtn) {
+        this.schedulePopover?.close();
+        return;
+      }
       if (this.armedSchedule) {
         this.setArmedSchedule(null);
         return;
@@ -784,6 +820,10 @@ export class WrotView extends ItemView {
     });
     // selectionchange does not fire on focus gain, so sync explicitly.
     this.textarea.addEventListener("focus", () => {
+      // Reaching for the form is reaching for the view; if the day turned while it sat
+      // there, this is a good moment to notice.
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
+      this.catchUpToToday();
       // The focus() triggered by a format-button click must skip validation: the marker
       // is not before the caret yet and validation would clear the pending mode.
       if (this.skipNextFocusValidation) {
@@ -1163,7 +1203,7 @@ export class WrotView extends ItemView {
           { timestamp: postedTime, file: file.path, from: this.armedSchedule },
           ...(settings.scheduledPins ?? []),
         ];
-        await this.plugin.saveSettings();
+        await this.plugin.savePins();
         this.setArmedSchedule(null);
       }
 
@@ -1198,6 +1238,9 @@ export class WrotView extends ItemView {
     // Skip renders entirely during the modify-suppression window (e.g. right after a checkbox toggle).
     if (Date.now() < this.ignoreModifyUntil) return;
     this.refreshing = true;
+    // Past both skips above, so this render is going to happen: record the day now rather
+    // than at the end, where the "no note for this date" branch returns early.
+    this.lastRenderedDay = moment().format("YYYY-MM-DD");
     try {
       const isToday = this.currentDate.isSame(moment(), "day");
       const dateText = this.currentDate.format(this.plugin.settings.headerDateFormat);
@@ -1407,7 +1450,7 @@ export class WrotView extends ItemView {
     if (!changed) return false;
     settings.pins = survivingPins;
     settings.scheduledPins = survivingScheduled;
-    await this.plugin.saveSettings();
+    await this.plugin.savePins();
     return true;
   }
 
@@ -1420,7 +1463,7 @@ export class WrotView extends ItemView {
       { timestamp: memo.time, file: filePath },
       ...this.plugin.settings.pins,
     ];
-    await this.plugin.saveSettings();
+    await this.plugin.savePins();
     await this.refresh();
   }
 
@@ -1433,7 +1476,7 @@ export class WrotView extends ItemView {
       { timestamp: memo.time, file: filePath, from },
       ...(settings.scheduledPins ?? []),
     ];
-    await this.plugin.saveSettings();
+    await this.plugin.savePins();
     await this.refresh();
   }
 
@@ -1447,7 +1490,7 @@ export class WrotView extends ItemView {
       (p) => p.timestamp !== memo.time
     );
     if (settings.pins.length + settings.scheduledPins.length !== before) {
-      await this.plugin.saveSettings();
+      await this.plugin.savePins();
     }
     await this.cleanupOrphanPins();
     await this.refresh();
@@ -1498,7 +1541,7 @@ export class WrotView extends ItemView {
             (p) => p.timestamp !== memo.time
           );
           if (settings.pins.length + settings.scheduledPins.length !== before) {
-            await this.plugin.saveSettings();
+            await this.plugin.savePins();
           }
         }
       } catch {
@@ -1575,6 +1618,7 @@ export class WrotView extends ItemView {
         // each frame fights the momentum and the list shudders.
         this.listContainer.addClass("wr-list-held");
       };
+      this.schedulePickerAnchor = trigger;
       this.schedulePopover = openCalendarPopover({
         anchor: trigger,
         container: this.contentEl,
@@ -1585,6 +1629,7 @@ export class WrotView extends ItemView {
           this.listContainer.removeClass("wr-list-held");
           this.listContainer.setCssProps({ "--wr-list-floor": "0px" });
           this.schedulePopover = null;
+          this.schedulePickerAnchor = null;
           trigger.toggleClass("wr-toolbar-active", false);
           afterClose();
         },

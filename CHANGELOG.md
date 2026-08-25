@@ -1,5 +1,19 @@
 # Release Notes
 
+## 2.22.1 - 2026-08-25
+
+### Improvements
+
+- A post set with Pin Later is now pinned as soon as you come back to Obsidian on its day.
+- Improved internal structure.
+
+### Bug Fixes
+
+- Fixed the clock mark shown while a post waits for its Pin Later day appearing fainter than the pin mark.
+- Fixed the Pin Later button in the post form's toolbar not closing the date picker when pressed a second time.
+
+---
+
 ## 2.22.0 - 2026-08-25
 
 ### New Features

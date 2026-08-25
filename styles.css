@@ -466,7 +466,7 @@ body .wr-textarea:not(#x) {
 
 /* Obsidian core paints textarea backgrounds (incl. :hover) and themes may go
    higher, so win with 3 ID levels; priority-flag opponents win by design. */
-body .wr-textarea:not(#x):not(#y):not(#z) {
+body .wr-textarea:not(#x#y#z) {
   background: transparent;
 }
 
@@ -509,14 +509,14 @@ body .wr-toolbar-btn:not(#x) {
    button offsetTop, so the modes must agree on widths. If a theme overrides
    only normal mode, the ResizeObserver re-toggles the class every frame — the
    "twitching form" seen with Primary / Mado 11 / Kakano. */
-body .wr-toolbar-btn:not(#x):not(#y):not(#z) {
+body .wr-toolbar-btn:not(#x#y#z) {
   border: none;
   padding: 2px;
   margin: 0;
   min-width: auto;
 }
 
-body .wr-input-toolbar.wr-toolbar-wrapped .wr-toolbar-btn:not(#x):not(#y):not(#z) {
+body .wr-input-toolbar.wr-toolbar-wrapped .wr-toolbar-btn:not(#x#y#z) {
   padding: 6px 2px;
   min-height: 0;
   height: auto;
@@ -634,7 +634,7 @@ body .wr-submit-btn {
 /* Pushed to the left edge by the auto margin against the header's flex-end, and
    flush with the textarea's edge. Declared at the same ID-level specificity as
    the shared toolbar metrics, which otherwise zero the margin out. */
-body .wr-cancel-btn:not(#x):not(#y):not(#z) {
+body .wr-cancel-btn:not(#x#y#z) {
   margin-right: auto;
   padding-left: 0;
   padding-right: 6px;
@@ -1265,25 +1265,25 @@ body .wr-quote-highlight:not(#x) {
    touching position/opacity (Obsidian's hover-to-show must survive). RV puts
    it directly under pre.language-wr, hence both parents; ID-level specificity
    stops any reset back to z-index: auto. */
-body pre.language-wr .copy-code-button:not(#x):not(#y):not(#z),
-body .block-language-wr .copy-code-button:not(#x):not(#y):not(#z) {
+body pre.language-wr .copy-code-button:not(#x#y#z),
+body .block-language-wr .copy-code-button:not(#x#y#z) {
   z-index: 100;
 }
 
 /* RV: transparent button over card content. 3 ID levels — above the injected
    bg stamps (2) and core's ".markdown-rendered button.copy-code-button:hover",
    below tag-rule CSS (4) so rule-colored cards still tint the button. */
-body pre.language-wr .copy-code-button:not(#x):not(#y):not(#z) {
+body pre.language-wr .copy-code-button:not(#x#y#z) {
   background: transparent;
 }
 
 /* With a tag rule active the card color can land on the button's inner SVG and
    blot out the icon; keep the SVG transparent. 3 ID levels: above the bg
    stamps (2), below tag-rule CSS (4). */
-pre.language-wr .copy-code-button svg:not(#x):not(#y):not(#z),
-pre.language-wr .copy-code-button svg :not(#x):not(#y):not(#z),
-.block-language-wr .copy-code-button svg:not(#x):not(#y):not(#z),
-.block-language-wr .copy-code-button svg :not(#x):not(#y):not(#z) {
+pre.language-wr .copy-code-button svg:not(#x#y#z),
+pre.language-wr .copy-code-button svg :not(#x#y#z),
+.block-language-wr .copy-code-button svg:not(#x#y#z),
+.block-language-wr .copy-code-button svg :not(#x#y#z) {
   background: transparent;
 }
 
@@ -1295,7 +1295,7 @@ pre.language-wr .copy-code-button svg :not(#x):not(#y):not(#z),
    metric rules (one class stronger than their margin: 0) so it survives them
    in both wrap modes; a mode-independent margin cannot re-trigger the wrap
    oscillation. */
-body .wr-toolbar-btn.wr-format-btn:not(#x):not(#y):not(#z) {
+body .wr-toolbar-btn.wr-format-btn:not(#x#y#z) {
   margin-left: 8px;
 }
 
@@ -1574,13 +1574,10 @@ body.wr-font-follow .wr-pin-indicator .svg-icon {
   fill: currentColor;
 }
 
-/* Waiting for its day: same corner and size as the pin, held back so a memo that
-   has already arrived reads as the stronger of the two. Held back by opacity, not
-   by a colour of its own — a tag rule paints this corner, and naming a colour here
-   would throw that away. */
-.wr-schedule-indicator {
-  opacity: 0.55;
-}
+/* .wr-schedule-indicator — the mark on a memo still waiting for its day — carries no
+   look of its own. It sits on .wr-pin-indicator above and takes that corner, size and
+   colour whole, so the two marks weigh the same and only their shape tells them apart.
+   It was once dimmed with an opacity; that read as washed out next to the pin. */
 
 /* The date drums inside the schedule menu. The menu is only the shell, so the row
    drops its item look and hosts the three columns instead. */
@@ -1677,12 +1674,12 @@ body.wr-font-follow .wr-pin-indicator .svg-icon {
 /* Mobile: Unlike other items, Delete stays open on tap, leaving hover/select active.
 Disabled these globally on the row; scoping highlights to the armed state ensures
 they clear on disarm. :active is kept for tap feedback. */
-body.is-mobile .wr-menu .menu-item.wr-menu-delete:not(:active):not(#x):not(#y):not(#z),
-body.is-mobile .wr-menu .menu-item.wr-menu-delete:hover:not(:active):not(#x):not(#y):not(#z),
-body.is-mobile .wr-menu .menu-item.wr-menu-delete:focus:not(:active):not(#x):not(#y):not(#z),
-body.is-mobile .wr-menu .menu-item.wr-menu-delete.selected:not(:active):not(#x):not(#y):not(#z),
-body.is-mobile .wr-menu .menu-item.wr-menu-delete.is-active:not(:active):not(#x):not(#y):not(#z),
-body.is-mobile .wr-menu .menu-item.wr-menu-delete.is-focused:not(:active):not(#x):not(#y):not(#z) {
+body.is-mobile .wr-menu .menu-item.wr-menu-delete:not(:active):not(#x#y#z),
+body.is-mobile .wr-menu .menu-item.wr-menu-delete:hover:not(:active):not(#x#y#z),
+body.is-mobile .wr-menu .menu-item.wr-menu-delete:focus:not(:active):not(#x#y#z),
+body.is-mobile .wr-menu .menu-item.wr-menu-delete.selected:not(:active):not(#x#y#z),
+body.is-mobile .wr-menu .menu-item.wr-menu-delete.is-active:not(:active):not(#x#y#z),
+body.is-mobile .wr-menu .menu-item.wr-menu-delete.is-focused:not(:active):not(#x#y#z) {
   background: transparent;
 }
 
@@ -2046,31 +2043,31 @@ body.is-mobile .wr-today-btn {
 /* Mobile: kill lingering :hover/:focus backgrounds, keep :active feedback.
    Obsidian mobile sometimes applies these; win with 3 ID levels. If the app
    ever uses the priority flag here, losing is the accepted trade-off. */
-body.is-mobile .wr-nav-btn:focus:not(.wr-toolbar-active):not(#x):not(#y):not(#z),
-body.is-mobile .wr-nav-btn:focus-visible:not(.wr-toolbar-active):not(#x):not(#y):not(#z),
-body.is-mobile .wr-today-btn:focus:not(#x):not(#y):not(#z),
-body.is-mobile .wr-today-btn:focus-visible:not(#x):not(#y):not(#z) {
+body.is-mobile .wr-nav-btn:focus:not(.wr-toolbar-active):not(#x#y#z),
+body.is-mobile .wr-nav-btn:focus-visible:not(.wr-toolbar-active):not(#x#y#z),
+body.is-mobile .wr-today-btn:focus:not(#x#y#z),
+body.is-mobile .wr-today-btn:focus-visible:not(#x#y#z) {
   background: transparent;
 }
 
-body.is-mobile .wr-nav-btn:hover:not(.wr-toolbar-active):not(#x):not(#y):not(#z),
-body.is-mobile .wr-today-btn:hover:not(#x):not(#y):not(#z) {
+body.is-mobile .wr-nav-btn:hover:not(.wr-toolbar-active):not(#x#y#z),
+body.is-mobile .wr-today-btn:hover:not(#x#y#z) {
   background: transparent;
 }
 
 /* Press feedback must outrank the resets above; the same ID boost keeps source
    order decisive. No color here: press text color stays on the injected stamp. */
-body.is-mobile .wr-nav-btn:active:not(.wr-toolbar-active):not(#x):not(#y):not(#z),
-body.is-mobile .wr-today-btn:active:not(#x):not(#y):not(#z) {
+body.is-mobile .wr-nav-btn:active:not(.wr-toolbar-active):not(#x#y#z),
+body.is-mobile .wr-today-btn:active:not(#x#y#z) {
   background: rgba(var(--mono-rgb-100), 0.08);
 }
 
 /* While the calendar is open, pin the faint glow: the mobile :active rule
    above would flicker on arrow taps; the extra class + same ID boost holds
    the light tint. */
-body.is-mobile .wr-calendar-btn.wr-toolbar-active:not(#x):not(#y):not(#z),
-body.is-mobile .wr-calendar-btn.wr-toolbar-active:active:not(#x):not(#y):not(#z),
-body.is-mobile .wr-calendar-btn.wr-toolbar-active:hover:not(#x):not(#y):not(#z) {
+body.is-mobile .wr-calendar-btn.wr-toolbar-active:not(#x#y#z),
+body.is-mobile .wr-calendar-btn.wr-toolbar-active:active:not(#x#y#z),
+body.is-mobile .wr-calendar-btn.wr-toolbar-active:hover:not(#x#y#z) {
   background: rgba(var(--mono-rgb-100), 0.05);
 }
 
@@ -2104,13 +2101,13 @@ body.is-mobile .wr-calendar-year:active {
 
 /* Mobile: arrow buttons — kill lingering :hover/:focus, keep :active only;
    same ID-level boost as above. */
-body.is-mobile .wr-calendar-nav-btn:focus:not(#x):not(#y):not(#z),
-body.is-mobile .wr-calendar-nav-btn:focus-visible:not(#x):not(#y):not(#z),
-body.is-mobile .wr-calendar-nav-btn:hover:not(#x):not(#y):not(#z) {
+body.is-mobile .wr-calendar-nav-btn:focus:not(#x#y#z),
+body.is-mobile .wr-calendar-nav-btn:focus-visible:not(#x#y#z),
+body.is-mobile .wr-calendar-nav-btn:hover:not(#x#y#z) {
   background: transparent;
 }
 
-body.is-mobile .wr-calendar-nav-btn:active:not(#x):not(#y):not(#z) {
+body.is-mobile .wr-calendar-nav-btn:active:not(#x#y#z) {
   background: rgba(var(--mono-rgb-100), 0.08);
 }
 
@@ -2152,8 +2149,8 @@ body.is-mobile .wr-submit-btn.wr-submit-icon-only {
 
 /* Obsidian mobile draws form-field borders; win by ID-level specificity
    instead of the priority flag (loses only to priority-flag opponents). */
-body.is-mobile .wr-textarea:not(#x):not(#y):not(#z),
-body.is-mobile .wr-textarea:focus:not(#x):not(#y):not(#z) {
+body.is-mobile .wr-textarea:not(#x#y#z),
+body.is-mobile .wr-textarea:focus:not(#x#y#z) {
   border: none;
   outline: none;
 }
@@ -2169,11 +2166,11 @@ body.is-mobile .wr-textarea:focus:not(#x):not(#y):not(#z) {
 
 /* Same ID-level pinning as the desktop rules: both wrap modes must agree on
    button widths or the wrap detection oscillates (see the desktop comment). */
-body.is-mobile .wr-toolbar-btn:not(#x):not(#y):not(#z) {
+body.is-mobile .wr-toolbar-btn:not(#x#y#z) {
   padding: 2px;
 }
 
-body.is-mobile .wr-input-toolbar.wr-toolbar-wrapped .wr-toolbar-btn:not(#x):not(#y):not(#z) {
+body.is-mobile .wr-input-toolbar.wr-toolbar-wrapped .wr-toolbar-btn:not(#x#y#z) {
   padding: 6px 2px;
 }
 

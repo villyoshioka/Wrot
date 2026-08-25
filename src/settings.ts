@@ -744,7 +744,7 @@ export class WrotSettingTab extends PluginSettingTab {
     // Only the new rule is left editable, so the settled ones stay protected.
     this.unlockedRules.clear();
     this.unlockedRules.add(newIndex);
-    await this.plugin.saveSettings();
+    await this.plugin.saveTagRules();
     this.plugin.applyTagColorRules();
     this.update();
   }
@@ -769,7 +769,7 @@ export class WrotSettingTab extends PluginSettingTab {
               delete rule.noIntegration;
               delete rule.hideFromTimeline;
               delete rule.protectFromDelete;
-              await this.plugin.saveSettings();
+              await this.plugin.saveTagRules();
               this.plugin.applyTagColorRules();
               this.plugin.refreshAllWrDecorations();
               this.plugin.graphTags.rebuild();
@@ -782,7 +782,7 @@ export class WrotSettingTab extends PluginSettingTab {
               this.plugin.settings.tagColorRules.splice(idx, 1);
               // Unlock state is keyed by position, which the splice shifts.
               this.unlockedRules.clear();
-              await this.plugin.saveSettings();
+              await this.plugin.saveTagRules();
               // Rules are identified by position, so later rules' generated classes shift.
               this.plugin.applyTagColorRules();
               this.plugin.refreshAllWrDecorations();
@@ -797,7 +797,7 @@ export class WrotSettingTab extends PluginSettingTab {
       initial: rule,
       onTagChange: async (v) => {
         rule.tag = v;
-        await this.plugin.saveSettings();
+        await this.plugin.saveTagRules();
         this.plugin.applyTagColorRules();
         this.plugin.refreshAllWrDecorations();
         // The excluded tag name may have changed; rebuild the graph injection.
@@ -805,18 +805,18 @@ export class WrotSettingTab extends PluginSettingTab {
       },
       onBgChange: async (v) => {
         rule.bgColor = v;
-        await this.plugin.saveSettings();
+        await this.plugin.saveTagRules();
         this.plugin.applyTagColorRules();
       },
       onFgChange: async (v) => {
         rule.textColor = v;
-        await this.plugin.saveSettings();
+        await this.plugin.saveTagRules();
         this.plugin.applyTagColorRules();
       },
       onAccentChange: async (v) => {
         if (v === undefined) delete rule.accentColor;
         else rule.accentColor = v;
-        await this.plugin.saveSettings();
+        await this.plugin.saveTagRules();
         this.plugin.applyTagColorRules();
       },
       onSubChange: async (v) => {
@@ -826,33 +826,33 @@ export class WrotSettingTab extends PluginSettingTab {
         } else {
           rule.subColor = v;
         }
-        await this.plugin.saveSettings();
+        await this.plugin.saveTagRules();
         this.plugin.applyTagColorRules();
       },
       onScopeChange: async (key, value) => {
         const current = rule.subColorScope ?? { buttons: true, quote: true, list: true, ogp: true };
         current[key] = value;
         rule.subColorScope = current;
-        await this.plugin.saveSettings();
+        await this.plugin.saveTagRules();
         this.plugin.applyTagColorRules();
       },
       onNoIntegrationChange: async (v) => {
         if (v) rule.noIntegration = true;
         else delete rule.noIntegration;
-        await this.plugin.saveSettings();
+        await this.plugin.saveTagRules();
         this.plugin.graphTags.rebuild();
       },
       onHideFromTimelineChange: async (v) => {
         if (v) rule.hideFromTimeline = true;
         else delete rule.hideFromTimeline;
-        await this.plugin.saveSettings();
+        await this.plugin.saveTagRules();
         // Only the timeline is affected; reading view and live preview stay as they are.
         this.plugin.refreshViews();
       },
       onProtectFromDeleteChange: async (v) => {
         if (v) rule.protectFromDelete = true;
         else delete rule.protectFromDelete;
-        await this.plugin.saveSettings();
+        await this.plugin.saveTagRules();
         this.plugin.refreshViews();
       },
       trailing,
@@ -893,7 +893,7 @@ export class WrotSettingTab extends PluginSettingTab {
       if (!touched) return;
 
       this.plugin.settings.tagColorRules.push({ ...placeholder });
-      await this.plugin.saveSettings();
+      await this.plugin.saveTagRules();
       this.plugin.applyTagColorRules();
       this.plugin.refreshAllWrDecorations();
       this.plugin.graphTags.rebuild();

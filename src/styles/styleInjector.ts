@@ -12,10 +12,16 @@
  * Ladder: styles.css base (0-1 IDs) < bg/text stamp (2) < styles.css overrides, e.g. the RV copy
  * button (3) < tag-rule CSS (4). The boost goes before "::" because pseudo-elements must stay
  * last; comments are stripped first since they break selector detection.
+ *
+ * The ids go in one `:not()` as a single compound rather than one `:not()` each. A `:not()`
+ * takes the specificity of its most specific argument, so `#wr-b1#wr-b2` is worth two ids just
+ * as two separate `:not()`s are, and no element can carry two ids so it still never matches --
+ * at well under half the bytes, which matters because this runs over every generated selector.
  */
 export function boostSelectors(css: string, idLevels: number): string {
-  let boost = "";
-  for (let i = 1; i <= idLevels; i++) boost += `:not(#wr-boost-${i})`;
+  let ids = "";
+  for (let i = 1; i <= idLevels; i++) ids += `#wr-b${i}`;
+  const boost = `:not(${ids})`;
   const noComments = css.replace(/\/\*[\s\S]*?\*\//g, "");
   return noComments.replace(/([^{}]+)\{/g, (_m, sels: string) => {
     const boosted = sels.split(",").map((sel) => {

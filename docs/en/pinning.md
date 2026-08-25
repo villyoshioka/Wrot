@@ -62,7 +62,7 @@ The memo is pinned, and sits at the top of the timeline.
 - It stays pinned after the day has passed, until you take it down.
 - Take it down with **"Unpin"**, the same as any other pin.
 
-Note that a memo does not appear the moment the date changes while Wrot is open. It arrives when the displayed date rolls over to today, when you post something, or when Obsidian is reopened.
+Note that a memo does not appear the moment the date changes while Wrot is open. It arrives the next time you come back to Obsidian, or when you add a post.
 
 ---
 
@@ -84,8 +84,7 @@ Note that a memo does not appear the moment the date changes while Wrot is open.
 
 ### The day arrived but the memo has not been pinned
 
-- Nothing happens at the moment the date changes. It catches up when the displayed date rolls over to today, when you post something, or when Obsidian is reopened.
-- While you are looking at another date in the date navigation, nothing rolls over until you go back to today.
+- Nothing happens at the moment the date changes. It catches up the next time you come back to Obsidian, or when you add a post.
 
 ### Pin Later cannot be chosen
 

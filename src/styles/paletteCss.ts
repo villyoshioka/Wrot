@@ -179,19 +179,19 @@ export function buildPaletteCss(palette: WrPalette): string {
         border-color: ${mutedColor};
       }
       /* Re-declared at higher specificity so marker colors also reach LV widget DOM */
-      body .cm-line .wr-lp-marker:not(#x):not(#y):not(#z),
-      body .cm-line .wr-list-highlight:not(#x):not(#y):not(#z),
-      body .cm-line .wr-check-unchecked:not(#x):not(#y):not(#z),
-      body .cm-line .wr-check-checked:not(#x):not(#y):not(#z),
-      body .cm-line .wr-ol-highlight:not(#x):not(#y):not(#z),
-      body .cm-line .wr-quote-highlight:not(#x):not(#y):not(#z),
-      body .cm-line.wr-blockquote-line:not(#x):not(#y):not(#z),
-      body .cm-line .wr-blockquote-wrap:not(#x):not(#y):not(#z),
-      body .cm-line .wr-blockquote-wrap:not(#x):not(#y):not(#z) *:not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-url-highlight):not(.wr-math-highlight):not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url),
-      body .cm-line .wr-ogp-title:not(#x):not(#y):not(#z),
-      body .cm-line .wr-ogp-desc:not(#x):not(#y):not(#z),
-      body .cm-line .wr-ogp-site:not(#x):not(#y):not(#z),
-      body .cm-line .wr-ogp-loading:not(#x):not(#y):not(#z) {
+      body .cm-line .wr-lp-marker:not(#x#y#z),
+      body .cm-line .wr-list-highlight:not(#x#y#z),
+      body .cm-line .wr-check-unchecked:not(#x#y#z),
+      body .cm-line .wr-check-checked:not(#x#y#z),
+      body .cm-line .wr-ol-highlight:not(#x#y#z),
+      body .cm-line .wr-quote-highlight:not(#x#y#z),
+      body .cm-line.wr-blockquote-line:not(#x#y#z),
+      body .cm-line .wr-blockquote-wrap:not(#x#y#z),
+      body .cm-line .wr-blockquote-wrap:not(#x#y#z) *:not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-url-highlight):not(.wr-math-highlight):not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url),
+      body .cm-line .wr-ogp-title:not(#x#y#z),
+      body .cm-line .wr-ogp-desc:not(#x#y#z),
+      body .cm-line .wr-ogp-site:not(#x#y#z),
+      body .cm-line .wr-ogp-loading:not(#x#y#z) {
         color: ${mutedColor};
       }
       /* Checkbox border uses the sub color; checked fill uses the theme accent */
