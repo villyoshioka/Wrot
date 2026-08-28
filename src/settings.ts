@@ -57,6 +57,62 @@ export interface ScheduledPinEntry extends PinEntry {
 
 export type PinLimit = 1 | 3 | 5;
 
+/**
+ * One entry of the input toolbar's single ordered list. `shown` decides which side of
+ * the line it sits on: on the bar itself, or inside the overflow menu. Hidden entries
+ * keep their place in the list, so putting one back returns it to the same spot.
+ */
+export interface ToolbarSlot {
+  id: string;
+  shown: boolean;
+}
+
+/**
+ * Every action the toolbar can offer, in the order it ships. The first group is what a
+ * fresh install shows on the bar; the rest start out in the overflow menu. Ids are
+ * persisted, so they are renamed only alongside a migration.
+ */
+export const DEFAULT_TOOLBAR_LAYOUT: ReadonlyArray<ToolbarSlot> = [
+  { id: "image", shown: true },
+  { id: "embed", shown: true },
+  { id: "bold", shown: true },
+  { id: "italic", shown: true },
+  { id: "list", shown: true },
+  { id: "check", shown: true },
+  { id: "ol", shown: true },
+  { id: "schedule", shown: true },
+  { id: "code", shown: false },
+  { id: "math", shown: false },
+  { id: "quote", shown: false },
+  { id: "link", shown: false },
+  { id: "strikethrough", shown: false },
+  { id: "highlight", shown: false },
+];
+
+/**
+ * Fills in a saved layout: unknown and duplicate ids are dropped, and any action the
+ * save predates is appended hidden. A button added by a later version therefore lands
+ * in the overflow menu rather than shifting positions the hand has already learned.
+ * An empty save means "never customised" and yields the shipped layout.
+ */
+export function resolveToolbarLayout(saved: ToolbarSlot[] | undefined): ToolbarSlot[] {
+  const shipped = DEFAULT_TOOLBAR_LAYOUT.map((slot) => ({ ...slot }));
+  if (!saved || saved.length === 0) return shipped;
+
+  const known = new Set(DEFAULT_TOOLBAR_LAYOUT.map((slot) => slot.id));
+  const seen = new Set<string>();
+  const resolved: ToolbarSlot[] = [];
+  for (const slot of saved) {
+    if (!slot || !known.has(slot.id) || seen.has(slot.id)) continue;
+    seen.add(slot.id);
+    resolved.push({ id: slot.id, shown: slot.shown === true });
+  }
+  for (const slot of shipped) {
+    if (!seen.has(slot.id)) resolved.push({ id: slot.id, shown: false });
+  }
+  return resolved;
+}
+
 export interface WrotSettings {
   viewPlacement: "left" | "right" | "main";
   headerDateFormat: string;
@@ -89,6 +145,12 @@ export interface WrotSettings {
   // Deletion is irreversible and the plugin has no undo, so the menu item stays
   // out of sight until it is asked for.
   showPostDelete: boolean;
+  // Arranging is offered from the start — a bar nobody knows can be changed is a bar
+  // nobody changes — and can be switched off by anyone who would rather not have the row.
+  toolbarEditEnabled: boolean;
+  // Empty until the toolbar is customised, which keeps a fresh install following the
+  // shipped layout even as that layout changes between versions.
+  toolbarLayout: ToolbarSlot[];
   showCalendarButton: boolean;
   calendarDayShape: "circle" | "rounded" | "square";
   pins: PinEntry[];
@@ -122,6 +184,8 @@ export const DEFAULT_SETTINGS: WrotSettings = {
   tagColorRules: [],
   followObsidianFontSize: false,
   showPostDelete: false,
+  toolbarEditEnabled: true,
+  toolbarLayout: [],
   showCalendarButton: true,
   calendarDayShape: "rounded",
   pins: [],
@@ -239,6 +303,13 @@ export class WrotSettingTab extends PluginSettingTab {
       graphTagsEnabled: async () => {
         await this.plugin.graphTags.applyEnabled();
         // The per-rule "exclude from integration" row is only offered while this is on.
+        this.update();
+      },
+
+      toolbarEditEnabled: () => {
+        // The reset row is only offered while this is on, and a bar left mid-arrangement
+        // has to be let go of.
+        this.plugin.updateToolbarLayout();
         this.update();
       },
 
@@ -609,11 +680,57 @@ export class WrotSettingTab extends PluginSettingTab {
           },
         },
         {
+          name: t("settings.item.toolbarEdit.name"),
+          desc: desc(t("settings.item.toolbarEdit.desc")),
+          control: { type: "toggle", key: "toolbarEditEnabled" },
+        },
+        this.resetToolbarRow(),
+        {
           name: t("settings.item.showPostDelete.name"),
           desc: desc(t("settings.item.showPostDelete.desc")),
           control: { type: "toggle", key: "showPostDelete" },
         },
       ],
+    };
+  }
+
+  // Puts the toolbar back to the shipped arrangement. Nothing written can be lost this
+  // way, so it asks for a second press rather than a dialog — the same shape the post
+  // delete uses, minus the weight.
+  private resetToolbarRow(): SettingDefinition {
+    return {
+      name: t("settings.item.resetToolbar.name"),
+      desc: desc(t("settings.item.resetToolbar.desc")),
+      // Nothing to put back while the toolbar cannot be arranged in the first place.
+      visible: () => this.plugin.settings.toolbarEditEnabled,
+      render: (setting: Setting) => {
+        let armTimer: number | null = null;
+        setting
+          .setName(t("settings.item.resetToolbar.name"))
+          .setDesc(desc(t("settings.item.resetToolbar.desc")))
+          .addButton((btn) => {
+            const disarm = () => {
+              if (armTimer !== null) window.clearTimeout(armTimer);
+              armTimer = null;
+              btn.setButtonText(t("settings.item.resetToolbar.button"));
+              btn.buttonEl.removeClass("mod-warning");
+            };
+            disarm();
+            btn.onClick(async () => {
+              if (armTimer === null) {
+                btn.setButtonText(t("settings.item.resetToolbar.confirm"));
+                btn.buttonEl.addClass("mod-warning");
+                // Expires on its own so an abandoned confirm never lingers.
+                armTimer = window.setTimeout(disarm, 3000);
+                return;
+              }
+              disarm();
+              this.plugin.settings.toolbarLayout = [];
+              await this.plugin.saveToolbarLayout();
+              this.plugin.updateToolbarLayout();
+            });
+          });
+      },
     };
   }
 

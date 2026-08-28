@@ -7,6 +7,7 @@ import {
   TagColorRule,
   PinEntry,
   ScheduledPinEntry,
+  ToolbarSlot,
 } from "./settings";
 import { WrotView } from "./views/WrotView";
 import { registerWrotPostProcessor } from "./postProcessor";
@@ -24,7 +25,8 @@ import { initI18n, t, getActiveLocale } from "./i18n";
 /** State kept beside data.json, and the settings keys that used to hold it there. */
 const PINS_FILE = "pins.json";
 const TAG_RULES_FILE = "tagrules.json";
-const MOVED_OUT_OF_SETTINGS = ["pins", "scheduledPins", "tagColorRules"] as const;
+const LAYOUT_FILE = "layout.json";
+const MOVED_OUT_OF_SETTINGS = ["pins", "scheduledPins", "tagColorRules", "toolbarLayout"] as const;
 
 export default class WrotPlugin extends Plugin {
   settings!: WrotSettings;
@@ -462,6 +464,10 @@ export default class WrotPlugin extends Plugin {
     this.forEachView((view) => view.updateCalendarButton());
   }
 
+  updateToolbarLayout(): void {
+    this.forEachView((view) => view.applyToolbarLayout());
+  }
+
   updateInputPlaceholder(): void {
     this.forEachView((view) => {
       view.textarea?.setAttribute("placeholder", this.settings.inputPlaceholder);
@@ -533,6 +539,9 @@ export default class WrotPlugin extends Plugin {
       // A timeline restored with the workspace drew before the pins were known.
       this.refreshViews();
     }
+    // Same story for the toolbar: a form built before layout.json arrived shows the
+    // shipped arrangement, so redraw it once the saved one is in hand.
+    if (this.settings.toolbarLayout.length > 0) this.updateToolbarLayout();
     // Integrate memo tags into the core graph view / native tag search:
     // inject from the cached map immediately, reconcile diffs in the background.
     void this.graphTags.start();
@@ -634,8 +643,9 @@ export default class WrotPlugin extends Plugin {
    * Pins move whenever a memo is pinned from the timeline and tag rules grow with every rule
    * added, so leaving either in the settings file meant it was rewritten by ordinary use and
    * got longer the more the plugin was used. Split out, data.json only changes when a setting
-   * does. The two are kept apart from each other for the same reason: pins move daily, rules
-   * only when settings are open, and one file would drag the rules along with every pin.
+   * does. Each gets its own file for the same reason: pins move daily, rules only when
+   * settings are open, and the toolbar arrangement is rewritten on every press while it is
+   * being arranged, so one file would drag all of it along with each of them.
    */
   private pluginFilePath(name: string): string | null {
     const dir = this.manifest.dir;
@@ -709,9 +719,10 @@ export default class WrotPlugin extends Plugin {
    * the reads out of onload keeps them out of the startup measurement too.
    */
   async loadDeferredState(): Promise<void> {
-    const [pinData, ruleData] = await Promise.all([
+    const [pinData, ruleData, layoutData] = await Promise.all([
       this.readSideFile(PINS_FILE),
       this.readSideFile(TAG_RULES_FILE),
+      this.readSideFile(LAYOUT_FILE),
     ]);
 
     // Nothing was read, but settings already hold values: they came from data.json, which is
@@ -741,6 +752,13 @@ export default class WrotPlugin extends Plugin {
       migrated = true;
     }
 
+    if (Array.isArray(layoutData)) {
+      this.settings.toolbarLayout = layoutData as ToolbarSlot[];
+    } else if (this.settings.toolbarLayout.length > 0) {
+      await this.writeSideFile(LAYOUT_FILE, this.settings.toolbarLayout);
+      migrated = true;
+    }
+
     // writeSettingsFile strips both, so this is what actually shortens data.json.
     if (migrated) await this.writeSettingsFile();
   }
@@ -758,5 +776,10 @@ export default class WrotPlugin extends Plugin {
   async saveTagRules(): Promise<void> {
     await this.deferredState;
     await this.writeSideFile(TAG_RULES_FILE, this.settings.tagColorRules);
+  }
+
+  async saveToolbarLayout(): Promise<void> {
+    await this.deferredState;
+    await this.writeSideFile(LAYOUT_FILE, this.settings.toolbarLayout);
   }
 }

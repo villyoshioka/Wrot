@@ -29,10 +29,60 @@ import {
   wrapSelectionWithEmbedBrackets,
 } from "../utils/textareaEditor";
 import type WrotPlugin from "../main";
-import type { PinEntry, ScheduledPinEntry } from "../settings";
+import type { PinEntry, ScheduledPinEntry, ToolbarSlot } from "../settings";
+import { resolveToolbarLayout } from "../settings";
 import { t } from "../i18n";
 
 declare const moment: typeof import("moment");
+
+/**
+ * Every action the bar can carry, described once: its icon, the label it answers to, and
+ * what it needs before it will run. The order here is the order the overflow menu shows
+ * them in, whatever their places on the bar — grouped by what the hand has to do first:
+ * the ones that act on the caret, then the ones that need something selected (bold and
+ * italic lead those, being the pair most often reached for), and last the one that sets a
+ * state rather than writing anything, which puts it beside the entries that end the menu.
+ */
+const TOOLBAR_ACTION_SPECS: ReadonlyArray<{
+  id: string;
+  icon: string;
+  labelKey: Parameters<typeof t>[0];
+  needsSelection?: boolean;
+  pendingMode?: boolean;
+}> = [
+  { id: "image", icon: "image-plus", labelKey: "view.toolbarAction.image" },
+  { id: "embed", icon: "paperclip", labelKey: "view.toolbarAction.embed" },
+  { id: "list", icon: "list", labelKey: "view.toolbarAction.list" },
+  { id: "check", icon: "list-checks", labelKey: "view.toolbarAction.check" },
+  { id: "ol", icon: "list-ordered", labelKey: "view.toolbarAction.ol" },
+  { id: "code", icon: "code", labelKey: "view.formatMenu.code" },
+  { id: "math", icon: "sigma", labelKey: "view.formatMenu.math" },
+  { id: "quote", icon: "quote", labelKey: "view.formatMenu.quote" },
+  { id: "bold", icon: "bold", labelKey: "view.toolbarAction.bold", pendingMode: true },
+  { id: "italic", icon: "italic", labelKey: "view.toolbarAction.italic", pendingMode: true },
+  { id: "link", icon: "link", labelKey: "view.formatMenu.link", needsSelection: true },
+  { id: "strikethrough", icon: "strikethrough", labelKey: "view.formatMenu.strikethrough", needsSelection: true },
+  { id: "highlight", icon: "highlighter", labelKey: "view.formatMenu.highlight", needsSelection: true },
+  { id: "schedule", icon: "clock-fading", labelKey: "view.postMenu.schedulePin" },
+];
+
+/** One entry of the toolbar's action list, wherever that entry currently sits. */
+interface ToolbarAction {
+  id: string;
+  label: string;
+  icon: string;
+  run: () => void;
+  // Insertion has nothing to wrap without a selection, so the action is offered greyed out.
+  needsSelection?: boolean;
+  // Actions that hold a state carry a tick in the menu, the way the toolbar button lights.
+  checked?: () => boolean;
+  /**
+   * Opens a marker and writes inside it, with a lit button as the only sign that mode is
+   * running. Off the bar there is nothing to light, so in the menu the action is offered
+   * as a plain wrap of the selection — the same terms the strikethrough has always had.
+   */
+  pendingMode?: boolean;
+}
 
 // Inserts an image embed above a trailing quote-card marker or Markdown "> " block
 // (quotes always stay at the bottom of a post); otherwise appends at the end.
@@ -127,6 +177,17 @@ export class WrotView extends ItemView {
   private submitBtnEl: HTMLButtonElement | null = null;
   // Sits at the left edge of the input header and only shows while editing.
   private cancelBtnEl: HTMLButtonElement | null = null;
+  // Takes the same place and shape while the toolbar itself is being arranged.
+  private toolbarDoneBtnEl: HTMLButtonElement | null = null;
+  private toolbarEl: HTMLElement | null = null;
+  private formatBtnEl: HTMLButtonElement | null = null;
+  // Every action's button, built up front whether or not it is on the bar: the handlers
+  // stay bound to it, so hiding one is only a matter of taking it out of the DOM.
+  private toolbarBtns: Map<string, HTMLButtonElement> = new Map();
+  private toolbarActions: ToolbarAction[] = [];
+  // Working copy of the saved layout, mutated while arranging and written back on each change.
+  private toolbarLayout: ToolbarSlot[] = [];
+  private toolbarEditing = false;
   // Edit mode: the memo whose body the form is rewriting. time is the unique key;
   // filePath keeps the write target stable across date navigation and for pinned
   // memos living in another file.
@@ -469,6 +530,8 @@ export class WrotView extends ItemView {
     // The cancel button rides along: it exists on screen only while an edit is
     // in progress, which is what makes a bare × read as "stop editing".
     if (this.cancelBtnEl) this.cancelBtnEl.hidden = !editing;
+    // The header's × can only mean one thing at a time, and an edit in progress owns it.
+    if (editing) this.setToolbarEditing(false);
     // An edit takes the form over; anything armed for a new post steps aside with it.
     if (editing && this.armedSchedule) this.setArmedSchedule(null);
     else this.setArmedSchedule(this.armedSchedule);
@@ -547,6 +610,7 @@ export class WrotView extends ItemView {
       const file = files[0];
       if (!isImageFile(file)) return;
       e.preventDefault();
+      if (this.toolbarEditing) return;
       this.setPendingImage(file);
     });
 
@@ -562,47 +626,45 @@ export class WrotView extends ItemView {
       const file = files[0];
       if (!isImageFile(file)) return;
       e.preventDefault();
+      if (this.toolbarEditing) return;
       this.setPendingImage(file);
     });
 
     const toolbar = inputArea.createDiv({ cls: "wr-input-toolbar" });
+    this.toolbarEl = toolbar;
+    this.toolbarBtns.clear();
 
     // The suggest dropdown can overlap the toolbar; while it is shown (and during the
     // ghost-click window right after a tap-commit) toolbar buttons must not react.
     const toolbarSuppressed = () => this.tagSuggest?.isSuppressingUi() ?? false;
 
-    const imageAddBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn" });
-    setIcon(imageAddBtn, "image-plus");
-    imageAddBtn.addEventListener("mousedown", (e) => e.preventDefault());
+    // Buttons are born detached: applyToolbarLayout is the only thing that puts one on
+    // the bar, so an action that lives in the overflow menu simply never gets appended.
+    for (const spec of TOOLBAR_ACTION_SPECS) {
+      const btn = createEl("button", { cls: "wr-toolbar-btn" });
+      setIcon(btn, spec.icon);
+      btn.setAttr("aria-label", t(spec.labelKey));
+      btn.setAttr("data-wr-action", spec.id);
+      btn.addEventListener("mousedown", (e) => e.preventDefault());
+      this.toolbarBtns.set(spec.id, btn);
+    }
+    // Every id above was just registered, so the lookup cannot come back empty.
+    const btnFor = (id: string): HTMLButtonElement =>
+      this.toolbarBtns.get(id) as HTMLButtonElement;
+
+    const imageAddBtn = btnFor("image");
     imageAddBtn.addEventListener("click", () => {
       if (toolbarSuppressed()) return;
       this.openImagePicker();
     });
     this.imageAddBtn = imageAddBtn;
 
-    const embedBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn" });
-    setIcon(embedBtn, "paperclip");
-    embedBtn.addEventListener("mousedown", (e) => e.preventDefault());
-
-    const boldBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn" });
-    setIcon(boldBtn, "bold");
-    boldBtn.addEventListener("mousedown", (e) => e.preventDefault());
-
-    const italicBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn" });
-    setIcon(italicBtn, "italic");
-    italicBtn.addEventListener("mousedown", (e) => e.preventDefault());
-
-    const listBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn" });
-    setIcon(listBtn, "list");
-    listBtn.addEventListener("mousedown", (e) => e.preventDefault());
-
-    const checkBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn" });
-    setIcon(checkBtn, "list-checks");
-    checkBtn.addEventListener("mousedown", (e) => e.preventDefault());
-
-    const olBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn" });
-    setIcon(olBtn, "list-ordered");
-    olBtn.addEventListener("mousedown", (e) => e.preventDefault());
+    const embedBtn = btnFor("embed");
+    const boldBtn = btnFor("bold");
+    const italicBtn = btnFor("italic");
+    const listBtn = btnFor("list");
+    const checkBtn = btnFor("check");
+    const olBtn = btnFor("ol");
 
     embedBtn.addEventListener("click", () => {
       if (toolbarSuppressed()) return;
@@ -654,7 +716,7 @@ export class WrotView extends ItemView {
       if (this.activeFormatMode === "italic" || this.isInsideMarker("*")) return;
       const ta = this.textarea;
       if (ta.selectionStart !== ta.selectionEnd) {
-        this.wrapSelection("**", "**");
+        this.wrapSelection("**", "**", true);
         updateFormatBtns();
         return;
       }
@@ -685,7 +747,7 @@ export class WrotView extends ItemView {
       if (this.activeFormatMode === "bold" || this.isInsideMarker("**")) return;
       const ta = this.textarea;
       if (ta.selectionStart !== ta.selectionEnd) {
-        this.wrapSelection("*", "*");
+        this.wrapSelection("*", "*", true);
         updateFormatBtns();
         return;
       }
@@ -727,19 +789,20 @@ export class WrotView extends ItemView {
     // Arms a day on the post being written, so a memo that is already known to be
     // wanted later does not have to be found again once it exists. Lit while armed:
     // the button is the only sign the post carries one, so it has to hold it.
-    const scheduleBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn" });
-    setIcon(scheduleBtn, "clock-fading");
-    scheduleBtn.setAttr("aria-label", t("view.postMenu.schedulePin"));
+    const scheduleBtn = btnFor("schedule");
     this.scheduleArmBtn = scheduleBtn;
-    scheduleBtn.addEventListener("mousedown", (e) => e.preventDefault());
     scheduleBtn.addEventListener("click", (e) => {
       if (toolbarSuppressed()) return;
       // Editing rewrites a post that already exists; its day is set from its own card.
       if (this.editingMemo) return;
+      // The picker hangs off whatever is on screen: the button itself while it is on the
+      // bar, the overflow button once it has been put away, since a picker cannot be
+      // placed against something that is not laid out.
+      const anchor = scheduleBtn.parentElement ? scheduleBtn : this.formatBtnEl ?? scheduleBtn;
       // The picker this button opened closes on the same button, the way the date
       // nav's calendar does. The popover ignores presses on its own anchor so a day
       // cell's click can land, which leaves the press to fall through to here.
-      if (this.schedulePickerAnchor === scheduleBtn) {
+      if (this.schedulePickerAnchor === anchor) {
         this.schedulePopover?.close();
         return;
       }
@@ -747,48 +810,101 @@ export class WrotView extends ItemView {
         this.setArmedSchedule(null);
         return;
       }
-      this.openSchedulePicker(scheduleBtn, e, null, (from) => this.setArmedSchedule(from));
+      this.openSchedulePicker(anchor, e, null, (from) => this.setArmedSchedule(from));
     });
+
+    // The actions that ship inside the overflow menu. They own buttons of their own so
+    // that promoting one to the bar needs nothing beyond a change of layout.
+    const runCode = () => {
+      const ta = this.textarea;
+      if (ta.selectionStart !== ta.selectionEnd) this.wrapSelection("`", "`");
+      else this.insertCodeBlock();
+    };
+    const runMath = () => {
+      const ta = this.textarea;
+      if (ta.selectionStart !== ta.selectionEnd) this.wrapSelection("$", "$");
+      else this.insertMathBlock();
+    };
+    // Keyed by id: an action listed here gets its click handler from this table, and the
+    // rest already carry handlers of their own from further up.
+    const menuBornRuns: Record<string, () => void> = {
+      code: runCode,
+      math: runMath,
+      quote: () => this.toggleBlockPrefix("> "),
+      link: () => this.insertMarkdownLink(),
+      strikethrough: () => this.wrapSelection("~~", "~~"),
+      highlight: () => this.wrapSelection("==", "=="),
+    };
+    for (const spec of TOOLBAR_ACTION_SPECS) {
+      const run = menuBornRuns[spec.id];
+      if (!run) continue;
+      btnFor(spec.id).addEventListener("click", () => {
+        if (toolbarSuppressed()) return;
+        const ta = this.textarea;
+        if (spec.needsSelection && ta.selectionStart === ta.selectionEnd) return;
+        run();
+      });
+    }
+
+    // Pressing a button is the definition of what its action does, so every action runs by
+    // pressing its own button rather than keeping a second copy of the same logic.
+    this.toolbarActions = TOOLBAR_ACTION_SPECS.map((spec) => ({
+      id: spec.id,
+      icon: spec.icon,
+      label: t(spec.labelKey),
+      needsSelection: spec.needsSelection,
+      pendingMode: spec.pendingMode,
+      run: () => this.toolbarBtns.get(spec.id)?.click(),
+    }));
+    // The armed day is the one state an action carries into the menu.
+    const scheduleAction = this.toolbarActions.find((a) => a.id === "schedule");
+    if (scheduleAction) scheduleAction.checked = () => this.armedSchedule !== null;
+
+    // Both ways out of arranging sit at the same end of the bar, the corner already means
+    // "done with this". They are spaced apart in CSS: side by side, keeping and discarding
+    // an arrangement are a mistap away from each other.
+    const toolbarDoneBtn = createEl("button", {
+      cls: "wr-toolbar-btn wr-toolbar-commit-btn",
+    });
+    setIcon(toolbarDoneBtn, "check");
+    toolbarDoneBtn.setAttr("aria-label", t("view.toolbarEdit.done"));
+    toolbarDoneBtn.addEventListener("mousedown", (e) => e.preventDefault());
+    this.toolbarDoneBtnEl = toolbarDoneBtn;
 
     const formatBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn wr-format-btn" });
     setIcon(formatBtn, "ellipsis");
+    formatBtn.setAttr("aria-label", t("view.toolbarAction.more"));
+    this.formatBtnEl = formatBtn;
     formatBtn.addEventListener("mousedown", (e) => e.preventDefault());
     formatBtn.addEventListener("click", (e) => {
       if (toolbarSuppressed()) return;
       const ta = this.textarea;
       const hasSelection = ta.selectionStart !== ta.selectionEnd;
       this.openMenu(formatBtn, (menu) => {
-        menu.addItem((item) => item.setTitle(t("view.formatMenu.code")).setIcon("code").onClick(() => {
-          const t = this.textarea;
-          if (t.selectionStart !== t.selectionEnd) {
-            this.wrapSelection("`", "`");
-          } else {
-            this.insertCodeBlock();
-          }
-        }));
-        menu.addItem((item) => item.setTitle(t("view.formatMenu.math")).setIcon("sigma").onClick(() => {
-          const t = this.textarea;
-          if (t.selectionStart !== t.selectionEnd) {
-            this.wrapSelection("$", "$");
-          } else {
-            this.insertMathBlock();
-          }
-        }));
-        menu.addItem((item) => item.setTitle(t("view.formatMenu.quote")).setIcon("quote").onClick(() => this.toggleBlockPrefix("> ")));
-        menu.addSeparator();
-        menu.addItem((item) => {
-          item.setTitle(t("view.formatMenu.link")).setIcon("link").onClick(() => this.insertMarkdownLink());
-          if (!hasSelection) item.setDisabled(true);
-        });
-        menu.addItem((item) => {
-          item.setTitle(t("view.formatMenu.strikethrough")).setIcon("strikethrough").onClick(() => this.wrapSelection("~~", "~~"));
-          if (!hasSelection) item.setDisabled(true);
-        });
-        menu.addItem((item) => {
-          item.setTitle(t("view.formatMenu.highlight")).setIcon("highlighter").onClick(() => this.wrapSelection("==", "=="));
-          if (!hasSelection) item.setDisabled(true);
-        });
-        menu.addSeparator();
+        // Whatever is off the bar shows up here, in the order the list holds it: an action
+        // taken off the toolbar therefore arrives above the ones that ship in the menu.
+        // One unbroken run, since the list they come from is one unbroken run too.
+        let rendered = 0;
+        for (const action of this.hiddenActions()) {
+          rendered++;
+          menu.addItem((item) => {
+            item.setTitle(action.label).setIcon(action.icon).onClick(() => action.run());
+            if (action.checked?.()) item.setChecked(true);
+            const wrapOnly = action.needsSelection || action.pendingMode;
+            if (wrapOnly && !hasSelection) item.setDisabled(true);
+          });
+        }
+        if (rendered > 0) menu.addSeparator();
+        if (this.plugin.settings.toolbarEditEnabled) {
+          menu.addItem((item) => {
+            item
+              .setTitle(t("view.formatMenu.editToolbar"))
+              .setIcon("wrench")
+              .onClick(() => this.setToolbarEditing(true));
+            // Editing a post already owns the header's ×; the toolbar cannot claim it too.
+            if (this.editingMemo) item.setDisabled(true);
+          });
+        }
         menu.addItem((item) => {
           item.setTitle(t("view.formatMenu.settings")).setIcon("settings").onClick(() => {
             const settingApi = (this.app as { setting?: { open?: () => void; openTabById?: (id: string) => void } }).setting;
@@ -799,14 +915,32 @@ export class WrotView extends ItemView {
           });
         });
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- assertion needed for cross-version Obsidian typings
-      }, e as MouseEvent, -4);
+      }, e as MouseEvent, -4, undefined, true);
     });
+
+    // Every press inside the bar belongs to arranging it while that is what is going on;
+    // catching them here leaves each action's own handler untouched. The corner is the
+    // one exception: it backs out of arranging, leaving the bar as it was found.
+    toolbar.addEventListener(
+      "click",
+      (e) => {
+        if (!this.toolbarEditing) return;
+        e.preventDefault();
+        e.stopPropagation();
+        if (formatBtn.contains(e.target as Node)) this.setToolbarEditing(false);
+        else if (toolbarDoneBtn.contains(e.target as Node)) this.commitToolbarLayout();
+      },
+      true
+    );
+    this.setupToolbarArrange(toolbar);
+    this.applyToolbarLayout();
 
     const updateActive = () => {
       validateActiveFormatMode();
       this.updateToolbarActive(listBtn, checkBtn, olBtn);
       this.updateEmbedBtnActive(embedBtn);
       updateFormatBtns();
+      this.updateSelectionBtns();
       this.updateSubmitBtnState();
     };
     // document selectionchange catches every caret/selection move; input/keyup/click/select
@@ -831,6 +965,7 @@ export class WrotView extends ItemView {
         this.updateToolbarActive(listBtn, checkBtn, olBtn);
         this.updateEmbedBtnActive(embedBtn);
         updateFormatBtns();
+        this.updateSelectionBtns();
         this.updateSubmitBtnState();
         return;
       }
@@ -904,6 +1039,12 @@ export class WrotView extends ItemView {
       const last = buttons[buttons.length - 1];
       const wrapped = last.offsetTop > first.offsetTop;
       toolbar.toggleClass("wr-toolbar-wrapped", wrapped);
+      // The overflow button carries a margin that sets it apart from the actions beside it.
+      // Landing at the start of a wrapped row, that margin indents it past the column the
+      // row above stands on. The class takes it back visually only: dropping the margin
+      // itself would change the width that decided the wrap, and the two would oscillate.
+      const prev = buttons[buttons.length - 2];
+      last.toggleClass("wr-toolbar-row-start", last.offsetTop > prev.offsetTop);
     };
     window.requestAnimationFrame(updateToolbarWrapped);
     if (typeof ResizeObserver !== "undefined") {
@@ -1000,9 +1141,22 @@ export class WrotView extends ItemView {
 
   private updateImageAddBtnState(): void {
     if (!this.imageAddBtn) return;
-    const disabled = this.pendingImage !== null;
-    this.imageAddBtn.toggleClass("wr-toolbar-disabled", disabled);
-    this.imageAddBtn.disabled = disabled;
+    this.setBtnDisabled(this.imageAddBtn, this.pendingImage !== null);
+  }
+
+  /**
+   * Out-of-reach state for a toolbar button. While the bar is being arranged it is parked
+   * rather than applied: a disabled button dispatches no events at all, so it could be
+   * neither moved nor switched back on. It is handed back when arranging ends.
+   */
+  private setBtnDisabled(btn: HTMLButtonElement, disabled: boolean): void {
+    if (this.toolbarEditing) {
+      if (disabled) btn.setAttr("data-wr-was-disabled", "1");
+      else btn.removeAttribute("data-wr-was-disabled");
+      return;
+    }
+    btn.toggleClass("wr-toolbar-disabled", disabled);
+    btn.disabled = disabled;
   }
 
   private updateSubmitBtnState(): void {
@@ -1157,6 +1311,8 @@ export class WrotView extends ItemView {
   }
 
   async submitMemo(): Promise<void> {
+    // Arranging the bar takes the form out of use, keyboard included.
+    if (this.toolbarEditing) return;
     // The post keeps whatever was typed: a decoration left open stays open, rather than
     // being closed on the author's behalf at the end of the text.
     this.activeFormatMode = null;
@@ -1619,8 +1775,13 @@ export class WrotView extends ItemView {
         this.listContainer.addClass("wr-list-held");
       };
       this.schedulePickerAnchor = trigger;
+      // Armed from the toolbar, the calendar lines up with the form the way the overflow
+      // menu does. Opened from a card there is no form around the trigger, and the button
+      // itself stays the thing it hangs off.
+      const form = trigger.closest<HTMLElement>(".wr-input-area") ?? undefined;
       this.schedulePopover = openCalendarPopover({
         anchor: trigger,
+        alignTo: form,
         container: this.contentEl,
         initialDate: earliest,
         minDate: earliest,
@@ -1637,6 +1798,27 @@ export class WrotView extends ItemView {
       // The handle has to exist before the fit can measure it, and the popover needs
       // a frame on screen before its box is worth measuring.
       window.requestAnimationFrame(fitIntoView);
+      // The pane can be dragged with the calendar still open, and one left behind reads as
+      // belonging to nothing. Checked per frame for the same reason the menu is: the pane
+      // divider moves the form without resizing anything the popover can observe. The loop
+      // ends when this popover does.
+      if (form) {
+        const handle = this.schedulePopover;
+        let lastRight = Number.NaN;
+        let lastBottom = Number.NaN;
+        const track = () => {
+          if (this.schedulePopover !== handle) return;
+          const right = form.getBoundingClientRect().right;
+          const bottom = trigger.getBoundingClientRect().bottom;
+          if (right !== lastRight || bottom !== lastBottom) {
+            lastRight = right;
+            lastBottom = bottom;
+            handle.reposition();
+          }
+          window.requestAnimationFrame(track);
+        };
+        window.requestAnimationFrame(track);
+      }
       return;
     }
     this.openMenu(
@@ -1677,7 +1859,12 @@ export class WrotView extends ItemView {
       },
       evt,
       0,
-      afterClose
+      afterClose,
+      // A tablet rolls the drums like a phone but hangs the menu beside the button like a
+      // desktop, so it is the one shape that can be lined up with the form the way the
+      // overflow menu is. A phone raises the menu from the bottom edge and has nothing to
+      // line up; a card has no form around it either.
+      Platform.isTablet && trigger.closest(".wr-input-area") !== null
     );
   }
 
@@ -1687,15 +1874,17 @@ export class WrotView extends ItemView {
   private setArmedSchedule(from: string | null): void {
     this.armedSchedule = from;
     if (!this.scheduleArmBtn) return;
+    // With the button put away the tick beside its menu entry is what says a day is armed.
     this.scheduleArmBtn.toggleClass("wr-toolbar-active", from !== null);
     // Out of reach while an edit is running — that rewrites a post which already
     // exists, and its day is set from its own card — and while the allowance is
     // full, since there would be nowhere for the armed day to land. A day already
     // armed keeps the button live: taking it back off has to stay possible.
     const full = this.scheduledClaimCount() >= this.plugin.settings.pinLimit;
-    const disabled = this.editingMemo !== null || (full && from === null);
-    this.scheduleArmBtn.toggleClass("wr-toolbar-disabled", disabled);
-    this.scheduleArmBtn.disabled = disabled;
+    this.setBtnDisabled(
+      this.scheduleArmBtn,
+      this.editingMemo !== null || (full && from === null)
+    );
     this.scheduleArmBtn.setAttr(
       "aria-label",
       from
@@ -2090,6 +2279,261 @@ export class WrotView extends ItemView {
     return isInsideMarker(this.textarea, marker);
   }
 
+  // ------------------------------------------------------------------ toolbar layout
+
+  /**
+   * Actions currently off the bar, in the menu's own order rather than the bar's. Where a
+   * button sat before it was put away says nothing about where it is easiest to find here.
+   */
+  private hiddenActions(): ToolbarAction[] {
+    const hidden = new Set(
+      this.toolbarLayout.filter((slot) => !slot.shown).map((slot) => slot.id)
+    );
+    return this.toolbarActions.filter((action) => hidden.has(action.id));
+  }
+
+  /**
+   * Draws the bar from the saved list. While arranging, every action is on the bar so the
+   * whole set can be seen at once; the hidden ones just read as dimmed. The overflow button
+   * is appended last either way, which is what keeps it in the same corner throughout.
+   */
+  applyToolbarLayout(): void {
+    const toolbar = this.toolbarEl;
+    if (!toolbar || !this.formatBtnEl) return;
+    // Arranging turned off underfoot: let go of the bar, which draws it again on the way.
+    if (this.toolbarEditing && !this.plugin.settings.toolbarEditEnabled) {
+      this.setToolbarEditing(false);
+      return;
+    }
+    if (!this.toolbarEditing) {
+      this.toolbarLayout = resolveToolbarLayout(this.plugin.settings.toolbarLayout);
+    }
+    for (const slot of this.toolbarLayout) {
+      const btn = this.toolbarBtns.get(slot.id);
+      if (!btn) continue;
+      if (slot.shown || this.toolbarEditing) toolbar.appendChild(btn);
+      else btn.detach();
+      btn.toggleClass("wr-toolbar-off", this.toolbarEditing && !slot.shown);
+    }
+    if (this.toolbarDoneBtnEl) {
+      if (this.toolbarEditing) toolbar.appendChild(this.toolbarDoneBtnEl);
+      else this.toolbarDoneBtnEl.detach();
+    }
+    toolbar.appendChild(this.formatBtnEl);
+    toolbar.toggleClass("wr-toolbar-editing", this.toolbarEditing);
+    this.updateSelectionBtns();
+    this.dropPendingModeIfHidden();
+  }
+
+  /**
+   * A pending mode is only readable while its button is on the bar to light. Putting that
+   * button away ends the mode rather than leaving it running out of sight — the marker
+   * already written stays in the text, which is what a closing press would have left too.
+   */
+  private dropPendingModeIfHidden(): void {
+    for (const action of this.toolbarActions) {
+      if (!action.pendingMode) continue;
+      const btn = this.toolbarBtns.get(action.id);
+      if (!btn) continue;
+      if (!btn.parentElement) {
+        if (this.activeFormatMode === action.id) this.activeFormatMode = null;
+        btn.removeClass("wr-toolbar-active");
+        btn.removeClass("wr-toolbar-ime-muted");
+      }
+    }
+  }
+
+  /** Insertion needs something to wrap, so those buttons stay out of reach without a selection. */
+  private updateSelectionBtns(): void {
+    const empty = this.textarea
+      ? this.textarea.selectionStart === this.textarea.selectionEnd
+      : true;
+    for (const action of this.toolbarActions) {
+      if (!action.needsSelection) continue;
+      const btn = this.toolbarBtns.get(action.id);
+      if (btn) this.setBtnDisabled(btn, empty);
+    }
+  }
+
+  private setToolbarEditing(on: boolean): void {
+    if (on && (this.editingMemo || !this.plugin.settings.toolbarEditEnabled)) return;
+    if (this.toolbarEditing === on) return;
+    this.toolbarEditing = on;
+    // A disabled button dispatches nothing at all, so it could neither be moved nor
+    // switched back on; the state is parked for the duration and handed straight back.
+    for (const btn of this.toolbarBtns.values()) {
+      if (on) {
+        if (btn.disabled) btn.setAttr("data-wr-was-disabled", "1");
+        btn.disabled = false;
+        btn.removeClass("wr-toolbar-disabled");
+      } else if (btn.getAttribute("data-wr-was-disabled")) {
+        btn.removeAttribute("data-wr-was-disabled");
+        btn.disabled = true;
+        btn.addClass("wr-toolbar-disabled");
+      }
+    }
+    // Arranging the bar takes the whole view out of use: nothing can be typed, posted, or
+    // done to a post that already exists while the thing that does those is being rebuilt.
+    this.contentEl.toggleClass("wr-toolbar-arranging", on);
+    if (this.textarea) this.textarea.readOnly = on;
+    if (this.formatBtnEl) {
+      setIcon(this.formatBtnEl, on ? "x" : "ellipsis");
+      this.formatBtnEl.setAttr(
+        "aria-label",
+        on ? t("view.toolbarEdit.cancel") : t("view.toolbarAction.more")
+      );
+    }
+    this.applyToolbarLayout();
+  }
+
+  /** Keeps what was arranged. Backing out instead simply leaves the saved layout alone. */
+  private commitToolbarLayout(): void {
+    this.plugin.settings.toolbarLayout = this.toolbarLayout.map((slot) => ({ ...slot }));
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; the bar is already drawn from it
+    this.plugin.saveToolbarLayout();
+    this.setToolbarEditing(false);
+  }
+
+  /**
+   * Arranging happens on the bar itself: a press that stays put switches an action on or
+   * off, and one that travels carries the button to a new place.
+   *
+   * A travelling button leaves the row and follows the finger, and an empty place is left
+   * standing where it was. That place is what moves as the finger passes over the others —
+   * they step aside around it — so where the button came from, where it would land and
+   * where it finally settled are all on screen the whole time. Pointer events rather than
+   * native drag, which mobile never delivers.
+   */
+  private setupToolbarArrange(toolbar: HTMLElement): void {
+    let held: HTMLElement | null = null;
+    let gap: HTMLElement | null = null;
+    let moved = false;
+    let startX = 0;
+    let startY = 0;
+    // Where inside the button the finger took hold, so it stays under that same spot.
+    let grabX = 0;
+    let grabY = 0;
+
+    const lift = (btn: HTMLElement) => {
+      const box = btn.getBoundingClientRect();
+      gap = createDiv({ cls: "wr-toolbar-gap" });
+      gap.setCssStyles({ width: `${box.width}px`, height: `${box.height}px` });
+      toolbar.insertBefore(gap, btn);
+      btn.addClass("wr-toolbar-dragging");
+      // Out of flow, so the row closes up and only the gap holds a place. Its own size has
+      // to be restated: nothing is laying it out any more. Deaf to the pointer as well, or
+      // it would be the thing found under the finger instead of what it is passing over.
+      btn.setCssStyles({
+        position: "fixed",
+        left: `${box.left}px`,
+        top: `${box.top}px`,
+        width: `${box.width}px`,
+        height: `${box.height}px`,
+        pointerEvents: "none",
+      });
+      // Carried on the document rather than left in the bar: a transformed ancestor — which
+      // mobile puts around panes — makes a fixed child measure from that ancestor instead of
+      // the screen, and the button would then sit well away from the finger holding it.
+      activeDocument.body.appendChild(btn);
+    };
+
+    const drop = (btn: HTMLElement) => {
+      btn.removeClass("wr-toolbar-dragging");
+      btn.setCssStyles({
+        position: "",
+        left: "",
+        top: "",
+        width: "",
+        height: "",
+        pointerEvents: "",
+      });
+      if (gap) {
+        toolbar.insertBefore(btn, gap);
+        gap.remove();
+        gap = null;
+      }
+    };
+
+    this.registerDomEvent(toolbar, "pointerdown", (e: PointerEvent) => {
+      if (!this.toolbarEditing) return;
+      const btn = (e.target as HTMLElement | null)?.closest<HTMLElement>(".wr-toolbar-btn");
+      // The two ways out of arranging are not part of what is being arranged.
+      if (!btn || btn === this.formatBtnEl || btn === this.toolbarDoneBtnEl) return;
+      held = btn;
+      moved = false;
+      startX = e.clientX;
+      startY = e.clientY;
+      const box = btn.getBoundingClientRect();
+      grabX = e.clientX - box.left;
+      grabY = e.clientY - box.top;
+      // Captured on the bar, not the button: the button stops taking pointer events the
+      // moment it is lifted.
+      toolbar.setPointerCapture(e.pointerId);
+    });
+
+    this.registerDomEvent(toolbar, "pointermove", (e: PointerEvent) => {
+      if (!held) return;
+      if (!moved) {
+        // Below this the press is still a press: dragging must not swallow a plain tap.
+        if (Math.abs(e.clientX - startX) + Math.abs(e.clientY - startY) < 8) return;
+        moved = true;
+        lift(held);
+      }
+      held.setCssStyles({ left: `${e.clientX - grabX}px`, top: `${e.clientY - grabY}px` });
+      if (!gap) return;
+      const under = activeDocument.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
+      const over = under?.closest<HTMLElement>(".wr-toolbar-btn");
+      if (!over || over === this.formatBtnEl || over === this.toolbarDoneBtnEl) return;
+      if (over.parentElement !== toolbar) return;
+      const gapPrecedes =
+        (over.compareDocumentPosition(gap) & Node.DOCUMENT_POSITION_PRECEDING) !== 0;
+      toolbar.insertBefore(gap, gapPrecedes ? over.nextSibling : over);
+    });
+
+    const release = (e: PointerEvent) => {
+      if (!held) return;
+      const btn = held;
+      held = null;
+      toolbar.releasePointerCapture?.(e.pointerId);
+      if (moved) {
+        drop(btn);
+        this.readOrderFromBar();
+      } else {
+        this.toggleToolbarSlot(btn.getAttribute("data-wr-action"));
+      }
+    };
+    this.registerDomEvent(toolbar, "pointerup", release);
+    this.registerDomEvent(toolbar, "pointercancel", release);
+  }
+
+  private toggleToolbarSlot(id: string | null): void {
+    if (!id) return;
+    const slot = this.toolbarLayout.find((s) => s.id === id);
+    if (!slot) return;
+    slot.shown = !slot.shown;
+    this.readOrderFromBar();
+  }
+
+  /**
+   * Takes the bar as the record of what has been arranged so far. Held in memory only:
+   * nothing reaches layout.json until the arrangement is confirmed.
+   */
+  private readOrderFromBar(): void {
+    const toolbar = this.toolbarEl;
+    if (!toolbar) return;
+    const shownById = new Map(this.toolbarLayout.map((s) => [s.id, s.shown]));
+    const ordered: ToolbarSlot[] = [];
+    for (const el of Array.from(toolbar.children)) {
+      const id = el.getAttribute("data-wr-action");
+      if (!id || !shownById.has(id)) continue;
+      ordered.push({ id, shown: shownById.get(id) === true });
+      shownById.delete(id);
+    }
+    for (const [id, shown] of shownById) ordered.push({ id, shown });
+    this.toolbarLayout = ordered;
+    this.applyToolbarLayout();
+  }
+
   private updateEmbedBtnActive(embedBtn: HTMLElement): void {
     embedBtn.toggleClass("wr-toolbar-active", isInsideEmbed(this.textarea));
   }
@@ -2098,8 +2542,8 @@ export class WrotView extends ItemView {
     toggleInlineWrap(this.textarea, open, close);
   }
 
-  private wrapSelection(open: string, close: string): void {
-    wrapSelection(this.textarea, open, close);
+  private wrapSelection(open: string, close: string, spaceAfterClose = false): void {
+    wrapSelection(this.textarea, open, close, spaceAfterClose);
   }
 
   private wrapSelectionWithEmbedBrackets(): void {
@@ -2125,7 +2569,11 @@ export class WrotView extends ItemView {
     buildMenu: (m: Menu) => void,
     evt: MouseEvent,
     yOffset = 0,
-    onHide?: () => void
+    onHide?: () => void,
+    // Hangs the menu off the right edge of the form the trigger belongs to, rather than off
+    // the trigger itself. The button sits wherever the row of actions ends, which is not
+    // where the eye expects a menu of its width to stop.
+    alignRight = false
   ): void {
     if (this.currentMenu) {
       this.currentMenu.hide();
@@ -2140,7 +2588,12 @@ export class WrotView extends ItemView {
     trigger.toggleClass("wr-toolbar-active", true);
     this.currentMenu = menu;
 
+    // Set while the menu tracks the form it hangs off, so closing stops the tracking.
+    let stopTracking: (() => void) | null = null;
+
     menu.onHide(() => {
+      stopTracking?.();
+      stopTracking = null;
       // A menu opened from another menu's item outlives it, and on mobile the old
       // one finishes closing well after. Only the menu still holding the trigger
       // puts its light out; an older one leaves it to whoever took over.
@@ -2155,6 +2608,33 @@ export class WrotView extends ItemView {
     const rect = trigger.getBoundingClientRect();
     const doc = trigger.ownerDocument ?? activeDocument;
     menu.showAtPosition({ x: rect.left, y: rect.bottom + yOffset }, doc);
+    if (alignRight && menuDom) {
+      const host = trigger.closest(".wr-input-area") ?? trigger;
+      // How wide the menu is only becomes known once it is up, so the edges are matched
+      // afterwards. Clamped at the window edge, which a wide menu on a narrow pane reaches.
+      let lastLeft = Number.NaN;
+      let lastTop = Number.NaN;
+      let frame = 0;
+      // The pane can be dragged wider or narrower with the menu still open, and a menu left
+      // behind reads as belonging to nothing. Checked per frame rather than off a resize
+      // signal: the pane divider moves the form without resizing anything the menu can
+      // observe. Two reads and a comparison, and only a change is written.
+      const place = () => {
+        const width = menuDom.getBoundingClientRect().width;
+        const left = Math.max(0, host.getBoundingClientRect().right - width);
+        // Dragging the pane narrower rewraps the toolbar, which moves the button the menu
+        // was hung under; the vertical anchor has to follow that as well.
+        const top = trigger.getBoundingClientRect().bottom + yOffset;
+        if (left !== lastLeft || top !== lastTop) {
+          lastLeft = left;
+          lastTop = top;
+          menuDom.setCssStyles({ left: `${left}px`, top: `${top}px` });
+        }
+        frame = window.requestAnimationFrame(place);
+      };
+      place();
+      stopTracking = () => window.cancelAnimationFrame(frame);
+    }
   }
 
 }

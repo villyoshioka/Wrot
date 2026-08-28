@@ -69,7 +69,7 @@ export function buildPaletteCss(palette: WrPalette): string {
       body .wr-date-label,
       body .wr-calendar-month-label,
       body .wr-calendar-day:not(.wr-calendar-day-selected):not(.wr-calendar-day-today):not(.wr-calendar-day-outside):not(.wr-calendar-day-disabled),
-      body .wr-calendar-year:not(.wr-calendar-day-selected):not(.wr-calendar-day-today),
+      body .wr-calendar-year:not(.wr-calendar-day-selected):not(.wr-calendar-day-today):not(.wr-calendar-day-disabled),
       body .wr-inline-code,
       body .wr-plain-text,
       body div.block-language-wr *:not(.wr-embed-missing):not(.wr-internal-link-unresolved):not(.wr-internal-link):not(.wr-tag):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-check-done):not(.wr-quote-card-slot):not(.wr-quote-card-slot *):not(.wr-codeblock-display):not(.wr-codeblock-display *),
@@ -309,6 +309,12 @@ export function buildPaletteCss(palette: WrPalette): string {
       body .wr-menu .menu-item .menu-item-icon .svg-icon {
         color: ${mutedColor};
         stroke: ${mutedColor};
+      }
+      /* The tick on a checked item says a state is live, so it keeps the accent instead
+         of the muted colour every other icon in the menu carries. */
+      body .wr-menu .menu-item .menu-item-icon.mod-checked .svg-icon {
+        color: var(--text-accent);
+        stroke: var(--text-accent);
       }
       .is-mobile body .wr-menu .menu-item:not(.is-label):not(.is-disabled):hover,
       .is-mobile body .wr-menu .menu-item:not(.is-label):not(.is-disabled):active,

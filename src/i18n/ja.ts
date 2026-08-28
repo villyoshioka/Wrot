@@ -113,7 +113,26 @@ const ja = {
   "settings.tagRule.protectDelete.desc":
     "オンにすると、このタグを含む投稿は削除できなくなります。",
   "settings.tagRule.button.add": "ルールを追加",
+  "settings.item.toolbarEdit.name": "ツールバーの編集ボタンを表示",
+  "settings.item.toolbarEdit.desc": "オンにすると、ツールバーのメニューに編集ボタンが追加されます。",
+  "settings.item.resetToolbar.name": "ツールバーを初期化する",
+  "settings.item.resetToolbar.desc": "ツールバーの並びと表示を、はじめの状態に戻します。",
+  "settings.item.resetToolbar.button": "初期化",
+  // Shown on the same row after the first press, in place of the label above.
+  "settings.item.resetToolbar.confirm": "もう一度押すと初期化",
 
+  "view.toolbarAction.image": "画像",
+  "view.toolbarAction.embed": "埋め込み",
+  "view.toolbarAction.bold": "太字",
+  "view.toolbarAction.italic": "斜体",
+  "view.toolbarAction.list": "リスト",
+  "view.toolbarAction.check": "チェックリスト",
+  "view.toolbarAction.ol": "番号付きリスト",
+  "view.toolbarAction.more": "その他",
+  "view.toolbarEdit.done": "編集を確定",
+  "view.toolbarEdit.cancel": "ツールバーの編集をキャンセル",
+
+  "view.formatMenu.editToolbar": "ツールバーを編集",
   "view.formatMenu.code": "コード",
   "view.formatMenu.math": "数式",
   "view.formatMenu.quote": "引用",

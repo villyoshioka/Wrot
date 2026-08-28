@@ -19,7 +19,11 @@ Below the text area of the posting form, the following buttons are arranged from
 | ☰ | List | `- Item` |
 | ☑ | Checklist | `- [ ] Task` |
 | 1. | Numbered List | `1. Item` |
+| 🕐 | Pin Later | Sets a day for the post being written |
 | ⋯ | More Formatting | Code, Math, Quotes, Links, Strikethrough, Highlight |
+
+This is where the buttons start. Which of them sit on the bar, and in what order, is up to you.
+👉 [Arranging the Toolbar](./toolbar.md)
 
 ---
 

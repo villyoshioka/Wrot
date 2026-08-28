@@ -1,5 +1,27 @@
 # Release Notes
 
+## 2.23.0 - 2026-08-29
+
+### Updates
+
+- Updated dependencies.
+
+### New Features
+
+- The post form's toolbar can now be arranged. Buttons can be reordered, and any of them can be put away into the toolbar's menu. The settings decide whether the menu offers the entry point for arranging it, and can put the toolbar back to how it started.
+
+### Improvements
+
+- Bold and italic now leave a space after the closing marks when applied to a selection, the same as when the marks are closed while writing.
+- The toolbar's menu and the Pin Later date picker now follow the post form when the pane is resized while they are open.
+
+### Bug Fixes
+
+- Fixed the toolbar's menu and the Pin Later date picker not lining up with the right edge of the post form.
+- Fixed past years being selectable in the year list of the Pin Later date picker.
+
+---
+
 ## 2.22.1 - 2026-08-25
 
 ### Improvements

@@ -8,6 +8,10 @@ type Moment = ReturnType<typeof moment>;
 export interface CalendarPopoverOptions {
   // Element the popover aligns to (the calendar button).
   anchor: HTMLElement;
+  // Element whose right edge the popover's right edge meets, when that is not the anchor's.
+  // A button sitting wherever a row of others happens to end is not where the eye expects a
+  // panel of this width to stop; the form around it is.
+  alignTo?: HTMLElement;
   // Parent that actually hosts the popover (view body = wr-container). Placed inside
   // the anchor it would overflow the sidebar when the button sits at the right edge.
   container: HTMLElement;
@@ -37,7 +41,7 @@ const GRID_CELLS = 6 * 7; // fixed 6 weeks so the height never changes per month
 export function openCalendarPopover(
   opts: CalendarPopoverOptions
 ): CalendarPopoverHandle {
-  const { anchor, container, initialDate, minDate, onSelect, onClose } = opts;
+  const { anchor, alignTo, container, initialDate, minDate, onSelect, onClose } = opts;
 
   // Month being shown, normalized to its first day.
   let viewMonth = initialDate.clone().startOf("month");
@@ -56,7 +60,8 @@ export function openCalendarPopover(
     const w = popover.offsetWidth;
     const top = a.bottom - c.top + GAP;
     const maxLeft = c.width - w - EDGE;
-    let left = a.right - c.left - w;
+    const rightEdge = alignTo ? alignTo.getBoundingClientRect().right : a.right;
+    let left = rightEdge - c.left - w;
     if (left > maxLeft) left = maxLeft;
     if (left < EDGE) left = EDGE;
     popover.style.top = `${top}px`;
@@ -191,6 +196,12 @@ export function openCalendarPopover(
       // Highlight the year currently being viewed in the calendar.
       if (year === viewMonth.year()) {
         cell.addClass("wr-calendar-day-selected");
+      }
+      // A year that ends before the earliest selectable day holds nothing that can be
+      // picked, so it is out of reach here the same way those days are in month mode.
+      if (minDate && year < minDate.year()) {
+        cell.addClass("wr-calendar-day-disabled");
+        continue;
       }
       cell.addEventListener("click", () => {
         viewMonth = viewMonth.clone().year(year);

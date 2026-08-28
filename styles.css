@@ -562,6 +562,77 @@ body .wr-toolbar-btn:active {
   height: 18px;
 }
 
+/* Dragging owns the gesture; without this the panel scrolls under the finger. */
+.wr-input-toolbar.wr-toolbar-editing {
+  touch-action: none;
+}
+
+/* While the bar is being arranged the form is not for writing with and the posts below are
+   not for acting on: the buttons that would do either are the very thing being rebuilt.
+   Reaching the toolbar and the date nav is left alone. */
+.wr-toolbar-arranging .wr-card,
+.wr-toolbar-arranging .wr-submit-btn,
+.wr-toolbar-arranging .wr-thumbnail-container {
+  pointer-events: none;
+}
+
+.wr-toolbar-arranging .wr-submit-btn {
+  opacity: 0.45;
+}
+
+/* Wrapping normally tightens the rows, which suits a bar that only just spilled over.
+   Arranging puts every action on it at once, so the rows are the layout rather than an
+   overflow, and they get the gap the bar has when it fits on one line. */
+.wr-input-toolbar.wr-toolbar-editing.wr-toolbar-wrapped {
+  row-gap: 12px;
+}
+
+/* Backing out of an arrangement, in the corner the overflow button keeps. It carries the
+   accent for the same reason the confirm does: while arranging, those two are the way out. */
+body .wr-input-toolbar.wr-toolbar-editing .wr-format-btn .svg-icon:not(#x#y#z) {
+  color: var(--text-accent);
+}
+
+/* Greyed-out and IME-muted states both cut pointer events; arranging outranks them,
+   at ID level because that is where those states are pinned. */
+body .wr-input-toolbar.wr-toolbar-editing .wr-toolbar-btn:not(#x#y#z) {
+  pointer-events: auto;
+  cursor: grab;
+}
+
+/* Keeping and discarding an arrangement sit side by side, so they are held apart: close
+   enough to read as the pair that ends arranging, far enough that a thumb cannot take one
+   for the other. Pinned at ID level, above the palette's own button colour. */
+body .wr-toolbar-btn.wr-toolbar-commit-btn .svg-icon:not(#x#y#z) {
+  color: var(--text-accent);
+}
+
+
+/* Off the bar: still in the list, still movable, plainly not in play. */
+.wr-input-toolbar.wr-toolbar-editing .wr-toolbar-btn.wr-toolbar-off {
+  opacity: 0.45;
+}
+
+/* Held: the button is off the row and under the finger, so it takes the form's own colour
+   and a shadow to sit above what it passes over. At ID level, above the rule that clears
+   the theme's button background. */
+.wr-toolbar-btn.wr-toolbar-dragging:not(#x) {
+  background: var(--wr-bg-color, var(--background-primary));
+  background-color: var(--wr-bg-color, var(--background-primary));
+  border-radius: var(--radius-s);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  cursor: grabbing;
+  z-index: 1;
+}
+
+/* The place the held button left, and the place it would land: one and the same, moving
+   through the row as the finger passes over the others. */
+.wr-input-toolbar .wr-toolbar-gap {
+  flex: 0 0 auto;
+  border-radius: var(--radius-s);
+  background: var(--background-modifier-hover);
+}
+
 /* Follow Obsidian's UI font size but never shrink below default (18px / 14px baseline = 1.286) */
 body.wr-font-follow .wr-toolbar-btn .svg-icon {
   width: max(18px, calc(var(--wr-font-text) * 1.286));
@@ -751,7 +822,10 @@ body .wr-card.wr-card-editing .wr-menu-btn .svg-icon:not(#x) {
 }
 
 /* Every other card's menu is locked while an edit is in progress. */
-.wr-card.wr-card-menu-locked .wr-menu-btn {
+/* Out of reach while another card holds the form, and equally while the toolbar is being
+   arranged — the same look either way, since it is the same "not now". */
+.wr-card.wr-card-menu-locked .wr-menu-btn,
+.wr-toolbar-arranging .wr-card .wr-menu-btn {
   opacity: 0.3;
   pointer-events: none;
 }
@@ -1297,6 +1371,25 @@ pre.language-wr .copy-code-button svg :not(#x#y#z),
    oscillation. */
 body .wr-toolbar-btn.wr-format-btn:not(#x#y#z) {
   margin-left: 8px;
+}
+
+/* That margin sets the overflow button apart from the actions beside it. With every action
+   put away there is nothing to be set apart from, and it would only indent the bar. */
+body .wr-toolbar-btn.wr-format-btn:first-child:not(#x#y#z) {
+  margin-left: 0;
+}
+
+/* Alone at the start of a wrapped row it lines up with the row above instead of sitting
+   a margin's width inside it. Shifted rather than unmargined, so the width the wrap was
+   measured from does not change under it. */
+.wr-input-toolbar:not(.wr-toolbar-editing) .wr-format-btn.wr-toolbar-row-start {
+  transform: translateX(-8px);
+}
+
+/* Nor while arranging: there it stands next to the confirm rather than apart from the
+   actions, and the pair reads as one. Applied in both wrap modes, so widths still agree. */
+body .wr-input-toolbar.wr-toolbar-editing .wr-toolbar-btn.wr-format-btn:not(#x#y#z) {
+  margin-left: 0;
 }
 
 body .wr-toolbar-disabled {
@@ -2172,6 +2265,12 @@ body.is-mobile .wr-toolbar-btn:not(#x#y#z) {
 
 body.is-mobile .wr-input-toolbar.wr-toolbar-wrapped .wr-toolbar-btn:not(#x#y#z) {
   padding: 6px 2px;
+}
+
+/* The desktop rule loses to the mobile wrap gap above, which comes later; restated here
+   so arranging gets the same room between rows on both. */
+.is-mobile .wr-input-toolbar.wr-toolbar-editing.wr-toolbar-wrapped {
+  row-gap: 12px;
 }
 
 .is-mobile .wr-toolbar-btn .svg-icon {

@@ -426,7 +426,14 @@ export function toggleInlineWrap(ta: HTMLTextAreaElement, open: string, close: s
 }
 
 /** Wraps the selection in a marker pair, or unwraps it when it is already wrapped. */
-export function wrapSelection(ta: HTMLTextAreaElement, open: string, close: string): void {
+export function wrapSelection(
+  ta: HTMLTextAreaElement,
+  open: string,
+  close: string,
+  // Bold and italic leave the same trailing space closeInlineMarker leaves: whichever way
+  // the decoration was made, what is typed after it lands outside it.
+  spaceAfterClose = false
+): void {
   let start = ta.selectionStart;
   let end = ta.selectionEnd;
   if (start === end) return;
@@ -476,8 +483,17 @@ export function wrapSelection(ta: HTMLTextAreaElement, open: string, close: stri
   }
 
   const currentVal = ta.value;
+  // A space or a line break already sitting there does the job; the end of the text is
+  // where the caret would otherwise keep typing right against the marker.
+  const next = currentVal.slice(end, end + 1);
+  const tail = spaceAfterClose && next !== " " && next !== "\n" ? " " : "";
   ta.value =
-    currentVal.slice(0, start) + open + currentVal.slice(start, end) + close + currentVal.slice(end);
+    currentVal.slice(0, start) +
+    open +
+    currentVal.slice(start, end) +
+    close +
+    tail +
+    currentVal.slice(end);
   ta.selectionStart = start;
   ta.selectionEnd = end + open.length + close.length;
   commit(ta);
