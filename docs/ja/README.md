@@ -7,8 +7,6 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow)](https://opensource.org/licenses/MIT)
 [![release](https://img.shields.io/github/v/release/villyoshioka/Wrot)](https://github.com/villyoshioka/Wrot/releases/latest)
 
-> **注意**: **このプラグインについて、コードは公開していますが、個別のサポートは行っていません。**
-
 ---
 
 ## Wrot って？
