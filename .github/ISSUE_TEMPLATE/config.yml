@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation (English)
+    url: https://github.com/villyoshioka/Wrot/blob/main/README.md
+    about: How to use Wrot. Please read this before opening an issue.
+  - name: ドキュメント（日本語）
+    url: https://github.com/villyoshioka/Wrot/blob/main/docs/ja/README.md
+    about: Wrot の使い方はこちら。issue を立てる前にご確認ください。

@@ -1,0 +1,59 @@
+name: Bug report / バグ報告
+description: Report a problem with Wrot / Wrot の不具合を報告する
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this. Wrot is developed by one person, so it may take a while before I can look into it.
+        You can write in English or Japanese.
+
+        報告ありがとうございます。Wrot は個人で開発しているため、確認までにお時間をいただくことがあります。
+        英語・日本語のどちらでも構いません。
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened? / 何が起きましたか？
+      description: Also tell us what you expected instead. / あわせて、本来どうなると思っていたかも書いてください。
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce / 再現手順
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform / 環境
+      options:
+        - Windows
+        - macOS
+        - Linux
+        - iOS / iPadOS
+        - Android
+    validations:
+      required: true
+
+  - type: input
+    id: versions
+    attributes:
+      label: Obsidian and Wrot versions / Obsidian と Wrot のバージョン
+      placeholder: "Obsidian 1.x.x / Wrot 2.x.x"
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshots or anything else / スクリーンショットなど補足
+    validations:
+      required: false
