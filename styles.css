@@ -130,9 +130,6 @@ body.wr-font-follow .wr-nav-btn .svg-icon {
   color: var(--text-accent);
 }
 
-/* Calendar button: opens the custom popover; native input[type=date] is
-   avoided so the look matches across platforms. Sits right of the Today
-   button (which is pushed right via margin-left: auto). */
 .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-btn {
   margin-left: 2px;
   position: relative;
@@ -146,11 +143,7 @@ body.wr-font-follow .wr-nav-btn .svg-icon {
   background: rgba(var(--mono-rgb-100), 0.05);
 }
 
-/* ===== Custom calendar popover =====
-   Absolutely positioned inside wr-container; top/left computed in JS to sit
-   below the button and stay inside the container (no overflow at the sidebar
-   edge). Custom-drawn for cross-platform consistency; colors follow the
-   Wrot-configured bg/text colors. */
+/* Custom calendar popover. Positioned by JS inside wr-container so it never overflows the sidebar edge; custom-drawn for cross-platform consistency, colors follow the configured bg/text. */
 .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-popover {
   position: absolute;
   z-index: 50;
@@ -287,7 +280,6 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
   background: rgba(var(--mono-rgb-100), 0.05);
 }
 
-/* Year cells are wide, so the selected highlight uses a capsule shape instead of a circle */
 .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-year.wr-calendar-day-selected,
 .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-year.wr-calendar-day-selected.wr-calendar-day-today {
   background: var(--interactive-accent);
@@ -305,9 +297,6 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
   line-height: 1;
   min-height: 0;
   padding: 0;
-  /* Fills the cell width and shrinks in narrow views. aspect-ratio keeps the
-     cell square so the circular highlight never turns into an ellipse.
-     max-width caps the size in wide views, max-height caps vertical sprawl. */
   width: 100%;
   max-width: 34px;
   min-width: 0;
@@ -356,10 +345,7 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
   background: var(--interactive-accent-hover, var(--interactive-accent));
 }
 
-/* ===== Tag suggestion dropdown =====
-   #tag autocomplete; top/left computed in JS from a hidden mirror element
-   (.wr-tag-suggest-mirror) replicating the textarea's text layout. Follows
-   the calendar popover look. */
+/* Tag suggestion dropdown. Positioned by JS from the hidden .wr-tag-suggest-mirror, which replicates the textarea's text layout. */
 .workspace-leaf-content[data-type="wrot-view"] .wr-tag-suggest {
   position: absolute;
   z-index: 50;
@@ -389,9 +375,6 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
   background: rgba(var(--mono-rgb-100), 0.05);
 }
 
-/* Keyboard-selected candidate. A neutral tint (same mono-rgb family as hover,
-   just stronger) marks "current keyboard focus," not "the recommended pick" —
-   the user can keep typing past it. Takes precedence over the hover tint. */
 .workspace-leaf-content[data-type="wrot-view"] .wr-tag-suggest-item-selected,
 .workspace-leaf-content[data-type="wrot-view"] .wr-tag-suggest-item-selected:hover {
   background: rgba(var(--mono-rgb-100), 0.05);
@@ -551,7 +534,6 @@ body .wr-toolbar-btn:active {
   pointer-events: none;
 }
 
-/* While IME composition is in progress: keep the accent but lower the tone and block clicks */
 .wr-toolbar-btn.wr-toolbar-ime-muted {
   opacity: 0.45;
   pointer-events: none;
@@ -567,9 +549,6 @@ body .wr-toolbar-btn:active {
   touch-action: none;
 }
 
-/* While the bar is being arranged the form is not for writing with and the posts below are
-   not for acting on: the buttons that would do either are the very thing being rebuilt.
-   Reaching the toolbar and the date nav is left alone. */
 .wr-toolbar-arranging .wr-card,
 .wr-toolbar-arranging .wr-submit-btn,
 .wr-toolbar-arranging .wr-thumbnail-container {
@@ -580,15 +559,10 @@ body .wr-toolbar-btn:active {
   opacity: 0.45;
 }
 
-/* Wrapping normally tightens the rows, which suits a bar that only just spilled over.
-   Arranging puts every action on it at once, so the rows are the layout rather than an
-   overflow, and they get the gap the bar has when it fits on one line. */
 .wr-input-toolbar.wr-toolbar-editing.wr-toolbar-wrapped {
   row-gap: 12px;
 }
 
-/* Backing out of an arrangement, in the corner the overflow button keeps. It carries the
-   accent for the same reason the confirm does: while arranging, those two are the way out. */
 body .wr-input-toolbar.wr-toolbar-editing .wr-format-btn .svg-icon:not(#x#y#z) {
   color: var(--text-accent);
 }
@@ -600,22 +574,15 @@ body .wr-input-toolbar.wr-toolbar-editing .wr-toolbar-btn:not(#x#y#z) {
   cursor: grab;
 }
 
-/* Keeping and discarding an arrangement sit side by side, so they are held apart: close
-   enough to read as the pair that ends arranging, far enough that a thumb cannot take one
-   for the other. Pinned at ID level, above the palette's own button colour. */
 body .wr-toolbar-btn.wr-toolbar-commit-btn .svg-icon:not(#x#y#z) {
   color: var(--text-accent);
 }
 
 
-/* Off the bar: still in the list, still movable, plainly not in play. */
 .wr-input-toolbar.wr-toolbar-editing .wr-toolbar-btn.wr-toolbar-off {
   opacity: 0.45;
 }
 
-/* Held: the button is off the row and under the finger, so it takes the form's own colour
-   and a shadow to sit above what it passes over. At ID level, above the rule that clears
-   the theme's button background. */
 .wr-toolbar-btn.wr-toolbar-dragging:not(#x) {
   background: var(--wr-bg-color, var(--background-primary));
   background-color: var(--wr-bg-color, var(--background-primary));
@@ -625,8 +592,6 @@ body .wr-toolbar-btn.wr-toolbar-commit-btn .svg-icon:not(#x#y#z) {
   z-index: 1;
 }
 
-/* The place the held button left, and the place it would land: one and the same, moving
-   through the row as the finger passes over the others. */
 .wr-input-toolbar .wr-toolbar-gap {
   flex: 0 0 auto;
   border-radius: var(--radius-s);
@@ -699,9 +664,6 @@ body .wr-submit-btn {
   color: var(--text-muted);
 }
 
-/* Cancel borrows the toolbar button's look, so it reads as one of the form's own
-   icons rather than a second action competing with submit. Pushed to the left
-   edge by the auto margin against the header's flex-end. */
 /* Pushed to the left edge by the auto margin against the header's flex-end, and
    flush with the textarea's edge. Declared at the same ID-level specificity as
    the shared toolbar metrics, which otherwise zero the margin out. */
@@ -723,7 +685,6 @@ body .wr-cancel-btn[hidden] {
   display: none;
 }
 
-/* When the input is empty (inactive), keep the look but disable pressing */
 body .wr-submit-btn:not(.wr-submit-active) {
   cursor: default;
   pointer-events: none;
@@ -745,7 +706,7 @@ body .wr-submit-btn.wr-submit-active {
   color: var(--text-on-accent);
 }
 
-/* Pinned section: independent container, tied into zen mode */
+/* Pinned section: tied into zen mode */
 .wr-pinned-section {
   display: flex;
   flex-direction: column;
@@ -788,21 +749,13 @@ body .wr-submit-btn.wr-submit-active {
   font-size: var(--wr-font-text);
 }
 
-/* Edit mode: the card being edited gets an accent ring plus a faint accent
-   tint. The tint is painted on an ::after overlay — the palette sheet owns the
-   card's own background, and an overlay needs no specificity fight with it.
-   Tag-rule cards carry their rule's accent via inline --wr-editing-* vars set
-   in JS (same convention as the quote-jump flash); the hsla fallbacks below
-   are the theme accent used by every other card. */
+/* Edit mode: the tint is painted on an ::after overlay, not the card background the palette sheet owns, so there is no specificity fight; tag-rule cards get their accent from inline --wr-editing-* vars set in JS (same convention as the quote-jump flash). */
 .wr-card.wr-card-editing {
   /* Inset ring: an outer ring extends past the card bounds and gets clipped by
      the scrolling list container, so the accent ring is drawn inside instead. */
   box-shadow: inset 0 0 0 1.5px var(--wr-editing-ring-color, hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.45));
 }
 
-/* The editing card's own menu stays live (it carries the cancel action):
-   accent-colored so it reads as active rather than locked like the others.
-   :not(#x) lifts specificity above Obsidian's default SVG color/stroke rules. */
 body .wr-card.wr-card-editing .wr-menu-btn .svg-icon:not(#x) {
   color: var(--wr-editing-accent, var(--text-accent));
   stroke: var(--wr-editing-accent, var(--text-accent));
@@ -821,9 +774,6 @@ body .wr-card.wr-card-editing .wr-menu-btn .svg-icon:not(#x) {
   z-index: 1;
 }
 
-/* Every other card's menu is locked while an edit is in progress. */
-/* Out of reach while another card holds the form, and equally while the toolbar is being
-   arranged — the same look either way, since it is the same "not now". */
 .wr-card.wr-card-menu-locked .wr-menu-btn,
 .wr-toolbar-arranging .wr-card .wr-menu-btn {
   opacity: 0.3;
@@ -843,7 +793,7 @@ body .wr-card.wr-card-editing .wr-menu-btn .svg-icon:not(#x) {
   color: var(--text-muted);
 }
 
-/* Tags (timeline / Reading View / Live Preview while rendered) */
+/* Tags (timeline / RV / rendered LV) */
 .wr-tag {
   color: var(--text-accent);
 }
@@ -858,15 +808,12 @@ body .wr-card.wr-card-editing .wr-menu-btn .svg-icon:not(#x) {
   text-decoration: none;
 }
 
-/* Pressed feedback: dim while the finger/button is down... */
 .wr-tag:active,
 .wr-reading-tag:active,
 .wr-tag-clickable:active {
   opacity: 0.55;
 }
 
-/* ...and let the glyphs themselves flash bright on click, settling back to
-   the normal accent color (re-triggered per tap). Text-only, no box. */
 .wr-tag-flash {
   animation: wr-tag-flash 500ms ease-out;
 }
@@ -1667,13 +1614,7 @@ body.wr-font-follow .wr-pin-indicator .svg-icon {
   fill: currentColor;
 }
 
-/* .wr-schedule-indicator — the mark on a memo still waiting for its day — carries no
-   look of its own. It sits on .wr-pin-indicator above and takes that corner, size and
-   colour whole, so the two marks weigh the same and only their shape tells them apart.
-   It was once dimmed with an opacity; that read as washed out next to the pin. */
-
-/* The date drums inside the schedule menu. The menu is only the shell, so the row
-   drops its item look and hosts the three columns instead. */
+/* Date drums inside the schedule menu: the row drops its item look and hosts the columns. */
 .wr-menu .wr-menu-drum {
   padding: 2px 6px 6px;
 }
@@ -1727,7 +1668,6 @@ body.wr-font-follow .wr-pin-indicator .svg-icon {
   white-space: nowrap;
 }
 
-/* Already gone: still rolls past, but the drum will not come to rest here. */
 .wr-drum-item-disabled {
   color: var(--text-faint);
 }
@@ -1792,9 +1732,9 @@ body .wr-menu .menu-item.is-disabled.is-focused:not(#x) {
   pointer-events: none;
 }
 
-/* ===== Reading View & Live Preview: wr code block card ===== */
+/* Reading View & Live Preview: wr code block card */
 
-/* Parent element of the code block processor output + Reading View */
+/* Parent of the rendered wr block (RV / processor output) */
 body div.block-language-wr,
 body .language-wr {
   background: var(--wr-bg-color, #f8f8f8);
@@ -1883,7 +1823,7 @@ body pre.language-wr.wr-rv-rich-tail:not(#x) {
   padding-bottom: 12px;
 }
 
-/* ===== URL & rich preview ===== */
+/* URL & rich preview */
 
 /* Inline URL links (sidebar + reading view) */
 .wr-url,
@@ -2115,7 +2055,7 @@ body .wr-lp-media.wr-has-link {
   padding-bottom: 24px;
 }
 
-/* ===== Mobile adjustments ===== */
+/* Mobile adjustments */
 .is-mobile .wr-container {
   padding: 6px 12px;
 }
@@ -2388,7 +2328,7 @@ body.is-mobile .wr-settings input[type="color"]::-webkit-color-swatch {
   height: 48px;
 }
 
-/* ===== iPad (tablet) adjustments ===== */
+/* iPad (tablet) adjustments */
 @media (min-width: 768px) {
   .is-mobile .wr-input-area {
     overflow-x: hidden;
@@ -2550,7 +2490,7 @@ body .wr-settings-link:not(#x):hover {
 }
 
 
-/* ===== Wrot quote card (Twitter quote-RT style) ===== */
+/* Wrot quote card (Twitter quote-RT style) */
 .wr-quote-card-slot {
   display: block;
   margin: 6px 0 0 0;
@@ -2697,7 +2637,6 @@ body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-internal-link {
   transform: rotate(45deg);
 }
 
-/* Accent targets (tags / URLs / internal links etc.) keep their accent color inside the card too */
 .wr-quote-card-body .wr-tag,
 .wr-quote-card-body .wr-url,
 .wr-quote-card-body .wr-internal-link {

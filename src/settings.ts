@@ -145,8 +145,7 @@ export interface WrotSettings {
   // Deletion is irreversible and the plugin has no undo, so the menu item stays
   // out of sight until it is asked for.
   showPostDelete: boolean;
-  // Arranging is offered from the start — a bar nobody knows can be changed is a bar
-  // nobody changes — and can be switched off by anyone who would rather not have the row.
+  // On by default so the arrange affordance is discoverable; can be switched off.
   toolbarEditEnabled: boolean;
   // Empty until the toolbar is customised, which keeps a fresh install following the
   // shipped layout even as that layout changes between versions.
@@ -253,8 +252,6 @@ export class WrotSettingTab extends PluginSettingTab {
     return [this.basicGroup(), this.advancedGroup(), ...this.tagRuleItems()];
   }
 
-  // ---------------------------------------------------------------- value plumbing
-
   getControlValue(key: string): unknown {
     const settings = this.plugin.settings;
     // Dropdowns persist strings; pinLimit is the only numeric one.
@@ -346,14 +343,11 @@ export class WrotSettingTab extends PluginSettingTab {
       await super.setControlValue(key, value);
       return;
     }
-    // Dropdowns hand back strings; pinLimit is the only numeric setting.
     const stored = key === "pinLimit" ? (Number(value) as PinLimit) : value;
     (this.plugin.settings as unknown as Record<string, unknown>)[key] = stored;
     await effect();
     await this.plugin.saveSettings();
   }
-
-  // ---------------------------------------------------------------- colour helpers
 
   private isDarkTheme(): boolean {
     return activeDocument.body.classList.contains("theme-dark");
@@ -408,8 +402,6 @@ export class WrotSettingTab extends PluginSettingTab {
   private isSubCustomized(rule: TagColorRule): boolean {
     return !!rule.subColor && HEX_COLOR_RE.test(rule.subColor);
   }
-
-  // ---------------------------------------------------------------- imperative rows
 
   // A text row with a reset button. The declarative controls carry no extra affordance,
   // so rows that offer one are rendered by hand.
@@ -487,9 +479,6 @@ export class WrotSettingTab extends PluginSettingTab {
     };
   }
 
-  // ---------------------------------------------------------------- sections
-
-  // Colors, submit label, placeholder: the settings most people touch.
   private basicGroup(): SettingDefinitionItem {
     const settings = this.plugin.settings;
 
@@ -566,7 +555,6 @@ export class WrotSettingTab extends PluginSettingTab {
     });
   }
 
-  // Behaviour toggles and the pieces that change how memos are written and shown.
   private advancedGroup(): SettingDefinitionItem {
     const settings = this.plugin.settings;
 
@@ -842,7 +830,6 @@ export class WrotSettingTab extends PluginSettingTab {
     }));
   }
 
-  // Hands the entry's element over to the rule's own layout.
   private renderRuleRow(setting: Setting, build: (host: HTMLElement) => void): void {
     const host = setting.settingEl;
     host.empty();
@@ -1077,7 +1064,6 @@ export class WrotSettingTab extends PluginSettingTab {
     });
   }
 
-  // One rule: the label with its lock and bin, the colours, and the options that follow.
   private buildRuleGroup(host: HTMLElement, options: RuleGroupOptions): void {
     const {
       ruleNumber,
@@ -1228,7 +1214,6 @@ export class WrotSettingTab extends PluginSettingTab {
     const scopeContainer = groupEl.createDiv({ cls: "wr-sub-color-scope" });
     const scopeToggleEls: HTMLElement[] = [];
 
-    // Placed at the end of the group, below the sub-color scope block.
     let noIntegrationToggleEl: HTMLElement | null = null;
     if (this.plugin.settings.graphTagsEnabled) {
       new Setting(groupEl)
@@ -1242,8 +1227,7 @@ export class WrotSettingTab extends PluginSettingTab {
         });
     }
 
-    // Rendered last: unlike the colour controls above, this one changes what the
-    // timeline shows rather than how it looks.
+    // Rendered last: changes what the timeline shows, not how it looks.
     let hideToggleEl: HTMLElement | null = null;
     new Setting(groupEl)
       .setName(t("settings.tagRule.hideTimeline.name"))

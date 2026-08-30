@@ -50,7 +50,7 @@ export function openCalendarPopover(
 
   // Place below the button, inside the container: right edge aligns to the anchor
   // but is clamped so it never crosses the container's left edge.
-  const GAP = 4; // gap between button and calendar
+  const GAP = 4;
   const EDGE = 8; // min margin from container edges
   const positionPopover = () => {
     const a = anchor.getBoundingClientRect();

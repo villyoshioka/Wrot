@@ -419,8 +419,7 @@ export class GraphTagInjector {
     return `tag:#${tag.replace(/^#/, "")}`;
   }
 
-  // ── Index persistence (same conventions as tags.json: plugin dir, failures ignored) ──
-
+  // Index persistence: same conventions as tags.json (plugin dir, failures ignored).
   private indexPath(): string | null {
     const dir = this.plugin.manifest.dir;
     return dir ? normalizePath(`${dir}/tag-integration.json`) : null;

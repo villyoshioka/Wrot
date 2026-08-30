@@ -472,7 +472,6 @@ export class QuoteBlockWidget extends WidgetType {
       if (hasContent) container.appendChild(mediaArea);
     }
 
-    // Quote card always goes at the bottom.
     const slot = createSpan();
     slot.className = "wr-quote-card-slot wr-lp-quote-card";
     if (this.ruleClass) slot.classList.add(this.ruleClass);

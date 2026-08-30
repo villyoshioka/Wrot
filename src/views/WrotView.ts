@@ -385,7 +385,6 @@ export class WrotView extends ItemView {
     await this.refresh();
   }
 
-  // Focus an existing tab showing the file (keeping its view mode) or open a new tab.
   private async openOrFocusFile(file: TFile): Promise<WorkspaceLeaf> {
     let existingLeaf: WorkspaceLeaf | null = null;
     this.app.workspace.iterateAllLeaves((leaf) => {
@@ -461,8 +460,6 @@ export class WrotView extends ItemView {
       return;
     }
     if (this.calendarBtnEl) return;
-    // Custom calendar popover instead of native input[type=date], whose look and
-    // behavior differ per platform.
     const calendarBtn = this.dateNavEl.createEl("button", { cls: "wr-nav-btn wr-calendar-btn" });
     setIcon(calendarBtn, "calendar-1");
     calendarBtn.setAttr("aria-label", t("view.dateNav.today"));
@@ -471,7 +468,6 @@ export class WrotView extends ItemView {
         this.closeCalendarPopover();
         return;
       }
-      // Keep the hover-like style while the popover is open.
       calendarBtn.toggleClass("wr-toolbar-active", true);
       this.calendarPopover = openCalendarPopover({
         anchor: calendarBtn,
@@ -527,12 +523,8 @@ export class WrotView extends ItemView {
     if (icon) {
       setIcon(this.submitIconEl, icon);
     }
-    // The cancel button rides along: it exists on screen only while an edit is
-    // in progress, which is what makes a bare × read as "stop editing".
     if (this.cancelBtnEl) this.cancelBtnEl.hidden = !editing;
-    // The header's × can only mean one thing at a time, and an edit in progress owns it.
     if (editing) this.setToolbarEditing(false);
-    // An edit takes the form over; anything armed for a new post steps aside with it.
     if (editing && this.armedSchedule) this.setArmedSchedule(null);
     else this.setArmedSchedule(this.armedSchedule);
   }
@@ -786,9 +778,6 @@ export class WrotView extends ItemView {
       this.insertAtLineStart("1. ");
       this.updateToolbarActive(listBtn, checkBtn, olBtn);
     });
-    // Arms a day on the post being written, so a memo that is already known to be
-    // wanted later does not have to be found again once it exists. Lit while armed:
-    // the button is the only sign the post carries one, so it has to hold it.
     const scheduleBtn = btnFor("schedule");
     this.scheduleArmBtn = scheduleBtn;
     scheduleBtn.addEventListener("click", (e) => {
@@ -860,9 +849,6 @@ export class WrotView extends ItemView {
     const scheduleAction = this.toolbarActions.find((a) => a.id === "schedule");
     if (scheduleAction) scheduleAction.checked = () => this.armedSchedule !== null;
 
-    // Both ways out of arranging sit at the same end of the bar, the corner already means
-    // "done with this". They are spaced apart in CSS: side by side, keeping and discarding
-    // an arrangement are a mistap away from each other.
     const toolbarDoneBtn = createEl("button", {
       cls: "wr-toolbar-btn wr-toolbar-commit-btn",
     });
@@ -881,9 +867,6 @@ export class WrotView extends ItemView {
       const ta = this.textarea;
       const hasSelection = ta.selectionStart !== ta.selectionEnd;
       this.openMenu(formatBtn, (menu) => {
-        // Whatever is off the bar shows up here, in the order the list holds it: an action
-        // taken off the toolbar therefore arrives above the ones that ship in the menu.
-        // One unbroken run, since the list they come from is one unbroken run too.
         let rendered = 0;
         for (const action of this.hiddenActions()) {
           rendered++;
@@ -1311,7 +1294,6 @@ export class WrotView extends ItemView {
   }
 
   async submitMemo(): Promise<void> {
-    // Arranging the bar takes the form out of use, keyboard included.
     if (this.toolbarEditing) return;
     // The post keeps whatever was typed: a decoration left open stays open, rather than
     // being closed on the author's behalf at the end of the text.
@@ -1775,9 +1757,6 @@ export class WrotView extends ItemView {
         this.listContainer.addClass("wr-list-held");
       };
       this.schedulePickerAnchor = trigger;
-      // Armed from the toolbar, the calendar lines up with the form the way the overflow
-      // menu does. Opened from a card there is no form around the trigger, and the button
-      // itself stays the thing it hangs off.
       const form = trigger.closest<HTMLElement>(".wr-input-area") ?? undefined;
       this.schedulePopover = openCalendarPopover({
         anchor: trigger,
@@ -1874,7 +1853,6 @@ export class WrotView extends ItemView {
   private setArmedSchedule(from: string | null): void {
     this.armedSchedule = from;
     if (!this.scheduleArmBtn) return;
-    // With the button put away the tick beside its menu entry is what says a day is armed.
     this.scheduleArmBtn.toggleClass("wr-toolbar-active", from !== null);
     // Out of reach while an edit is running — that rewrites a post which already
     // exists, and its day is set from its own card — and while the allowance is
@@ -1893,9 +1871,6 @@ export class WrotView extends ItemView {
     );
   }
 
-  // While a day is being chosen, the card that opened the picker keeps its menu
-  // button lit and every other card's is out of reach — the same shape as editing,
-  // where one card holds the form and the rest step back.
   private beginScheduling(memo: Memo): void {
     this.schedulingTime = memo.time;
     this.applySchedulingClasses();
@@ -2084,11 +2059,8 @@ export class WrotView extends ItemView {
             })
           );
         }
-        // Three groups: what the memo's text can do, where the memo sits, and the
-        // one action that cannot be taken back.
+        // Menu groups: text actions, placement, then delete.
         menu.addSeparator();
-        // One wording for both allowances: they hold the same number, and which one
-        // is full is already said by which item above it went grey.
         const addLimitHint = () => {
           menu.addItem((item) => {
             item.setTitle(t("view.postMenu.pinLimitHint", { limit: pinLimit })).setDisabled(true);
@@ -2211,13 +2183,10 @@ export class WrotView extends ItemView {
 
     if (options.pinned) {
       const pinIndicator = card.createSpan({ cls: "wr-pin-indicator" });
-      // A pin that arrived on its own is drawn solid. The two kinds hold separate
-      // allowances, so which one a card is spending has to be readable from the card.
+      // Solid pin = arrived from a schedule; the two kinds spend separate allowances.
       if (options.fromSchedule) pinIndicator.addClass("wr-pin-indicator-filled");
       setIcon(pinIndicator, "pin");
     } else if (options.waitingSchedule) {
-      // Same corner as the pin, a different shape: the memo is spoken for, but its
-      // day has not come. Once it does, this card renders as a pin instead.
       const scheduleIndicator = card.createSpan({
         cls: "wr-pin-indicator wr-schedule-indicator",
       });
@@ -2278,8 +2247,6 @@ export class WrotView extends ItemView {
   private isInsideMarker(marker: "**" | "*"): boolean {
     return isInsideMarker(this.textarea, marker);
   }
-
-  // ------------------------------------------------------------------ toolbar layout
 
   /**
    * Actions currently off the bar, in the menu's own order rather than the bar's. Where a
@@ -2372,8 +2339,6 @@ export class WrotView extends ItemView {
         btn.addClass("wr-toolbar-disabled");
       }
     }
-    // Arranging the bar takes the whole view out of use: nothing can be typed, posted, or
-    // done to a post that already exists while the thing that does those is being rebuilt.
     this.contentEl.toggleClass("wr-toolbar-arranging", on);
     if (this.textarea) this.textarea.readOnly = on;
     if (this.formatBtnEl) {
