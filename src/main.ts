@@ -26,6 +26,7 @@ import { initI18n, t, getActiveLocale } from "./i18n";
 const PINS_FILE = "pins.json";
 const TAG_RULES_FILE = "tagrules.json";
 const LAYOUT_FILE = "layout.json";
+const DRAFT_FILE = "draft.json";
 const MOVED_OUT_OF_SETTINGS = ["pins", "scheduledPins", "tagColorRules", "toolbarLayout"] as const;
 
 export default class WrotPlugin extends Plugin {
@@ -37,6 +38,8 @@ export default class WrotPlugin extends Plugin {
   recentTags: string[] = [];
   // Migration buffer for candidates once stored in data.json; populated by loadSettings.
   private legacyRecentTags: string[] | null = null;
+  draft = "";
+  private lastWrittenDraft: string | null = null;
   // The in-flight read of pins.json / tagrules.json. Started during load but never awaited
   // there, so it stays off the blocking path; anything that writes those files waits on it
   // first, so a save can never land on top of values that have not been read yet.
@@ -492,8 +495,8 @@ export default class WrotPlugin extends Plugin {
     const existing = workspace.getLeavesOfType(VIEW_TYPE_WROT);
 
     if (existing.length > 0) {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
-      workspace.revealLeaf(existing[0]);
+      await workspace.revealLeaf(existing[0]);
+      this.focusViewInput(existing[0]);
       return;
     }
 
@@ -512,8 +515,12 @@ export default class WrotPlugin extends Plugin {
     }
 
     await leaf.setViewState({ type: VIEW_TYPE_WROT, active: true });
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
-    workspace.revealLeaf(leaf);
+    await workspace.revealLeaf(leaf);
+    this.focusViewInput(leaf);
+  }
+
+  private focusViewInput(leaf: WorkspaceLeaf): void {
+    if (leaf.view instanceof WrotView) leaf.view.focusInput();
   }
 
   /**
@@ -542,6 +549,7 @@ export default class WrotPlugin extends Plugin {
     // Same story for the toolbar: a form built before layout.json arrived shows the
     // shipped arrangement, so redraw it once the saved one is in hand.
     if (this.settings.toolbarLayout.length > 0) this.updateToolbarLayout();
+    if (this.draft) this.forEachView((view) => view.restoreDraft());
     // Integrate memo tags into the core graph view / native tag search:
     // inject from the cached map immediately, reconcile diffs in the background.
     void this.graphTags.start();
@@ -719,11 +727,17 @@ export default class WrotPlugin extends Plugin {
    * the reads out of onload keeps them out of the startup measurement too.
    */
   async loadDeferredState(): Promise<void> {
-    const [pinData, ruleData, layoutData] = await Promise.all([
+    const [pinData, ruleData, layoutData, draftData] = await Promise.all([
       this.readSideFile(PINS_FILE),
       this.readSideFile(TAG_RULES_FILE),
       this.readSideFile(LAYOUT_FILE),
+      this.readSideFile(DRAFT_FILE),
     ]);
+
+    if (typeof draftData === "string") {
+      this.draft = draftData;
+      this.lastWrittenDraft = draftData;
+    }
 
     // Nothing was read, but settings already hold values: they came from data.json, which is
     // where these used to live. Copy them out first and only then let data.json drop them --
@@ -781,5 +795,28 @@ export default class WrotPlugin extends Plugin {
   async saveToolbarLayout(): Promise<void> {
     await this.deferredState;
     await this.writeSideFile(LAYOUT_FILE, this.settings.toolbarLayout);
+  }
+
+  draftFilePath(): string | null {
+    return this.pluginFilePath(DRAFT_FILE);
+  }
+
+  /** Re-reads draft.json (it can change through sync). True when it differs from what was last known. */
+  async reloadDraft(): Promise<boolean> {
+    await this.deferredState;
+    const data = await this.readSideFile(DRAFT_FILE);
+    const text = typeof data === "string" ? data : "";
+    if (text === this.lastWrittenDraft) return false;
+    this.draft = text;
+    this.lastWrittenDraft = text;
+    return true;
+  }
+
+  async saveDraft(text: string): Promise<void> {
+    this.draft = text;
+    await this.deferredState;
+    if (text === this.lastWrittenDraft) return;
+    this.lastWrittenDraft = text;
+    await this.writeSideFile(DRAFT_FILE, text);
   }
 }

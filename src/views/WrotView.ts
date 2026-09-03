@@ -9,7 +9,7 @@ import { ensureBlockIdOnFence } from "../utils/memoWriter";
 import { isImageFile, saveImageToVault, buildEmbedLink } from "../utils/imageAttachment";
 import { openCalendarPopover, CalendarPopoverHandle } from "../utils/calendarPopover";
 import { buildDateDrum } from "../utils/dateDrum";
-import { TagSuggest, extractTagsForHistory, mergeRecentTags } from "../utils/tagSuggest";
+import { TagSuggest, extractTagsForHistory, mergeRecentTags, rebuildFocus } from "../utils/tagSuggest";
 import { isMathJaxReady, requestMathJax } from "../utils/mathjax";
 import { quoteMarkerPattern } from "../utils/patterns";
 import {
@@ -76,12 +76,28 @@ interface ToolbarAction {
   needsSelection?: boolean;
   // Actions that hold a state carry a tick in the menu, the way the toolbar button lights.
   checked?: () => boolean;
+  // Greyed out in the menu under the same terms as the toolbar button.
+  disabled?: () => boolean;
   /**
    * Opens a marker and writes inside it, with a lit button as the only sign that mode is
    * running. Off the bar there is nothing to light, so in the menu the action is offered
    * as a plain wrap of the selection — the same terms the strikethrough has always had.
    */
   pendingMode?: boolean;
+}
+
+const DRAFT_IDLE_MS = 1000;
+const REFRESH_COALESCE_MS = 300;
+const OWN_WRITE_WINDOW_MS = 1000;
+
+// The same block can sit in two notes (copied by hand or doubled by sync), so the
+// timestamp alone is not unique.
+function pinKey(filePath: string, time: string): string {
+  return `${filePath}\n${time}`;
+}
+
+function matchesPin(pin: PinEntry, memo: Memo, filePath: string): boolean {
+  return pin.timestamp === memo.time && pin.file === filePath;
 }
 
 // Inserts an image embed above a trailing quote-card marker or Markdown "> " block
@@ -152,7 +168,10 @@ export class WrotView extends ItemView {
   private fileChangeRef: EventRef | null = null;
   private fileDeleteRef: EventRef | null = null;
   private fileCreateRef: EventRef | null = null;
+  private fileRawRef: EventRef | null = null;
+  private refreshTimer: number | null = null;
   private ignoreNextModify = false;
+  private ownWriteAt = 0;
   private ignoreModifyUntil = 0;
   private activeFormatMode: "bold" | "italic" | null = null;
   // Calling focus() from a format-button click fires a focus event whose validation would
@@ -169,6 +188,7 @@ export class WrotView extends ItemView {
   // A change that arrived while a render was in flight; replayed once the render finishes.
   private refreshQueued = false;
   private toolbarResizeObserver: ResizeObserver | null = null;
+  private draftTimer: number | null = null;
   private currentMenu: Menu | null = null;
   private pendingImage: File | null = null;
   private pendingImageUrl: string | null = null;
@@ -263,10 +283,35 @@ export class WrotView extends ItemView {
     this.registerDomEvent(this.containerEl.win, "focus", () => {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
       this.catchUpToToday();
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
+      this.syncDraftFromDisk();
     });
+    this.registerDomEvent(this.containerEl.win, "blur", () => {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
+      this.persistDraft();
+    });
+    // "raw" is undocumented: the vault's change signal for every path, .obsidian included.
+    // The only way to see draft.json change under a focused window (sync writes it).
+    const draftPath = this.plugin.draftFilePath();
+    if (draftPath) {
+      const vault = this.app.vault as unknown as {
+        on(name: "raw", cb: (path: string) => void): EventRef;
+      };
+      this.registerEvent(
+        vault.on("raw", (path) => {
+          if (path !== draftPath) return;
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
+          this.syncDraftFromDisk();
+        })
+      );
+    }
   }
 
   onClose(): Promise<void> {
+    if (this.draftTimer !== null) window.clearTimeout(this.draftTimer);
+    this.draftTimer = null;
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
+    this.persistDraft();
     this.tagSuggest?.destroy();
     this.tagSuggest = null;
     this.closeCalendarPopover();
@@ -298,23 +343,34 @@ export class WrotView extends ItemView {
         this.currentDate
       );
       if ((currentFile && file.path === currentFile.path) || this.holdsPinnedMemo(file.path)) {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
-        this.refresh();
+        this.requestRefresh();
       }
     });
     // vault "delete" fires before metadataCache updates, so watch metadataCache "deleted" instead.
     this.fileDeleteRef = this.app.metadataCache.on("deleted", (file) => {
       if (!(file instanceof TFile)) return;
       if (!this.affectsCurrentView(file)) return;
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
-      this.refresh();
+      this.requestRefresh();
     });
     this.fileCreateRef = this.app.vault.on("create", (file) => {
       if (!(file instanceof TFile)) return;
       if (!this.affectsCurrentView(file)) return;
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
-      this.refresh();
+      this.requestRefresh();
     });
+    // On mobile, a note rewritten by sync does not always raise "modify"; the undocumented
+    // "raw" signal still fires. Desktop gets "modify" reliably and would refresh twice.
+    if (Platform.isMobile) {
+      const vault = this.app.vault as unknown as {
+        on(name: "raw", cb: (path: string) => void): EventRef;
+      };
+      this.fileRawRef = vault.on("raw", (path) => {
+        // "modify" may have consumed the flag already; the time window covers the rest.
+        if (this.ignoreNextModify || Date.now() < this.ignoreModifyUntil) return;
+        if (Date.now() - this.ownWriteAt < OWN_WRITE_WINDOW_MS) return;
+        if (path !== dailyNotePathFor(this.currentDate) && !this.holdsPinnedMemo(path)) return;
+        this.requestRefresh();
+      });
+    }
   }
 
   /**
@@ -348,7 +404,24 @@ export class WrotView extends ItemView {
     return [...(pins ?? []), ...(scheduledPins ?? [])];
   }
 
+  private markOwnWrite(): void {
+    this.ignoreNextModify = true;
+    this.ownWriteAt = Date.now();
+  }
+
+  // One sync can raise several change signals in a row; they redraw once.
+  private requestRefresh(): void {
+    if (this.refreshTimer !== null) window.clearTimeout(this.refreshTimer);
+    this.refreshTimer = window.setTimeout(() => {
+      this.refreshTimer = null;
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
+      this.refresh();
+    }, REFRESH_COALESCE_MS);
+  }
+
   private unregisterFileWatcher(): void {
+    if (this.refreshTimer !== null) window.clearTimeout(this.refreshTimer);
+    this.refreshTimer = null;
     if (this.fileChangeRef) {
       this.app.vault.offref(this.fileChangeRef);
       this.fileChangeRef = null;
@@ -360,6 +433,10 @@ export class WrotView extends ItemView {
     if (this.fileCreateRef) {
       this.app.vault.offref(this.fileCreateRef);
       this.fileCreateRef = null;
+    }
+    if (this.fileRawRef) {
+      this.app.vault.offref(this.fileRawRef);
+      this.fileRawRef = null;
     }
   }
 
@@ -383,6 +460,66 @@ export class WrotView extends ItemView {
     if (!rollTo && this.lastRenderedDay === now.format("YYYY-MM-DD")) return;
     if (rollTo) this.currentDate = now;
     await this.refresh();
+  }
+
+  focusInput(): void {
+    this.textarea?.focus();
+  }
+
+  private scheduleDraftSave(): void {
+    if (this.draftTimer !== null) window.clearTimeout(this.draftTimer);
+    this.draftTimer = window.setTimeout(() => {
+      this.draftTimer = null;
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
+      this.persistDraft();
+    }, DRAFT_IDLE_MS);
+  }
+
+  // While editing, the textarea holds the post and the real draft sits in savedDraft.
+  private async persistDraft(): Promise<void> {
+    if (!this.textarea || this.editingMemo) return;
+    await this.plugin.saveDraft(this.textarea.value);
+  }
+
+  // Text typed here but not yet written wins over whatever arrived on disk.
+  private async syncDraftFromDisk(afterCompose = false): Promise<void> {
+    if (!this.textarea || this.editingMemo) return;
+    const local = this.textarea.value;
+    const known = this.plugin.draft;
+    // Own writes echo back as a change signal too; nothing below runs for those.
+    if (!afterCompose && !(await this.plugin.reloadDraft())) return;
+    if (this.editingMemo) return;
+    // Replacing the value mid-composition strands the IME: blur to force-commit, wait for
+    // compositionend, then come back with afterCompose set (same dance as tag completion).
+    if (this.imeComposing && !afterCompose) {
+      const ta = this.textarea;
+      let done = false;
+      const finish = (): void => {
+        if (done) return;
+        done = true;
+        ta.removeEventListener("compositionend", finish);
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
+        this.syncDraftFromDisk(true);
+      };
+      ta.addEventListener("compositionend", finish);
+      ta.blur();
+      window.setTimeout(finish, 150);
+      return;
+    }
+    // The commit itself changed the value; that is not typing to preserve.
+    if (!afterCompose && local !== known) return;
+    this.textarea.value = this.plugin.draft;
+    if (afterCompose && activeDocument.activeElement !== this.textarea) {
+      rebuildFocus(this.textarea, this.contentEl);
+    }
+    this.textarea.dispatchEvent(new Event("input"));
+  }
+
+  restoreDraft(): void {
+    const draft = this.plugin.draft;
+    if (!draft || !this.textarea || this.textarea.value || this.editingMemo) return;
+    this.textarea.value = draft;
+    this.textarea.dispatchEvent(new Event("input"));
   }
 
   private async openOrFocusFile(file: TFile): Promise<WorkspaceLeaf> {
@@ -847,7 +984,13 @@ export class WrotView extends ItemView {
     }));
     // The armed day is the one state an action carries into the menu.
     const scheduleAction = this.toolbarActions.find((a) => a.id === "schedule");
-    if (scheduleAction) scheduleAction.checked = () => this.armedSchedule !== null;
+    if (scheduleAction) {
+      scheduleAction.checked = () => this.armedSchedule !== null;
+      scheduleAction.disabled = () =>
+        this.editingMemo !== null ||
+        (this.armedSchedule === null &&
+          this.scheduledClaimCount() >= this.plugin.settings.pinLimit);
+    }
 
     const toolbarDoneBtn = createEl("button", {
       cls: "wr-toolbar-btn wr-toolbar-commit-btn",
@@ -874,7 +1017,7 @@ export class WrotView extends ItemView {
             item.setTitle(action.label).setIcon(action.icon).onClick(() => action.run());
             if (action.checked?.()) item.setChecked(true);
             const wrapOnly = action.needsSelection || action.pendingMode;
-            if (wrapOnly && !hasSelection) item.setDisabled(true);
+            if ((wrapOnly && !hasSelection) || action.disabled?.()) item.setDisabled(true);
           });
         }
         if (rendered > 0) menu.addSeparator();
@@ -1009,6 +1152,7 @@ export class WrotView extends ItemView {
     });
 
     // Refresh on both input and compositionend so uncommitted IME text also filters candidates.
+    this.textarea.addEventListener("input", () => this.scheduleDraftSave());
     this.textarea.addEventListener("input", () => this.tagSuggest?.refresh());
     this.textarea.addEventListener("compositionend", () => this.tagSuggest?.refresh());
     this.textarea.addEventListener("blur", () => this.tagSuggest?.notifyBlur());
@@ -1043,6 +1187,8 @@ export class WrotView extends ItemView {
       inputArea.getBoundingClientRect();
       this.textarea?.getBoundingClientRect();
     });
+
+    this.restoreDraft();
   }
 
   private openImagePicker(): void {
@@ -1275,7 +1421,7 @@ export class WrotView extends ItemView {
         bodyText = insertEmbedAboveBottomBlock(bodyText, embed);
       }
 
-      this.ignoreNextModify = true;
+      this.markOwnWrite();
       await updateMemo(this.app, file, target.time, bodyText);
 
       if (this.plugin.settings.tagSuggestEnabled) {
@@ -1330,7 +1476,7 @@ export class WrotView extends ItemView {
         bodyText = insertEmbedAboveBottomBlock(bodyText, embed);
       }
 
-      this.ignoreNextModify = true;
+      this.markOwnWrite();
       const postedTime = await appendMemo(this.app, file, bodyText);
 
       // The armed day lands on the post the moment it exists. Its place was taken
@@ -1361,6 +1507,7 @@ export class WrotView extends ItemView {
       this.clearPendingImage();
       this.textarea.dispatchEvent(new Event("input"));
       await this.refresh();
+      await this.plugin.saveDraft("");
     } catch (e) {
       new Notice(t("view.notice.saveFailed", { error: String(e) }));
     }
@@ -1384,54 +1531,71 @@ export class WrotView extends ItemView {
       const dateText = this.currentDate.format(this.plugin.settings.headerDateFormat);
       this.dateLabel.setText(isToday ? `${dateText}${t("view.dateNav.todaySuffix")}` : dateText);
 
-      this.listContainer.empty();
-      this.clearPinnedContainer();
-
       // Resolve pins first; they render at the top independent of the current date.
       // Scheduled pins whose day has come join them, below the ones pinned by hand:
       // those arrive on their own, so keeping them out of the manual order means the
       // top of the section stays as it was left.
       const { pins, scheduledPins } = this.plugin.settings;
       const arrived: ScheduledPinEntry[] = [];
-      const waiting = new Set<string>();
+      const notYet: ScheduledPinEntry[] = [];
       for (const entry of scheduledPins ?? []) {
         if (this.isScheduleDue(entry)) arrived.push(entry);
-        else waiting.add(entry.timestamp);
+        else notYet.push(entry);
       }
       const byHand = await this.resolvePinEntries(pins);
       const bySchedule = await this.resolvePinEntries(arrived);
+      // Waiting pins are read only to learn whether their memo still exists.
+      const byWait = await this.resolvePinEntries(notYet);
       const pinnedResolved = [
-        ...byHand.map((p) => ({ ...p, fromSchedule: false })),
-        ...bySchedule.map((p) => ({ ...p, fromSchedule: true })),
+        ...byHand.resolved.map((p) => ({ ...p, fromSchedule: false })),
+        ...bySchedule.resolved.map((p) => ({ ...p, fromSchedule: true })),
       ];
-      const pinnedTimestamps = new Set(pinnedResolved.map((p) => p.memo.time));
-      for (const { memo, filePath, fromSchedule } of pinnedResolved) {
-        this.renderMemoCard(memo, { pinned: true, filePath, fromSchedule });
+      // Pins whose note is missing are not stale: the note may still be arriving through sync.
+      const stale = new Set([...byHand.stale, ...bySchedule.stale, ...byWait.stale]);
+      const waiting = new Set(
+        notYet.filter((e) => !stale.has(e)).map((e) => pinKey(e.file, e.timestamp))
+      );
+      if (stale.size > 0) {
+        const settings = this.plugin.settings;
+        settings.pins = settings.pins.filter((p) => !stale.has(p));
+        settings.scheduledPins = (settings.scheduledPins ?? []).filter((p) => !stale.has(p));
+        await this.plugin.savePins();
+        this.setArmedSchedule(this.armedSchedule);
       }
+      const pinnedKeys = new Set(pinnedResolved.map((p) => pinKey(p.filePath, p.memo.time)));
 
       const file = getDailyNoteFile(
         this.app,
         this.currentDate
       );
+      // Read from disk: on mobile the cache can still hold the note as it was before sync.
+      const content = file ? await this.app.vault.read(file) : null;
 
-      if (!file) {
+      // Every read is done; the list is only now emptied so it is never blank while waiting.
+      this.listContainer.empty();
+      this.clearPinnedContainer();
+      for (const { memo, filePath, fromSchedule } of pinnedResolved) {
+        this.renderMemoCard(memo, { pinned: true, filePath, fromSchedule });
+      }
+
+      if (!file || content === null) {
         if (pinnedResolved.length === 0) this.renderEmptyState();
         return;
       }
 
-      const content = await this.app.vault.cachedRead(file);
       const memos = parseMemos(content);
 
       let rendered = 0;
       for (const memo of memos) {
-        if (pinnedTimestamps.has(memo.time)) continue;
+        const key = pinKey(file.path, memo.time);
+        if (pinnedKeys.has(key)) continue;
         // Pinned memos above are deliberately exempt: pinning names a single memo,
         // which outranks a rule that hides a whole tag.
         if (this.plugin.isHiddenFromTimeline(memo.tags)) continue;
         this.renderMemoCard(memo, {
           pinned: false,
           filePath: file.path,
-          waitingSchedule: waiting.has(memo.time),
+          waitingSchedule: waiting.has(key),
         });
         rendered++;
       }
@@ -1498,13 +1662,14 @@ export class WrotView extends ItemView {
     return container;
   }
 
-  // Resolves the memos behind pin entries; orphan cleanup happens on pin add/remove.
-  private async resolvePinEntries(
-    pins: PinEntry[] | undefined
-  ): Promise<{ memo: Memo; filePath: string }[]> {
-    if (!pins || pins.length === 0) return [];
-
+  // `stale`: entries whose note was read but no longer holds the memo.
+  private async resolvePinEntries<T extends PinEntry>(
+    pins: T[] | undefined
+  ): Promise<{ resolved: { memo: Memo; filePath: string }[]; stale: T[] }> {
     const resolved: { memo: Memo; filePath: string }[] = [];
+    const stale: T[] = [];
+    if (!pins || pins.length === 0) return { resolved, stale };
+
     const seenFiles = new Map<string, Memo[] | null>();
 
     for (const pin of pins) {
@@ -1515,7 +1680,8 @@ export class WrotView extends ItemView {
           seenFiles.set(pin.file, null);
           continue;
         }
-        const content = await this.app.vault.cachedRead(file);
+        // From disk, not the cache: a stale cache after sync would prune a live pin.
+        const content = await this.app.vault.read(file);
         memos = parseMemos(content);
         seenFiles.set(pin.file, memos);
       }
@@ -1523,21 +1689,21 @@ export class WrotView extends ItemView {
       const memo = memos.find((m) => m.time === pin.timestamp);
       if (memo) {
         resolved.push({ memo, filePath: pin.file });
+      } else {
+        stale.push(pin);
       }
     }
 
-    return resolved;
+    return { resolved, stale };
   }
 
-  private isPinned(memo: Memo): boolean {
-    return this.plugin.settings.pins.some((p) => p.timestamp === memo.time);
+  private isPinned(memo: Memo, filePath: string): boolean {
+    return this.plugin.settings.pins.some((p) => matchesPin(p, memo, filePath));
   }
 
   /** The scheduled pin on this memo, whether its day has come or not. */
-  private findScheduledPin(memo: Memo): ScheduledPinEntry | undefined {
-    return (this.plugin.settings.scheduledPins ?? []).find(
-      (p) => p.timestamp === memo.time
-    );
+  private findScheduledPin(memo: Memo, filePath: string): ScheduledPinEntry | undefined {
+    return (this.plugin.settings.scheduledPins ?? []).find((p) => matchesPin(p, memo, filePath));
   }
 
   /**
@@ -1596,7 +1762,7 @@ export class WrotView extends ItemView {
     await this.cleanupOrphanPins();
     const limit = this.plugin.settings.pinLimit;
     if (this.plugin.settings.pins.length >= limit) return;
-    if (this.isPinned(memo) || this.findScheduledPin(memo)) return;
+    if (this.isPinned(memo, filePath) || this.findScheduledPin(memo, filePath)) return;
     this.plugin.settings.pins = [
       { timestamp: memo.time, file: filePath },
       ...this.plugin.settings.pins,
@@ -1609,7 +1775,7 @@ export class WrotView extends ItemView {
     await this.cleanupOrphanPins();
     const settings = this.plugin.settings;
     if (this.scheduledClaimCount() >= settings.pinLimit) return;
-    if (this.isPinned(memo) || this.findScheduledPin(memo)) return;
+    if (this.isPinned(memo, filePath) || this.findScheduledPin(memo, filePath)) return;
     settings.scheduledPins = [
       { timestamp: memo.time, file: filePath, from },
       ...(settings.scheduledPins ?? []),
@@ -1620,12 +1786,12 @@ export class WrotView extends ItemView {
 
   // Clears the memo from both lists: once a scheduled pin has arrived it is just a
   // pin, and taking it down is the same gesture as unpinning one placed by hand.
-  private async removePin(memo: Memo): Promise<void> {
+  private async removePin(memo: Memo, filePath: string): Promise<void> {
     const settings = this.plugin.settings;
     const before = settings.pins.length + (settings.scheduledPins?.length ?? 0);
-    settings.pins = settings.pins.filter((p) => p.timestamp !== memo.time);
+    settings.pins = settings.pins.filter((p) => !matchesPin(p, memo, filePath));
     settings.scheduledPins = (settings.scheduledPins ?? []).filter(
-      (p) => p.timestamp !== memo.time
+      (p) => !matchesPin(p, memo, filePath)
     );
     if (settings.pins.length + settings.scheduledPins.length !== before) {
       await this.plugin.savePins();
@@ -1666,7 +1832,7 @@ export class WrotView extends ItemView {
     const file = this.app.vault.getAbstractFileByPath(filePath);
     if (file instanceof TFile) {
       try {
-        this.ignoreNextModify = true;
+        this.markOwnWrite();
         const removed = await deleteMemo(this.app, file, memo.time, memo.lineStart);
         if (removed) {
           // Quote cards read a per-file memo cache; drop it so this refresh
@@ -1674,9 +1840,9 @@ export class WrotView extends ItemView {
           invalidateMemoCache(file.path);
           const settings = this.plugin.settings;
           const before = settings.pins.length + (settings.scheduledPins?.length ?? 0);
-          settings.pins = settings.pins.filter((p) => p.timestamp !== memo.time);
+          settings.pins = settings.pins.filter((p) => !matchesPin(p, memo, file.path));
           settings.scheduledPins = (settings.scheduledPins ?? []).filter(
-            (p) => p.timestamp !== memo.time
+            (p) => !matchesPin(p, memo, file.path)
           );
           if (settings.pins.length + settings.scheduledPins.length !== before) {
             await this.plugin.savePins();
@@ -2024,8 +2190,8 @@ export class WrotView extends ItemView {
       if (this.schedulingTime && this.schedulingTime !== memo.time) return;
       // Drop orphaned pins before evaluating the pin limit.
       await this.cleanupOrphanPins();
-      const pinned = this.isPinned(memo);
-      const scheduled = this.findScheduledPin(memo);
+      const pinned = this.isPinned(memo, options.filePath);
+      const scheduled = this.findScheduledPin(memo, options.filePath);
       // An arrived schedule is a pin in every way the menu cares about.
       const onBoard = pinned || (scheduled !== undefined && this.isScheduleDue(scheduled));
       const pinLimit = this.plugin.settings.pinLimit;
@@ -2080,7 +2246,7 @@ export class WrotView extends ItemView {
           menu.addItem((item) => {
             item.setTitle(t("view.postMenu.unpin")).setIcon("pin-off").onClick(async () => {
               if (editingThis) return;
-              await this.removePin(memo);
+              await this.removePin(memo, options.filePath);
             });
             if (editingThis) item.setDisabled(true);
           });
@@ -2204,7 +2370,7 @@ export class WrotView extends ItemView {
     const blockId = `wr-${T}`;
     const srcFile = this.app.vault.getAbstractFileByPath(srcFilePath);
     if (!(srcFile instanceof TFile)) return;
-    this.ignoreNextModify = true;
+    this.markOwnWrite();
     await ensureBlockIdOnFence(this.app, srcFile, memo.time, blockId);
     const fileBaseName = srcFile.basename;
     const marker = `[[${fileBaseName}#^${blockId}]]`;

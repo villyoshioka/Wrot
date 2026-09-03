@@ -49,6 +49,19 @@ interface ActiveToken {
   query: string;
 }
 
+// After a forced commit, refocusing the textarea directly makes iOS reuse the stale
+// input session and skip drawing the caret (typing still works). Bounce focus through
+// an invisible dummy input to rebuild the session; both are editable, so the keyboard stays open.
+export function rebuildFocus(ta: HTMLTextAreaElement, container: HTMLElement): void {
+  const dummy = container.createEl("input", {
+    cls: "wr-focus-bounce",
+    attr: { type: "text" },
+  });
+  dummy.focus({ preventScroll: true });
+  ta.focus({ preventScroll: true });
+  dummy.remove();
+}
+
 // Tag completion controller for the input area. Passive: WrotView calls refresh()
 // on input/selectionchange/compositionend and handleKeydown() first in keydown.
 export class TagSuggest {
@@ -302,18 +315,6 @@ export class TagSuggest {
     this.applyInsert(ta, token, insert);
   }
 
-  // After a forced commit, refocusing the textarea directly makes iOS reuse the stale
-  // input session and skip drawing the caret (typing still works). Bounce focus through
-  // an invisible dummy input to rebuild the session; both are editable, so the keyboard stays open.
-  private rebuildFocus(ta: HTMLTextAreaElement): void {
-    const dummy = this.opts.container.createEl("input", {
-      cls: "wr-focus-bounce",
-      attr: { type: "text" },
-    });
-    dummy.focus({ preventScroll: true });
-    ta.focus({ preventScroll: true });
-    dummy.remove();
-  }
 
   // Replace the token and put the caret after the insert. Refocus only if focus was
   // lost (blurred by the forced commit): stacking focus() on an already-focused
@@ -322,7 +323,7 @@ export class TagSuggest {
     ta.value = ta.value.slice(0, token.start) + insert + ta.value.slice(token.end);
     const caret = token.start + insert.length;
     if (activeDocument.activeElement !== ta) {
-      this.rebuildFocus(ta);
+      rebuildFocus(ta, this.opts.container);
     }
     ta.setSelectionRange(caret, caret);
     ta.dispatchEvent(new Event("input"));

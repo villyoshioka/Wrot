@@ -1,5 +1,25 @@
 # Release Notes
 
+## 2.24.0 - 2026-09-03
+
+### Updates
+
+- Updated dependencies.
+
+### Improvements
+
+- An unposted draft is now kept. Whatever is in the post form stays there when Wrot is closed or Obsidian restarts. Depending on how you sync, it can follow you across devices too.
+- Opening Wrot from the command now places the cursor in the post form.
+- Adjusted the spacing of the toolbar while it is being arranged.
+
+### Bug Fixes
+
+- Fixed another post sometimes disappearing from the timeline when a post was pinned.
+- Fixed the Pin Later allowance sometimes not being freed when a waiting post was deleted.
+- Fixed Pin Later staying pressable in the toolbar's menu when its allowance was full.
+
+---
+
 ## 2.23.0 - 2026-08-29
 
 ### Updates

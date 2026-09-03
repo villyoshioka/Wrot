@@ -547,6 +547,7 @@ body .wr-toolbar-btn:active {
 /* Dragging owns the gesture; without this the panel scrolls under the finger. */
 .wr-input-toolbar.wr-toolbar-editing {
   touch-action: none;
+  padding-bottom: 4px;
 }
 
 .wr-toolbar-arranging .wr-card,
