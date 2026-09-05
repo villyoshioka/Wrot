@@ -1,5 +1,14 @@
 # Release Notes
 
+## 2.24.2 - 2026-09-05
+
+### Bug Fixes
+
+- Fixed the three-dot menus on phones leaving extra space under the last item when following Obsidian's font size.
+- Fixed the three-dot menus on desktop and tablet not scrolling when their items do not fit on screen, leaving the lower items out of reach.
+
+---
+
 ## 2.24.1 - 2026-09-05
 
 ### Updates

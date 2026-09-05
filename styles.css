@@ -1725,9 +1725,18 @@ body.wr-font-follow .wr-menu .menu-item-icon .svg-icon {
   height: max(16px, calc(var(--wr-font-text) * 1.143));
 }
 
-/* The phone sheet's bottom padding is a fixed value; scaled rows make it vanish */
-body.wr-font-follow.is-mobile .wr-menu {
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + var(--wr-font-text) * 0.5);
+/* Obsidian hides a desktop menu's overflow and scrolls it by mouse position. The view caps the
+   menu at the window's edge (openMenu), so the list needs a real scroll to reach the rest. */
+body:not(.is-phone) .wr-menu .menu-scroll {
+  overflow-y: auto;
+}
+
+/* Obsidian keeps the phone sheet's safe-area padding inside .menu-scroll, at the end of the
+   scrolled content: once scaled rows overflow 60vh it is out of sight. Moved to the sheet itself
+   so the band shows whether or not the list scrolls, and is not doubled when it does not. */
+body.wr-font-follow.is-phone .wr-menu {
+  --menu-padding: var(--size-4-2) var(--size-4-4) 0;
+  padding-bottom: calc(var(--safe-area-inset-bottom) + var(--wr-font-text) * 0.5);
 }
 
 /* Menu hint line used when the pin-limit is reached. Renders as an

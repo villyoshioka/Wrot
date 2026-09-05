@@ -2721,10 +2721,13 @@ export class WrotView extends ItemView {
 
     // Set while the menu tracks the form it hangs off, so closing stops the tracking.
     let stopTracking: (() => void) | null = null;
+    let stopFitting: (() => void) | null = null;
 
     menu.onHide(() => {
       stopTracking?.();
       stopTracking = null;
+      stopFitting?.();
+      stopFitting = null;
       // A menu opened from another menu's item outlives it, and on mobile the old
       // one finishes closing well after. Only the menu still holding the trigger
       // puts its light out; an older one leaves it to whoever took over.
@@ -2739,6 +2742,29 @@ export class WrotView extends ItemView {
     const rect = trigger.getBoundingClientRect();
     const doc = trigger.ownerDocument ?? activeDocument;
     menu.showAtPosition({ x: rect.left, y: rect.bottom + yOffset }, doc);
+
+    // The phone sheet caps itself; elsewhere a menu taller than what is left below its top
+    // edge is capped there, and the list inside scrolls (the CSS opens .menu-scroll).
+    let fit: (() => void) | null = null;
+    if (menuDom && !Platform.isPhone) {
+      const win = doc.defaultView ?? window;
+      const fitNow = () => {
+        const room = win.innerHeight - menuDom.getBoundingClientRect().top - 8;
+        menuDom.setCssStyles({ maxHeight: `${Math.max(0, room)}px` });
+      };
+      fit = fitNow;
+      fitNow();
+      win.addEventListener("resize", fitNow);
+      // Obsidian scrolls a desktop menu by mouse position; with a real scroll that would
+      // fight the wheel. The listener sits on .menu-scroll, so capture stops it upstream.
+      const swallow = (e: MouseEvent) => e.stopPropagation();
+      menuDom.addEventListener("mousemove", swallow, { capture: true });
+      stopFitting = () => {
+        win.removeEventListener("resize", fitNow);
+        menuDom.removeEventListener("mousemove", swallow, { capture: true });
+      };
+    }
+
     if (alignRight && menuDom) {
       const host = trigger.closest(".wr-input-area") ?? trigger;
       // How wide the menu is only becomes known once it is up, so the edges are matched
@@ -2760,6 +2786,7 @@ export class WrotView extends ItemView {
           lastLeft = left;
           lastTop = top;
           menuDom.setCssStyles({ left: `${left}px`, top: `${top}px` });
+          fit?.();
         }
         frame = window.requestAnimationFrame(place);
       };
