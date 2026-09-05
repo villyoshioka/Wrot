@@ -212,9 +212,22 @@ export function openCalendarPopover(
     }
   };
 
+  // Nothing before minDate can be picked, so the previous page is not offered once
+  // the current one already holds the earliest selectable day.
+  const atEarliestPage = () => {
+    if (!minDate) return false;
+    if (mode === "year") {
+      const cur = viewMonth.year();
+      const start = cur - (((cur % YEARS_PER_PAGE) + YEARS_PER_PAGE) % YEARS_PER_PAGE);
+      return start <= minDate.year();
+    }
+    return !viewMonth.isAfter(minDate, "month");
+  };
+
   const render = () => {
     if (mode === "year") renderYears();
     else renderMonth();
+    prevBtn.disabled = atEarliestPage();
   };
 
   // Pressing an arrow briefly moves focus arrow → anchor, flashing Obsidian's focus

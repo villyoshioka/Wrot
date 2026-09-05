@@ -1,5 +1,19 @@
 # Release Notes
 
+## 2.24.1 - 2026-09-05
+
+### Updates
+
+- Updated dependencies.
+
+### Bug Fixes
+
+- Fixed the layout sometimes breaking when following Obsidian's font size.
+- Fixed the items inside the three-dot menus not following the font size.
+- Fixed the Pin Later calendar still paging back to months and years with nothing left to pick.
+
+---
+
 ## 2.24.0 - 2026-09-03
 
 ### Updates

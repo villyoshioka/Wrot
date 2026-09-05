@@ -224,6 +224,11 @@ body.wr-font-follow .wr-nav-btn .svg-icon {
   color: var(--text-accent);
 }
 
+/* No earlier page holds a selectable day: the arrow goes away, its slot stays so the label does not shift */
+.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-nav-btn:disabled {
+  visibility: hidden;
+}
+
 .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-nav-btn .svg-icon {
   width: 16px;
   height: 16px;
@@ -250,7 +255,8 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
 
 .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  /* minmax(0, …): the cells have a definite em width, so plain 1fr could not shrink below it in narrow panes */
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 1px;
 }
 
@@ -297,11 +303,15 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
   line-height: 1;
   min-height: 0;
   padding: 0;
-  width: 100%;
-  max-width: 34px;
+  /* Obsidian gives every button a fixed height; with width: 100% + aspect-ratio the
+     cell width was derived from that height, so two heavy digits overflowed. A definite
+     em width (28px at the 13px default) plus height: auto makes the font size decide
+     and keeps the cell square. max-width lets narrow panes shrink it. */
+  width: 2.154em;
+  height: auto;
+  max-width: 100%;
   min-width: 0;
   aspect-ratio: 1;
-  max-height: 28px;
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -605,6 +615,12 @@ body.wr-font-follow .wr-toolbar-btn .svg-icon {
   height: max(18px, calc(var(--wr-font-text) * 1.286));
 }
 
+/* Obsidian fixes button height; a scaled-up icon would spill out of it into the form's bottom padding */
+body.wr-font-follow .wr-toolbar-btn:not(#x#y#z) {
+  height: auto;
+  min-height: var(--input-height);
+}
+
 .wr-thumbnail-container {
   margin: 6px 0 4px;
 }
@@ -657,7 +673,8 @@ body .wr-submit-btn {
   border: none;
   box-shadow: none;
   outline: none;
-  padding: 4px 14px;
+  /* 4px 14px at the 13px default; scales with the label under follow-font */
+  padding: 0.308em 1.077em;
   border-radius: 8px;
   font-size: var(--wr-font-ui-small);
   cursor: pointer;
@@ -698,8 +715,15 @@ body .wr-submit-btn:not(.wr-submit-active) {
 }
 
 .wr-submit-icon .svg-icon {
-  width: 12px;
-  height: 12px;
+  /* 12px at the 13px default; scales with the label under follow-font */
+  width: 0.923em;
+  height: 0.923em;
+}
+
+/* Same fixed-height spill as the toolbar buttons */
+body.wr-font-follow .wr-submit-btn {
+  height: auto;
+  min-height: var(--input-height);
 }
 
 body .wr-submit-btn.wr-submit-active {
@@ -786,6 +810,8 @@ body .wr-card.wr-card-editing .wr-menu-btn .svg-icon:not(#x) {
   align-items: center;
   gap: 8px;
   margin-top: 10px;
+  /* Room for the pin indicator, which sits outside the row; the menu button must not run under it */
+  padding-right: calc(max(14px, var(--wr-font-text)) + 8px);
 }
 
 .wr-timestamp {
@@ -1688,6 +1714,22 @@ body.wr-font-follow .wr-pin-indicator .svg-icon {
   flex: none;
 }
 
+/* Obsidian menus keep a fixed UI size; under follow-font ours track the text size
+   (16px / 14px baseline = 1.143 for the icons, never below the default). */
+body.wr-font-follow .wr-menu .menu-item {
+  font-size: var(--wr-font-ui-small);
+}
+
+body.wr-font-follow .wr-menu .menu-item-icon .svg-icon {
+  width: max(16px, calc(var(--wr-font-text) * 1.143));
+  height: max(16px, calc(var(--wr-font-text) * 1.143));
+}
+
+/* The phone sheet's bottom padding is a fixed value; scaled rows make it vanish */
+body.wr-font-follow.is-mobile .wr-menu {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + var(--wr-font-text) * 0.5);
+}
+
 /* Menu hint line used when the pin-limit is reached. Renders as an
    inert sub-label under the disabled "Pin" item. */
 .wr-menu .menu-item.wr-menu-hint {
@@ -2114,8 +2156,7 @@ body.is-mobile .wr-calendar-btn.wr-toolbar-active:hover:not(#x#y#z) {
 
 /* Mobile: finger-sized day cells; wider cap, max-height lids the vertical size */
 body.is-mobile .wr-calendar-day {
-  max-width: 42px;
-  max-height: 34px;
+  width: 2.615em;
 }
 
 /* Mobile: on touch :hover sticks until the next tap, so after switching from
