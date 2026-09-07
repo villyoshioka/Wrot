@@ -49,6 +49,8 @@ const zhTW = {
   "settings.option.pinLimit.1": "1 件",
   "settings.option.pinLimit.3": "3 件",
   "settings.option.pinLimit.5": "5 件",
+  "settings.item.pinFixed.name": "釘選內容固定在頂部",
+  "settings.item.pinFixed.desc": "關閉後，釘選的貼文會隨時間軸一起捲動。",
 
   "settings.item.ogp.name": "URL 預覽",
   "settings.item.ogp.desc": "從 URL 取得預覽資訊。 \n關閉後不進行外部通訊。",
@@ -169,6 +171,8 @@ const zhTW = {
   "calendar.monthYearFormat": "YYYY[年]M[月]",
 
   "defaults.headerDateFormat": "YYYY/MM/DD",
+
+  "defaults.timestampFormat": "YYYY/MM/DD HH:mm:ss",
   "defaults.submitLabel": "發佈",
   "defaults.updateLabel": "更新",
   "defaults.inputPlaceholder": "在想些什麼？",

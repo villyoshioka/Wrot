@@ -52,11 +52,14 @@ const FALLBACK_LOCALE: LocaleCode = "en";
 let activeLocale: LocaleCode = FALLBACK_LOCALE;
 let activeDict: Translations = en;
 
-// Resolution order: exact match → base-language fallback → en.
-function resolveLocale(raw: string | undefined | null): LocaleCode {
-  if (!raw) return FALLBACK_LOCALE;
+// Distinguishes an unsupported language (which falls back to en) from English itself.
+let usingFallbackLocale = false;
+
+// Resolution order: exact match → base-language fallback → null (caller falls back to en).
+function resolveLocale(raw: string | undefined | null): LocaleCode | null {
+  if (!raw) return null;
   const normalized = raw.trim();
-  if (!normalized) return FALLBACK_LOCALE;
+  if (!normalized) return null;
 
   if ((SUPPORTED_LOCALES as ReadonlyArray<string>).includes(normalized)) {
     return normalized as LocaleCode;
@@ -68,7 +71,7 @@ function resolveLocale(raw: string | undefined | null): LocaleCode {
   ) {
     return baseCandidate as LocaleCode;
   }
-  return FALLBACK_LOCALE;
+  return null;
 }
 
 export function initI18n(): void {
@@ -78,8 +81,24 @@ export function initI18n(): void {
   } catch {
     lang = undefined;
   }
-  activeLocale = resolveLocale(lang);
+  const resolved = resolveLocale(lang);
+  usingFallbackLocale = resolved === null;
+  activeLocale = resolved ?? FALLBACK_LOCALE;
   activeDict = DICTIONARIES[activeLocale] ?? en;
+}
+
+/**
+ * Default date formats for the running locale. An unsupported language reads the en
+ * dictionary for its UI text, but a month-first date would be a foreign convention there,
+ * and a spelled-out month would come out in the user's own language inside an English
+ * order; year-first digits are the one form that belongs to no single country.
+ */
+export function defaultHeaderDateFormat(): string {
+  return usingFallbackLocale ? "YYYY/MM/DD" : t("defaults.headerDateFormat");
+}
+
+export function defaultTimestampFormat(): string {
+  return usingFallbackLocale ? "YYYY/MM/DD HH:mm:ss" : t("defaults.timestampFormat");
 }
 
 export function getActiveLocale(): LocaleCode {

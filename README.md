@@ -103,6 +103,7 @@ Wrot is highly customizable. Key settings include:
 - **Themes** — Custom background and text colors for both Light and Dark modes.
 - **Tag Styling** — Set specific colors for tags to categorize your timeline visually.
 - **Pin Limits** — Choose to pin 1, 3, or 5 notes to the top. Pin and Pin Later are counted separately.
+- **Keep Pins at the Top** — Keep pins fixed above the timeline instead of scrolling with it.
 - **Button Customization** — Change the post and update buttons’ labels and icons.
 - **Delete Button** — Choose whether a post's menu offers deletion (hidden by default).
 - **Time Formats** — Customize how timestamps appear (e.g., `YYYY/MM/DD HH:mm:ss`).

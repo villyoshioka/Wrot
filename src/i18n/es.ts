@@ -49,6 +49,8 @@ const es = {
   "settings.option.pinLimit.1": "1 elemento",
   "settings.option.pinLimit.3": "3 elementos",
   "settings.option.pinLimit.5": "5 elementos",
+  "settings.item.pinFixed.name": "Mantener los fijados arriba",
+  "settings.item.pinFixed.desc": "Si se desactiva, las publicaciones fijadas se desplazan junto con la línea de tiempo.",
 
   "settings.item.ogp.name": "Vista previa de URL (OGP)",
   "settings.item.ogp.desc": "Obtiene datos de vista previa desde las URL. \nAl desactivarlo no se realiza ninguna conexión externa.",
@@ -171,6 +173,8 @@ const es = {
   "calendar.monthYearFormat": "MMMM [de] YYYY",
 
   "defaults.headerDateFormat": "D [de] MMMM [de] YYYY",
+
+  "defaults.timestampFormat": "DD/MM/YYYY HH:mm:ss",
   "defaults.submitLabel": "Postear",
   "defaults.updateLabel": "Actualizar",
   "defaults.inputPlaceholder": "Escribe algo...",

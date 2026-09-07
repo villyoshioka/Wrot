@@ -50,6 +50,8 @@ const ja = {
   "settings.option.pinLimit.1": "1 件",
   "settings.option.pinLimit.3": "3 件",
   "settings.option.pinLimit.5": "5 件",
+  "settings.item.pinFixed.name": "ピン留めを上に固定",
+  "settings.item.pinFixed.desc": "オフのときは、ピン留めもタイムラインと一緒にスクロールします。",
 
   "settings.item.ogp.name": "URLプレビュー",
   "settings.item.ogp.desc": "URLからプレビュー情報を取得します。\nオフにすると外部通信を行いません。",
@@ -174,6 +176,7 @@ const ja = {
 
   // Locale-dependent defaults adopted on fresh install instead of DEFAULT_SETTINGS.
   "defaults.headerDateFormat": "YYYY年MM月DD日",
+  "defaults.timestampFormat": "YYYY/MM/DD HH:mm:ss",
   "defaults.submitLabel": "投稿",
   "defaults.updateLabel": "更新",
   "defaults.inputPlaceholder": "あなたが書くのを待っています...",

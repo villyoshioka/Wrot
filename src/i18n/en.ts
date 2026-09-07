@@ -49,6 +49,8 @@ const en = {
   "settings.option.pinLimit.1": "1 Post",
   "settings.option.pinLimit.3": "3 Posts",
   "settings.option.pinLimit.5": "5 Posts",
+  "settings.item.pinFixed.name": "Keep Pins at the Top",
+  "settings.item.pinFixed.desc": "When off, pinned posts scroll along with the timeline.",
 
   "settings.item.ogp.name": "URL Preview",
   "settings.item.ogp.desc": "Fetches preview details from URLs. \nSwitching it off stops all outside connections.",
@@ -169,6 +171,8 @@ const en = {
   "calendar.monthYearFormat": "MMMM YYYY",
 
   "defaults.headerDateFormat": "MMMM D, YYYY",
+
+  "defaults.timestampFormat": "MM/DD/YYYY HH:mm:ss",
   "defaults.submitLabel": "Post",
   "defaults.updateLabel": "Update",
   "defaults.inputPlaceholder": "Note to self...",

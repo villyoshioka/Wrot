@@ -50,6 +50,8 @@ const fr = {
   "settings.option.pinLimit.1": "1 élément",
   "settings.option.pinLimit.3": "3 éléments",
   "settings.option.pinLimit.5": "5 éléments",
+  "settings.item.pinFixed.name": "Garder les épinglés en haut",
+  "settings.item.pinFixed.desc": "Si désactivé, les publications épinglées défilent avec la timeline.",
 
   "settings.item.ogp.name": "Aperçu de l'URL",
   "settings.item.ogp.desc": "Récupère les informations d'aperçu depuis les URL. \nDésactivé, aucune connexion externe n'est effectuée.",
@@ -170,6 +172,8 @@ const fr = {
   "calendar.monthYearFormat": "MMMM YYYY",
 
   "defaults.headerDateFormat": "D MMMM YYYY",
+
+  "defaults.timestampFormat": "DD/MM/YYYY HH:mm:ss",
   "defaults.submitLabel": "Poster",
   "defaults.updateLabel": "Mettre à jour",
   "defaults.inputPlaceholder": "À vous de jouer...",

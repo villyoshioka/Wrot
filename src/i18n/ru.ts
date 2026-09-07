@@ -49,6 +49,8 @@ const ru = {
   "settings.option.pinLimit.1": "1 запись",
   "settings.option.pinLimit.3": "3 записи",
   "settings.option.pinLimit.5": "5 записей",
+  "settings.item.pinFixed.name": "Держать закреплённые вверху",
+  "settings.item.pinFixed.desc": "Если выключено, закреплённые записи прокручиваются вместе с лентой.",
 
   "settings.item.ogp.name": "Предпросмотр URL",
   "settings.item.ogp.desc": "Загружает данные предпросмотра по ссылкам. \nПри отключении внешние подключения не выполняются.",
@@ -165,6 +167,8 @@ const ru = {
   "calendar.monthYearFormat": "LLLL YYYY [г.]",
 
   "defaults.headerDateFormat": "D MMMM YYYY [г.]",
+
+  "defaults.timestampFormat": "DD.MM.YYYY HH:mm:ss",
   "defaults.submitLabel": "Постить",
   "defaults.updateLabel": "Обновить",
   "defaults.inputPlaceholder": "Ваши мысли здесь...",

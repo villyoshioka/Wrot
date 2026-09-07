@@ -36,7 +36,6 @@
   margin-bottom: 12px;
 }
 
-
 .workspace-leaf-content[data-type="wrot-view"] .wr-nav-btn {
   background: none;
   border: none;
@@ -485,7 +484,6 @@ body .wr-textarea:focus:not(#x) {
   gap: 4px 8px;
 }
 
-
 body .wr-toolbar-btn {
   box-shadow: none;
   outline: none;
@@ -549,6 +547,12 @@ body .wr-toolbar-btn:active {
   pointer-events: none;
 }
 
+/* Icon size lives in a variable so the arranging slash can scale with it. Overridden
+   below for mobile and font-follow with the same precedence as the icon rules. */
+.wr-toolbar-btn {
+  --wr-toolbar-icon: 18px;
+}
+
 .wr-toolbar-btn .svg-icon {
   width: 18px;
   height: 18px;
@@ -589,9 +593,25 @@ body .wr-toolbar-btn.wr-toolbar-commit-btn .svg-icon:not(#x#y#z) {
   color: var(--text-accent);
 }
 
-
 .wr-input-toolbar.wr-toolbar-editing .wr-toolbar-btn.wr-toolbar-off {
   opacity: 0.45;
+}
+
+.wr-input-toolbar.wr-toolbar-editing .wr-toolbar-btn.wr-toolbar-disabled-slot {
+  position: relative;
+}
+
+.wr-input-toolbar.wr-toolbar-editing .wr-toolbar-btn.wr-toolbar-disabled-slot::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(var(--wr-toolbar-icon) * 1.33);
+  height: max(2px, calc(var(--wr-toolbar-icon) * 0.11));
+  border-radius: 999px;
+  background: currentColor;
+  transform: translate(-50%, -50%) rotate(-45deg);
+  pointer-events: none;
 }
 
 .wr-toolbar-btn.wr-toolbar-dragging:not(#x) {
@@ -610,9 +630,13 @@ body .wr-toolbar-btn.wr-toolbar-commit-btn .svg-icon:not(#x#y#z) {
 }
 
 /* Follow Obsidian's UI font size but never shrink below default (18px / 14px baseline = 1.286) */
+body.wr-font-follow .wr-toolbar-btn {
+  --wr-toolbar-icon: max(18px, calc(var(--wr-font-text) * 1.286));
+}
+
 body.wr-font-follow .wr-toolbar-btn .svg-icon {
-  width: max(18px, calc(var(--wr-font-text) * 1.286));
-  height: max(18px, calc(var(--wr-font-text) * 1.286));
+  width: var(--wr-toolbar-icon);
+  height: var(--wr-toolbar-icon);
 }
 
 /* Obsidian fixes button height; a scaled-up icon would spill out of it into the form's bottom padding */
@@ -666,7 +690,6 @@ body .wr-thumbnail-remove:not(#x) {
   width: 14px;
   height: 14px;
 }
-
 
 body .wr-submit-btn {
   background: rgba(var(--mono-rgb-100), 0.08);
@@ -731,12 +754,18 @@ body .wr-submit-btn.wr-submit-active {
   color: var(--text-on-accent);
 }
 
-/* Pinned section: tied into zen mode */
 .wr-pinned-section {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.wr-pinned-section.wr-pinned-fixed {
   margin-bottom: 8px;
+  /* Caps the box so tall pins cannot squeeze the timeline below to nothing. */
+  flex: 0 0 auto;
+  max-height: 50%;
+  overflow-y: auto;
 }
 
 .wr-list {
@@ -809,7 +838,7 @@ body .wr-card.wr-card-editing .wr-menu-btn .svg-icon:not(#x) {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 10px;
+  margin-top: 7px;
   /* Room for the pin indicator, which sits outside the row; the menu button must not run under it */
   padding-right: calc(max(14px, var(--wr-font-text)) + 8px);
 }
@@ -818,6 +847,15 @@ body .wr-card.wr-card-editing .wr-menu-btn .svg-icon:not(#x) {
   font-size: 0.85em;
   line-height: 1;
   color: var(--text-muted);
+  /* Clipped, never wrapped: a second line would move the menu button. */
+  white-space: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wr-card-footer .wr-menu-btn {
+  flex: 0 0 auto;
 }
 
 /* Tags (timeline / RV / rendered LV) */
@@ -995,7 +1033,6 @@ li>.wr-reading-list {
   top: calc(0.5lh - 7px);
   transform: none;
 }
-
 
 /* Live Preview: list/checklist highlights */
 body .wr-list-highlight:not(#x) {
@@ -1307,7 +1344,6 @@ body .wr-quote-card-body .wr-blockquote {
 body .wr-quote-highlight:not(#x) {
   color: var(--text-muted);
 }
-
 
 /* Keep the copy button clickable above Wrot's list/quote elements without
    touching position/opacity (Obsidian's hover-to-show must survive). RV puts
@@ -2264,6 +2300,10 @@ body.is-mobile .wr-input-toolbar.wr-toolbar-wrapped .wr-toolbar-btn:not(#x#y#z) 
   row-gap: 12px;
 }
 
+.is-mobile .wr-toolbar-btn {
+  --wr-toolbar-icon: 16px;
+}
+
 .is-mobile .wr-toolbar-btn .svg-icon {
   width: 16px;
   height: 16px;
@@ -2278,9 +2318,8 @@ body.is-mobile .wr-input-toolbar.wr-toolbar-wrapped .wr-toolbar-btn:not(#x#y#z) 
   line-height: 1.4;
 }
 
-
 .is-mobile .wr-card-footer {
-  margin-top: 8px;
+  margin-top: 5px;
   gap: 6px;
 }
 
@@ -2428,6 +2467,12 @@ body:not(.is-mobile) .wr-settings .wr-tag-rule-group .checkbox-container:active:
   margin-top: calc(var(--toggle-border-width) * -1);
 }
 
+/* Scrolling to a freshly added rule on mobile: the settings page keeps a bar fixed across
+   the top, so a group aligned to the very top would put its number row underneath it. */
+body.is-mobile .wr-settings .wr-tag-rule-group {
+  scroll-margin-top: 64px;
+}
+
 /* Locked tag rule: gray out editable fields only; the label row holding the
    lock toggle stays full-opacity so the unlock affordance is clear. */
 .wr-settings .wr-tag-rule-group.wr-tag-rule-locked .setting-item:not(.wr-tag-rule-label-setting) {
@@ -2439,12 +2484,24 @@ body:not(.is-mobile) .wr-settings .wr-tag-rule-group .checkbox-container:active:
   cursor: not-allowed;
 }
 
-
 /* On mobile the list renders its add-entry affordance as a row, which keeps the list's
    compact height and sits shorter than everything around it. */
 body.is-mobile .wr-settings .setting-group.mod-list .setting-item:not(#x) {
   padding-top: 20px;
   padding-bottom: 20px;
+}
+
+.wr-settings .setting-group.mod-list .setting-item.mod-add-item:not(#x) {
+  padding: 20px 16px;
+}
+
+body:not(.is-mobile) .wr-settings .setting-item.mod-add-item:not(#x):hover {
+  background: none;
+}
+
+body:not(.is-mobile) .wr-settings .setting-item.mod-add-item:hover .setting-item-name,
+body:not(.is-mobile) .wr-settings .setting-item.mod-add-item:hover .setting-item-icon {
+  opacity: 0.7;
 }
 
 /* Mobile stacks the label above the control, which splits the swatch and its reset button
@@ -2539,7 +2596,6 @@ body .wr-settings-link:not(#x) {
 body .wr-settings-link:not(#x):hover {
   opacity: 0.8;
 }
-
 
 /* Wrot quote card (Twitter quote-RT style) */
 .wr-quote-card-slot {
@@ -2748,7 +2804,6 @@ body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-internal-link {
   height: 1em;
   vertical-align: -0.15em;
 }
-
 
 /* Nested-quote marker (X-style "QT: ...") */
 .wr-nested-quote-marker {

@@ -50,6 +50,8 @@ const it = {
   "settings.option.pinLimit.1": "1 elemento",
   "settings.option.pinLimit.3": "3 elementi",
   "settings.option.pinLimit.5": "5 elementi",
+  "settings.item.pinFixed.name": "Mantieni i fissati in alto",
+  "settings.item.pinFixed.desc": "Se disattivato, i post fissati scorrono insieme alla timeline.",
 
   "settings.item.ogp.name": "Anteprima URL",
   "settings.item.ogp.desc": "Recupera i dati di anteprima dagli URL. \nDisattivato, non viene effettuata alcuna connessione esterna.",
@@ -173,6 +175,8 @@ const it = {
   "calendar.monthYearFormat": "MMMM YYYY",
 
   "defaults.headerDateFormat": "D MMMM YYYY",
+
+  "defaults.timestampFormat": "DD/MM/YYYY HH:mm:ss",
   "defaults.submitLabel": "Posta",
   "defaults.updateLabel": "Aggiorna",
   "defaults.inputPlaceholder": "Scrivi qualcosa...",

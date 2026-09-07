@@ -8,7 +8,7 @@ This page explains both, and how the limits work.
 
 ## Pin
 
-Choose **"Pin"** from a post's menu and the memo is fixed to the top of the timeline.
+Choose **"Pin"** from a post's menu and the memo goes to the top of the timeline.
 
 - It stays visible whatever date you have open, including memos that live in another day's note.
 - A pin mark appears in the bottom-right corner of the card.
@@ -63,6 +63,12 @@ The memo is pinned, and sits at the top of the timeline.
 - Take it down with **"Unpin"**, the same as any other pin.
 
 Note that a memo does not appear the moment the date changes while Wrot is open. It arrives the next time you come back to Obsidian, or when you add a post.
+
+---
+
+## Keeping pins at the top
+
+Pins scroll along with the timeline. If you would rather they stayed in sight while you scroll, turn on **"Keep Pins at the Top"** in the Advanced section of the settings. Pins then sit in a place of their own above the timeline, and only the timeline scrolls.
 
 ---
 

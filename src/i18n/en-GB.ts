@@ -46,6 +46,7 @@ const enGB = {
   "view.postMenu.pinLimitHint": "Pin limit is {limit} items.",
   "view.image.removeAria": "Delete image",
   "defaults.headerDateFormat": "D MMMM YYYY",
+  "defaults.timestampFormat": "DD/MM/YYYY HH:mm:ss",
 } satisfies Translations;
 
 export default enGB;

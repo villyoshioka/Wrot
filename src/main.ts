@@ -8,6 +8,7 @@ import {
   PinEntry,
   ScheduledPinEntry,
   ToolbarSlot,
+  resolveToolbarLayout,
 } from "./settings";
 import { WrotView } from "./views/WrotView";
 import { registerWrotPostProcessor } from "./postProcessor";
@@ -20,7 +21,7 @@ import { boostSelectors, WrStyleSheet } from "./styles/styleInjector";
 import { buildPaletteCss } from "./styles/paletteCss";
 import { buildTagRuleCss } from "./styles/tagRuleCss";
 import { setMathJaxReadyHandler, upgradeMathFallbacks } from "./utils/mathjax";
-import { initI18n, t, getActiveLocale } from "./i18n";
+import { initI18n, t, getActiveLocale, defaultTimestampFormat, defaultHeaderDateFormat } from "./i18n";
 
 /** State kept beside data.json, and the settings keys that used to hold it there. */
 const PINS_FILE = "pins.json";
@@ -40,6 +41,8 @@ export default class WrotPlugin extends Plugin {
   private legacyRecentTags: string[] | null = null;
   draft = "";
   private lastWrittenDraft: string | null = null;
+  // True when data.json predates pinFixed; loadDeferredState decides its value from the pins.
+  private pinFixedUnset = false;
   // The in-flight read of pins.json / tagrules.json. Started during load but never awaited
   // there, so it stays off the blocking path; anything that writes those files waits on it
   // first, so a save can never land on top of values that have not been read yet.
@@ -585,11 +588,13 @@ export default class WrotPlugin extends Plugin {
     // saved values arrive in raw and win via Object.assign.
     const localizedDefaults: WrotSettings = {
       ...DEFAULT_SETTINGS,
-      headerDateFormat: t("defaults.headerDateFormat"),
+      headerDateFormat: defaultHeaderDateFormat(),
+      timestampFormat: defaultTimestampFormat(),
       submitLabel: t("defaults.submitLabel"),
       updateLabel: t("defaults.updateLabel"),
       inputPlaceholder: t("defaults.inputPlaceholder"),
     };
+    this.pinFixedUnset = !("pinFixed" in raw);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- value from untyped Obsidian/CodeMirror internal API
     this.settings = Object.assign({}, localizedDefaults, raw);
 
@@ -605,7 +610,8 @@ export default class WrotPlugin extends Plugin {
     const currentLocale = getActiveLocale();
     const previousLocale = (raw as { lastLocale?: string }).lastLocale;
     if (previousLocale !== undefined && previousLocale !== currentLocale) {
-      this.settings.headerDateFormat = t("defaults.headerDateFormat");
+      this.settings.headerDateFormat = defaultHeaderDateFormat();
+      this.settings.timestampFormat = defaultTimestampFormat();
       this.settings.submitLabel = t("defaults.submitLabel");
       this.settings.updateLabel = t("defaults.updateLabel");
       this.settings.inputPlaceholder = t("defaults.inputPlaceholder");
@@ -770,6 +776,17 @@ export default class WrotPlugin extends Plugin {
       this.settings.toolbarLayout = layoutData as ToolbarSlot[];
     } else if (this.settings.toolbarLayout.length > 0) {
       await this.writeSideFile(LAYOUT_FILE, this.settings.toolbarLayout);
+      migrated = true;
+    } else {
+      this.settings.toolbarLayout = resolveToolbarLayout(undefined);
+      await this.writeSideFile(LAYOUT_FILE, this.settings.toolbarLayout);
+    }
+
+    // One-time: users who already had pins or scheduled pins keep the fixed box.
+    if (this.pinFixedUnset) {
+      this.pinFixedUnset = false;
+      this.settings.pinFixed =
+        this.settings.pins.length > 0 || this.settings.scheduledPins.length > 0;
       migrated = true;
     }
 

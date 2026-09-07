@@ -1,7 +1,7 @@
 {
   "id": "wrot",
   "name": "Wrot",
-  "version": "2.24.2",
+  "version": "2.25.0",
   "minAppVersion": "1.13.0",
   "description": "Micro-journal your day in a timeline, one \"tweet\" at a time.",
   "author": "Vill Yoshioka",

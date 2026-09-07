@@ -1,6 +1,7 @@
 import {
   App,
   ColorComponent,
+  Platform,
   PluginSettingTab,
   Setting,
   type SettingDefinition,
@@ -9,7 +10,7 @@ import {
   setIcon,
 } from "obsidian";
 import type WrotPlugin from "./main";
-import { t } from "./i18n";
+import { t, defaultTimestampFormat, defaultHeaderDateFormat } from "./i18n";
 import { blendColor, toHex } from "./utils/color";
 import { HEX_COLOR_RE } from "./utils/patterns";
 
@@ -57,14 +58,16 @@ export interface ScheduledPinEntry extends PinEntry {
 
 export type PinLimit = 1 | 3 | 5;
 
+/** Where a toolbar action lives: on the bar, inside the overflow menu, or nowhere at all. */
+export type ToolbarSlotState = "bar" | "menu" | "off";
+
 /**
- * One entry of the input toolbar's single ordered list. `shown` decides which side of
- * the line it sits on: on the bar itself, or inside the overflow menu. Hidden entries
- * keep their place in the list, so putting one back returns it to the same spot.
+ * One entry of the input toolbar's single ordered list. Entries keep their place in the
+ * list whatever their state, so putting one back returns it to the same spot.
  */
 export interface ToolbarSlot {
   id: string;
-  shown: boolean;
+  state: ToolbarSlotState;
 }
 
 /**
@@ -73,21 +76,27 @@ export interface ToolbarSlot {
  * persisted, so they are renamed only alongside a migration.
  */
 export const DEFAULT_TOOLBAR_LAYOUT: ReadonlyArray<ToolbarSlot> = [
-  { id: "image", shown: true },
-  { id: "embed", shown: true },
-  { id: "bold", shown: true },
-  { id: "italic", shown: true },
-  { id: "list", shown: true },
-  { id: "check", shown: true },
-  { id: "ol", shown: true },
-  { id: "schedule", shown: true },
-  { id: "code", shown: false },
-  { id: "math", shown: false },
-  { id: "quote", shown: false },
-  { id: "link", shown: false },
-  { id: "strikethrough", shown: false },
-  { id: "highlight", shown: false },
+  { id: "image", state: "bar" },
+  { id: "embed", state: "bar" },
+  { id: "bold", state: "bar" },
+  { id: "italic", state: "bar" },
+  { id: "list", state: "bar" },
+  { id: "check", state: "bar" },
+  { id: "ol", state: "bar" },
+  { id: "schedule", state: "menu" },
+  { id: "code", state: "menu" },
+  { id: "math", state: "menu" },
+  { id: "quote", state: "menu" },
+  { id: "link", state: "menu" },
+  { id: "strikethrough", state: "menu" },
+  { id: "highlight", state: "menu" },
 ];
+
+// Layouts saved before `state` existed carry a `shown` boolean instead.
+function readSlotState(slot: { state?: unknown; shown?: unknown }): ToolbarSlotState {
+  if (slot.state === "bar" || slot.state === "menu" || slot.state === "off") return slot.state;
+  return slot.shown === true ? "bar" : "menu";
+}
 
 /**
  * Fills in a saved layout: unknown and duplicate ids are dropped, and any action the
@@ -105,10 +114,10 @@ export function resolveToolbarLayout(saved: ToolbarSlot[] | undefined): ToolbarS
   for (const slot of saved) {
     if (!slot || !known.has(slot.id) || seen.has(slot.id)) continue;
     seen.add(slot.id);
-    resolved.push({ id: slot.id, shown: slot.shown === true });
+    resolved.push({ id: slot.id, state: readSlotState(slot) });
   }
   for (const slot of shipped) {
-    if (!seen.has(slot.id)) resolved.push({ id: slot.id, shown: false });
+    if (!seen.has(slot.id)) resolved.push({ id: slot.id, state: "menu" });
   }
   return resolved;
 }
@@ -147,14 +156,15 @@ export interface WrotSettings {
   showPostDelete: boolean;
   // On by default so the arrange affordance is discoverable; can be switched off.
   toolbarEditEnabled: boolean;
-  // Empty until the toolbar is customised, which keeps a fresh install following the
-  // shipped layout even as that layout changes between versions.
+  // Lives in layout.json; empty only until loadDeferredState has read or created that file.
   toolbarLayout: ToolbarSlot[];
   showCalendarButton: boolean;
   calendarDayShape: "circle" | "rounded" | "square";
   pins: PinEntry[];
   scheduledPins: ScheduledPinEntry[];
   pinLimit: PinLimit;
+  // Off for new installs; loadDeferredState turns it on once for users who already used pins.
+  pinFixed: boolean;
   // Locale at last save, used to detect an Obsidian language change on startup.
   // When absent (pre-existing users), loadSettings adopts the current locale without resetting.
   lastLocale?: string;
@@ -190,7 +200,21 @@ export const DEFAULT_SETTINGS: WrotSettings = {
   pins: [],
   scheduledPins: [],
   pinLimit: 3,
+  pinFixed: false,
 };
+
+function setDisabled(el: HTMLElement | null, disabled: boolean): void {
+  if (!el) return;
+  if (disabled) {
+    el.setAttr("disabled", "true");
+    el.setAttr("aria-disabled", "true");
+    el.addClass("wr-tag-rule-disabled");
+  } else {
+    el.removeAttribute("disabled");
+    el.removeAttribute("aria-disabled");
+    el.removeClass("wr-tag-rule-disabled");
+  }
+}
 
 // Locale strings carry authored line breaks as "\n". They are desktop-only formatting:
 // mobile columns are narrow enough that natural wrapping reads better, so the CSS hides
@@ -236,6 +260,7 @@ export class WrotSettingTab extends PluginSettingTab {
   plugin: WrotPlugin;
   // In-memory only: all rules relock whenever the settings tab is reopened.
   private unlockedRules: Set<number> = new Set();
+  private quickAddBtnEl: HTMLElement | null = null;
 
   constructor(app: App, plugin: WrotPlugin) {
     super(app, plugin);
@@ -309,6 +334,8 @@ export class WrotSettingTab extends PluginSettingTab {
         this.plugin.updateToolbarLayout();
         this.update();
       },
+
+      pinFixed: () => this.plugin.refreshViews(),
 
       showPostDelete: () => {
         this.plugin.refreshViews();
@@ -507,27 +534,26 @@ export class WrotSettingTab extends PluginSettingTab {
         this.textWithReset({
           name: t("settings.item.headerDateFormat.name"),
           desc: t("settings.item.headerDateFormat.desc"),
-          placeholder: t("defaults.headerDateFormat"),
+          placeholder: defaultHeaderDateFormat(),
           read: () => settings.headerDateFormat,
           write: async (value) => {
-            settings.headerDateFormat = value || t("defaults.headerDateFormat");
+            settings.headerDateFormat = value || defaultHeaderDateFormat();
             await this.plugin.saveSettings();
             this.plugin.refreshViews();
           },
-          resetValue: () => t("defaults.headerDateFormat"),
+          resetValue: () => defaultHeaderDateFormat(),
         }),
         this.textWithReset({
           name: t("settings.item.timestampFormat.name"),
           desc: t("settings.item.timestampFormat.desc"),
-          // Format tokens are case-sensitive; keep the casing as is.
-          placeholder: "YYYY/MM/DD HH:mm:ss",
+          placeholder: defaultTimestampFormat(),
           read: () => settings.timestampFormat,
           write: async (value) => {
-            settings.timestampFormat = value || DEFAULT_SETTINGS.timestampFormat;
+            settings.timestampFormat = value || defaultTimestampFormat();
             await this.plugin.saveSettings();
             this.plugin.refreshViews();
           },
-          resetValue: () => DEFAULT_SETTINGS.timestampFormat,
+          resetValue: () => defaultTimestampFormat(),
         }),
         this.themeColorRow("bgColorLight"),
         this.themeColorRow("textColorLight"),
@@ -612,6 +638,11 @@ export class WrotSettingTab extends PluginSettingTab {
               "5": t("settings.option.pinLimit.5"),
             },
           },
+        },
+        {
+          name: t("settings.item.pinFixed.name"),
+          desc: desc(t("settings.item.pinFixed.desc")),
+          control: { type: "toggle", key: "pinFixed" },
         },
         {
           name: t("settings.item.tagSuggest.name"),
@@ -713,7 +744,7 @@ export class WrotSettingTab extends PluginSettingTab {
                 return;
               }
               disarm();
-              this.plugin.settings.toolbarLayout = [];
+              this.plugin.settings.toolbarLayout = resolveToolbarLayout(undefined);
               await this.plugin.saveToolbarLayout();
               this.plugin.updateToolbarLayout();
             });
@@ -783,7 +814,6 @@ export class WrotSettingTab extends PluginSettingTab {
     };
   }
 
-
   // Per-tag overrides. The framework's list supplies the frame — the rule entries and the
   // add affordance — while each entry draws a whole rule in place: the lock, the colours,
   // and the scope rows that only appear once a sub colour is set are not expressible as
@@ -812,7 +842,7 @@ export class WrotSettingTab extends PluginSettingTab {
         },
         // Deletion stays on the rule's own bin icon, behind the lock: the list's built-in
         // delete would bypass that guard.
-        items: this.ruleRows(),
+        items: Platform.isMobile ? this.ruleRows() : [...this.ruleRows(), this.desktopAddRow()],
       },
     ];
   }
@@ -828,6 +858,30 @@ export class WrotSettingTab extends PluginSettingTab {
         this.renderRuleRow(setting, (host) => this.buildSavedRule(host, rule, idx, rules.length));
       },
     }));
+  }
+
+  private desktopAddRow(): SettingDefinition {
+    return {
+      name: t("settings.tagRule.button.add"),
+      searchable: false,
+      // Same classes as the framework's own mobile add row.
+      render: (setting: Setting) => {
+        setting.setName(t("settings.tagRule.button.add"));
+        const rowEl = setting.settingEl;
+        rowEl.addClass("mod-add-item", "mod-action", "tappable");
+        // List rows may already carry an (empty) icon slot; reuse it rather than add a second.
+        const iconEl =
+          rowEl.querySelector<HTMLElement>(":scope > .setting-item-icon") ??
+          rowEl.createDiv({ cls: "setting-item-icon", prepend: true });
+        setIcon(iconEl, "lucide-plus");
+        // The same element may be rendered into again on update; one click handler is enough.
+        if (rowEl.dataset.wrAddRow) return;
+        rowEl.dataset.wrAddRow = "1";
+        rowEl.addEventListener("click", () => {
+          void this.addRule();
+        });
+      },
+    };
   }
 
   private renderRuleRow(setting: Setting, build: (host: HTMLElement) => void): void {
@@ -851,6 +905,15 @@ export class WrotSettingTab extends PluginSettingTab {
     await this.plugin.saveTagRules();
     this.plugin.applyTagColorRules();
     this.update();
+    // After the redraw: the new rule is the last group.
+    window.requestAnimationFrame(() => {
+      const groups = this.containerEl.querySelectorAll(".wr-tag-rule-group");
+      groups[groups.length - 1]?.scrollIntoView({ block: "start", behavior: "smooth" });
+    });
+  }
+
+  private refreshQuickAddBtn(): void {
+    setDisabled(this.quickAddBtnEl, this.unlockedRules.size > 0);
   }
 
   private buildSavedRule(
@@ -1095,6 +1158,7 @@ export class WrotSettingTab extends PluginSettingTab {
         if (isUnlocked()) this.unlockedRules.delete(ruleKey);
         else this.unlockedRules.add(ruleKey);
         applyLockState();
+        this.refreshQuickAddBtn();
       });
     });
 
@@ -1107,6 +1171,19 @@ export class WrotSettingTab extends PluginSettingTab {
           await trailing.handler();
         });
       });
+    }
+
+    if (ruleNumber === 1 && Platform.isMobile && this.plugin.settings.tagColorRules.length >= 3) {
+      labelSetting.addExtraButton((btn) => {
+        this.quickAddBtnEl = btn.extraSettingsEl;
+        btn.setIcon("plus").setTooltip(t("settings.tagRule.button.add")).onClick(() => {
+          if (this.unlockedRules.size > 0) return;
+          void this.addRule();
+        });
+      });
+      this.refreshQuickAddBtn();
+    } else if (ruleNumber === 1) {
+      this.quickAddBtnEl = null;
     }
 
     let tagInputEl: HTMLInputElement | null = null;
@@ -1288,19 +1365,6 @@ export class WrotSettingTab extends PluginSettingTab {
               await onScopeChange(key, v);
             });
           });
-      }
-    };
-
-    const setDisabled = (el: HTMLElement | null, disabled: boolean) => {
-      if (!el) return;
-      if (disabled) {
-        el.setAttr("disabled", "true");
-        el.setAttr("aria-disabled", "true");
-        el.addClass("wr-tag-rule-disabled");
-      } else {
-        el.removeAttribute("disabled");
-        el.removeAttribute("aria-disabled");
-        el.removeClass("wr-tag-rule-disabled");
       }
     };
 

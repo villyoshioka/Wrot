@@ -50,6 +50,8 @@ const pt = {
   "settings.option.pinLimit.1": "1 item",
   "settings.option.pinLimit.3": "3 itens",
   "settings.option.pinLimit.5": "5 itens",
+  "settings.item.pinFixed.name": "Manter os fixados no topo",
+  "settings.item.pinFixed.desc": "Se desativado, as publicações fixadas rolam junto com a linha do tempo.",
 
   "settings.item.ogp.name": "Visualização de URL",
   "settings.item.ogp.desc": "Busca informações de pré-visualização das URLs. \nDesativado, não há nenhuma conexão externa.",
@@ -167,6 +169,8 @@ const pt = {
   "calendar.monthYearFormat": "MMMM [de] YYYY",
 
   "defaults.headerDateFormat": "D [de] MMMM [de] YYYY",
+
+  "defaults.timestampFormat": "DD/MM/YYYY HH:mm:ss",
   "defaults.submitLabel": "Postar",
   "defaults.updateLabel": "Atualizar",
   "defaults.inputPlaceholder": "Escreva algo aqui...",

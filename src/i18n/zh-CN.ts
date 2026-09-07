@@ -49,6 +49,8 @@ const zhCN = {
   "settings.option.pinLimit.1": "1 条",
   "settings.option.pinLimit.3": "3 条",
   "settings.option.pinLimit.5": "5 条",
+  "settings.item.pinFixed.name": "置顶内容固定在顶部",
+  "settings.item.pinFixed.desc": "关闭后，置顶的记录会随时间轴一起滚动。",
 
   "settings.item.ogp.name": "URL 预览",
   "settings.item.ogp.desc": "从 URL 获取预览信息。 \n关闭后不进行外部通信。",
@@ -169,6 +171,8 @@ const zhCN = {
   "calendar.monthYearFormat": "YYYY[年]M[月]",
 
   "defaults.headerDateFormat": "YYYY/MM/DD",
+
+  "defaults.timestampFormat": "YYYY/MM/DD HH:mm:ss",
   "defaults.submitLabel": "发布",
   "defaults.updateLabel": "更新",
   "defaults.inputPlaceholder": "这一刻的想法...",

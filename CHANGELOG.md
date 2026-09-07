@@ -1,5 +1,26 @@
 # Release Notes
 
+## 2.25.0 - 2026-09-07
+
+### New Features
+
+- Toolbar buttons can now be disabled.
+- Pinned posts now scroll along with the timeline. To keep them at the top, turn on "Keep Pins at the Top" in the settings.
+
+### Improvements
+
+- Made tag rules easier to add.
+- The default date formats now follow Obsidian's language.
+- In the default toolbar, Pin Later has moved into the three-dot menu.
+- Adjusted the post layout.
+- Made the plugin lighter.
+
+### Bug Fixes
+
+- Fixed the timeline becoming unscrollable at large font sizes when pins are kept at the top.
+
+---
+
 ## 2.24.2 - 2026-09-05
 
 ### Bug Fixes

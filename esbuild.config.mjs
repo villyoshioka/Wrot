@@ -2,6 +2,7 @@ import esbuild from "esbuild";
 import process from "process";
 import fs from "fs";
 import { minifyCss } from "./scripts/css-minify.mjs";
+import { i18nPackPlugin } from "./scripts/i18n-pack.mjs";
 
 const prod = process.argv[2] === "production";
 
@@ -152,7 +153,7 @@ if (prod) {
     outfile: "main.js",
     minify: true,
     sourcemap: false,
-    plugins: [cssEvalPlugin],
+    plugins: [i18nPackPlugin(), cssEvalPlugin],
   });
   // Mirror the release trio into dist/ (untracked) for local checks; the CSS
   // minifier matches CI, so dist/ contents equal the release assets.
@@ -168,6 +169,7 @@ if (prod) {
     outfile: "main.js",
     minify: true,
     sourcemap: "inline",
+    plugins: [i18nPackPlugin()],
   });
   await context.watch();
 }

@@ -49,6 +49,8 @@ const de = {
   "settings.option.pinLimit.1": "1 Beitrag",
   "settings.option.pinLimit.3": "3 Beiträge",
   "settings.option.pinLimit.5": "5 Beiträge",
+  "settings.item.pinFixed.name": "Angepinnte oben festhalten",
+  "settings.item.pinFixed.desc": "Wenn deaktiviert, scrollen angepinnte Beiträge mit der Timeline mit.",
 
   "settings.item.ogp.name": "URL-Vorschau",
   "settings.item.ogp.desc": "Ruft Vorschaudaten von URLs ab. \nAusgeschaltet findet keine Verbindung nach außen statt.",
@@ -164,6 +166,8 @@ const de = {
   "calendar.monthYearFormat": "MMMM YYYY",
 
   "defaults.headerDateFormat": "D. MMMM YYYY",
+
+  "defaults.timestampFormat": "DD.MM.YYYY HH:mm:ss",
   "defaults.submitLabel": "Posten",
   "defaults.updateLabel": "Aktualisieren",
   "defaults.inputPlaceholder": "Schreib etwas ...",

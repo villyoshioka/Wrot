@@ -49,6 +49,8 @@ const ko = {
   "settings.option.pinLimit.1": "1개",
   "settings.option.pinLimit.3": "3개",
   "settings.option.pinLimit.5": "5개",
+  "settings.item.pinFixed.name": "상단 고정 글을 위에 유지",
+  "settings.item.pinFixed.desc": "끄면 상단 고정 글도 타임라인과 함께 스크롤됩니다.",
 
   "settings.item.ogp.name": "URL 미리보기 (OGP)",
   "settings.item.ogp.desc": "URL에서 미리보기 정보를 가져옵니다. \n끄면 외부와 통신하지 않습니다.",
@@ -165,6 +167,8 @@ const ko = {
   "calendar.monthYearFormat": "YYYY[년] M[월]",
 
   "defaults.headerDateFormat": "YYYY년 MM월 DD일",
+
+  "defaults.timestampFormat": "YYYY.MM.DD HH:mm:ss",
   "defaults.submitLabel": "게시",
   "defaults.updateLabel": "수정",
   "defaults.inputPlaceholder": "새로운 내용을 게시해 보세요...",

@@ -101,9 +101,9 @@ Each rule heading has a **lock icon**.
 
 ## Using Multiple Rules
 
-Click **"Add Rule"** to add more rules.
+Click **"Add Rule"** to add more rules. On desktop it is the + above the list or the "Add Rule" row below it. On phones there is the "Add Rule" row below the list, and once you have three or more rules, rule 1's header gets a + as well; that + can only be pressed while every rule is locked.
 
-- When you add a new rule, the existing rules are automatically locked, and only the new rule is left ready to edit.
+- When you add a new rule, the existing rules are automatically locked, and only the new rule is left ready to edit. The page also scrolls to the new rule.
 - Rules are listed from top to bottom.
 
 ### Which Rule Is Applied

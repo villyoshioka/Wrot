@@ -1656,8 +1656,13 @@ export class WrotView extends ItemView {
 
   private ensurePinnedContainer(): HTMLElement {
     if (this.pinnedContainer) return this.pinnedContainer;
-    const container = this.contentEl.createDiv({ cls: "wr-pinned-section" });
-    this.listContainer.insertAdjacentElement("beforebegin", container);
+    const container = createDiv({ cls: "wr-pinned-section" });
+    if (this.plugin.settings.pinFixed) {
+      container.addClass("wr-pinned-fixed");
+      this.listContainer.insertAdjacentElement("beforebegin", container);
+    } else {
+      this.listContainer.prepend(container);
+    }
     this.pinnedContainer = container;
     return container;
   }
@@ -2360,7 +2365,6 @@ export class WrotView extends ItemView {
     }
   }
 
-
   private insertAtLineStart(prefix: string): void {
     insertAtLineStart(this.textarea, prefix);
   }
@@ -2420,7 +2424,7 @@ export class WrotView extends ItemView {
    */
   private hiddenActions(): ToolbarAction[] {
     const hidden = new Set(
-      this.toolbarLayout.filter((slot) => !slot.shown).map((slot) => slot.id)
+      this.toolbarLayout.filter((slot) => slot.state === "menu").map((slot) => slot.id)
     );
     return this.toolbarActions.filter((action) => hidden.has(action.id));
   }
@@ -2444,9 +2448,10 @@ export class WrotView extends ItemView {
     for (const slot of this.toolbarLayout) {
       const btn = this.toolbarBtns.get(slot.id);
       if (!btn) continue;
-      if (slot.shown || this.toolbarEditing) toolbar.appendChild(btn);
+      if (slot.state === "bar" || this.toolbarEditing) toolbar.appendChild(btn);
       else btn.detach();
-      btn.toggleClass("wr-toolbar-off", this.toolbarEditing && !slot.shown);
+      btn.toggleClass("wr-toolbar-off", this.toolbarEditing && slot.state !== "bar");
+      btn.toggleClass("wr-toolbar-disabled-slot", this.toolbarEditing && slot.state === "off");
     }
     if (this.toolbarDoneBtnEl) {
       if (this.toolbarEditing) toolbar.appendChild(this.toolbarDoneBtnEl);
@@ -2641,7 +2646,7 @@ export class WrotView extends ItemView {
     if (!id) return;
     const slot = this.toolbarLayout.find((s) => s.id === id);
     if (!slot) return;
-    slot.shown = !slot.shown;
+    slot.state = slot.state === "bar" ? "menu" : slot.state === "menu" ? "off" : "bar";
     this.readOrderFromBar();
   }
 
@@ -2652,15 +2657,16 @@ export class WrotView extends ItemView {
   private readOrderFromBar(): void {
     const toolbar = this.toolbarEl;
     if (!toolbar) return;
-    const shownById = new Map(this.toolbarLayout.map((s) => [s.id, s.shown]));
+    const slotById = new Map(this.toolbarLayout.map((s) => [s.id, s]));
     const ordered: ToolbarSlot[] = [];
     for (const el of Array.from(toolbar.children)) {
       const id = el.getAttribute("data-wr-action");
-      if (!id || !shownById.has(id)) continue;
-      ordered.push({ id, shown: shownById.get(id) === true });
-      shownById.delete(id);
+      const slot = id ? slotById.get(id) : undefined;
+      if (!id || !slot) continue;
+      ordered.push({ ...slot });
+      slotById.delete(id);
     }
-    for (const [id, shown] of shownById) ordered.push({ id, shown });
+    for (const slot of slotById.values()) ordered.push({ ...slot });
     this.toolbarLayout = ordered;
     this.applyToolbarLayout();
   }

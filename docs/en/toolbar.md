@@ -1,8 +1,8 @@
 # Arranging the Toolbar
 
-The post form's toolbar starts with the buttons most people reach for, but not everyone reaches for the same ones. You can decide which buttons sit on the bar and which are put away in its ⋯ menu, and you can put them in whatever order suits your hand.
+The post form's toolbar starts with the buttons most people reach for, but not everyone reaches for the same ones. You can decide which buttons sit on the bar, which are put away in its ⋯ menu, and which are disabled altogether, and you can put them in whatever order suits your hand.
 
-Nothing is lost by putting a button away. Everything the toolbar can do stays available from the ⋯ menu.
+Nothing is lost by putting a button away. Everything the toolbar can do stays available from the ⋯ menu. Only a disabled button is gone from both, and it comes back the moment you enable it again.
 
 ---
 
@@ -10,7 +10,7 @@ Nothing is lost by putting a button away. Everything the toolbar can do stays av
 
 Open the ⋯ menu at the end of the toolbar and choose **"Edit toolbar"**.
 
-The toolbar changes into a single row holding every button there is. The ones currently on the bar look normal; the ones put away look faded. Both can be moved.
+The toolbar changes into a single row holding every button there is. The ones currently on the bar look normal; the ones put away look faded, and the disabled ones are faded with a slash through them. All of them can be moved.
 
 If the menu has no such entry, turn on **"Show Toolbar Edit Button"** in the Advanced section of the settings.
 
@@ -18,11 +18,11 @@ If the menu has no such entry, turn on **"Show Toolbar Edit Button"** in the Adv
 
 ## While arranging
 
-**Press a button** to move it between the bar and the menu. A faded button becomes solid, and a solid one fades.
+**Press a button** to step it through its states: solid (on the bar), faded (in the menu), faded with a slash (disabled), and back to solid.
 
 **Hold a button and drag** to move it. It lifts out of the row and follows your finger or pointer, and an empty place is left where it was. That empty place travels with you and shows where the button will land. Let go and it settles there.
 
-The row is one list. A faded button still holds a place in it, so switching it back on brings it out where you left it.
+The row is one list. A faded or disabled button still holds a place in it, so switching it back on brings it out where you left it.
 
 Two buttons stay put at the end of the bar:
 
@@ -93,3 +93,4 @@ The row is short enough to put right by hand, so this is only there for when it 
 ### A button has gone missing
 
 - Look in the ⋯ menu. Everything put away is there.
+- If it is not there either, it is disabled. Open "Edit toolbar" and it shows with a slash; press it to enable it again.
