@@ -11,6 +11,8 @@ const en = {
   "settings.option.viewPlacement.left": "Left Sidebar",
   "settings.option.viewPlacement.right": "Right Sidebar",
   "settings.option.viewPlacement.main": "Main Area",
+  "settings.item.openOnStartup.name": "Open on Startup",
+  "settings.item.openOnStartup.desc": "When on, Wrot comes to the front when Obsidian starts.",
 
   "settings.item.followFontSize.name": "Follow Obsidian Font Size",
   "settings.item.followFontSize.desc": "When on, matches the font size from Obsidian's appearance settings.",

@@ -11,6 +11,8 @@ const zhCN = {
   "settings.option.viewPlacement.left": "左侧边栏",
   "settings.option.viewPlacement.right": "右侧边栏",
   "settings.option.viewPlacement.main": "主工作区",
+  "settings.item.openOnStartup.name": "启动时打开",
+  "settings.item.openOnStartup.desc": "开启后，启动 Obsidian 时将 Wrot 显示在最前。",
 
   "settings.item.followFontSize.name": "跟随 Obsidian 字体大小",
   "settings.item.followFontSize.desc": "开启后，跟随 Obsidian 外观设置的字号。",

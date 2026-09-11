@@ -11,6 +11,8 @@ const it = {
   "settings.option.viewPlacement.left": "Barra laterale sinistra",
   "settings.option.viewPlacement.right": "Barra laterale destra",
   "settings.option.viewPlacement.main": "Area principale",
+  "settings.item.openOnStartup.name": "Apri all'avvio",
+  "settings.item.openOnStartup.desc": "Se attivato, Wrot passa in primo piano all'avvio di Obsidian.",
 
   "settings.item.followFontSize.name":
     "Adatta alla dimensione del carattere di Obsidian",

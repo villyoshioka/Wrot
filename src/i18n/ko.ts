@@ -11,6 +11,8 @@ const ko = {
   "settings.option.viewPlacement.left": "왼쪽 사이드바",
   "settings.option.viewPlacement.right": "오른쪽 사이드바",
   "settings.option.viewPlacement.main": "메인 영역",
+  "settings.item.openOnStartup.name": "시작 시 열기",
+  "settings.item.openOnStartup.desc": "켜면 Obsidian을 시작할 때 Wrot을 앞에 표시합니다.",
 
   "settings.item.followFontSize.name": "Obsidian 글꼴 크기 동기화",
   "settings.item.followFontSize.desc": "켜면 Obsidian 외관 설정의 글자 크기에 맞춥니다.",

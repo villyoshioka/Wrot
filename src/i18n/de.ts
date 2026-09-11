@@ -11,6 +11,8 @@ const de = {
   "settings.option.viewPlacement.left": "Linke Seitenleiste",
   "settings.option.viewPlacement.right": "Rechte Seitenleiste",
   "settings.option.viewPlacement.main": "Hauptbereich",
+  "settings.item.openOnStartup.name": "Beim Start öffnen",
+  "settings.item.openOnStartup.desc": "Wenn aktiviert, wird Wrot beim Start von Obsidian in den Vordergrund geholt.",
 
   "settings.item.followFontSize.name": "Schriftgröße von Obsidian folgen",
   "settings.item.followFontSize.desc": "Wenn aktiviert, wird die Schriftgröße aus den Darstellungseinstellungen von Obsidian übernommen.",

@@ -11,6 +11,8 @@ const zhTW = {
   "settings.option.viewPlacement.left": "左側欄",
   "settings.option.viewPlacement.right": "右側欄",
   "settings.option.viewPlacement.main": "主區域",
+  "settings.item.openOnStartup.name": "啟動時開啟",
+  "settings.item.openOnStartup.desc": "開啟後，啟動 Obsidian 時將 Wrot 顯示在最前。",
 
   "settings.item.followFontSize.name": "自動適應 Obsidian 字體大小",
   "settings.item.followFontSize.desc": "開啟後，跟隨 Obsidian 外觀設定的字級。",

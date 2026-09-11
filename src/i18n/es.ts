@@ -11,6 +11,8 @@ const es = {
   "settings.option.viewPlacement.left": "Barra lateral izquierda",
   "settings.option.viewPlacement.right": "Barra lateral derecha",
   "settings.option.viewPlacement.main": "Área principal",
+  "settings.item.openOnStartup.name": "Abrir al iniciar",
+  "settings.item.openOnStartup.desc": "Si se activa, Wrot pasa al frente al iniciar Obsidian.",
 
   "settings.item.followFontSize.name": "Usar tamaño de fuente de Obsidian",
   "settings.item.followFontSize.desc": "Si se activa, usa el tamaño de fuente de la configuración de apariencia de Obsidian.",

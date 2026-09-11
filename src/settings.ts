@@ -124,6 +124,7 @@ export function resolveToolbarLayout(saved: ToolbarSlot[] | undefined): ToolbarS
 
 export interface WrotSettings {
   viewPlacement: "left" | "right" | "main";
+  openOnStartup: boolean;
   headerDateFormat: string;
   timestampFormat: string;
   bgColorLight: string;
@@ -172,6 +173,7 @@ export interface WrotSettings {
 
 export const DEFAULT_SETTINGS: WrotSettings = {
   viewPlacement: "right",
+  openOnStartup: false,
   headerDateFormat: "YYYY年MM月DD日",
   timestampFormat: "YYYY/MM/DD HH:mm:ss",
   bgColorLight: "#efefef",
@@ -294,7 +296,11 @@ export class WrotSettingTab extends PluginSettingTab {
   private controlEffects(): Record<string, () => void | Promise<void>> {
     const settings = this.plugin.settings;
     return {
-      viewPlacement: () => undefined,
+      viewPlacement: () => {
+        this.update();
+        void this.plugin.relocateView();
+      },
+      openOnStartup: () => undefined,
       enableOgpFetch: () => undefined,
       attachmentFolder: () => undefined,
       // The folder row is only offered while this is on.
@@ -525,6 +531,12 @@ export class WrotSettingTab extends PluginSettingTab {
               main: t("settings.option.viewPlacement.main"),
             },
           },
+        },
+        {
+          name: t("settings.item.openOnStartup.name"),
+          desc: desc(t("settings.item.openOnStartup.desc")),
+          visible: () => settings.viewPlacement === "main",
+          control: { type: "toggle", key: "openOnStartup" },
         },
         {
           name: t("settings.item.followFontSize.name"),

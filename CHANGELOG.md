@@ -1,23 +1,44 @@
 # Release Notes
 
+## 2.26.0 - 2026-09-12
+
+### Updates
+
+- Updated dependencies
+
+### New Features
+
+- Added a setting to open Wrot when Obsidian starts while the display position is Main Area (turn on "Open on Startup" in the settings)
+
+### Improvements
+
+- Reworked the startup path so Obsidian starts faster
+- Changes to the display position now take effect right away
+
+### Bug Fixes
+
+- Fixed draft restore and tag integration not running when Obsidian starts with Wrot's tab hidden
+
+---
+
 ## 2.25.0 - 2026-09-07
 
 ### New Features
 
-- Toolbar buttons can now be disabled.
-- Pinned posts now scroll along with the timeline. To keep them at the top, turn on "Keep Pins at the Top" in the settings.
+- Toolbar buttons can now be disabled
+- Pinned posts now scroll along with the timeline (turn on "Keep Pins at the Top" in the settings to keep them at the top)
 
 ### Improvements
 
-- Made tag rules easier to add.
-- The default date formats now follow Obsidian's language.
-- In the default toolbar, Pin Later has moved into the three-dot menu.
-- Adjusted the post layout.
-- Made the plugin lighter.
+- Made tag rules easier to add
+- The default date formats now follow Obsidian's language
+- In the default toolbar, Pin Later has moved into the three-dot menu
+- Adjusted the post layout
+- Made the plugin lighter
 
 ### Bug Fixes
 
-- Fixed the timeline becoming unscrollable at large font sizes when pins are kept at the top.
+- Fixed the timeline becoming unscrollable at large font sizes when pins are kept at the top
 
 ---
 
@@ -25,8 +46,8 @@
 
 ### Bug Fixes
 
-- Fixed the three-dot menus on phones leaving extra space under the last item when following Obsidian's font size.
-- Fixed the three-dot menus on desktop and tablet not scrolling when their items do not fit on screen, leaving the lower items out of reach.
+- Fixed the three-dot menus on phones leaving extra space under the last item when following Obsidian's font size
+- Fixed the three-dot menus on desktop and tablet not scrolling when their items do not fit on screen, leaving the lower items out of reach
 
 ---
 
@@ -34,13 +55,13 @@
 
 ### Updates
 
-- Updated dependencies.
+- Updated dependencies
 
 ### Bug Fixes
 
-- Fixed the layout sometimes breaking when following Obsidian's font size.
-- Fixed the items inside the three-dot menus not following the font size.
-- Fixed the Pin Later calendar still paging back to months and years with nothing left to pick.
+- Fixed the layout sometimes breaking when following Obsidian's font size
+- Fixed the items inside the three-dot menus not following the font size
+- Fixed the Pin Later calendar still paging back to months and years with nothing left to pick
 
 ---
 
@@ -48,19 +69,19 @@
 
 ### Updates
 
-- Updated dependencies.
+- Updated dependencies
 
 ### Improvements
 
-- An unposted draft is now kept. Whatever is in the post form stays there when Wrot is closed or Obsidian restarts. Depending on how you sync, it can follow you across devices too.
-- Opening Wrot from the command now places the cursor in the post form.
-- Adjusted the spacing of the toolbar while it is being arranged.
+- An unposted draft is now kept
+- Opening Wrot from the command now places the cursor in the post form
+- Adjusted the spacing of the toolbar while it is being arranged
 
 ### Bug Fixes
 
-- Fixed another post sometimes disappearing from the timeline when a post was pinned.
-- Fixed the Pin Later allowance sometimes not being freed when a waiting post was deleted.
-- Fixed Pin Later staying pressable in the toolbar's menu when its allowance was full.
+- Fixed another post sometimes disappearing from the timeline when a post was pinned
+- Fixed the Pin Later allowance sometimes not being freed when a waiting post was deleted
+- Fixed Pin Later staying pressable in the toolbar's menu when its allowance was full
 
 ---
 
@@ -68,21 +89,21 @@
 
 ### Updates
 
-- Updated dependencies.
+- Updated dependencies
 
 ### New Features
 
-- The post form's toolbar can now be arranged. Buttons can be reordered, and any of them can be put away into the toolbar's menu. The settings decide whether the menu offers the entry point for arranging it, and can put the toolbar back to how it started.
+- The post form's toolbar can now be arranged
 
 ### Improvements
 
-- Bold and italic now leave a space after the closing marks when applied to a selection, the same as when the marks are closed while writing.
-- The toolbar's menu and the Pin Later date picker now follow the post form when the pane is resized while they are open.
+- Bold and italic now leave a space after the closing marks when applied to a selection, the same as when the marks are closed while writing
+- The toolbar's menu and the Pin Later date picker now follow the post form when the pane is resized while they are open
 
 ### Bug Fixes
 
-- Fixed the toolbar's menu and the Pin Later date picker not lining up with the right edge of the post form.
-- Fixed past years being selectable in the year list of the Pin Later date picker.
+- Fixed the toolbar's menu and the Pin Later date picker not lining up with the right edge of the post form
+- Fixed past years being selectable in the year list of the Pin Later date picker
 
 ---
 
@@ -90,13 +111,13 @@
 
 ### Improvements
 
-- A post set with Pin Later is now pinned as soon as you come back to Obsidian on its day.
-- Improved internal structure.
+- A post set with Pin Later is now pinned as soon as you come back to Obsidian on its day
+- Improved internal structure
 
 ### Bug Fixes
 
-- Fixed the clock mark shown while a post waits for its Pin Later day appearing fainter than the pin mark.
-- Fixed the Pin Later button in the post form's toolbar not closing the date picker when pressed a second time.
+- Fixed the clock mark shown while a post waits for its Pin Later day appearing fainter than the pin mark
+- Fixed the Pin Later button in the post form's toolbar not closing the date picker when pressed a second time
 
 ---
 
@@ -104,14 +125,14 @@
 
 ### New Features
 
-- Added Pin Later, which pins a post on a day you choose. Its limit is counted separately from ordinary pins.
-- Pin Later can also be set from the post form's toolbar while you are still writing.
+- Added Pin Later, which pins a post on a day you choose
+- Pin Later can also be set from the post form's toolbar while you are still writing
 
 ### Improvements
 
-- The post form now offers a button for backing out of an edit.
-- Added press feedback to the toolbar buttons and the post menu buttons.
-- Split the post menu into three groups so items are easier to find.
+- The post form now offers a button for backing out of an edit
+- Added press feedback to the toolbar buttons and the post menu buttons
+- Split the post menu into three groups so items are easier to find
 
 ---
 
@@ -119,11 +140,11 @@
 
 ### Updates
 
-- Updated dependencies.
+- Updated dependencies
 
 ### Bug Fixes
 
-- Fixed the link card breaking up on a phone or in a narrow pane, where lines were cut in half or ran into each other.
+- Fixed the link card breaking up on a phone or in a narrow pane, where lines were cut in half or ran into each other
 
 ---
 
@@ -131,12 +152,12 @@
 
 ### Improvements
 
-- Tidied up and simplified the descriptions in the settings.
-- Moved the image folder settings below the calendar settings.
+- Tidied up and simplified the descriptions in the settings
+- Moved the image folder settings below the calendar settings
 
 ### Bug Fixes
 
-- Fixed the lock on a tag rule ending up on a different rule after one was deleted.
+- Fixed the lock on a tag rule ending up on a different rule after one was deleted
 
 ---
 
@@ -144,16 +165,16 @@
 
 ### New Features
 
-- Added a setting for the folder images added from Wrot are saved to.
+- Added a setting for the folder images added from Wrot are saved to
 
 ### Improvements
 
-- Improved the internal structure.
+- Improved the internal structure
 
 ### Bug Fixes
 
-- Fixed the sub colour of a tag rule not following a change of background or text colour in the settings right away.
-- Fixed the text for a missing embedded image not matching the colour of an unresolved link.
+- Fixed the sub colour of a tag rule not following a change of background or text colour in the settings right away
+- Fixed the text for a missing embedded image not matching the colour of an unresolved link
 
 ---
 
@@ -161,13 +182,13 @@
 
 ### Updates
 
-- Updated dependencies.
+- Updated dependencies
 
 ### Bug Fixes
 
-- Fixed a decoration being applied even though it had not been closed.
-- Fixed a decoration sometimes leaving one of its markers on screen.
-- Fixed the icon gallery link in the settings being hard to tell apart from the text around it.
+- Fixed a decoration being applied even though it had not been closed
+- Fixed a decoration sometimes leaving one of its markers on screen
+- Fixed the icon gallery link in the settings being hard to tell apart from the text around it
 
 ---
 
@@ -175,19 +196,19 @@
 
 ### Updates
 
-- Updated dependencies.
+- Updated dependencies
 
 ### Improvements
 
-- Added Tab in the input form to indent a list item and Shift+Tab to outdent it.
-- Made a half-width space, an ideographic space and a tab all indent by the same level.
-- Made a new line keep the list level, and an empty item step out one level.
-- Made numbered lists count by position rather than by the digits typed.
+- Added Tab in the input form to indent a list item and Shift+Tab to outdent it
+- Made a half-width space, an ideographic space and a tab all indent by the same level
+- Made a new line keep the list level, and an empty item step out one level
+- Made numbered lists count by position rather than by the digits typed
 
 ### Bug Fixes
 
-- Fixed nested lists being shown as written instead of as levels.
-- Fixed the posts of a deleted note staying in the timeline until the date was changed.
+- Fixed nested lists being shown as written instead of as levels
+- Fixed the posts of a deleted note staying in the timeline until the date was changed
 
 ---
 
@@ -195,12 +216,12 @@
 
 ### New Features
 
-- Added post deletion. Turning on "Delete Button" in the settings puts "Delete" in a post's menu, where a second press confirms it.
-- Added "Disable delete button" to the tag rules.
+- Added post deletion (turn on "Delete Button" in the settings)
+- Added "Disable delete button" to the tag rules
 
 ### Bug Fixes
 
-- Fixed the placeholder shown in place of a quoted post that no longer exists being displayed in Japanese in every language.
+- Fixed the placeholder shown in place of a quoted post that no longer exists being displayed in Japanese in every language
 
 ---
 
@@ -208,12 +229,12 @@
 
 ### Updates
 
-- Updated dependencies.
+- Updated dependencies
 
 ### New Features
 
-- Added post editing. Choosing "Edit" from a post's menu brings its content back into the input form, where you can rewrite it and update the post.
-- Added "Update Button Text" and "Update Button Icon" to the settings.
+- Added post editing
+- Added "Update Button Text" and "Update Button Icon" to the settings
 
 ---
 
@@ -221,8 +242,8 @@
 
 ### Improvements
 
-- Applied the line breaks of setting descriptions to all languages.
-- Improved internal structure.
+- Applied the line breaks of setting descriptions to all languages
+- Improved internal structure
 
 ---
 
@@ -234,19 +255,19 @@
 
 ### Updates
 
-- Updated dependencies.
+- Updated dependencies
 
 ### New Features
 
-- Adapted the settings screen to the new API available from Obsidian 1.13.0. Wrot's settings can now be found through Obsidian's settings search.
-- Added "Hide from timeline" to tag rules. When it is on, posts containing that tag no longer appear in the timeline. Pinned posts are an exception and stay in the timeline.
+- Adapted the settings screen to the new API available from Obsidian 1.13.0
+- Added "Hide from timeline" to tag rules
 
 ### Improvements
 
-- Shortened the setting descriptions.
-- Removed the button for deleting tag autocomplete candidates. Turning autocomplete off now also discards the candidates it had learned.
-- Made the plugin start up faster.
-- Tag integration no longer re-reads unchanged notes on every startup.
+- Shortened the setting descriptions
+- Removed the button for deleting tag autocomplete candidates
+- Made the plugin start up faster
+- Tag integration no longer re-reads unchanged notes on every startup
 
 ---
 
@@ -254,7 +275,7 @@
 
 ### Improvements
 
-- Improved internal structure.
+- Improved internal structure
 
 ---
 
@@ -262,13 +283,13 @@
 
 ### Bug Fixes
 
-- Fixed an issue where toggling a checkbox could apply to the wrong post.
-- Fixed an issue where tags stayed behind after reloading during the tag integration scan.
+- Fixed an issue where toggling a checkbox could apply to the wrong post
+- Fixed an issue where tags stayed behind after reloading during the tag integration scan
 
 ### Improvements
 
-- Reduced unnecessary work when refreshing the display.
-- Improved internal structure.
+- Reduced unnecessary work when refreshing the display
+- Improved internal structure
 
 ---
 
@@ -276,8 +297,8 @@
 
 ### Improvements
 
-- The post button text can now be left blank for an icon-only button when an icon is set.
-- Made some changes to the colors used while tag autocomplete is active.
+- The post button text can now be left blank for an icon-only button when an icon is set
+- Made some changes to the colors used while tag autocomplete is active
 
 ---
 
@@ -285,9 +306,9 @@
 
 ### Bug Fixes
 
-- Fixed an issue where quote cards and URL previews were rendered in source mode.
-- Fixed an issue where the nested quote marker "QT:" inside quote cards appeared in the same accent color as links.
-- Fixed an issue where the screen briefly shifted up and down when jumping to a quoted post under certain conditions.
+- Fixed an issue where quote cards and URL previews were rendered in source mode
+- Fixed an issue where the nested quote marker "QT:" inside quote cards appeared in the same accent color as links
+- Fixed an issue where the screen briefly shifted up and down when jumping to a quoted post under certain conditions
 
 ---
 
@@ -295,9 +316,9 @@
 
 ### Improvements
 
-- Tags inside memos can now be clicked (or tapped) to search, in Reading View and Live Preview as well.
-- Made it easier to tell when a tag has been pressed.
-- Changed the library loading order to improve plugin performance.
+- Tags inside memos can now be clicked (or tapped) to search, in Reading View and Live Preview as well
+- Made it easier to tell when a tag has been pressed
+- Changed the library loading order to improve plugin performance
 
 ### Notes
 
@@ -309,17 +330,17 @@
 
 ### New Features
 
-- Added Tag Integration. Tags inside your memos now appear in the graph view and match tag searches (tag:), just like regular tags. It can be turned off in settings, and individual tags can be excluded via tag rules.
+- Added Tag Integration
 
 ### Improvements
 
-- Unified the checkbox behavior in Live Preview with Reading View. Clicking a checkbox no longer expands the block into raw text, and the checkbox display no longer gets out of sync with the actual content.
-- Aligned the copy button in Reading View with the top-right corner of the block.
-- Adjusted the order and wording of the settings screen.
+- Unified the checkbox behavior in Live Preview with Reading View
+- Aligned the copy button in Reading View with the top-right corner of the block
+- Adjusted the order and wording of the settings screen
 
 ### Bug Fixes
 
-- Fixed an issue on mobile where characters could not be deleted right after confirming a tag suggestion.
+- Fixed an issue on mobile where characters could not be deleted right after confirming a tag suggestion
 
 ### Notes
 
@@ -331,7 +352,7 @@
 
 ### Bug Fixes
 
-- Fixed an issue where the vertical quote line color in Live Preview did not match the timeline and Reading View.
+- Fixed an issue where the vertical quote line color in Live Preview did not match the timeline and Reading View
 
 ---
 
@@ -339,14 +360,14 @@
 
 ### Improvements
 
-- Significantly reworked the internal structure. This also resolves the warning shown on the Obsidian community plugin review page.
+- Significantly reworked the internal structure
 
 ### Bug Fixes
 
-- Fixed an issue where the copy button could stay unlit and appear to float during the quote-jump flash on cards with a tag rule color.
-- Fixed an issue where the pin indicator on mobile could be misaligned with the timestamp and the three-dot button.
-- Fixed an issue where toggling a checkbox in the timeline could delay the strikethrough, including inside quote cards, and cause the display to flicker.
-- Fixed an issue where the post form could twitch rapidly with certain themes that restyle buttons.
+- Fixed an issue where the copy button could stay unlit and appear to float during the quote-jump flash on cards with a tag rule color
+- Fixed an issue where the pin indicator on mobile could be misaligned with the timestamp and the three-dot button
+- Fixed an issue where toggling a checkbox in the timeline could delay the strikethrough, including inside quote cards, and cause the display to flicker
+- Fixed an issue where the post form could twitch rapidly with certain themes that restyle buttons
 
 ---
 
@@ -354,8 +375,8 @@
 
 ### Improvements
 
-- Improved the tag autocomplete settings UI. Suggestions are now cleared by pressing the trash icon twice.
-- Adjusted the descriptions in settings.
+- Improved the tag autocomplete settings UI
+- Adjusted the descriptions in settings
 
 ---
 
@@ -363,15 +384,15 @@
 
 ### Updates
 
-- Updated dependencies.
+- Updated dependencies
 
 ### New Features
 
-- Added tag autocomplete. Typing # in the post form shows tags used in your past posts as suggestions, and you can insert one just by selecting it. It can also be turned off in settings. Also added a button in settings to clear the tag autocomplete history.
+- Added tag autocomplete
 
 ### Improvements
 
-- Improved internal structure.
+- Improved internal structure
 
 ---
 
@@ -379,7 +400,7 @@
 
 ### Bug Fixes
 
-- Fixed a layout break that occurred when opening Wrot in the main area on mobile.
+- Fixed a layout break that occurred when opening Wrot in the main area on mobile
 
 ---
 
@@ -391,9 +412,9 @@
 
 ### Improvements
 
-- Fixed the three-dot menu position.
-- Improved display responsiveness to width and layout.
-- Buttons now scale with font-size following when enabled.
+- Fixed the three-dot menu position
+- Improved display responsiveness to width and layout
+- Buttons now scale with font-size following when enabled
 
 ---
 
@@ -401,12 +422,12 @@
 
 ### Updates
 
-- Updated dependencies.
+- Updated dependencies
 
 ### New Features
 
-- Added Zen Mode. Toggle it from the three-dot menu in the post form to hide the timeline, Today button, and calendar button for a focused writing experience.
-- Added a setting for pinned post visibility in Zen Mode. Choose whether pinned posts are displayed while Zen Mode is active.
+- Added Zen Mode
+- Added a setting for pinned post visibility in Zen Mode
 
 ---
 
@@ -414,12 +435,12 @@
 
 ### Updates
 
-- Updated dependencies.
+- Updated dependencies
 
 ### Improvements
 
-- Aligned the vertical position of checkboxes with the text.
-- Improved internal structure.
+- Aligned the vertical position of checkboxes with the text
+- Improved internal structure
 
 ---
 
@@ -427,17 +448,17 @@
 
 ### Updates
 
-- Updated dependencies.
+- Updated dependencies
 
 ### Improvements
 
-- Tapping a URL card on mobile now gives the same visual feedback as on desktop.
-- Improved internal structure.
+- Tapping a URL card on mobile now gives the same visual feedback as on desktop
+- Improved internal structure
 
 ### Bug Fixes
 
-- Fixed an issue where an extra blank line could appear in posts that contain a deeper quote inside a quote.
-- Fixed an issue where the three-dot menu button sometimes did not change color while the menu was open.
+- Fixed an issue where an extra blank line could appear in posts that contain a deeper quote inside a quote
+- Fixed an issue where the three-dot menu button sometimes did not change color while the menu was open
 
 ---
 
@@ -450,12 +471,12 @@
 
 ### Updates
 
-- Updated dependencies.
+- Updated dependencies
 
 ### Improvements
 
-- Improved internal structure.
-- Balanced the left and right spacing around posts containing images in Reading View.
+- Improved internal structure
+- Balanced the left and right spacing around posts containing images in Reading View
 
 ---
 
@@ -463,7 +484,7 @@
 
 ### Improvements
 
-- Improved internal structure.
+- Improved internal structure
 
 ---
 
@@ -471,17 +492,17 @@
 
 ### New Features
 
-- Added a setting to choose the shape of calendar date buttons. You can select from circle, rounded, or square to match the overall style of your theme.
+- Added a setting to choose the shape of calendar date buttons
 
 ### Improvements
 
-- Added a new "Tag Rules" category in the settings, moving tag-related settings into their own dedicated section.
-- Adjusted the default settings for new installs to better match the default theme.
-- Adjusted the layout in Reading View so the copy button and the first line of content are properly spaced.
+- Added a new "Tag Rules" category in the settings, moving tag-related settings into their own dedicated section
+- Adjusted the default settings for new installs to better match the default theme
+- Adjusted the layout in Reading View so the copy button and the first line of content are properly spaced
 
 ### Bug Fixes
 
-- Fixed an issue where an unwanted border could appear around the post input field depending on the theme.
+- Fixed an issue where an unwanted border could appear around the post input field depending on the theme
 
 ---
 
@@ -489,7 +510,7 @@
 
 ### Bug Fixes
 
-- Fixed an issue where the post button could be pressed while empty.
+- Fixed an issue where the post button could be pressed while empty
 
 ---
 
@@ -497,9 +518,9 @@
 
 ### Improvements
 
-- Optimized the month and year display to match the standard format for each language.
-- Improved tap feedback for dates and years on mobile devices.
-- Refined calendar borders and shadows for a cleaner, more natural look.
+- Optimized the month and year display to match the standard format for each language
+- Improved tap feedback for dates and years on mobile devices
+- Refined calendar borders and shadows for a cleaner, more natural look
 
 ---
 
@@ -507,11 +528,11 @@
 
 ### Updates
 
-- Updated dependencies.
+- Updated dependencies
 
 ### Improvements
 
-- Revamped the calendar so it looks and behaves the same across all environments (desktop, mobile, and tablet). Its text and background colors now follow your Wrot settings.
+- Revamped the calendar so it looks and behaves the same across all environments (desktop, mobile, and tablet)
 
 ---
 
@@ -519,7 +540,7 @@
 
 ### Bug Fixes
 
-- Fixed an issue where the behavior of blockquote blocks could become incorrect under certain conditions.
+- Fixed an issue where the behavior of blockquote blocks could become incorrect under certain conditions
 
 ---
 
@@ -527,7 +548,7 @@
 
 ### Bug Fixes
 
-- Fixed an issue where the today button's color did not follow the text color setting.
+- Fixed an issue where the today button's color did not follow the text color setting
 
 ---
 
@@ -535,15 +556,15 @@
 
 ### New Features
 
-- Added a calendar button to the date navigation. Tap it to jump to any date. You can toggle its visibility in the settings.
+- Added a calendar button to the date navigation
 
 ### Improvements
 
-- Refined the design of the date navigation.
+- Refined the design of the date navigation
 
 ### Bug Fixes
 
-- Fixed an issue where the preview highlight on decoration buttons could fail to activate on the first tap.
+- Fixed an issue where the preview highlight on decoration buttons could fail to activate on the first tap
 
 ---
 
@@ -551,7 +572,7 @@
 
 ### Bug Fixes
 
-- Fixed an issue where the icon of the 3-dot menu button on a memo card did not change to the accent color while the menu was open.
+- Fixed an issue where the icon of the 3-dot menu button on a memo card did not change to the accent color while the menu was open
 
 ---
 
@@ -559,16 +580,16 @@
 
 ### New Features
 
-- Added Simplified Chinese support. When Obsidian's language is set to "简体中文", the Wrot UI automatically switches to Simplified Chinese.
+- Added Simplified Chinese support
 
 ### Bug Fixes
 
-- Fixed an issue where the right padding of memo blocks in Live View was narrower than the left padding.
-- Improved an issue where the input form was slow to render on tablets when Obsidian was started or when the Wrot panel was opened while focus was inside a Live View card.
+- Fixed an issue where the right padding of memo blocks in Live View was narrower than the left padding
+- Improved an issue where the input form was slow to render on tablets when Obsidian was started or when the Wrot panel was opened while focus was inside a Live View card
 
 ### Improvements
 
-- Improved internal structure.
+- Improved internal structure
 
 ---
 
@@ -576,11 +597,11 @@
 
 ### New Features
 
-- Added Traditional Chinese support. When Obsidian's language is set to "繁體中文", the Wrot UI automatically switches to Traditional Chinese.
+- Added Traditional Chinese support
 
 ### Improvements
 
-- Improved internal structure.
+- Improved internal structure
 
 ---
 
@@ -588,7 +609,7 @@
 
 ### Improvements
 
-- Improved internal structure.
+- Improved internal structure
 
 ---
 
@@ -596,11 +617,11 @@
 
 ### Bug Fixes
 
-- Stabilized the behavior of jumping from a quote card in Reading View.
+- Stabilized the behavior of jumping from a quote card in Reading View
 
 ### Improvements
 
-- Adjusted the appearance of inline code in Live View.
+- Adjusted the appearance of inline code in Live View
 
 ---
 
@@ -608,7 +629,7 @@
 
 ### Improvements
 
-- Refined the toolbar CSS.
+- Refined the toolbar CSS
 
 ---
 
@@ -620,15 +641,15 @@
 
 ### Updates
 
-- Updated dependencies.
+- Updated dependencies
 
 ### New Features
 
-- Added multi-language support. In addition to Japanese, the app now supports **9 languages across 10 locales**: English (US / UK), Korean, Spanish, Portuguese, French, German, Italian, Russian. It automatically follows Obsidian's language settings and falls back to English for unsupported languages. When the language is changed, the post button text, input field placeholder, and header date format will automatically update to the default values of the new language.
+- Added multi-language support for 9 languages across 10 locales
 
 ### Improvements
 
-- Renamed "Quote" in the post's three-dot menu to "Quote Post." This makes it easier to distinguish from the "Quote" (Markdown blockquote) in the formatting menu.
+- Renamed "Quote" in the post's three-dot menu to "Quote Post"
 
 ---
 
@@ -636,7 +657,7 @@
 
 ### Updates
 
-- Updated dependencies.
+- Updated dependencies
 
 ### Deprecated
 
@@ -644,12 +665,12 @@
 
 ### Bug Fixes
 
-- Fixed an issue where the cursor could become invisible when creating a new line immediately after closing formatting (bold/italic) while the IME was in an unconfirmed state.
-- Fixed a bug where the copy button on cards with tag color rules was not displaying correctly in Reading View.
-- Fixed an issue where the display of quote cards would sometimes not follow checkbox operations on the timeline.
-- Fixed an issue where jumping from a quote card would occasionally not work correctly.
-- Fixed a bug where the display of blockquotes could become distorted.
-- Adjusted some color schemes that were difficult to see.
+- Fixed an issue where the cursor could become invisible when creating a new line immediately after closing formatting (bold/italic) while the IME was in an unconfirmed state
+- Fixed a bug where the copy button on cards with tag color rules was not displaying correctly in Reading View
+- Fixed an issue where the display of quote cards would sometimes not follow checkbox operations on the timeline
+- Fixed an issue where jumping from a quote card would occasionally not work correctly
+- Fixed a bug where the display of blockquotes could become distorted
+- Adjusted some color schemes that were difficult to see
 
 ---
 
@@ -657,7 +678,7 @@
 
 ### Bug Fixes
 
-- Fixed an issue where "Jump to Original Note" did not work correctly in Live Preview.
+- Fixed an issue where "Jump to Original Note" did not work correctly in Live Preview
 
 ---
 
@@ -665,18 +686,18 @@
 
 ### Updates
 
-- Updated dependencies.
+- Updated dependencies
 
 ### New Features
 
-- Added "Jump to Original Note" to the three-dot menu of pinned posts. It opens the corresponding Daily Note and scrolls to the specific block.
+- Added "Jump to Original Note" to the three-dot menu of pinned posts
 
 ### Improvements
 
-- Reduced the file size of the plugin.
-- Clicking on a quote card now also scrolls the target block to the center of the screen.
-- The icons for the three-dot menu button and the pinning indicator now sync with the text color settings.
-- Obsolete setting items are now automatically cleaned up.
+- Reduced the file size of the plugin
+- Clicking on a quote card now also scrolls the target block to the center of the screen
+- The icons for the three-dot menu button and the pinning indicator now sync with the text color settings
+- Obsolete setting items are now automatically cleaned up
 
 ---
 
@@ -684,7 +705,7 @@
 
 ### Bug Fixes
 
-- Fixed a bug where clicking a date label would occasionally fail to open the Daily Note.
+- Fixed a bug where clicking a date label would occasionally fail to open the Daily Note
 
 ---
 
@@ -692,12 +713,12 @@
 
 ### New Features
 
-- Added scope settings for "Sub Colors" in Tag-Specific Color Rules. You can now toggle them ON/OFF for four different group units.
+- Added scope settings for "Sub Colors" in Tag-Specific Color Rules
 
 ### Improvements
 
-- Adjusted the color scheme.
-- Reduced flickering when interacting with checkboxes.
+- Adjusted the color scheme
+- Reduced flickering when interacting with checkboxes
 
 ---
 
@@ -705,23 +726,22 @@
 
 ### Updates
 
-- Updated dependencies.
+- Updated dependencies
 
 ### New Features
 
-- Supported quoting from posts. By selecting "Quote" from the post's copy menu, you can insert a card into the current post that displays the content of the source. Clicking the quote card takes you to the original post.
-  Additionally, separate tag color rules can be applied to the source and the quote, allowing them to be displayed with independent color schemes without interfering with each other.
-- Added "Sub Color" settings to Tag-Specific Color Rules. You can now individually specify colors for sub-elements such as timestamps and blockquote vertical lines.
+- Supported quoting from posts
+- Added "Sub Color" settings to Tag-Specific Color Rules
 
 ### Improvements
 
-- Improved the nested representation of blockquotes (`>`).
-- Adjusted the margins for each view.
-- Organized the internal structure.
+- Improved the nested representation of blockquotes (`>`)
+- Adjusted the margins for each view
+- Organized the internal structure
 
 ### Bug Fixes
 
-- Fixed an issue on mobile where a white background would appear when tapping a disabled item in the post format menu.
+- Fixed an issue on mobile where a white background would appear when tapping a disabled item in the post format menu
 
 ---
 
@@ -729,8 +749,8 @@
 
 ### Improvements
 
-- Improved the response of the "Add Image" button's light-up display when closing the dialog.
-- Changed the lock icon in Tag-Specific Color Rules to a design with a keyhole.
+- Improved the response of the "Add Image" button's light-up display when closing the dialog
+- Changed the lock icon in Tag-Specific Color Rules to a design with a keyhole
 
 ---
 
@@ -738,12 +758,12 @@
 
 ### Updates
 
-- Updated dependencies.
+- Updated dependencies
 
 ### Improvements
 
-- The "Add Image" button now also lights up with the accent color when pressed.
-- Modified the internal structure.
+- The "Add Image" button now also lights up with the accent color when pressed
+- Modified the internal structure
 
 ---
 
@@ -751,12 +771,12 @@
 
 ### New Features
 
-- Added a setting to customize the date format displayed in the date navigation. A "Header Date Format" has been added above the timestamp format.
+- Added a setting to customize the date format displayed in the date navigation
 
 ### Improvements
 
-- Improved the behavior of the bold and italic buttons both when clicking and when selecting text.
-- Modified the internal structure.
+- Improved the behavior of the bold and italic buttons both when clicking and when selecting text
+- Modified the internal structure
 
 ---
 
@@ -764,8 +784,8 @@
 
 ### Improvements
 
-- Adjusted the layout of dropdown items in the settings screen for the mobile version.
-- Changed the default background color to one that blends better with Obsidian's standard themes. This only applies to new installations or when resetting the background color.
+- Adjusted the layout of dropdown items in the settings screen for the mobile version
+- Changed the default background color to one that blends better with Obsidian's standard themes
 
 ---
 
@@ -773,8 +793,8 @@
 
 ### Improvements
 
-- Supported Obsidian's Weekly and Monthly note workflows. If you change the date format in Obsidian's "Daily Notes" settings to something like `GGGG-[W]WW` (Weekly) or `YYYY-MM` (Monthly), memos within the same week or month will be consolidated into the same note.
-- Tapping a date label again will now focus on the existing tab instead of opening a new one.
+- Supported Obsidian's Weekly and Monthly note workflows
+- Tapping a date label again will now focus on the existing tab instead of opening a new one
 
 ---
 
@@ -782,7 +802,7 @@
 
 ### Improvements
 
-- Added a locking mechanism to each rule in "Change colors by tag" to prevent accidental changes. You can toggle the lock by tapping the lock icon; it will return to a locked state every time you reopen the settings screen.
+- Added a locking mechanism to each rule in "Change colors by tag" to prevent accidental changes
 
 ---
 
@@ -790,7 +810,7 @@
 
 ### Improvements
 
-- Adjusted the position of the checkbox checkmark.
+- Adjusted the position of the checkbox checkmark
 - Renamed the "Other Settings" category in the settings screen to "Display Settings."
 
 ---
@@ -799,11 +819,11 @@
 
 ### New Features
 
-- Added an image attachment feature to the post form. You can open a file selection dialog via the image button (next to the paperclip icon) in the toolbar. It also supports pasting from the clipboard (Cmd+V) and dragging and dropping image files into the form.
+- Added an image attachment feature to the post form
 
 ### Improvements
 
-- Image files referenced via `obsidian://` URLs will now display as unresolved links if the file is deleted.
+- Image files referenced via `obsidian://` URLs will now display as unresolved links if the file is deleted
 
 ### Notes
 
@@ -818,12 +838,12 @@
 
 ### New Features
 
-- When an image file is specified via an `obsidian://` URL (e.g., `obsidian://open?vault=MyVault&file=photo.png`), an image preview will be displayed with the same look as an `![[]]` embed. See [docs/en/links-and-embeds.md](docs/en/links-and-embeds.md) for details.
+- When an image file is specified via an `obsidian://` URL (e.g., `obsidian://open?vault=MyVault&file=photo.png`), an image preview will be displayed with the same look as an `![[]]` embed
 
 ### Improvements
 
-- Improved the visual balance when "Follow Obsidian Font Size" is ON. It now follows Obsidian's body text size while maintaining Wrot's original font size ratios (Body, UI Small, UI Extra Small).
-- Readjusted the wording in the settings screen.
+- Improved the visual balance when "Follow Obsidian Font Size" is ON
+- Readjusted the wording in the settings screen
 
 ---
 
@@ -831,8 +851,8 @@
 
 ### Improvements
 
-- When "Follow Obsidian Font Size" is ON, the three-dot buttons and pin icons for each memo now also follow the font size.
-- Adjusted the wording in the settings screen.
+- When "Follow Obsidian Font Size" is ON, the three-dot buttons and pin icons for each memo now also follow the font size
+- Adjusted the wording in the settings screen
 
 ---
 
@@ -840,13 +860,13 @@
 
 ### New Features
 
-- Added a memo pinning feature. You can now pin memos to the top of the timeline regardless of the date. Pinned memos display a pin icon in the bottom right of the card.
-- Added a "Pin Limit" item to the settings screen. You can choose from 1, 3, or 5. The default is 3.
+- Added a memo pinning feature
+- Added a "Pin Limit" item to the settings screen
 
 ### Improvements
 
-- Replaced the copy button next to the timestamp on each memo with a three-dot menu. You can perform "Copy," "Pin," and "Unpin" actions from the menu.
-- The active button now glows with the accent color while the three-dot menu is open. This makes it easier to see which menu is currently active.
+- Replaced the copy button next to the timestamp on each memo with a three-dot menu
+- The active button now glows with the accent color while the three-dot menu is open
 
 ### Notes
 
@@ -859,9 +879,9 @@
 
 ### New Features
 
-- Supported code blocks (`~~~` syntax). They are displayed with syntax highlighting.
-- Supported math blocks (`$$...$$`).
-- The "Code" and "Math" buttons in the post form's three-dot menu now insert the block version when no text is selected. When text is selected, they insert the inline version as before.
+- Supported code blocks (`~~~` syntax)
+- Supported math blocks (`$$...$$`)
+- The "Code" and "Math" buttons in the post form's three-dot menu now insert the block version when no text is selected
 
 ### Notes
 
@@ -874,7 +894,7 @@
 
 ### Bug Fixes
 
-- Fixed an issue where the font size for the entire timeline (post body, input fields, dates, buttons, etc.) was larger than before on mobile even when font size following was OFF. While v1.4.4 addressed this only for timestamps, all elements have now been returned to their original size.
+- Fixed an issue where the font size for the entire timeline (post body, input fields, dates, buttons, etc.) was larger than before on mobile even when font size following was OFF
 
 ---
 
@@ -882,7 +902,7 @@
 
 ### Bug Fixes
 
-- Fixed an issue where the timestamp font size on the mobile timeline was larger than before even when font size following was OFF.
+- Fixed an issue where the timestamp font size on the mobile timeline was larger than before even when font size following was OFF
 
 ---
 
@@ -890,11 +910,11 @@
 
 ### New Features
 
-- Added a "Follow Obsidian Font Size" toggle to the Basic Settings. When turned ON, Wrot's font size will link to Obsidian's appearance settings. The default is OFF, maintaining the original look.
+- Added a "Follow Obsidian Font Size" toggle to the Basic Settings
 
 ### Improvements
 
-- When adding a new tag-specific card color rule, the default background and text colors will now match your current theme (Light/Dark).
+- When adding a new tag-specific card color rule, the default background and text colors will now match your current theme (Light/Dark)
 
 ---
 
@@ -902,7 +922,7 @@
 
 ### Bug Fixes
 
-- Fixed a bug where the checkmark color for a successful copy (via the timeline copy button) did not use the accent color defined in the tag-specific card color rules.
+- Fixed a bug where the checkmark color for a successful copy (via the timeline copy button) did not use the accent color defined in the tag-specific card color rules
 
 ---
 
@@ -910,13 +930,13 @@
 
 ### New Features
 
-- Added accent colors to Tag-Specific Card Color Rules. You can now override the color of tags, internal links, URLs, math highlighting, and copy-complete icons for each rule. Adjust this if the default accent color is hard to see against the background color. If left unset, the theme's accent color is used as before.
+- Added accent colors to Tag-Specific Card Color Rules
 
 ### Improvements
 
-- Added "Basic Settings" and "Display Settings" headings to the settings screen to organize related items.
-- Fine-tuned the settings screen.
-- Fine-tuned the post form.
+- Added "Basic Settings" and "Display Settings" headings to the settings screen to organize related items
+- Fine-tuned the settings screen
+- Fine-tuned the post form
 
 ---
 
@@ -924,13 +944,13 @@
 
 ### New Features
 
-- Added Tag-Specific Card Color Rules. By registering a tag name with a background and text color in the settings, the color of posts containing that tag will change. This is reflected in the Wrot sidebar, Reading View, and Live Preview. If a post matches multiple rules, the color of the first tag mentioned in the body will be applied. OGP and Twitter cards also follow these rules.
-- You can now open Wrot's settings screen directly from the toolbar's three-dot menu. This makes it easier to adjust color settings while writing posts.
+- Added Tag-Specific Card Color Rules
+- You can now open Wrot's settings screen directly from the toolbar's three-dot menu
 
 ### Improvements
 
-- Toolbar buttons now automatically wrap to prevent overflowing in narrow sidebars or when pinned on iPad.
-- Adjusted the post card width in the mobile timeline view to match Obsidian's sidebar width.
+- Toolbar buttons now automatically wrap to prevent overflowing in narrow sidebars or when pinned on iPad
+- Adjusted the post card width in the mobile timeline view to match Obsidian's sidebar width
 
 ---
 
@@ -938,8 +958,8 @@
 
 ### Improvements
 
-- The post button icon and the input field placeholder can now be hidden by leaving them blank in the settings.
-- Increased the margin at the bottom of the timeline in mobile view to prevent overlap with the bottom UI.
+- The post button icon and the input field placeholder can now be hidden by leaving them blank in the settings
+- Increased the margin at the bottom of the timeline in mobile view to prevent overlap with the bottom UI
 
 ---
 
@@ -947,7 +967,7 @@
 
 ### Updates
 
-- Updated dependencies.
+- Updated dependencies
 
 ---
 
@@ -955,16 +975,16 @@
 
 ### New Features
 
-- Added "Link" to the toolbar's three-dot menu. It converts selected text into the `[text](URL)` format and moves the cursor to the URL input position.
-- The input field placeholder can now be customized from the settings screen.
+- Added "Link" to the toolbar's three-dot menu
+- The input field placeholder can now be customized from the settings screen
 
 ### Improvements
 
-- Reordered the color settings in the settings screen.
+- Reordered the color settings in the settings screen
 
 ### Bug Fixes
 
-- Fixed a bug where the toolbar button remained in a selected state even after deleting the markers (`**` / `*`) in bold or italic mode.
+- Fixed a bug where the toolbar button remained in a selected state even after deleting the markers (`**` / `*`) in bold or italic mode
 
 ---
 
@@ -972,11 +992,11 @@
 
 ### New Features
 
-- The post button icon can now be changed from the settings screen.
+- The post button icon can now be changed from the settings screen
 
 ### Improvements
 
-- Optimized the display for iPad. The layout now renders correctly in both fixed and non-fixed sidebars.
+- Optimized the display for iPad
 
 ---
 
@@ -984,7 +1004,7 @@
 
 ### Improvements
 
-- Revised the developer name and description displayed in the plugin list.
+- Revised the developer name and description displayed in the plugin list
 
 ---
 
@@ -992,13 +1012,13 @@
 
 ### New Features
 
-- Added an embed button to the toolbar that converts the selection into `![[selected text]]` with a single tap. Tapping again on a selection that is already `![[...]]` or `[[...]]` will remove the formatting.
-- Internal links and embed links (`[[X]]` / `![[X]]`) now display as unresolved links if the target note does not exist. The display updates automatically when notes are created or deleted.
+- Added an embed button to the toolbar that converts the selection into `![[selected text]]` with a single tap
+- Internal links and embed links (`[[X]]` / `![[X]]`) now display as unresolved links if the target note does not exist
 
 ### Bug Fixes
 
-- Fixed an issue in Reading View where the copy button for code blocks was always visible even without hovering.
-- Fixed a bug in Live Preview where the background of the code block copy button (wr) was filled, making text at the end of the memo invisible.
+- Fixed an issue in Reading View where the copy button for code blocks was always visible even without hovering
+- Fixed a bug in Live Preview where the background of the code block copy button (wr) was filled, making text at the end of the memo invisible
 
 ---
 
@@ -1006,7 +1026,7 @@
 
 ### Bug Fixes
 
-- Fixed a bug on mobile where the background highlight remained after tapping date navigation buttons (Previous / Next / Today).
+- Fixed a bug on mobile where the background highlight remained after tapping date navigation buttons (Previous / Next / Today)
 
 ---
 
@@ -1014,7 +1034,7 @@
 
 ### Improvements
 
-- Added feedback when clicking a date label.
+- Added feedback when clicking a date label
 
 ---
 
@@ -1022,8 +1042,8 @@
 
 ### Bug Fixes
 
-- Fixed a bug where the accent color was not reflected in tags, links, URLs, and math in Live Preview.
-- Fixed an issue where memos could not be posted using Cmd+Enter (macOS) or Ctrl+Enter (Windows/Linux).
+- Fixed a bug where the accent color was not reflected in tags, links, URLs, and math in Live Preview
+- Fixed an issue where memos could not be posted using Cmd+Enter (macOS) or Ctrl+Enter (Windows/Linux)
 
 ---
 

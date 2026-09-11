@@ -1,4 +1,4 @@
-import { Plugin, TFile, WorkspaceLeaf, Notice, normalizePath, MarkdownView } from "obsidian";
+import { App, Plugin, TFile, WorkspaceLeaf, Notice, normalizePath, MarkdownView } from "obsidian";
 import { VIEW_TYPE_WROT } from "./constants";
 import {
   WrotSettings,
@@ -43,9 +43,7 @@ export default class WrotPlugin extends Plugin {
   private lastWrittenDraft: string | null = null;
   // True when data.json predates pinFixed; loadDeferredState decides its value from the pins.
   private pinFixedUnset = false;
-  // The in-flight read of pins.json / tagrules.json. Started during load but never awaited
-  // there, so it stays off the blocking path; anything that writes those files waits on it
-  // first, so a save can never land on top of values that have not been read yet.
+  // Side-file read (pins, rules, layout, draft), settled after layout; writers await it so a save never lands on unread values.
   private deferredState: Promise<void> | null = null;
   private bgSheet = new WrStyleSheet("wr-bg-override");
   private tagRuleSheet = new WrStyleSheet("wr-tag-rule-override");
@@ -57,14 +55,19 @@ export default class WrotPlugin extends Plugin {
   // Guards against the MathJax-ready callback re-rendering through an already
   // unregistered postProcessor (stripping wr decorations) after the plugin is disabled.
   private unloading = false;
+  private openingPatched = false;
 
   async onload(): Promise<void> {
+    this.patchOpeningBehavior();
     initI18n();
     await this.loadSettings();
     await this.loadRecentTags();
-    // Started, not awaited: onload returns without waiting on these two reads, so they stay
-    // out of the startup measurement, and by the time anything needs them they are in.
-    this.deferredState = this.loadDeferredState();
+    // Started after layout: reads issued during load queue ahead of Obsidian's own styles.css read in the fs pool and count against startup.
+    this.deferredState = new Promise((resolve) => {
+      this.app.workspace.onLayoutReady(() => {
+        this.loadDeferredState().then(resolve, resolve);
+      });
+    });
     this.ogpCache = new OGPCache();
     this.ogpCache.enabled = this.settings.enableOgpFetch;
     this.graphTags = new GraphTagInjector(this);
@@ -89,8 +92,6 @@ export default class WrotPlugin extends Plugin {
 
     this.registerEditorExtension([createWrEditorExtension(this.ogpCache, this.app, this, () => this.settings.checkStrikethrough)]);
 
-    this.applyFontFollow();
-    this.applyCalendarDayShape();
     this.registerEvent(
       this.app.workspace.on("css-change", () => {
         this.applyBgColor();
@@ -118,6 +119,10 @@ export default class WrotPlugin extends Plugin {
     // always sort after the document's own stylesheets, so unlike the <style> elements this
     // replaced, they no longer need re-applying to win the specificity ladder.
     this.app.workspace.onLayoutReady(() => {
+      // Touching body (class, inline property, adopted sheet) during load invalidates the
+      // whole document's style; the recalc then lands in the startup measurement.
+      this.applyFontFollow();
+      this.applyCalendarDayShape();
       this.applyBgColor();
       // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure leaves pins and rules empty, which every reader tolerates
       this.startDeferredWork();
@@ -449,9 +454,11 @@ export default class WrotPlugin extends Plugin {
   }
 
   /** Runs `fn` against every open Wrot view, in the main window and any popout. */
+  // A leaf restored with the workspace but not yet shown holds a deferred placeholder, not a
+  // WrotView; it builds from current plugin state when first shown, so it is skipped here.
   private forEachView(fn: (view: WrotView) => void): void {
     for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_WROT)) {
-      fn(leaf.view as WrotView);
+      if (leaf.view instanceof WrotView) fn(leaf.view);
     }
   }
 
@@ -503,23 +510,42 @@ export default class WrotPlugin extends Plugin {
       return;
     }
 
-    let leaf: WorkspaceLeaf;
-    switch (this.settings.viewPlacement) {
-      case "left":
-        leaf = workspace.getLeftLeaf(false)!;
-        break;
-      case "right":
-        leaf = workspace.getRightLeaf(false)!;
-        break;
-      case "main":
-      default:
-        leaf = workspace.getLeaf("tab");
-        break;
-    }
-
+    const leaf = this.createLeaf();
     await leaf.setViewState({ type: VIEW_TYPE_WROT, active: true });
     await workspace.revealLeaf(leaf);
     this.focusViewInput(leaf);
+  }
+
+  private createLeaf(): WorkspaceLeaf {
+    const { workspace } = this.app;
+    switch (this.settings.viewPlacement) {
+      case "left":
+        return workspace.getLeftLeaf(false)!;
+      case "right":
+        return workspace.getRightLeaf(false)!;
+      case "main":
+      default:
+        return workspace.getLeaf("tab");
+    }
+  }
+
+  /**
+   * Moves an already open timeline to the placement just chosen in settings. Nothing happens
+   * when no view is open.
+   *
+   * Order matters: focusing a leaf (setViewState `active: true`, or the app's own fallback
+   * when the active leaf is detached) closes the settings modal in the same window. So the
+   * new leaf is opened and made active without focus first, and only then the old ones go.
+   */
+  async relocateView(): Promise<void> {
+    const { workspace } = this.app;
+    const old = workspace.getLeavesOfType(VIEW_TYPE_WROT);
+    if (old.length === 0) return;
+    const leaf = this.createLeaf();
+    await leaf.setViewState({ type: VIEW_TYPE_WROT, active: false });
+    workspace.setActiveLeaf(leaf, { focus: false });
+    for (const l of old) l.detach();
+    await workspace.revealLeaf(leaf);
   }
 
   private focusViewInput(leaf: WorkspaceLeaf): void {
@@ -556,6 +582,59 @@ export default class WrotPlugin extends Plugin {
     // Integrate memo tags into the core graph view / native tag search:
     // inject from the cached map immediately, reconcile diffs in the background.
     void this.graphTags.start();
+    if (!this.openingPatched && this.wantsOpenOnStartup()) {
+      this.openAfterStartup();
+    }
+  }
+
+  private wantsOpenOnStartup(): boolean {
+    return this.settings.openOnStartup && this.settings.viewPlacement === "main";
+  }
+
+  /**
+   * Replaces the app's private startup-opening step (`runOpeningBehavior`, called once the
+   * workspace is restored) so that, when Wrot is set to open on startup, the "default file to
+   * open" (daily note, specific file, new note) is never opened at all; otherwise the original
+   * runs untouched. Skipping it, instead of covering it afterwards, is what removes the flash
+   * of that file. Settings are read lazily because the hook fires well after loadSettings.
+   */
+  private patchOpeningBehavior(): void {
+    const app = this.app as App & { runOpeningBehavior?: (path: string) => unknown };
+    const orig = app.runOpeningBehavior;
+    if (typeof orig !== "function") return;
+    app.runOpeningBehavior = (path: string) => {
+      if (this.wantsOpenOnStartup()) return this.activateView();
+      return orig.call(app, path);
+    };
+    this.openingPatched = true;
+    this.register(() => {
+      app.runOpeningBehavior = orig;
+    });
+  }
+
+  /**
+   * Fallback for when the private hook above is missing (renamed in a newer Obsidian): brings
+   * the timeline to the front once Obsidian has finished its own startup opening.
+   *
+   * Layout-ready fires before the app applies its "default file to open" setting (daily note,
+   * specific file, new note), so a view revealed at layout-ready is covered by that file a
+   * moment later. The app marks the container `mod-loading` for the whole startup sequence
+   * and clears it right after that opening step, which is the earliest public signal that
+   * nothing else will be brought forward. A leaf restored with the workspace is reused.
+   */
+  private openAfterStartup(): void {
+    const container = document.body.querySelector(".app-container");
+    if (!container || !container.classList.contains("mod-loading")) {
+      void this.activateView();
+      return;
+    }
+    const observer = new MutationObserver(() => {
+      if (container.classList.contains("mod-loading")) return;
+      observer.disconnect();
+      void this.activateView();
+    });
+    observer.observe(container, { attributes: true, attributeFilter: ["class"] });
+    this.register(() => observer.disconnect());
   }
 
   async loadSettings(): Promise<void> {

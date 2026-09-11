@@ -9,6 +9,8 @@ const ja = {
   "settings.option.viewPlacement.left": "左サイドバー",
   "settings.option.viewPlacement.right": "右サイドバー",
   "settings.option.viewPlacement.main": "メインエリア",
+  "settings.item.openOnStartup.name": "起動時に開く",
+  "settings.item.openOnStartup.desc": "Obsidian を起動したとき、Wrot を手前に表示します。",
 
   "settings.item.followFontSize.name": "Obsidianのフォントサイズに追従",
   "settings.item.followFontSize.desc":

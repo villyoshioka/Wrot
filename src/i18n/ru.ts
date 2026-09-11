@@ -11,6 +11,8 @@ const ru = {
   "settings.option.viewPlacement.left": "Левая боковая панель",
   "settings.option.viewPlacement.right": "Правая боковая панель",
   "settings.option.viewPlacement.main": "Основная область",
+  "settings.item.openOnStartup.name": "Открывать при запуске",
+  "settings.item.openOnStartup.desc": "Если включено, при запуске Obsidian Wrot выводится на передний план.",
 
   "settings.item.followFontSize.name": "Использовать размер шрифта Obsidian",
   "settings.item.followFontSize.desc": "Если включено, используется размер шрифта из настроек внешнего вида Obsidian.",
