@@ -1,96 +1,105 @@
-# Arranging the Toolbar
+# Using the Toolbar
 
-The post form's toolbar starts with the buttons most people reach for, but not everyone reaches for the same ones. You can decide which buttons sit on the bar, which are put away in its ⋯ menu, and which are disabled altogether, and you can put them in whatever order suits your hand.
+The toolbar on the post form comes packed with your most frequently used buttons right out of the box.
+With Wrot, you have full control over your setup—choose which buttons stay on the toolbar, tuck less-used ones into the "More" menu (⋯), or disable the ones you don't need entirely. You can also reorder them anytime just by dragging and dropping.
 
-Nothing is lost by putting a button away. Everything the toolbar can do stays available from the ⋯ menu. Only a disabled button is gone from both, and it comes back the moment you enable it again.
-
----
-
-## Getting started
-
-Open the ⋯ menu at the end of the toolbar and choose **"Edit toolbar"**.
-
-The toolbar changes into a single row holding every button there is. The ones currently on the bar look normal; the ones put away look faded, and the disabled ones are faded with a slash through them. All of them can be moved.
-
-If the menu has no such entry, turn on **"Show Toolbar Edit Button"** in the Advanced section of the settings.
+Moving a button to the menu won't affect how it works. Only disabled buttons are hidden from both the toolbar and the menu.
 
 ---
 
-## While arranging
+## Entering Edit Mode
 
-**Press a button** to step it through its states: solid (on the bar), faded (in the menu), faded with a slash (disabled), and back to solid.
+1. Open the **⋯ (More)** menu on the far right of the toolbar.
+2. Select **"Edit Toolbar"**.
 
-**Hold a button and drag** to move it. It lifts out of the row and follows your finger or pointer, and an empty place is left where it was. That empty place travels with you and shows where the button will land. Let go and it settles there.
+This switches the toolbar into edit mode, lining up all available buttons in a single row.
 
-The row is one list. A faded or disabled button still holds a place in it, so switching it back on brings it out where you left it.
+- **Normal**: Buttons currently visible on your toolbar
+- **Semi-transparent (dimmed)**: Buttons stored in the ⋯ menu
+- **Semi-transparent with a slash**: Disabled buttons
 
-Two buttons stay put at the end of the bar:
-
-| Button | What it does |
-| --- | --- |
-| ✓ | Keeps the arrangement and finishes |
-| ✕ | Discards it and leaves the toolbar as you found it |
-
-Nothing is saved until you press ✓.
-
-While you are arranging, the form is not for writing with and the posts below are not for acting on. Typing, posting, and the post menus are all out of use until you finish. Moving between dates still works.
-
-You cannot start arranging while you are editing an existing post. Finish or cancel that edit first.
+\*If "Edit Toolbar" isn't showing up in the menu, go to "Advanced" and turn on **"Show Toolbar Edit Button"**.
 
 ---
 
-## The ⋯ menu
+## Working in Edit Mode
 
-Whatever you put away appears in the ⋯ menu, always in the same order:
+### 1. Toggling Button States (Click or Tap)
 
-Image, Embed, List, Checklist, Numbered List, Code, Math, Quote, Bold, Italic, Link, Strikethrough, Highlight, Pin Later.
+Clicking or tapping a button cycles through its states in this order:
 
-The order you give the bar does not change the order here, so a button is always in the same place in the menu no matter how you have arranged things.
+> **Show on Toolbar** (Normal) → **Move to Menu** (Dimmed) → **Disable** (Dimmed with slash) → **Show on Toolbar**
 
-### What changes for a button in the menu
+### 2. Rearranging Buttons (Drag and Drop)
 
-Most buttons behave exactly as they do on the bar. Two are worth knowing about.
+Press and hold or drag any button to move it wherever you like.
 
-**Bold and Italic** work only on selected text once they are in the menu. On the bar they can also be pressed with nothing selected, which opens the marks and lets you type inside them — that relies on the button staying lit to show the mode is running, and a menu entry has no light to give. In the menu they are greyed out until you select something, the same as Strikethrough and Highlight.
+- Hidden and disabled buttons still hold a place in the line. That way, you can set their position now and turn them on later whenever you're ready.
 
-**Pin Later** shows a tick beside it while a day is set, in place of the lit button. Choosing it opens the same date picker.
+### 3. Saving or Canceling Edits
+
+Action buttons will appear at the end of the toolbar while you're editing.
+
+| Button | Action                                                  |
+| :----: | :------------------------------------------------------ |
+| **✓**  | Saves your changes and exits edit mode.                 |
+| **✕**  | Discards your changes and restores the previous layout. |
+
+> **Good to Know While Editing**
+>
+> - **Don't forget to save**: Your changes won't take effect until you click **✓**.
+> - **Form locking**: While editing the toolbar, typing, posting, and managing past notes are temporarily paused (you can still switch between dates).
+> - **Finish note edits first**: You can't edit the toolbar while actively editing a note inline. Wrap up or cancel your note edit first.
 
 ---
 
-## Starting over
+## How the "More" Menu (⋯) Works
 
-**"Reset Toolbar"** in the Advanced section of the settings puts the bar back to how it shipped. Press it once and it asks; press it again to go through with it. Leave it alone for a moment and it goes back to asking nothing.
+Buttons you move off the toolbar will live inside the ⋯ menu. Items in this menu follow a fixed order and won't change even if you rearrange your toolbar:
 
-The row is short enough to put right by hand, so this is only there for when it is quicker not to.
+> Image → Embed → List → Checklist → Numbered List → Code → Math → Quote → Bold → Italic → Link → Strikethrough → Highlight → Pin Later
+
+### Behavior Changes in the Menu
+
+Almost everything works the exact same way as it does on the toolbar, with just two small exceptions:
+
+- **Bold and Italic**:
+  On the toolbar, you can trigger these styles before you start typing. Inside the menu, they **only work when you have text selected** and stay greyed out otherwise.
+- **Pin Later**:
+  If a note is pinned for a specific date, a checkmark appears next to this item (just like the button lighting up on the toolbar).
 
 ---
 
-## Notes
+## Resetting to Default
 
-- The arrangement is shared by desktop and mobile. There is one toolbar, not one per device.
-- It is stored in `layout.json` beside the plugin's other files, not in your notes.
-- A button added by a later version of Wrot arrives in the ⋯ menu, so an arrangement you have made is never shifted underneath you. Look there after an update if something new was announced and you cannot see it.
+You can reset your toolbar back to its original layout anytime using **"Reset Toolbar"** under "Advanced".
+To prevent accidental clicks, the first click asks for confirmation, and the second click runs the reset.
+
+---
+
+## A Few Extra Notes
+
+- **Syncs across devices**: Your toolbar layout stays the same across desktop and mobile. It's stored in `layout.json` inside your plugin folder, so your individual notes stay untouched.
 
 ---
 
 ## Troubleshooting
 
-### "Edit toolbar" is not in the menu
+### I can't see "Edit Toolbar" in the menu
 
-- Check **"Show Toolbar Edit Button"** in the Advanced section of the settings.
-- It cannot be chosen while you are editing an existing post.
+- Double-check that **"Show Toolbar Edit Button"** is turned on under "Advanced".
+- Make sure you aren't currently editing an existing note.
 
-### A button will not move
+### Buttons aren't moving when I try to drag them
 
-- The ✓ and ✕ at the end of the bar are not part of the arrangement, and neither is the ⋯ itself.
-- A short press switches a button on or off rather than moving it. Move your finger a little further before letting go.
+- The fixed buttons on the ends (✓, ✕, and ⋯) can't be moved.
+- A quick click or tap just toggles the button's state. Make sure you press and drag to reorder.
 
-### The arrangement went back to how it was
+### My custom layout didn't save
 
-- Leaving with ✕ discards it. Only ✓ keeps it.
-- Turning off "Show Toolbar Edit Button" while arranging also drops what was not kept.
+- Make sure you clicked **✓** to confirm your changes before leaving (clicking ✕ throws away your edits).
 
-### A button has gone missing
+### I'm missing a button
 
-- Look in the ⋯ menu. Everything put away is there.
-- If it is not there either, it is disabled. Open "Edit toolbar" and it shows with a slash; press it to enable it again.
+- **Check the ⋯ menu**: Any button taken off the toolbar ends up here.
+- **Check if it's disabled**: If it's not in the menu either, it's turned off. Open "Edit Toolbar" and click the slashed button to bring it back.

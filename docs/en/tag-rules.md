@@ -1,153 +1,133 @@
-# Using Tag Rules
+# How to Use Tag Rules
 
-In Wrot, you can automatically change the colors of memos based on their tags.
-By styling your tags—like a calm color for `#diary` or a vibrant color for `#work`—you can sort your timeline at a glance.
-Besides colors, a rule can also keep memos with that tag out of the timeline.
-This page explains how to create tag rules and where each setting is applied.
+Wrot lets you automatically change the color of your notes based on their tags.
+By giving each tag a distinct look—like a muted tone for `#journal` or a vibrant shade for `#work`—you can organize and scan your timeline at a glance.
 
----
-
-## Turn the Feature On
-
-Turn on **"Use Tag Rules"** in Settings to start using rules. You'll find it under the **Tag Rules** section.
-
-- Once enabled, one rule is prepared and opened ready to edit.
-- When disabled, memos return to your standard theme colors (your rule settings are kept).
+You can also use tags to keep specific notes off your timeline altogether.
+This guide walks you through setting up tag rules and explains how each option works under the hood.
 
 ---
 
-## Creating a Rule
+## 1. Enable the Feature
 
-Each rule pairs **which tag** with **which colors**.
+To get started, head to your settings and toggle on **"Use Tag Rules"** under the "Tag Rules" section.
 
-### Tag
-
-Enter the name of the tag you want to color. You can include the `#` or leave it out.
-
-- Example: Entering `diary` targets memos tagged with `#diary`.
-
-### Background & Text Color
-
-Choose the **Background color** for the whole memo card and the **Text color** for the body.
-These two are the core colors of a rule and are always set.
+- Enabling this creates a default rule that is unlocked and ready to customize right away.
+- Disabling it reverts your notes to your standard Obsidian theme colors, though your saved rules will remain intact.
 
 ---
 
-## Fine-Tuning the Colors (Optional)
+## 2. Create a Rule
 
-You can color-code with just the background and text colors, but two more colors are available when you want finer control.
-Both can be left unset—in that case a suitable color is chosen automatically.
+Every rule pairs a **target tag** with a **custom color scheme**.
+
+### Choose a Target Tag
+
+Enter the name of the tag you want to style. You can type it with or without the leading `#`.
+
+- For example, entering `journal` will target any note containing `#journal`.
+
+### Set Your Base Colors (Background and Text)
+
+Pick a **background color** for the note card and a **text color** for the body text.
+Since these form the foundation of your rule, both are required.
+
+---
+
+## 3. Fine-Tune Colors Further (Optional)
+
+The two base colors get the job done, but if you want to tweak the design, two extra color options are available.
+If you leave these blank, Wrot automatically calculates balanced shades based on your background and text choices.
 
 ### Accent Color
 
-The color used for tags, links, URLs, and similar elements.
+This highlights elements like tags, internal links, and external URLs.
 
-- When unset, it uses Obsidian's default theme accent color.
-- When set, tags and links appear in that color.
-- Use the **Reset to Defaults** button to return to the unset state.
+- **When left blank**: Uses your Obsidian theme's default accent color.
+- **When set**: Styles tags and links in your chosen color. You can reset this at any time.
 
-### Sub Color
+### Sub Color and Application Scope
 
-The color used for smaller parts around the body, such as timestamps, lists, and quotes.
+This styles secondary elements around your text, such as timestamps, list markers, and blockquotes.
 
-- When unset, an intermediate color is generated automatically from the background and text colors.
-- When set, it applies to the parts chosen in the "Scope" described below.
-- Use the **Reset to Defaults** button to return to the unset state.
+- **When left blank**: Automatically generates a middle-ground shade between your background and text colors.
+- **When set**: Applies your color to specific elements. You can toggle individual parts on or off using the checkboxes below; unchecked items fall back to the auto-generated color.
 
-### Sub Color Scope
-
-When you set a Sub Color, options appear for choosing **which parts** it applies to.
-Parts you uncheck return to the automatic color instead of the Sub Color.
-
-| Toggle                                          | Affected Parts                      |
-| ----------------------------------------------- | ----------------------------------- |
-| Apply Sub Color to Timestamp, Menu, and Pins    | Timestamps, menus, and pins         |
-| Apply Sub Color to Blockquotes                  | Blockquotes                         |
-| Apply Sub Color to Lists and Checkboxes         | Lists and checkboxes                |
-| Apply Sub Color to OGP Cards                    | OGP / Twitter cards in URL previews |
+| Application Scope    | Target Elements                       |
+| :------------------- | :------------------------------------ |
+| **Timestamps, etc.** | Timestamps, menu icons, and pin icons |
+| **Quotes**           | Blockquotes (`>`)                     |
+| **Lists**            | Bulleted lists and checkboxes         |
+| **OGP Cards**        | Link preview cards                    |
 
 ---
 
-## Hiding Memos from the Timeline
+## 4. Hide Notes from the Timeline
 
-Each rule has a **Hide from timeline** option.
-When it is on, memos carrying that tag no longer appear in the Wrot timeline.
+Toggle on **"Hide from timeline"** within a rule to keep matching notes off your main Wrot timeline.
 
-- The daily note itself is untouched. Open the note directly and the memo is still there.
-- Reading View and Live Preview look exactly as before. Only the timeline list is affected.
-- **Pinned memos are an exception.** A pinned memo stays at the top of the timeline even when it carries a hidden tag.
-- When every memo of a day is hidden, you get the same "No notes to show" message as on a day with no memos.
-
-Colors use only the first matching rule, but hiding is checked against every rule.
-A single hidden tag is enough to keep a memo out of the timeline.
+- **Your data stays intact**: The underlying daily note files are untouched, so you can still read them anytime by opening the file directly.
+- **Live Preview and Reading View**: Notes display normally when opened. They are only hidden from the Wrot timeline view.
+- **Pinned notes stay put**: Pinned notes are an exception and will remain anchored to the top of your timeline even if they have a hidden tag.
+- **How multiple tags work**: Colors follow the first tag in the note text, but **the hide rule checks every tag**. If a note includes even one hidden tag, it stays off your timeline.
 
 ---
 
-## Lock to Prevent Accidental Edits
+## 5. Prevent Accidental Edits with Locks
 
-Each rule heading has a **lock icon**.
+Each rule header includes a **lock icon**.
 
-- Rules are normally **locked**, so the color and tag fields can't be touched.
-- Click the lock icon to **unlock** a rule for editing.
-- This prevents you from accidentally overwriting settings you've already arranged.
-
-### The Lock State Is Not Saved
-
-- The locked / unlocked state only affects the current view.
-- **When you close and reopen Settings, all rules return to locked.**
-- Your color and tag values themselves are always saved, so you can close Settings without worry.
+- Rules are **locked** by default to prevent accidental edits while you scroll.
+- Click the lock icon to **unlock** a rule whenever you need to update its tag or colors.
+- **How locks work**: Unlocking is temporary while the settings panel is open. Once you close settings, all rules automatically lock again, while your settings remain safely saved.
 
 ---
 
-## Using Multiple Rules
+## 6. Set Up Multiple Rules
 
-Click **"Add Rule"** to add more rules. On desktop it is the + above the list or the "Add Rule" row below it. On phones there is the "Add Rule" row below the list, and once you have three or more rules, rule 1's header gets a + as well; that + can only be pressed while every rule is locked.
+Click "Add rule" or hit the `+` icon in the header to create extra rules.
 
-- When you add a new rule, the existing rules are automatically locked, and only the new rule is left ready to edit. The page also scrolls to the new rule.
-- Rules are listed from top to bottom.
+- Adding a new rule automatically locks existing ones so you can focus on the new entry.
+- Rules are listed in order from top to bottom.
 
-### Which Rule Is Applied
+### Tag Priority and Overlaps
 
-A single memo may carry tags that match more than one rule.
-In that case, the rule for **the tag that appears first in the memo body** takes priority.
+When a note has multiple tags matching different rules, **the tag that appears first in the note text takes priority**.
 
-- Example: If the body has `#work #urgent` in that order and both have rules, the `#work` rule is used.
-- Only one rule is applied. The first match wins, and the rest are ignored.
+- Example: If a note contains `#work #important` in that order and both have rules, Wrot applies the `#work` rule.
+- Only one color scheme applies per note, so subsequent tags are ignored for styling.
 
 ---
 
-## Where Do the Colors Appear?
+## Where Colors Take Effect
 
-Tag rule colors appear everywhere a memo is shown.
+Your tag rules apply across all note views in Obsidian:
 
-- **Timeline** — Wrot's list view.
-- **Live Preview** — While editing a note directly.
-- **Reading View** — When viewing a note in reading mode.
+- **Timeline** (The Wrot list view)
+- **Live Preview** (Edit mode)
+- **Reading View** (Read mode)
 
-A given memo shows the same colors in every view.
+Your notes maintain a consistent look no matter which view mode you use.
 
 ---
 
 ## Troubleshooting
 
-### The colors don't change
+### Colors Aren't Updating
 
-- Check that "Use Tag Rules" is turned on.
-- Check that the rule's tag name matches the tag on your memo.
-- Check whether the memo also carries another rule's tag (the tag that appears first takes priority).
+- Make sure "Use Tag Rules" is toggled on.
+- Double-check that the tag name in your rule matches the tag in your note.
+- If your note has multiple tags, check whether a rule is assigned to the tag that appears first.
 
-### A memo disappeared from the timeline
+### A Note Disappeared from the Timeline
 
-- Check whether a rule for one of its tags has **Hide from timeline** turned on.
-- The memo itself is not gone. Open the daily note and it is still there.
-- If you want a memo visible at all times, pin it — pinning wins over the hide option.
+- Check if "Hide from timeline" is enabled on any tag attached to the missing note.
+- Don't worry, the note itself isn't deleted. You can find it by opening the daily note file directly.
 
-### I can't edit a rule
+### Can't Edit Rule Settings
 
-- Click the rule's lock icon to unlock it.
-- Right after reopening Settings, all rules are locked.
+- Click the lock icon in the rule header to unlock it for editing.
 
-### The Sub Color I set isn't applied
+### Sub Color Isn't Applying to Some Parts
 
-- Make sure the Sub Color is set, and that the part you want is checked under "Scope."
-- Unchecked parts use the automatic color instead of the Sub Color.
+- Head to the "Application Scope" section under sub-color and make sure the checkboxes for those elements are selected.

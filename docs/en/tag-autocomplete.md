@@ -1,71 +1,71 @@
-# Using Tag Autocomplete
+# How Tag Autocomplete Works
 
-In Wrot, typing `#` in the post form shows tags from your past posts as suggestions.
-It lets you enter your usual tags quickly and accurately, without recalling the exact spelling.
-This page explains how autocomplete works and where the suggestions come from.
+When you type `#` followed by a few letters in Wrot's post box, a list of tags you’ve used before pops up automatically.
+It’s a handy way to avoid typos or inconsistent tag names and quickly drop in your go-to tags.
+
+Here’s a quick walkthrough on how to use it, how it works behind the scenes, and how to tweak the settings.
 
 ---
 
 ## The Basics
 
-1. Type `#` in the post form (the full-width `＃` works too).
-2. Tags you've used in past posts appear as suggestions.
-3. Keep typing to narrow down the list.
-4. Pick a suggestion to insert the tag.
+1. Type `#` in the post box (the full-width `＃` works as well).
+2. A dropdown will show tags from your previous posts.
+3. Keep typing to filter the list in real time.
+4. Pick the tag you want, and you're good to go.
 
-### Picking a Suggestion
+### Selecting and Applying Tags
 
-- **Keyboard** — Use ↑↓ to choose, then Enter or Tab to confirm.
-- **Tap / Click** — Simply press a suggestion to confirm it.
+- **Keyboard**: Navigate with the `↑` and `↓` arrows, then hit `Enter` or `Tab` to insert the tag.
+- **Mouse / Touch**: Just click or tap the tag from the list.
 
-Your usual post shortcut (Ctrl / Cmd + Enter) still works while suggestions are shown. Posting takes priority, so when you're done writing, just post as usual.
+> **Tip**: Your posting shortcuts (`Ctrl + Enter` / `Cmd + Enter`) still work while the tag list is open, so you can send your post right away without closing the popup first.
 
-### How Filtering Works
+### How the Filtering Works
 
-- Matching is case-insensitive.
-- Tags that start with your input come first, followed by tags that contain it.
-- Up to 5 suggestions are shown at a time.
-- Filtering also works while an IME composition is in progress (with unconfirmed characters), so you may find your tag before confirming the conversion.
-
----
-
-## Where Do Suggestions Come From?
-
-- Suggestions are the **tags contained in posts you've made through Wrot**.
-- Each time you post, the tags you used are added to the suggestions (no duplicates).
-- Recently used tags are remembered with priority. Up to 200 tags are kept; beyond that, the least recently used ones are forgotten first.
-- Suggestion data is stored separately from your settings, in a file inside the plugin folder (`tags.json`).
-
-### What Doesn't Become a Suggestion
-
-- A `#` written inside URLs, links, code, or formatting doesn't count as a tag. If it doesn't render as a tag, it won't become a suggestion either.
-- Tags from other notes in your vault are not collected. Only tags posted through Wrot count.
-- Tags registered in tag rules don't become suggestions just by being registered. They join the list once you actually use them in a post.
+- **Case-insensitive**: Upper and lower case don't matter. Typing "app" will match both "app" and "App".
+- **Smart sorting**: Tags that start with what you typed show up first, followed by partial matches (up to 5 suggestions at a time).
+- **IME friendly**: If you're using Japanese input, it filters as you type before you even confirm your text conversion, saving you extra keypresses.
 
 ---
 
-## Turning It Off
+## How Wrot Remembers Your Tags
 
-Toggle **"Tag Autocomplete"** in the **Advanced** section of Settings (on by default).
+- **What gets saved**: Only tags from notes you've posted through the Wrot timeline.
+- **When it updates**: Every time you share a post, any tags in it are automatically saved to your history (duplicates are skipped).
+- **History limit**: Wrot keeps up to 200 of your most recently used tags. Once you cross that limit, older ones make way for the new ones.
+- **Where it’s stored**: Saved safely in a file called `tags.json` inside your plugin folder, totally separate from your settings.
 
-- When turned off, suggestions stop appearing and no new tags are remembered.
-- Turning it off also discards every tag remembered so far. Turn it back on and the list starts empty again.
-- Suggestions can only be cleared all at once; you cannot remove individual ones.
+### What Doesn't Show Up
+
+- **Symbols in formatting or code**: Hashes in URLs, internal links, inline code (` `), or formatting symbols aren't treated as tags.
+- **Tags elsewhere in your Vault**: Wrot doesn't index your whole Vault. It only tracks tags you've actually posted with Wrot.
+- **Unused rule tags**: Tags in your "Tag Rules" settings won't pop up until you've posted them at least once.
+
+---
+
+## Turning It Off or Wiping History
+
+If you want to turn this off, head over to "Advanced" and toggle **Tag Autocomplete** off (it's ON by default).
+
+- **Turning it off**: Stops the popup from showing up and pauses new tag tracking.
+- **Clearing history**: Switching the toggle OFF instantly wipes all your saved tag data (`tags.json`). Turning it back ON starts you off with a fresh, empty list.
+  - _Note: There's no way to delete tags individually._
 
 ---
 
 ## Troubleshooting
 
-### No Suggestions Appear
+### Suggestions aren't popping up
 
-- Check that "Tag Autocomplete" is turned on in Settings.
-- Only tags posted through Wrot become suggestions. A tag you've never used in a post won't appear.
+- Double-check that "Tag Autocomplete" is turned ON under "Advanced".
+- Keep in mind that Wrot only suggests tags you've posted in the past. New tags won't show up until you've used them once.
 
-### A Tag You Expect Is Missing
+### A tag I used isn't showing up
 
-- Use the tag once in a post, and it will appear in the suggestions from then on.
-- Tags written inside URLs or code in past posts are not collected.
+- Once you publish a post with that tag, it'll start showing up in the list next time.
+- Tags wrapped in code blocks or embedded in URLs from past posts don't get logged as real tags.
 
-### Starting Over
+### Want to reset your list and start fresh?
 
-- Since individual suggestions can't be removed, turn "Tag Autocomplete" off once and back on to wipe the list. As you keep posting with tags, the suggestions will grow back.
+- Since you can't delete tags one by one, simply toggle "Tag Autocomplete" OFF and then back ON in settings. This wipes the slate clean so Wrot can start learning your tags from scratch.

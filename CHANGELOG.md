@@ -12,7 +12,7 @@
 
 ### Improvements
 
-- Reworked the startup path so Obsidian starts faster
+- Reworked the startup path so Wrot loads lighter
 - Changes to the display position now take effect right away
 
 ### Bug Fixes

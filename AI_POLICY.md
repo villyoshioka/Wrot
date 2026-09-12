@@ -1,80 +1,84 @@
-# AI Usage Policy
+# AI Use Policy
 
-This project utilizes AI assistants as part of the development workflow.
+This policy sets out the core guidelines for any project where I use AI tools to help build and release software.
 
-This document provides transparency regarding how we use AI, the limitations we place on it, and the internal policies governing its operation.
-
----
-
-## AI Models Used
-
-We utilize **Claude** by Anthropic.
-
-Our use of AI is strictly governed by the [Claude Acceptable Use Policy](https://www.anthropic.com/legal/aup). In addition, we have established our own internal guidelines to ensure responsible use.
+I believe in being fully transparent about where AI fits into my workflow, what I keep strictly hands-on, and the rules I stick to while building.
 
 ---
 
-## The Role of AI
+## AI Tools I Use
 
-### Scope of AI Assistance
+I use **Claude** (by Anthropic) to assist with development.
 
-| Role | Description |
-|------|------|
-| **Implementation** (Primary) | Writing code for features and bug fixes based on developer instructions. |
-| **Design & Security Review** | Identifying potential flaws in code or architecture (final judgment remains with the developer). |
-| **Documentation** | Drafting and updating READMEs, release notes, and other documentation. |
-| **Workflow Automation** | Assisting with routine tasks such as commits, ZIP packaging, and GitHub releases. |
-
-### Exclusions (Human-Only Tasks)
-
-| Task | Reason |
-|------|------|
-| **Authentication & Access** | For security reasons, any action requiring login or credentials is performed manually. |
-| **Final Quality Assurance** | The developer manually tests and verifies all outputs to guarantee quality. |
-| **Release Authorization** | The final decision to release any update rests solely with the developer. |
-
-**Important**: A human developer maintains final decision-making authority and oversight at every stage. AI is used strictly as a supportive tool; humans remain the primary decision-makers.
+On top of following the [Claude Acceptable Use Policy](https://www.anthropic.com/legal/aup), I also follow my own set of internal standards.
 
 ---
 
-## Governing Principles
+## How I Use AI (and Where I Don't)
+
+I take full ownership of all system design and feature planning. AI never makes those calls. It works purely as an assistant to help me turn my ideas and instructions into working code.
+
+### What AI Helps With
+
+| Focus Area                       | How It's Used                                                                                             |
+| :------------------------------- | :-------------------------------------------------------------------------------------------------------- |
+| **Writing Code** (Main Use Case) | Generating code for features and bug fixes based on my specific designs and instructions                  |
+| **Code & Security Reviews**      | Flagging potential bugs or security risks in the codebase (I decide whether to use any suggested changes) |
+| **Drafting Documentation**       | Helping write and polish READMEs, technical docs, and release notes                                       |
+| **Release Prep**                 | Helping run routine commands for builds, archiving, and updating change logs                              |
+
+### What I Handle Myself
+
+| Category                            | Why It's Hands-On                                                               |
+| :---------------------------------- | :------------------------------------------------------------------------------ |
+| **Planning, Design & Architecture** | Deciding how the app works and feels for users is entirely up to me             |
+| **Logins & Sensitive Actions**      | I handle all credentials and authenticated tasks manually to keep things secure |
+| **Quality & Performance**           | I personally verify quality by running tests on real physical devices           |
+| **Release Decisions**               | I make the final call on when code gets merged and shipped                      |
+
+> **Bottom Line**: A human developer signs off on every single step. AI is just a tool to speed up execution. The design, specs, and final decision to ship are always 100% on me.
+
+---
+
+## Standards & Principles
 
 ### Copyright & Intellectual Property
 
-We strictly adhere to the following when developing with AI:
+I hold AI-assisted development to strict IP standards:
 
-- No unauthorized copying of third-party code.
-- No unauthorized reproduction of external text or documentation.
-- No unauthorized use of media such as images or icons.
-- Strict compliance with all software license terms.
-- No removal or alteration of copyright or license notices.
+- No copying or plagiarizing third-party code.
+- No ripping off external articles or official docs.
+- No unauthorized use of images, icons, or other media assets.
+- No code that violates open-source licenses.
+- No altering or stripping out copyright notices.
 
-We ensure that all resources used are based on legitimate licenses.
+All code introduced into the project strictly respects existing licenses and rights.
 
-### Ethical Standards
+### Ethics & Security
 
-We never utilize AI to generate:
+I never ask AI to generate code or content that includes:
 
-- Malicious code, such as malware or backdoors.
-- Code that compromises user privacy.
-- Code with intentional security vulnerabilities.
-- Discriminatory, offensive, or harmful content.
-- Misleading information or deceptive features.
-- Functionality that violates laws or regulations.
+- Malicious code like malware, backdoors, or exploit scripts
+- Features that track users or compromise their privacy
+- Intentional security flaws
+- Hateful, offensive, or inappropriate content
+- Misleading UI design or false information
+- Anything that breaks laws or platform guidelines
 
-### User Data Privacy
+### User Data & Privacy
 
-- This plugin does not collect any personal information.
-- No user data is ever provided to or processed by AI during the development process.
+- I don't collect or send user data or local files anywhere unauthorized.
+- Real user data or personal info is never fed into AI tools during development or debugging.
 
 ---
 
-## Developer Accountability
+## My Responsibility as a Developer
 
-The developer assumes full responsibility for all AI-assisted work, including:
+Using AI doesn't change where the buck stops. I take full accountability for everything I ship, which means I personally handle:
 
-1. **Step-by-Step Approval**: Reviewing AI output at each stage before proceeding.
-2. **Quality Assurance**: Conducting manual testing to ensure functional integrity.
-3. **Final Verification**: Thoroughly reviewing all deliverables prior to release.
+1. **Design & Architecture**: Shaping every feature and overall system design from the ground up.
+2. **Review & Approval**: Carefully reviewing every line of AI-generated code before incorporating it.
+3. **Real-Device Testing**: Manually testing the app on physical hardware to make sure it's stable and safe.
+4. **Final Sign-off**: Auditing the entire codebase for consistency and security before putting it out there.
 
-The developer bears ultimate responsibility for the project, regardless of whether the code was generated by AI.
+Even if AI helped draft the code or copy, the final product is entirely my responsibility.

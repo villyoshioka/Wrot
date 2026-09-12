@@ -1,140 +1,125 @@
-# How to Use Images, Links, and Embeds
+# Working with Images, Links, and Embeds
 
-Wrot supports images, note links, and URLs using the same syntax as Obsidian.
-This page summarizes how to write each and how they are displayed.
+Wrot integrates seamlessly with Obsidian’s native Markdown syntax, making it easy to display images, link to other notes, and show link previews for external websites.
 
----
-
-## 📎 Embed Button
-
-The 📎 button at the beginning of the input field toolbar is the gateway to all embeds supported by Wrot.
-You can post images and Obsidian notes with this single button.
-
-### How to Use
-
-1. Pressing 📎 inserts `![[ ]]` and places the cursor inside.
-2. Enter the file name in that state.
-
-### When You Want to Wrap Selected Text
-
-- If you select a file name and then press 📎, it will be automatically wrapped in `![[ ]]`.
-- If you select a range already wrapped in `![[ ]]` or `[[ ]]` and press 📎, the syntax will be removed.
-
-### Behavior When the Cursor is Inside `![[ ]]`
-
-- The 📎 button will light up in an active state.
-- Pressing it again will remove the `![[ ]]`.
+This guide walks you through inserting these elements, how previews work, and a few key settings to keep in mind.
 
 ---
 
-## 🖼️ Attaching Images
+## 1. 📎 The Embed Button
 
-You can paste images directly into the post form. This makes it easy to take a screenshot and post it immediately.
+The **📎 (Embed Button)** in the toolbar gives you a quick shortcut to insert images or link to other notes.
 
-### Three Ways to Attach
-
-1. Image Add Button — Pressing the image add button (to the left of 📎) at the beginning of the toolbar opens a file selection dialog.
-2. Paste — Pasting an image from your clipboard into the post form (Cmd+V / Ctrl+V) will attach it. This applies to screenshots or images copied from image editing apps.
-3. Drag & Drop — Dragging an image file into the post form and releasing it will attach it.
-
-### Image Storage and File Names
-
-- Images are saved only at the time of posting. If you close the form without posting, the image will not be saved anywhere.
-- The storage location follows Obsidian's settings: Settings → Files & Links → Default location for new attachments.
-- Turning on "Image Folder" in Wrot's settings saves only the images added from Wrot to a folder of your choice. If that folder is missing, Obsidian's setting is used instead (the folder is never created automatically).
-- File names are automatically generated in the format `Pasted Image YYYYMMDDHHmmss.<extension>`.
-
-### Important Notes
-
-- Limit of one image per memo.
-- Only PNG, GIF, and JPEG can be selected via the Image Add button. Paste and Drag & Drop also accept WebP, SVG, BMP, etc.
-- Copying a file (Cmd+C / Ctrl+C) in your OS file manager (Finder / Explorer, etc.) and pasting it is not supported. To add an image from a file manager, use the Image Add button or Drag & Drop.
+- **Inserting a new link**: Click the button without selecting any text to insert `![[ ]]`. The cursor will automatically land inside the brackets so you can start typing the file or note name right away.
+- **Wrapping existing text**: Select any text and click the button to wrap it in `![[ ]]`.
+- **Removing brackets**: Select text that is already wrapped in `![[ ]]` or `[[ ]]` and click the button. You can also click it again while your cursor is inside the brackets (when the button is highlighted) to remove them.
 
 ---
 
-## 🖼️ Embedding Images Manually
+## 2. Attaching Images (Pasting and Drag-and-Drop)
 
-If you want to embed an image already in your Vault or an image from an external URL, you can write the syntax directly.
+You can attach screenshots and photos directly into your post.
 
-There are three ways to display images in Wrot. All can be written manually or using the 📎 button.
+### 3 Ways to Attach Images
 
-### 1. Images Inside the Vault (Recommended)
+1. **Image Button (🖼️)**: Opens a file browser so you can pick an image from your device.
+2. **Paste from Clipboard**: Copy an image from a screenshot tool or image editor, then paste it right into the editor (`Ctrl + V` / `Cmd + V`).
+3. **Drag and Drop**: Drag an image file and drop it straight onto the post area.
 
-```
+### Where Images Are Saved and Naming Rules
+
+- **Saving behavior**: Images are **saved to your Vault only when you publish your post**. If you discard the post, the file won't be saved.
+- **Default folder**: By default, Wrot respects your main Obsidian preferences under Settings > Files and links > Default location for new attachments.
+  - If you turn on "Image Folder" in Wrot's settings, any images attached through Wrot will go into a dedicated folder instead. If that folder doesn't exist, Wrot automatically falls back to your main Obsidian setting.
+- **File names**: Images are automatically renamed using the format `Pasted Image YYYYMMDDHHmmss.<extension>`.
+
+### A Few Things to Note
+
+- **Attachment limit**: You can attach up to **1 image** per note.
+- **Supported file types**:
+  - Image Button: `PNG`, `JPEG`, and `GIF`
+  - Paste / Drag-and-Drop: `PNG`, `JPEG`, `GIF`, as well as `WebP`, `SVG`, and `BMP`
+- **Copying files in Finder or File Explorer**: Copying an image file directly from Finder or Explorer and pasting it isn't supported. To add an image from your computer, use the Image button or drag and drop it into the editor.
+
+---
+
+## 3. Embedding Images Manually
+
+You can also embed images manually using Markdown, whether they live in your Vault or on the web.
+
+### Images in Your Vault (Recommended)
+
+```markdown
 ![[photo.png]]
 ```
 
-→ If the image exists in the Vault, it will be displayed as an image.
+If the file exists in your Vault, an inline preview will show up automatically.
+Supported formats include `png`, `jpg`, `jpeg`, `gif`, `svg`, `webp`, and `bmp`.
 
-Supported extensions: `png` `jpg` `jpeg` `gif` `svg` `webp` `bmp`
+### Web Image URLs
 
-### 2. Images on the Internet
-
-```
+```text
 https://example.com/photo.png
 ```
 
-→ It will be displayed as an image regardless of whether the URL Preview setting is ON or OFF.
+URLs that end with an image extension will automatically render inline as an image, regardless of your URL preview settings.
 
-### 3. Images via Obsidian URL
+### Obsidian URL Scheme
 
-```
+```text
 obsidian://open?vault=MyVault&file=photo.png
 ```
 
-→ If the image in the Vault can be resolved, it will be displayed as an image.
-If it cannot be resolved, it will be displayed as a link.
+If Wrot can locate the image in the specified Vault, it renders as an image. If it can't find the file, it defaults to a standard link.
 
 ---
 
-## 🔗 Internal Note Links
+## 4. Linking Between Notes
 
-You can also link to notes within your Vault.
+Linking to other notes in your Vault uses the same bracket syntax.
 
-```
+```markdown
 ![[Note Name]]
 [[Note Name]]
 ```
 
-The 📎 button only inserts `![[ ]]`. If you want to use `[[ ]]`, please write it manually.
-In either syntax, clicking it will cause Obsidian to open that note.
-Unlike images, notes are displayed as links.
+The 📎 button inserts `![[ ]]` by default. If you want a plain text link like `[[ ]]`, simply type the brackets yourself. Clicking either format opens the linked note.
 
 ---
 
-## 🌐 URL Previews (OGP Cards)
+## 5. Web Link Previews (OGP Cards)
 
-External links can display information from the linked site as an OGP card.
+When you include an external URL, Wrot can display it as a rich preview card with a title, description, and thumbnail.
 
-### Conditions for Card Display
+### When Preview Cards Show Up
 
-- "URL Preview" is turned ON in the settings.
-- The URL starts with `http://` or `https://`.
-- A title or description can be retrieved from the link destination.
+- **"URL Preview"** is enabled in Wrot's settings
+- The link starts with `http://` or `https://`
+- The destination website provides valid OGP metadata
 
-### Cases Where Cards Are Not Displayed
+### When Preview Cards Won't Show Up
 
-- "URL Preview" is turned OFF in the settings.
-- `obsidian://` URLs (these are files within a Vault, so they have no OGP information).
-- Image URLs (these are displayed as image previews, not cards).
-- Title or description could not be retrieved from the link destination.
+- URL Previews are turned off in settings
+- You are using internal links like `obsidian://`
+- The link points directly to an image file (the image itself will display instead)
+- The target page is restricted or doesn't share OGP data
 
-### Twitter / X Posts
+### X (Twitter) Links
 
-Links to `https://twitter.com/...` or `https://x.com/...` posts are displayed with a dedicated style.
+Links to posts on `https://twitter.com/...` and `https://x.com/...` are automatically formatted into a custom card designed specifically for social posts.
 
 ---
 
 ## Troubleshooting
 
-### Image Does Not Appear
+### Images aren't displaying properly
 
-- Check if the file name matches the file in the Vault exactly.
-- Check if the extension is supported.
-- Check if the `![[ ]]` brackets are closed correctly.
+- Make sure the file name and extension match the file in your Vault exactly.
+- Check that you haven't missed a closing bracket in `![[ ]]`.
+- Verify that the image format is supported.
 
-### URL Preview Does Not Appear
+### Link preview cards aren't showing up
 
-- Turn ON "URL Preview" in the settings.
-- It will not appear if the destination does not have OGP information.
-- For image URLs, it will be displayed as an image rather than an OGP card.
+- Double-check that "URL Preview" is turned on in Wrot's settings.
+- Make sure the website actually supports OGP meta tags.
+- Direct links to image files will render as images rather than preview cards.

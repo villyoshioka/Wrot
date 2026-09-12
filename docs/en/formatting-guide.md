@@ -1,154 +1,130 @@
-# How to Use Decorations
+# Formatting Guide
 
-The Wrot posting form includes a toolbar for formatting your text.
-With just a click of a button, you can insert Markdown for bold text, quotes, lists, and more.
-This page summarizes the available decorations in the toolbar and how they behave.
+The Wrot post editor comes with a toolbar that makes formatting your text a breeze.
+With a single click, you can quickly add Markdown styling like bold text, lists, and blockquotes.
+
+Here is a breakdown of the formatting tools on the toolbar and how they work.
 
 ---
 
-## Toolbar Overview
+## Toolbar Layout
 
-Below the text area of the posting form, the following buttons are arranged from left to right:
+By default, the bottom of the editor features the following tools, from left to right:
 
-| Icon | Name | Description |
-| --- | --- | --- |
-| 🖼️ | Add Image | Opens the device's file selection dialog to attach an image |
-| 📎 | Embed | Embeds notes or files using `![[ ]]` |
-| B | Bold | `**Bold**` |
-| I | Italic | `*Italic*` |
-| ☰ | List | `- Item` |
-| ☑ | Checklist | `- [ ] Task` |
-| 1. | Numbered List | `1. Item` |
-| 🕐 | Pin Later | Sets a day for the post being written |
-| ⋯ | More Formatting | Code, Math, Quotes, Links, Strikethrough, Highlight |
+| Icon  | Feature           | What It Does / Inserts                                        |
+| :---: | :---------------- | :------------------------------------------------------------ |
+|  🖼️   | **Image**     | Opens a window to choose and attach images                    |
+|  📎   | **Embed**         | Embeds notes or files using `![[ ]]`                          |
+| **B** | **Bold**          | `**Bold**`                                                    |
+|  _I_  | **Italic**        | `*Italic*`                                                    |
+|  ☰   | **List**          | `- Bullet point`                                              |
+|   ☑   | **Checklist**     | `- [ ] Task`                                                  |
+|  1.   | **Numbered List** | `1. Numbered`                                                 |
+|   ⋯   | **More**  | Code, Math, Blockquotes, Links, Strikethrough, and Highlights |
 
-This is where the buttons start. Which of them sit on the bar, and in what order, is up to you.
-👉 [Arranging the Toolbar](./toolbar.md)
+- You can customize which buttons show up on the toolbar and rearrange them. To learn how, check out [How to Use the Toolbar](./toolbar.md).
 
 ---
 
 ## Bold and Italic
 
-The behavior changes depending on whether you have a selection or not.
+How these work depends on whether you have highlighted any text.
 
-### With a selection
+### When Text Is Selected
 
-The decoration is applied directly to the selected part. Pressing the button again removes the decoration.
+Clicking a style wraps your highlighted text in Markdown tags. Click it again to strip the formatting.
 
-- Bold: Wraps the selected text in `**...**`
-- Italic: Wraps the selected text in `*...*`
+- **Bold**: Wraps text with `**…**`.
+- **Italic**: Wraps text with `*…*`.
 
-### Without a selection (Preview Mode)
+### When No Text Is Selected (Type-Ahead Mode)
 
-This system allows you to insert only the marker at the cursor position first and complete the decoration while you type.
+This mode drops an **opening tag** right where your cursor is and closes it once you finish typing.
 
-1. When you press the Bold button, `**` is inserted at the cursor position (the button will light up).
-2. Type the text you want to format.
-3. Press the Bold button again to insert the closing `**` and complete the decoration.
+1. Click the button to drop an opening tag (like `**`) at your cursor. The toolbar button will light up.
+2. Type out your text.
+3. Click the button again to add the closing tag (like `**`) and finish formatting.
 
-Italic works the same way.
-
-When the decoration is closed, a half-width space is added after the closing marker. Markers that touch each other are not read as a decoration, so the space lets you carry straight on typing.
-
-If you submit a post while a decoration is still open, it is saved exactly as typed: the markers stay as plain characters and no decoration is applied.
-
-### Bold and Italic cannot be used simultaneously
-
-If you press the Italic button while "Bold is in preview mode," it will not respond. The reverse is also true.
-Please finish and close one decoration before using the other.
-
-### Behavior while using Japanese IME
-
-While converting characters in an IME, buttons in preview mode cannot be pressed.
-This is a safeguard to prevent accidentally closing the decoration.
+> **Tips and Things to Know**
+>
+> - **Auto-spacing**: Whenever you close a tag, a space gets added right after it so your formatting does not bleed into the next word.
+> - **Posting mid-way**: If you publish a post without closing a tag, starting symbols like `**` will just show up as plain text.
+> - **Combining bold and italic**: You cannot turn on both modes at once. Wrap your text in one style first before applying the other.
+> - **IME protection**: To prevent accidental formatting changes while typing in Japanese, toolbar buttons briefly pause while converting text.
 
 ---
 
-## List, Checklist, and Numbered List
+## Lists (Bullets, Checklists, Numbered)
 
-Pressing these buttons inserts a marker at the beginning of the current line.
-Even if the cursor is in the middle of a line, the marker will always be placed at the very beginning of that line.
+Clicking a list button inserts a list symbol at the **very start of your current line**, even if your cursor is in the middle of a sentence.
 
-| Button | Marker inserted |
-| --- | --- |
-| List | `- ` |
-| Checklist | `- [ ] ` |
-| Numbered List | `1. ` |
+| Button            | Inserted Symbol |
+| :---------------- | :-------------- |
+| **Bulleted List** | `- `            |
+| **Checklist**     | `- [ ] `        |
+| **Numbered List** | `1. `           |
 
-### Press Enter for the next item
+### Auto-Continuing Lists
 
-When you press Enter on a list item, the marker for the next item is automatically inserted.
-Pressing Enter on an empty item will exit the list.
-
----
-
-## Code
-
-Select "Code" from the "More" menu.
-
-| Situation | Format inserted |
-| --- | --- |
-| With selection | <code>\`Selection\`</code> (Inline) |
-| Without selection | <code>~~~</code> to <code>~~~</code> (Fence block) |
-
-The cursor will be placed inside the fence block, so you can start writing the content immediately.
+Hitting `Enter` on a list line automatically starts a new list item on the next line.
+To break out of a list, just hit `Enter` on an empty list item.
 
 ---
 
-## Math
+## More Formatting Options (⋯)
 
-Select "Math" from the "More" menu.
-Like Code, the behavior changes based on whether there is a selection.
+### Code
 
-| Situation | Format inserted |
-| --- | --- |
-| With selection | `$Selection$` (Inline) |
-| Without selection | `$$ ~ $$` (Block) |
+The editor automatically toggles between inline code and a full code block based on your text selection.
 
----
+| Selection Status  | What Gets Inserted                                |
+| :---------------- | :------------------------------------------------ |
+| **Text selected** | <code>\`Selected Text\`</code> (Inline code)      |
+| **No selection**  | <code>~~~</code> to <code>~~~</code> (Code block) |
 
-## Quote
+- When you insert a code block, your cursor drops right inside it so you can start typing right away.
 
-Select "Quote" from the "More" menu.
-This toggles a `> ` at the beginning of the selected line (or the current line).
+### Math (LaTeX)
 
-- If multiple lines are selected, `> ` is added to all lines.
-- If pressed while all selected lines already have `> `, they will be removed collectively.
+Just like the code tool, this switches between inline and block math depending on what you have selected.
 
----
+| Selection Status  | What Gets Inserted              |
+| :---------------- | :------------------------------ |
+| **Text selected** | `$Selected Text$` (Inline math) |
+| **No selection**  | `$$ 〜 $$` (Block math)         |
 
-## Link
+### Blockquotes
 
-Select "Link" from the "More" menu.
-This cannot be used without a selection (the menu item will be grayed out).
+This button turns quotes on and off at the start of your current line or selected lines.
 
-It converts the selected text into the format `[Text](URL)` and places the cursor at the `URL` position.
+- Selecting multiple lines adds `> ` to every single line.
+- If every selected line is already a quote, clicking the button removes the `> ` from all of them at once.
 
-Example: If you select "Wrot" and press it, it becomes `[Wrot]()`, with the cursor placed inside the `()`.
+### Links
 
----
+**This option only works when text is selected.** (It stays grayed out otherwise.)
 
-## Strikethrough and Highlight
+- It turns your selected text into `[Selected Text](URL)` and drops your cursor right inside the parentheses `()`.
 
-| Button | Decoration |
-| --- | --- |
-| Strikethrough | `~~...~~` |
-| Highlight | `==...==` |
+### Strikethrough and Highlight
 
-Both are selected from the "More" menu.
-They cannot be used without a selection (the menu item will be grayed out).
-Pressing the button again removes the decoration.
+**These options only work when text is selected.** (They stay grayed out otherwise.) You can remove the effect by selecting the text and clicking the button again.
 
----
-
-## Images and Embeds
-
-Detailed instructions for the 🖼️ Add Image button and 📎 Embed button are summarized on a separate page.
-👉 [How to use Images, Links, and Embeds](./links-and-embeds.md)
+| Feature           | Inserted Format |
+| :---------------- | :-------------- |
+| **Strikethrough** | `~~Text~~`      |
+| **Highlight**     | `==Text==`      |
 
 ---
 
-## Posting Shortcuts
+## Attaching and Embedding Images
 
-- Ctrl/Cmd + Enter: Post
-- Post Button: Click with a mouse to post
+For a detailed walkthrough on attaching images (🖼️) or embedding notes and files (📎), check out the guide below.
+
+👉 [How to Use Images, Links, and Embeds](./links-and-embeds.md)
+
+---
+
+## Keyboard Shortcuts
+
+- **Post**: `Ctrl + Enter` / `Cmd + Enter` (or click the post button)
