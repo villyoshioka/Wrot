@@ -7,7 +7,7 @@ const zhTW = {
   "settings.section.tagrules": "標籤規則設定",
 
   "settings.item.viewPlacement.name": "顯示位置",
-  "settings.item.viewPlacement.desc": "關閉並重新開啟 Wrot 後生效。",
+  "settings.item.viewPlacement.desc": "指定 Wrot 的顯示位置。",
   "settings.option.viewPlacement.left": "左側欄",
   "settings.option.viewPlacement.right": "右側欄",
   "settings.option.viewPlacement.main": "主區域",
@@ -58,7 +58,7 @@ const zhTW = {
   "settings.item.ogp.desc": "從 URL 取得預覽資訊。 \n關閉後不進行外部通訊。",
 
   "settings.item.checkStrikethrough.name": "已勾選項目加刪除線",
-  "settings.item.checkStrikethrough.desc": "關閉時文字維持原樣。",
+  "settings.item.checkStrikethrough.desc": "關閉後，勾選的項目不會顯示刪除線。",
 
   "settings.item.calendarDayShape.name": "日期按鈕形狀",
   "settings.item.calendarDayShape.desc": "套用於日曆中的日期。",
@@ -78,6 +78,8 @@ const zhTW = {
   "settings.item.attachmentFolder.name": "儲存資料夾",
   "settings.item.attachmentFolder.desc": "若資料夾不存在，則依照 Obsidian 的設定。",
   "settings.item.attachmentFolder.placeholder": "選擇資料夾",
+  "settings.item.shrinkImages.name": "壓縮圖片後儲存",
+  "settings.item.shrinkImages.desc": "壓縮附加的圖片，並在儲存前刪除位置資訊等資料。\nGIF 不在此列。",
 
   "settings.item.tagColorRules.name": "使用標籤規則",
   "settings.item.tagColorRules.desc": "可依標籤分別設定顏色與標籤整合等。 \n顏色以內文中先出現的標籤為準。",

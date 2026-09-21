@@ -1,7 +1,7 @@
 import { blendColor } from "../utils/color";
 
 /** Colors resolved from the settings for the active theme mode. */
-export interface WrPalette {
+interface WrPalette {
   bgColor: string;
   hoverColor: string;
   textColor: string;

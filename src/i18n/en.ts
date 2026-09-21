@@ -7,7 +7,7 @@ const en = {
   "settings.section.tagrules": "Tag Rules",
 
   "settings.item.viewPlacement.name": "Display Position",
-  "settings.item.viewPlacement.desc": "Applies the next time Wrot is opened.",
+  "settings.item.viewPlacement.desc": "Where Wrot is shown.",
   "settings.option.viewPlacement.left": "Left Sidebar",
   "settings.option.viewPlacement.right": "Right Sidebar",
   "settings.option.viewPlacement.main": "Main Area",
@@ -58,7 +58,7 @@ const en = {
   "settings.item.ogp.desc": "Fetches preview details from URLs. \nSwitching it off stops all outside connections.",
 
   "settings.item.checkStrikethrough.name": "Strikethrough for Checked Items",
-  "settings.item.checkStrikethrough.desc": "Left off, the text stays as it is.",
+  "settings.item.checkStrikethrough.desc": "When off, checked items are not struck through.",
 
   "settings.item.calendarDayShape.name": "Date Button Shape",
   "settings.item.calendarDayShape.desc": "Applies to the days in the calendar.",
@@ -78,6 +78,8 @@ const en = {
   "settings.item.attachmentFolder.name": "Destination Folder",
   "settings.item.attachmentFolder.desc": "If the folder is missing, Obsidian's own setting is used.",
   "settings.item.attachmentFolder.placeholder": "Select a folder",
+  "settings.item.shrinkImages.name": "Compress Images",
+  "settings.item.shrinkImages.desc": "Compresses attached images and removes location and similar data before saving. \nGIFs are left as is.",
 
   "settings.item.tagColorRules.name": "Use Tag Rules",
   "settings.item.tagColorRules.desc": "Lets you change the color, tag integration and more per tag. \nFor color, the tag appearing first in the text wins.",

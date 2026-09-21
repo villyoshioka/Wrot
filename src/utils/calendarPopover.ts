@@ -5,7 +5,7 @@ declare const moment: typeof import("moment");
 
 type Moment = ReturnType<typeof moment>;
 
-export interface CalendarPopoverOptions {
+interface CalendarPopoverOptions {
   // Element the popover aligns to (the calendar button).
   anchor: HTMLElement;
   // Element whose right edge the popover's right edge meets, when that is not the anchor's.

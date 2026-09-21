@@ -3,7 +3,7 @@ import { inlineTokenPattern } from "./patterns";
 
 // Cap on stored recent tags; least-recently-used entries are dropped past
 // the cap to keep the candidate list fresh.
-export const MAX_RECENT_TAGS = 200;
+const MAX_RECENT_TAGS = 200;
 
 // Max candidates shown at once (the list itself scrolls).
 const MAX_VISIBLE_ITEMS = 5;
@@ -32,7 +32,7 @@ export function mergeRecentTags(existing: string[], used: string[]): string[] {
   return merged.slice(0, MAX_RECENT_TAGS);
 }
 
-export interface TagSuggestOptions {
+interface TagSuggestOptions {
   textarea: HTMLTextAreaElement;
   // Parent element hosting the popover (view body = wr-container); positioned and
   // clamped in container coordinates, same as the calendar popover.

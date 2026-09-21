@@ -1,6 +1,6 @@
 {
   "name": "wrot",
-  "version": "2.26.0",
+  "version": "2.27.0",
   "description": "Micro-journal your day in a timeline, one \"tweet\" at a time.",
   "type": "module",
   "scripts": {
@@ -9,16 +9,13 @@
     "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production"
   },
   "devDependencies": {
-    "@codemirror/language": "^6.12.4",
     "@codemirror/state": "6.5.0",
     "@codemirror/view": "6.38.6",
     "@eslint/js": "^10.0.1",
-    "@types/node": "^26.4.1",
     "esbuild": "^0.28.2",
-    "eslint": "^10.9.1",
+    "eslint": "^10.11.0",
     "globals": "^17.12.0",
     "obsidian": "^1.13.1",
-    "tslib": "^2.7.0",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.69.0"
   },

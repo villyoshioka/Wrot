@@ -32,6 +32,9 @@ You can attach screenshots and photos directly into your post.
 - **Default folder**: By default, Wrot respects your main Obsidian preferences under Settings > Files and links > Default location for new attachments.
   - If you turn on "Image Folder" in Wrot's settings, any images attached through Wrot will go into a dedicated folder instead. If that folder doesn't exist, Wrot automatically falls back to your main Obsidian setting.
 - **File names**: Images are automatically renamed using the format `Pasted Image YYYYMMDDHHmmss.<extension>`.
+- **Compression**: By default, attached images are compressed and stripped of location and similar embedded data before saving. Turn off "Compress Images" in Wrot's settings to save them as they are.
+  - Compressed images are saved as WebP. On iPhone and iPad, where WebP cannot be written, they become JPEG or PNG (with transparency) instead.
+  - GIFs and other animated images are never compressed. An image that would not get smaller is also saved as is.
 
 ### A Few Things to Note
 

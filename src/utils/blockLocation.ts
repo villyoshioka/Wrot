@@ -15,7 +15,7 @@ export const WR_CODE_SELECTOR =
 /** Selectors that bound one logical render scope: an embed, a hover preview, or a reading view. */
 const SCOPE_ROOT_SELECTOR = ".markdown-embed, .hover-popover, .markdown-reading-view";
 
-export interface WrBlockLocation {
+interface WrBlockLocation {
   sourcePath: string;
   /** 0-based line of the ```wr fence opening line in the source file. */
   lineStart: number;

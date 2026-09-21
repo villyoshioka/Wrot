@@ -90,7 +90,7 @@ export default class WrotPlugin extends Plugin {
 
     registerWrotPostProcessor(this);
 
-    this.registerEditorExtension([createWrEditorExtension(this.ogpCache, this.app, this, () => this.settings.checkStrikethrough)]);
+    this.registerEditorExtension([createWrEditorExtension(this.ogpCache, this.app, this)]);
 
     this.registerEvent(
       this.app.workspace.on("css-change", () => {
@@ -285,22 +285,9 @@ export default class WrotPlugin extends Plugin {
     return null;
   }
 
-  // Whether a rule keeps memos with this tag out of the timeline. Only active while
-  // tag rules are enabled — same gate as the colour rules.
-  // Every rule is scanned rather than going through findTagColorRule: that one stops at
-  // the first tag that matches any rule, so a memo carrying both a colour tag and a
-  // hidden tag would slip through depending on the order the tags appear in.
-  isHiddenFromTimeline(memoTags: string[]): boolean {
-    return this.matchesRuleFlag(memoTags, (rule) => rule.hideFromTimeline === true);
-  }
-
-  // A memo is protected as soon as any one of its tags asks for it, so adding a
-  // second tag can never take the protection away.
-  isProtectedFromDelete(memoTags: string[]): boolean {
-    return this.matchesRuleFlag(memoTags, (rule) => rule.protectFromDelete === true);
-  }
-
-  private matchesRuleFlag(
+  // Scans every rule: findTagColorRule stops at the first tag matching any rule, so a memo
+  // with both a colour tag and a flagged tag could slip through depending on tag order.
+  matchesRuleFlag(
     memoTags: string[],
     hasFlag: (rule: TagColorRule) => boolean
   ): boolean {
@@ -456,7 +443,7 @@ export default class WrotPlugin extends Plugin {
   /** Runs `fn` against every open Wrot view, in the main window and any popout. */
   // A leaf restored with the workspace but not yet shown holds a deferred placeholder, not a
   // WrotView; it builds from current plugin state when first shown, so it is skipped here.
-  private forEachView(fn: (view: WrotView) => void): void {
+  forEachView(fn: (view: WrotView) => void): void {
     for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_WROT)) {
       if (leaf.view instanceof WrotView) fn(leaf.view);
     }
@@ -473,18 +460,8 @@ export default class WrotPlugin extends Plugin {
     this.forEachView((view) => view.refreshSubmitButton());
   }
 
-  updateCalendarButton(): void {
-    this.forEachView((view) => view.updateCalendarButton());
-  }
-
   updateToolbarLayout(): void {
     this.forEachView((view) => view.applyToolbarLayout());
-  }
-
-  updateInputPlaceholder(): void {
-    this.forEachView((view) => {
-      view.textarea?.setAttribute("placeholder", this.settings.inputPlaceholder);
-    });
   }
 
   onunload(): void {
@@ -650,7 +627,7 @@ export default class WrotPlugin extends Plugin {
     // Pins and tag rules moved out to files of their own, but their keys are deliberately
     // left in raw here: Object.assign below carries them onto settings, and loadDeferredState
     // clears them from data.json only once they are safely written elsewhere.
-    for (const key of ["autoLinkEnabled", "autoLinkExcludeList", "zenMode", "zenModePins", "recentTags"]) {
+    for (const key of ["autoLinkEnabled", "autoLinkExcludeList", "zenMode", "zenModePins", "recentTags", "cancelLabel"]) {
       if (key in raw) {
         delete (raw as Record<string, unknown>)[key];
         dirty = true;

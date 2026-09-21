@@ -48,7 +48,7 @@ const hiddenLineStateField = StateField.define<DecorationSet>({
   },
   provide: (f) => EditorView.decorations.from(f),
 });
-import { extractUrls, isSafeUrl, QUOTE_LINK_RE } from "./utils/urlRenderer";
+import { cleanUrl, extractUrls, extractObsidianFile, isOtherVault, isSafeUrl, QUOTE_LINK_RE } from "./utils/urlRenderer";
 import type { OGPCache } from "./utils/ogpCache";
 
 const tagMark = Decoration.mark({ class: "wr-tag-highlight" });
@@ -189,8 +189,7 @@ function buildDecorations(
   ogpCache: OGPCache,
   blocks: WrBlock[],
   app: App,
-  plugin: WrotPlugin,
-  checkStrikethrough: boolean
+  plugin: WrotPlugin
 ): { decorations: DecorationSet; hiddenRanges: { from: number; to: number }[] } {
   const builder = new RangeSetBuilder<Decoration>();
   const hiddenRanges: { from: number; to: number }[] = [];
@@ -384,7 +383,7 @@ function buildDecorations(
                 deco: Decoration.replace({ widget: new CheckboxWidget(listInfo.checked, listItemDepth) }),
               });
             }
-            if (listInfo.checked && checkStrikethrough && l.to > markerTo) {
+            if (listInfo.checked && plugin.settings.checkStrikethrough && l.to > markerTo) {
               entries.push({ from: markerTo, to: l.to, deco: Decoration.mark({ class: "wr-check-done" }) });
             }
           } else if (listInfo.kind === "bullet") {
@@ -449,31 +448,24 @@ function buildDecorations(
 
         const urlRegex = /(?:https?|obsidian):\/\/[^\s<>"'\]]+/g;
         while ((match = urlRegex.exec(l.text)) !== null) {
+          const url = cleanUrl(match[0]);
           const from = l.from + match.index;
-          const to = from + match[0].length;
+          const to = from + url.length;
           if (insideMdLink(from, to)) continue;
-          if (match[0].startsWith("obsidian://") && !showRaw) {
-            let fileName: string | null = null;
-            try {
-              const params = new URL(match[0]).searchParams;
-              const filePath = params.get("file");
-              if (filePath) {
-                const decoded = decodeURIComponent(filePath);
-                fileName = decoded.split("/").pop() || decoded;
-              }
-            // eslint-disable-next-line no-empty -- intentional no-op
-            } catch {}
-            const looksLikeImage = !!fileName && IMAGE_EXT_RE.test(fileName);
-            const resolved = fileName ? app.metadataCache.getFirstLinkpathDest(fileName, "") : null;
+          if (url.startsWith("obsidian://") && !showRaw) {
+            const file = extractObsidianFile(url);
+            const fileName = file?.name ?? null;
+            const looksLikeImage = !!file && IMAGE_EXT_RE.test(file.path);
+            const resolved = file ? app.metadataCache.getFirstLinkpathDest(file.path, "") : null;
             const isImageEmbed = looksLikeImage && resolved !== null;
-            const isUnresolvedImage = looksLikeImage && resolved === null;
+            const unresolved = !!file && resolved === null && !isOtherVault(url, app.vault.getName());
             if (isImageEmbed) {
               entries.push({ from, to, deco: replaceHidden });
             } else {
               entries.push({
                 from,
                 to,
-                deco: Decoration.replace({ widget: new ObsidianLinkWidget(match[0], fileName || match[0], isUnresolvedImage) }),
+                deco: Decoration.replace({ widget: new ObsidianLinkWidget(url, fileName || url, unresolved) }),
               });
             }
           } else {
@@ -779,7 +771,7 @@ function cursorBlockKey(view: EditorView, blocks: WrBlock[]): string {
   return touched.join(",");
 }
 
-export function createWrEditorExtension(ogpCache: OGPCache, app: App, plugin: WrotPlugin, getCheckStrikethrough: () => boolean) {
+export function createWrEditorExtension(ogpCache: OGPCache, app: App, plugin: WrotPlugin) {
   const viewPlugin = ViewPlugin.fromClass(
     class {
       decorations: DecorationSet;
@@ -791,7 +783,7 @@ export function createWrEditorExtension(ogpCache: OGPCache, app: App, plugin: Wr
         this.currentView = view;
         this.blocks = findWrBlocks(view, plugin);
         this.cursorBlockKey = cursorBlockKey(view, this.blocks);
-        const built = buildDecorations(view, ogpCache, this.blocks, app, plugin, getCheckStrikethrough());
+        const built = buildDecorations(view, ogpCache, this.blocks, app, plugin);
         this.decorations = built.decorations;
         // Hidden ranges cannot be dispatched in the same update cycle. rAF would flash the
         // uncollapsed structure for a frame (worse on slow devices); a microtask lands pre-paint.
@@ -847,7 +839,7 @@ export function createWrEditorExtension(ogpCache: OGPCache, app: App, plugin: Wr
             if (key === this.cursorBlockKey) return;
             this.cursorBlockKey = key;
           }
-          const built = buildDecorations(update.view, ogpCache, this.blocks, app, plugin, getCheckStrikethrough());
+          const built = buildDecorations(update.view, ogpCache, this.blocks, app, plugin);
           this.decorations = built.decorations;
           this.dispatchHiddenRanges(built.hiddenRanges);
           if (!hasOgpEffect) {

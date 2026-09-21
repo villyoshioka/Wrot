@@ -7,7 +7,7 @@ const ko = {
   "settings.section.tagrules": "태그별 규칙 설정",
 
   "settings.item.viewPlacement.name": "표시 위치",
-  "settings.item.viewPlacement.desc": "Wrot을 닫았다 다시 열면 반영됩니다.",
+  "settings.item.viewPlacement.desc": "Wrot을 표시할 위치를 지정합니다.",
   "settings.option.viewPlacement.left": "왼쪽 사이드바",
   "settings.option.viewPlacement.right": "오른쪽 사이드바",
   "settings.option.viewPlacement.main": "메인 영역",
@@ -58,7 +58,7 @@ const ko = {
   "settings.item.ogp.desc": "URL에서 미리보기 정보를 가져옵니다. \n끄면 외부와 통신하지 않습니다.",
 
   "settings.item.checkStrikethrough.name": "체크된 항목 취소선",
-  "settings.item.checkStrikethrough.desc": "끄면 글자 그대로 남습니다.",
+  "settings.item.checkStrikethrough.desc": "끄면 체크한 후에도 취소선이 그어지지 않습니다.",
 
   "settings.item.calendarDayShape.name": "날짜 버튼 모양",
   "settings.item.calendarDayShape.desc": "캘린더의 날짜에 적용됩니다.",
@@ -78,6 +78,8 @@ const ko = {
   "settings.item.attachmentFolder.name": "저장 폴더",
   "settings.item.attachmentFolder.desc": "지정한 폴더가 없으면 Obsidian의 설정을 따릅니다.",
   "settings.item.attachmentFolder.placeholder": "폴더 선택",
+  "settings.item.shrinkImages.name": "이미지 압축 저장",
+  "settings.item.shrinkImages.desc": "첨부 이미지를 압축하고 위치 정보 등을 삭제한 뒤 저장합니다.\nGIF는 대상이 아닙니다.",
 
   "settings.item.tagColorRules.name": "태그별 규칙 사용",
   "settings.item.tagColorRules.desc": "태그마다 색과 태그 통합 등을 다르게 설정할 수 있습니다. \n색은 본문에서 먼저 나온 태그가 우선합니다.",

@@ -7,7 +7,7 @@ const fr = {
   "settings.section.tagrules": "Règles par balise",
 
   "settings.item.viewPlacement.name": "Position d'affichage",
-  "settings.item.viewPlacement.desc": "S'applique à la prochaine ouverture de Wrot.",
+  "settings.item.viewPlacement.desc": "Où Wrot est affiché.",
   "settings.option.viewPlacement.left": "Barre latérale gauche",
   "settings.option.viewPlacement.right": "Barre latérale droite",
   "settings.option.viewPlacement.main": "Zone principale",
@@ -59,7 +59,7 @@ const fr = {
   "settings.item.ogp.desc": "Récupère les informations d'aperçu depuis les URL. \nDésactivé, aucune connexion externe n'est effectuée.",
 
   "settings.item.checkStrikethrough.name": "Rayer les éléments cochés",
-  "settings.item.checkStrikethrough.desc": "Désactivé, le texte reste tel quel.",
+  "settings.item.checkStrikethrough.desc": "Désactivé, les éléments cochés ne sont pas barrés.",
 
   "settings.item.calendarDayShape.name": "Forme des boutons de date",
   "settings.item.calendarDayShape.desc": "S'applique aux jours du calendrier.",
@@ -79,6 +79,8 @@ const fr = {
   "settings.item.attachmentFolder.name": "Dossier de destination",
   "settings.item.attachmentFolder.desc": "Si le dossier n'existe pas, le réglage d'Obsidian est utilisé.",
   "settings.item.attachmentFolder.placeholder": "Sélectionner un dossier",
+  "settings.item.shrinkImages.name": "Compresser les images",
+  "settings.item.shrinkImages.desc": "Compresse les images jointes et supprime la position et les données similaires avant l'enregistrement. \nLes GIF restent tels quels.",
 
   "settings.item.tagColorRules.name": "Utiliser les règles par tag",
   "settings.item.tagColorRules.desc": "Permet de changer la couleur, l'intégration des tags et plus, tag par tag. \nPour la couleur, le tag apparaissant en premier l'emporte.",

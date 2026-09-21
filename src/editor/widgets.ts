@@ -1,6 +1,6 @@
 import { EditorView, WidgetType } from "@codemirror/view";
 import type { App } from "obsidian";
-import { loadPrism } from "obsidian";
+import { loadPrism, renderMath, finishRenderMath } from "obsidian";
 import type WrotPlugin from "../main";
 import { isMathJaxReady, requestMathJax } from "../utils/mathjax";
 import {
@@ -214,13 +214,9 @@ export class MathWidget extends WidgetType {
     try {
       // Branch explicitly instead of relying on renderMath's behavior when MathJax is missing.
       if (!this.hadMathJax) throw new Error("MathJax not loaded yet");
-      // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment, no-undef -- internal Obsidian/CodeMirror API or intentional pattern
-      const { renderMath, finishRenderMath } = require("obsidian");
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call -- internal Obsidian/CodeMirror API or intentional pattern
       const rendered = renderMath(this.tex, false);
       span.appendChild(rendered);
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- call into untyped Obsidian/CodeMirror internal API
-      finishRenderMath();
+      void finishRenderMath();
     } catch {
       span.classList.add("wr-math-fallback");
       span.textContent = `$${this.tex}$`;
@@ -276,13 +272,9 @@ export class MathBlockWidget extends WidgetType {
     try {
       // Branch explicitly instead of relying on renderMath's behavior when MathJax is missing.
       if (!this.hadMathJax) throw new Error("MathJax not loaded yet");
-      // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment, no-undef -- internal Obsidian/CodeMirror API or intentional pattern
-      const { renderMath, finishRenderMath } = require("obsidian");
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call -- internal Obsidian/CodeMirror API or intentional pattern
       const rendered = renderMath(this.tex, true);
       container.appendChild(rendered);
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- call into untyped Obsidian/CodeMirror internal API
-      finishRenderMath();
+      void finishRenderMath();
     } catch {
       container.classList.add("wr-math-fallback");
       container.textContent = this.tex;

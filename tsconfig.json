@@ -5,11 +5,9 @@
     "module": "ESNext",
     "target": "ES2018",
     "moduleResolution": "bundler",
-    "importHelpers": true,
     "isolatedModules": true,
     "strict": true,
     "esModuleInterop": true,
-    "types": ["node"],
     "lib": ["DOM", "ES2022"]
   },
   "include": ["src/**/*.ts"]

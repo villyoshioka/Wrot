@@ -8,7 +8,7 @@
  */
 
 /** Deepest nesting level rendered, matching the blockquote depth classes. */
-export const MAX_LIST_DEPTH = 5;
+const MAX_LIST_DEPTH = 5;
 
 /** Columns a tab advances to, matching the editor's own tab size. */
 const TAB_WIDTH = 4;
@@ -31,7 +31,7 @@ export function nestThreshold(item: ListLine): number {
   return item.indentWidth + NEST_STEP;
 }
 
-export type ListKind = "check" | "bullet" | "ol";
+type ListKind = "check" | "bullet" | "ol";
 
 export interface ListLine {
   kind: ListKind;

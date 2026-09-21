@@ -2,7 +2,7 @@ declare const moment: typeof import("moment");
 
 type Moment = ReturnType<typeof moment>;
 
-export interface DateDrumOptions {
+interface DateDrumOptions {
   // Earliest day the drums may come to rest on, and the day they start on.
   earliest: Moment;
   // Last year the year drum reaches.

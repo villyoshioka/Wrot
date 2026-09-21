@@ -1,4 +1,4 @@
-import { App, TFile, Platform, setIcon } from "obsidian";
+import { App, TFile, Platform, MarkdownView, setIcon } from "obsidian";
 import { parseMemos, type Memo } from "./memoParser";
 import { renderTextWithTagsAndUrls } from "./urlRenderer";
 import { ListDepthTracker, parseListLine } from "./listParser";
@@ -268,6 +268,7 @@ function renderPreviewLines(
     resolveLinkTarget: (linkName: string) => {
       return app.metadataCache.getFirstLinkpathDest(linkName, "") !== null;
     },
+    vaultName: app.vault.getName(),
   };
 
   const listDepth = new ListDepthTracker();
@@ -350,7 +351,6 @@ function flashJumpTargetReadingView(
   blockId: string,
   app: App,
   resolveRuleAccent?: (ruleClass: string) => string | null,
-  targetView?: import("obsidian").MarkdownView | null,
   // See flashJumpTarget: flash in place without moving the view.
   skipScroll?: boolean
 ): void {
@@ -556,13 +556,13 @@ function flashJumpTargetReadingView(
   pendingTimeouts.add(overallId);
 }
 
-export function flashJumpTarget(
+function flashJumpTarget(
   blockId: string,
   app: App,
   resolveRuleAccent?: (ruleClass: string) => string | null,
   // Resolved by the caller: deriving it from the active view misclassifies LV/RV
   // when the jump starts from the Wrot timeline or another note.
-  targetView?: import("obsidian").MarkdownView | null,
+  targetView?: MarkdownView | null,
   // Target was already fully on screen at click time: flash in place, never scroll.
   skipScroll?: boolean
 ): void {
@@ -570,7 +570,7 @@ export function flashJumpTarget(
   // so time-based polling misses; branch to the DOM-observation approach instead.
   const isReadingView = targetView?.getMode?.() === "preview";
   if (isReadingView) {
-    flashJumpTargetReadingView(blockId, app, resolveRuleAccent, targetView, skipScroll);
+    flashJumpTargetReadingView(blockId, app, resolveRuleAccent, skipScroll);
     return;
   }
 
@@ -725,9 +725,7 @@ export function flashJumpTarget(
 
 // Used to disambiguate targets when the same file is open in both LV and RV.
 function getActiveViewContainer(app: App): HTMLElement | null {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef -- internal Obsidian/CodeMirror API or intentional pattern
-  const obs = require("obsidian") as typeof import("obsidian");
-  const view = app.workspace.getActiveViewOfType(obs.MarkdownView);
+  const view = app.workspace.getActiveViewOfType(MarkdownView);
   return view?.containerEl ?? null;
 }
 
@@ -813,7 +811,6 @@ export function renderQuoteCard(
   app: App,
   currentFilePath: string,
   options?: {
-    localMemos?: Memo[];
     timestampFormat?: string;
     // Colors the card by the source post's tag rule, independent of the quoting post's rule.
     resolveRuleClass?: (content: string) => string | null;
@@ -823,7 +820,6 @@ export function renderQuoteCard(
     checkStrikethrough?: boolean;
   }
 ): void {
-  const localMemos = options?.localMemos;
   const timestampFormat = options?.timestampFormat;
   const resolveRuleClass = options?.resolveRuleClass;
   const resolveRuleAccent = options?.resolveRuleAccent;
@@ -856,23 +852,21 @@ export function renderQuoteCard(
     e.stopPropagation();
     const memoReady = CARD_MEMO.get(card);
     if (!memoReady) return;
-    // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef -- internal Obsidian/CodeMirror API or intentional pattern
-    const obs = require("obsidian") as typeof import("obsidian");
-    const activeView = app.workspace.getActiveViewOfType(obs.MarkdownView);
+    const activeView = app.workspace.getActiveViewOfType(MarkdownView);
     const activeFilePath = activeView?.file?.path;
     const isSameFile = !!activeFilePath && activeFilePath === file.path;
     // Unified jump for same-file / cross-file / timeline origins: open via openLinkText if
     // needed, then applyScroll — openLinkText alone can no-op when the file is already open.
-    let targetView: import("obsidian").MarkdownView | null = activeView;
+    let targetView: MarkdownView | null = activeView;
     if (!isSameFile) {
       const recent = app.workspace.getMostRecentLeaf();
-      const useRecent = !activeView && recent && recent.view instanceof obs.MarkdownView;
+      const useRecent = !activeView && recent && recent.view instanceof MarkdownView;
       if (useRecent && recent) {
         app.workspace.setActiveLeaf(recent, { focus: true });
       }
       const openInNew = !activeView && !useRecent;
       await app.workspace.openLinkText(`${fileName}#^${blockId}`, currentFilePath, openInNew);
-      targetView = app.workspace.getActiveViewOfType(obs.MarkdownView);
+      targetView = app.workspace.getActiveViewOfType(MarkdownView);
     }
     // Decide before any scrolling whether the target is already fully on screen;
     // if so, skip both the line-based scroll and the later centering (no view hop).
@@ -907,16 +901,6 @@ export function renderQuoteCard(
     }
     CARD_MEMO.set(card, memo);
   };
-
-  if (localMemos) {
-    const found = localMemos.find((m) => memoMatchesBlockId(m, blockId));
-    if (found) {
-      setupClick(found);
-      return;
-    }
-    markDead(card, bodyEl, metaEl);
-    return;
-  }
 
   const cached = getCachedMemos(file.path);
   if (cached) {

@@ -1,5 +1,32 @@
 # Release Notes
 
+## 2.27.0 - 2026-09-21
+
+### Updates
+
+- Updated dependencies
+
+### New Features
+
+- Added compression of attached images and removal of location and similar data (turn off "Compress Images" in the settings to save them as before)
+
+### Improvements
+
+- Improved internal structure
+- Improved translations
+
+### Bug Fixes
+
+- Fixed obsidian:// links to a missing note or a wrong path being shown as if the file existed
+- Fixed full-width punctuation right after a URL being treated as part of the link
+- Fixed the "Strikethrough for Checked Items" setting not applying to open notes until they were reopened
+
+### Notes
+
+- Compressed images are saved as WebP, except on iPhone and iPad, where WebP cannot be written and they become JPEG or PNG instead.
+
+---
+
 ## 2.26.0 - 2026-09-12
 
 ### Updates

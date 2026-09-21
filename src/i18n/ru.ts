@@ -7,7 +7,7 @@ const ru = {
   "settings.section.tagrules": "Настройки правил по тегам",
 
   "settings.item.viewPlacement.name": "Позиция отображения",
-  "settings.item.viewPlacement.desc": "Применяется при следующем открытии Wrot.",
+  "settings.item.viewPlacement.desc": "Где отображается Wrot.",
   "settings.option.viewPlacement.left": "Левая боковая панель",
   "settings.option.viewPlacement.right": "Правая боковая панель",
   "settings.option.viewPlacement.main": "Основная область",
@@ -58,7 +58,7 @@ const ru = {
   "settings.item.ogp.desc": "Загружает данные предпросмотра по ссылкам. \nПри отключении внешние подключения не выполняются.",
 
   "settings.item.checkStrikethrough.name": "Зачеркивание выполненных пунктов",
-  "settings.item.checkStrikethrough.desc": "Если выключено, текст остаётся без изменений.",
+  "settings.item.checkStrikethrough.desc": "Если выключено, отмеченные пункты не зачёркиваются.",
 
   "settings.item.calendarDayShape.name": "Форма кнопок дня",
   "settings.item.calendarDayShape.desc": "Применяется к дням в календаре.",
@@ -78,6 +78,8 @@ const ru = {
   "settings.item.attachmentFolder.name": "Папка назначения",
   "settings.item.attachmentFolder.desc": "Если папки нет, используется настройка Obsidian.",
   "settings.item.attachmentFolder.placeholder": "Выберите папку",
+  "settings.item.shrinkImages.name": "Сжимать изображения",
+  "settings.item.shrinkImages.desc": "Сжимает прикреплённые изображения и удаляет геоданные и подобные сведения перед сохранением. \nGIF остаются без изменений.",
 
   "settings.item.tagColorRules.name": "Правила для тегов",
   "settings.item.tagColorRules.desc": "Позволяет задавать цвет, интеграцию тегов и другое для каждого тега. \nДля цвета побеждает тег, который встречается в тексте первым.",

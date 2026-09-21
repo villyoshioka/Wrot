@@ -143,6 +143,7 @@ export interface WrotSettings {
   // attachment setting. The folder is never created here: a missing one falls back.
   useCustomAttachmentFolder: boolean;
   attachmentFolder: string;
+  shrinkImages: boolean;
   enableOgpFetch: boolean;
   checkStrikethrough: boolean;
   tagSuggestEnabled: boolean;
@@ -187,6 +188,7 @@ export const DEFAULT_SETTINGS: WrotSettings = {
   inputPlaceholder: "あなたが書くのを待っています...",
   useCustomAttachmentFolder: false,
   attachmentFolder: "",
+  shrinkImages: true,
   enableOgpFetch: true,
   checkStrikethrough: false,
   tagSuggestEnabled: true,
@@ -287,8 +289,7 @@ export class WrotSettingTab extends PluginSettingTab {
   }
 
   /**
-   * What each control needs beyond storing its value. Membership decides ownership too:
-   * a key absent here is left to the base class.
+   * What each control needs beyond storing its value; keys with nothing extra are absent.
    *
    * Runs after the value is written to `settings` but before the save, so an entry may still
    * adjust the settings it is reacting to.
@@ -300,14 +301,15 @@ export class WrotSettingTab extends PluginSettingTab {
         this.update();
         void this.plugin.relocateView();
       },
-      openOnStartup: () => undefined,
-      enableOgpFetch: () => undefined,
-      attachmentFolder: () => undefined,
       // The folder row is only offered while this is on.
       useCustomAttachmentFolder: () => this.update(),
       followObsidianFontSize: () => this.plugin.applyFontFollow(),
       calendarDayShape: () => this.plugin.applyCalendarDayShape(),
-      checkStrikethrough: () => this.plugin.refreshViews(),
+      checkStrikethrough: () => {
+        this.plugin.refreshViews();
+        // Notes read the setting only while rendering, so RV and LV are redrawn too.
+        this.plugin.refreshAttachmentDecorations();
+      },
 
       pinLimit: () => {
         if (settings.pins.length > settings.pinLimit) {
@@ -350,7 +352,7 @@ export class WrotSettingTab extends PluginSettingTab {
       },
 
       showCalendarButton: () => {
-        this.plugin.updateCalendarButton();
+        this.plugin.forEachView((view) => view.updateCalendarButton());
         // The day-shape row only applies while the button is shown.
         this.refreshDomState();
       },
@@ -371,14 +373,9 @@ export class WrotSettingTab extends PluginSettingTab {
   }
 
   async setControlValue(key: string, value: unknown): Promise<void> {
-    const effect = this.controlEffects()[key];
-    if (!effect) {
-      await super.setControlValue(key, value);
-      return;
-    }
     const stored = key === "pinLimit" ? (Number(value) as PinLimit) : value;
     (this.plugin.settings as unknown as Record<string, unknown>)[key] = stored;
-    await effect();
+    await this.controlEffects()[key]?.();
     await this.plugin.saveSettings();
   }
 
@@ -634,7 +631,9 @@ export class WrotSettingTab extends PluginSettingTab {
           write: async (value) => {
             settings.inputPlaceholder = value;
             await this.plugin.saveSettings();
-            this.plugin.updateInputPlaceholder();
+            this.plugin.forEachView((view) => {
+              view.textarea?.setAttribute("placeholder", settings.inputPlaceholder);
+            });
           },
           resetValue: () => t("defaults.inputPlaceholder"),
         }),
@@ -709,6 +708,11 @@ export class WrotSettingTab extends PluginSettingTab {
             key: "attachmentFolder",
             placeholder: t("settings.item.attachmentFolder.placeholder"),
           },
+        },
+        {
+          name: t("settings.item.shrinkImages.name"),
+          desc: desc(t("settings.item.shrinkImages.desc")),
+          control: { type: "toggle", key: "shrinkImages" },
         },
         {
           name: t("settings.item.toolbarEdit.name"),

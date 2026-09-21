@@ -7,7 +7,7 @@ const de = {
   "settings.section.tagrules": "Tag-Regeleinstellungen",
 
   "settings.item.viewPlacement.name": "Anzeigeposition",
-  "settings.item.viewPlacement.desc": "Wirkt sich beim nächsten Öffnen von Wrot aus.",
+  "settings.item.viewPlacement.desc": "Wo Wrot angezeigt wird.",
   "settings.option.viewPlacement.left": "Linke Seitenleiste",
   "settings.option.viewPlacement.right": "Rechte Seitenleiste",
   "settings.option.viewPlacement.main": "Hauptbereich",
@@ -58,7 +58,7 @@ const de = {
   "settings.item.ogp.desc": "Ruft Vorschaudaten von URLs ab. \nAusgeschaltet findet keine Verbindung nach außen statt.",
 
   "settings.item.checkStrikethrough.name": "Durchstreichen bei aktiviertem Kontrollkästchen",
-  "settings.item.checkStrikethrough.desc": "Ausgeschaltet bleibt der Text unverändert.",
+  "settings.item.checkStrikethrough.desc": "Ausgeschaltet werden abgehakte Einträge nicht durchgestrichen.",
 
   "settings.item.calendarDayShape.name": "Form der Datumstasten",
   "settings.item.calendarDayShape.desc": "Gilt für die Tage im Kalender.",
@@ -78,6 +78,8 @@ const de = {
   "settings.item.attachmentFolder.name": "Zielordner",
   "settings.item.attachmentFolder.desc": "Fehlt der Ordner, gilt die Einstellung von Obsidian.",
   "settings.item.attachmentFolder.placeholder": "Ordner wählen",
+  "settings.item.shrinkImages.name": "Bilder komprimieren",
+  "settings.item.shrinkImages.desc": "Komprimiert angehängte Bilder und entfernt Standort- und ähnliche Daten vor dem Speichern. \nGIFs bleiben unverändert.",
 
   "settings.item.tagColorRules.name": "Tag-Regeln verwenden",
   "settings.item.tagColorRules.desc": "Farbe, Tag-Integration und mehr lassen sich je Tag festlegen. \nBei der Farbe gewinnt das zuerst im Text stehende Tag.",

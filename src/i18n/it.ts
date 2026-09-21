@@ -7,7 +7,7 @@ const it = {
   "settings.section.tagrules": "Impostazioni regole tag",
 
   "settings.item.viewPlacement.name": "Posizione di visualizzazione",
-  "settings.item.viewPlacement.desc": "Si applica alla prossima apertura di Wrot.",
+  "settings.item.viewPlacement.desc": "Dove viene mostrato Wrot.",
   "settings.option.viewPlacement.left": "Barra laterale sinistra",
   "settings.option.viewPlacement.right": "Barra laterale destra",
   "settings.option.viewPlacement.main": "Area principale",
@@ -59,7 +59,7 @@ const it = {
   "settings.item.ogp.desc": "Recupera i dati di anteprima dagli URL. \nDisattivato, non viene effettuata alcuna connessione esterna.",
 
   "settings.item.checkStrikethrough.name": "Barrato per elementi completati",
-  "settings.item.checkStrikethrough.desc": "Disattivato, il testo resta invariato.",
+  "settings.item.checkStrikethrough.desc": "Disattivato, gli elementi spuntati non vengono barrati.",
 
   "settings.item.calendarDayShape.name": "Forma dei pulsanti data",
   "settings.item.calendarDayShape.desc": "Si applica ai giorni nel calendario.",
@@ -79,6 +79,8 @@ const it = {
   "settings.item.attachmentFolder.name": "Cartella di destinazione",
   "settings.item.attachmentFolder.desc": "Se la cartella non esiste, viene usata l'impostazione di Obsidian.",
   "settings.item.attachmentFolder.placeholder": "Seleziona una cartella",
+  "settings.item.shrinkImages.name": "Comprimi immagini",
+  "settings.item.shrinkImages.desc": "Comprime le immagini allegate e rimuove la posizione e dati simili prima del salvataggio. \nLe GIF restano invariate.",
 
   "settings.item.tagColorRules.name": "Usa le regole per tag",
   "settings.item.tagColorRules.desc": "Permette di cambiare colore, integrazione dei tag e altro per ogni tag. \nPer il colore vince il tag che compare per primo nel testo.",

@@ -1,3 +1,4 @@
+import { renderMath, finishRenderMath } from "obsidian";
 import type { OGPData, OGPCache } from "./ogpCache";
 import { segmentBlocks } from "./blockSegmenter";
 import { isMathJaxReady, requestMathJax } from "./mathjax";
@@ -10,10 +11,6 @@ import {
   type ListLine,
   type ListTag,
 } from "./listParser";
-
-const IMAGE_EXTENSIONS = [
-  ".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".bmp",
-];
 
 const URL_REGEX = /(?:https?|obsidian):\/\/[^\s<>"'\]]+/g;
 
@@ -28,27 +25,19 @@ export interface ParsedUrl {
 // eslint-disable-next-line no-useless-escape -- escape kept for regex readability
 export const QUOTE_LINK_RE = /^([^\[\]\n#]+)#\^(wr-\d{17})$/;
 
-export function isSafeUrl(url: string): boolean {
+const HTTP_ONLY = ["https:", "http:"];
+
+export function isSafeUrl(url: string, protocols = [...HTTP_ONLY, "obsidian:"]): boolean {
   try {
-    const parsed = new URL(url);
-    return ["https:", "http:", "obsidian:"].includes(parsed.protocol);
+    return protocols.includes(new URL(url).protocol);
   } catch {
     return false;
   }
 }
 
-function isSafeImageUrl(url: string): boolean {
-  try {
-    const parsed = new URL(url);
-    return ["https:", "http:"].includes(parsed.protocol);
-  } catch {
-    return false;
-  }
-}
-
-function cleanUrl(raw: string): string {
-  // Trailing punctuation is not considered part of the URL.
-  return raw.replace(/[.,;:!?)]+$/, "");
+export function cleanUrl(raw: string): string {
+  // Trailing punctuation, ASCII or full-width, is not considered part of the URL.
+  return raw.replace(/[.,;:!?)。、！？）」』】]+$/, "");
 }
 
 function classifyUrl(url: string): ParsedUrl["type"] {
@@ -58,34 +47,43 @@ function classifyUrl(url: string): ParsedUrl["type"] {
     const parsed = new URL(url);
     if (parsed.protocol === "obsidian:") {
       const filePath = parsed.searchParams.get("file");
-      if (filePath) {
-        const target = decodeURIComponent(filePath).toLowerCase();
-        if (IMAGE_EXTENSIONS.some((ext) => target.endsWith(ext))) {
-          return "image";
-        }
-      }
+      if (filePath && IMAGE_EXT_RE.test(decodeURIComponent(filePath))) return "image";
       return "generic";
     }
-    const pathname = parsed.pathname.toLowerCase();
-    if (IMAGE_EXTENSIONS.some((ext) => pathname.endsWith(ext))) {
-      return "image";
-    }
+    if (IMAGE_EXT_RE.test(parsed.pathname)) return "image";
   // eslint-disable-next-line no-empty -- intentional no-op
   } catch {}
 
   return "generic";
 }
 
-export function extractObsidianFileName(url: string): string | null {
+/**
+ * The `file` parameter of an obsidian:// link: the vault-relative path (what to resolve, so a
+ * wrong folder does not match a same-named file elsewhere) and its last segment (what to show).
+ */
+export function extractObsidianFile(url: string): { path: string; name: string } | null {
   try {
     const parsed = new URL(url);
     if (parsed.protocol !== "obsidian:") return null;
     const filePath = parsed.searchParams.get("file");
     if (!filePath) return null;
-    const decoded = decodeURIComponent(filePath);
-    return decoded.split("/").pop() || decoded;
+    const path = decodeURIComponent(filePath);
+    return { path, name: path.split("/").pop() || path };
   } catch {
     return null;
+  }
+}
+
+/**
+ * True when an obsidian:// link names a vault other than `vaultName`. A file missing here may
+ * well exist there, so such links are never shown as unresolved.
+ */
+export function isOtherVault(url: string, vaultName: string | undefined): boolean {
+  try {
+    const vault = new URL(url).searchParams.get("vault");
+    return vault !== null && vault !== vaultName;
+  } catch {
+    return false;
   }
 }
 
@@ -104,12 +102,14 @@ export function extractUrls(text: string): ParsedUrl[] {
 }
 
 
-export interface RenderTextCallbacks {
+interface RenderTextCallbacks {
   onTagClick?: (tag: string) => void;
   onCheckToggle?: (lineIndex: number, checked: boolean) => void;
   onInternalLinkClick?: (linkName: string) => void;
   resolveImagePath?: (fileName: string) => string | null;
   resolveLinkTarget?: (linkName: string) => boolean;
+  // Current vault name, for telling a missing file from a link into another vault.
+  vaultName?: string;
   checkStrikethrough?: boolean;
   renderCodeBlock?: (code: string, lang: string, container: HTMLElement, fenceTildes: number) => void;
   renderMathBlock?: (tex: string, container: HTMLElement) => void;
@@ -150,13 +150,9 @@ export function renderTextWithTagsAndUrls(
           // MathJax loads lazily. If not ready, fall through to the fallback;
           // wr-math-fallback marks the element for re-render once onMathJaxReady fires.
           if (!isMathJaxReady()) throw new Error("MathJax not loaded yet");
-          // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment, no-undef -- internal Obsidian/CodeMirror API or intentional pattern
-          const { renderMath, finishRenderMath } = require("obsidian");
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call -- internal Obsidian/CodeMirror API or intentional pattern
           const rendered = renderMath(segment.tex, true);
           blockEl.appendChild(rendered);
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- call into untyped Obsidian/CodeMirror internal API
-          finishRenderMath();
+          void finishRenderMath();
         } catch {
           blockEl.classList.add("wr-math-fallback");
           blockEl.textContent = segment.tex;
@@ -305,17 +301,10 @@ function renderTextSegment(
 function renderInlineTokens(
   container: HTMLElement,
   text: string,
-  callbacks: {
-    onTagClick?: (tag: string) => void;
-    onInternalLinkClick?: (linkName: string) => void;
-    resolveImagePath?: (fileName: string) => string | null;
-    resolveLinkTarget?: (linkName: string) => boolean;
-    renderQuoteCard?: (slot: HTMLElement, fileName: string, blockId: string) => void;
-  },
+  callbacks: RenderTextCallbacks,
   urls: ParsedUrl[],
   seen: Set<string>
 ): void {
-   
   const parts = text.split(inlineTokenPattern());
 
   for (const part of parts) {
@@ -444,13 +433,9 @@ function renderInlineTokens(
         // MathJax loads lazily. If not ready, fall through to the fallback;
         // wr-math-fallback marks the element for re-render once onMathJaxReady fires.
         if (!isMathJaxReady()) throw new Error("MathJax not loaded yet");
-        // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment, no-undef -- internal Obsidian/CodeMirror API or intentional pattern
-        const { renderMath, finishRenderMath } = require("obsidian");
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call -- internal Obsidian/CodeMirror API or intentional pattern
         const rendered = renderMath(mathContent, false);
         mathEl.appendChild(rendered);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- call into untyped Obsidian/CodeMirror internal API
-        finishRenderMath();
+        void finishRenderMath();
       } catch {
         mathEl.classList.add("wr-math-fallback");
         mathEl.textContent = part;
@@ -459,15 +444,17 @@ function renderInlineTokens(
     } else if (part.match(/^obsidian:\/\//)) {
       const url = cleanUrl(part);
       const trailing = part.slice(url.length);
-      const fileName = extractObsidianFileName(url);
+      const file = extractObsidianFile(url);
       const urlType = classifyUrl(url);
       const looksLikeImage = urlType === "image";
-      const resolvedImage = !!(fileName && callbacks.resolveImagePath && callbacks.resolveImagePath(fileName));
-      const isImageEmbed = looksLikeImage && resolvedImage;
-      const isUnresolvedImage = looksLikeImage && !resolvedImage;
+      const resolved = !!file && (looksLikeImage
+        ? !!callbacks.resolveImagePath?.(file.path)
+        : !!callbacks.resolveLinkTarget?.(file.path));
+      const isImageEmbed = looksLikeImage && resolved;
+      const unresolved = !!file && !resolved && !isOtherVault(url, callbacks.vaultName);
       if (!isImageEmbed) {
-        const displayName = fileName || url;
-        const cls = isUnresolvedImage
+        const displayName = file?.name || url;
+        const cls = unresolved
           ? "wr-internal-link wr-internal-link-unresolved"
           : "wr-internal-link";
         const link = container.createEl("a", {
@@ -539,11 +526,11 @@ export function renderImagePreview(
   makeClickableLink(wrapper, url);
 
   const img = createEl("img", { cls: "wr-inline-img" });
-  if (isSafeImageUrl(url)) {
+  if (isSafeUrl(url, HTTP_ONLY)) {
     img.src = url;
   } else if (url.startsWith("obsidian://") && resolveImagePath) {
-    const fileName = extractObsidianFileName(url);
-    const resolved = fileName ? resolveImagePath(fileName) : null;
+    const file = extractObsidianFile(url);
+    const resolved = file ? resolveImagePath(file.path) : null;
     if (resolved) img.src = resolved;
   }
   img.loading = "lazy";
@@ -563,7 +550,7 @@ export function renderOGPCard(
   card.rel = "noopener";
   makeClickableLink(card, data.url);
 
-  if (data.image && isSafeImageUrl(data.image)) {
+  if (data.image && isSafeUrl(data.image, HTTP_ONLY)) {
     const thumb = createEl("img", { cls: "wr-ogp-thumb" });
     thumb.src = data.image;
     thumb.loading = "lazy";
@@ -589,7 +576,7 @@ export function renderTwitterCard(
   card.rel = "noopener";
   makeClickableLink(card, data.url);
 
-  if (data.image && isSafeImageUrl(data.image)) {
+  if (data.image && isSafeUrl(data.image, HTTP_ONLY)) {
     const thumb = createEl("img", { cls: "wr-ogp-thumb" });
     thumb.src = data.image;
     thumb.loading = "lazy";

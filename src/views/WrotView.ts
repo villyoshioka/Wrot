@@ -6,7 +6,7 @@ import { getOrCreateDailyNote, getDailyNoteFile, dailyNotePathFor } from "../uti
 import { renderTextWithTagsAndUrls, renderUrlPreviews } from "../utils/urlRenderer";
 import { invalidateMemoCache, renderQuoteCard } from "../utils/quoteCard";
 import { ensureBlockIdOnFence } from "../utils/memoWriter";
-import { isImageFile, saveImageToVault, buildEmbedLink } from "../utils/imageAttachment";
+import { isImageFile, saveImageToVault, buildEmbedLink, shrinkImage } from "../utils/imageAttachment";
 import { openCalendarPopover, CalendarPopoverHandle } from "../utils/calendarPopover";
 import { buildDateDrum } from "../utils/dateDrum";
 import { TagSuggest, extractTagsForHistory, mergeRecentTags, rebuildFocus } from "../utils/tagSuggest";
@@ -192,6 +192,7 @@ export class WrotView extends ItemView {
   private currentMenu: Menu | null = null;
   private pendingImage: File | null = null;
   private pendingImageUrl: string | null = null;
+  private pendingShrink: Promise<File> | null = null;
   private thumbnailContainer: HTMLElement | null = null;
   private imageAddBtn: HTMLButtonElement | null = null;
   private submitBtnEl: HTMLButtonElement | null = null;
@@ -799,15 +800,15 @@ export class WrotView extends ItemView {
       if (toolbarSuppressed()) return;
       const ta = this.textarea;
       if (ta.selectionStart !== ta.selectionEnd) {
-        this.wrapSelectionWithEmbedBrackets();
+        wrapSelectionWithEmbedBrackets(this.textarea);
       } else {
-        this.toggleInlineWrap("![[", "]]");
+        toggleInlineWrap(this.textarea, "![[", "]]");
       }
       this.updateEmbedBtnActive(embedBtn);
     });
     const updateFormatBtns = () => {
-      const insideBold = this.isInsideMarker("**");
-      const insideItalic = this.isInsideMarker("*");
+      const insideBold = isInsideMarker(this.textarea, "**");
+      const insideItalic = isInsideMarker(this.textarea, "*");
       const boldActive = this.activeFormatMode === "bold" || insideBold;
       const italicActive = this.activeFormatMode === "italic" || insideItalic;
       boldBtn.toggleClass("wr-toolbar-active", boldActive);
@@ -841,11 +842,11 @@ export class WrotView extends ItemView {
     boldBtn.addEventListener("click", () => {
       if (toolbarSuppressed()) return;
       // During IME, block only when active (condition must match updateFormatBtns).
-      if (this.imeLocked && (this.activeFormatMode === "bold" || this.isInsideMarker("**"))) return;
-      if (this.activeFormatMode === "italic" || this.isInsideMarker("*")) return;
+      if (this.imeLocked && (this.activeFormatMode === "bold" || isInsideMarker(this.textarea, "**"))) return;
+      if (this.activeFormatMode === "italic" || isInsideMarker(this.textarea, "*")) return;
       const ta = this.textarea;
       if (ta.selectionStart !== ta.selectionEnd) {
-        this.wrapSelection("**", "**", true);
+        wrapSelection(this.textarea, "**", "**", true);
         updateFormatBtns();
         return;
       }
@@ -872,11 +873,11 @@ export class WrotView extends ItemView {
     italicBtn.addEventListener("click", () => {
       if (toolbarSuppressed()) return;
       // During IME, block only when active (condition must match updateFormatBtns).
-      if (this.imeLocked && (this.activeFormatMode === "italic" || this.isInsideMarker("*"))) return;
-      if (this.activeFormatMode === "bold" || this.isInsideMarker("**")) return;
+      if (this.imeLocked && (this.activeFormatMode === "italic" || isInsideMarker(this.textarea, "*"))) return;
+      if (this.activeFormatMode === "bold" || isInsideMarker(this.textarea, "**")) return;
       const ta = this.textarea;
       if (ta.selectionStart !== ta.selectionEnd) {
-        this.wrapSelection("*", "*", true);
+        wrapSelection(this.textarea, "*", "*", true);
         updateFormatBtns();
         return;
       }
@@ -902,17 +903,17 @@ export class WrotView extends ItemView {
     });
     listBtn.addEventListener("click", () => {
       if (toolbarSuppressed()) return;
-      this.insertAtLineStart("- ");
+      insertAtLineStart(this.textarea, "- ");
       this.updateToolbarActive(listBtn, checkBtn, olBtn);
     });
     checkBtn.addEventListener("click", () => {
       if (toolbarSuppressed()) return;
-      this.insertAtLineStart("- [ ] ");
+      insertAtLineStart(this.textarea, "- [ ] ");
       this.updateToolbarActive(listBtn, checkBtn, olBtn);
     });
     olBtn.addEventListener("click", () => {
       if (toolbarSuppressed()) return;
-      this.insertAtLineStart("1. ");
+      insertAtLineStart(this.textarea, "1. ");
       this.updateToolbarActive(listBtn, checkBtn, olBtn);
     });
     const scheduleBtn = btnFor("schedule");
@@ -943,23 +944,23 @@ export class WrotView extends ItemView {
     // that promoting one to the bar needs nothing beyond a change of layout.
     const runCode = () => {
       const ta = this.textarea;
-      if (ta.selectionStart !== ta.selectionEnd) this.wrapSelection("`", "`");
-      else this.insertCodeBlock();
+      if (ta.selectionStart !== ta.selectionEnd) wrapSelection(this.textarea, "`", "`");
+      else insertFenceBlock(this.textarea, "~~~\n\n~~~");
     };
     const runMath = () => {
       const ta = this.textarea;
-      if (ta.selectionStart !== ta.selectionEnd) this.wrapSelection("$", "$");
-      else this.insertMathBlock();
+      if (ta.selectionStart !== ta.selectionEnd) wrapSelection(this.textarea, "$", "$");
+      else insertFenceBlock(this.textarea, "$$\n\n$$");
     };
     // Keyed by id: an action listed here gets its click handler from this table, and the
     // rest already carry handlers of their own from further up.
     const menuBornRuns: Record<string, () => void> = {
       code: runCode,
       math: runMath,
-      quote: () => this.toggleBlockPrefix("> "),
-      link: () => this.insertMarkdownLink(),
-      strikethrough: () => this.wrapSelection("~~", "~~"),
-      highlight: () => this.wrapSelection("==", "=="),
+      quote: () => toggleBlockPrefix(this.textarea, "> "),
+      link: () => insertMarkdownLink(this.textarea),
+      strikethrough: () => wrapSelection(this.textarea, "~~", "~~"),
+      highlight: () => wrapSelection(this.textarea, "==", "=="),
     };
     for (const spec of TOOLBAR_ACTION_SPECS) {
       const run = menuBornRuns[spec.id];
@@ -1234,10 +1235,18 @@ export class WrotView extends ItemView {
   private setPendingImage(file: File): void {
     this.clearPendingImage();
     this.pendingImage = file;
+    this.pendingShrink = this.plugin.settings.shrinkImages ? shrinkImage(file) : null;
     this.pendingImageUrl = URL.createObjectURL(file);
     this.renderThumbnail();
     this.updateImageAddBtnState();
     this.updateSubmitBtnState();
+  }
+
+  private async pendingImageForSave(): Promise<File | null> {
+    const original = this.pendingImage;
+    const shrink = this.pendingShrink;
+    if (!original) return null;
+    return shrink ? await shrink : original;
   }
 
   private clearPendingImage(): void {
@@ -1246,6 +1255,7 @@ export class WrotView extends ItemView {
       this.pendingImageUrl = null;
     }
     this.pendingImage = null;
+    this.pendingShrink = null;
     if (this.thumbnailContainer) {
       this.thumbnailContainer.empty();
       this.thumbnailContainer.setCssStyles({ display: "none" });
@@ -1410,10 +1420,11 @@ export class WrotView extends ItemView {
     }
     try {
       let bodyText = rawText;
-      if (this.pendingImage) {
+      const image = await this.pendingImageForSave();
+      if (image) {
         const savedFile = await saveImageToVault(
           this.app,
-          this.pendingImage,
+          image,
           file,
           this.attachmentFolder()
         );
@@ -1465,10 +1476,11 @@ export class WrotView extends ItemView {
       );
 
       let bodyText = rawText;
-      if (this.pendingImage) {
+      const image = await this.pendingImageForSave();
+      if (image) {
         const savedFile = await saveImageToVault(
           this.app,
-          this.pendingImage,
+          image,
           file,
           this.attachmentFolder()
         );
@@ -1591,7 +1603,7 @@ export class WrotView extends ItemView {
         if (pinnedKeys.has(key)) continue;
         // Pinned memos above are deliberately exempt: pinning names a single memo,
         // which outranks a rule that hides a whole tag.
-        if (this.plugin.isHiddenFromTimeline(memo.tags)) continue;
+        if (this.plugin.matchesRuleFlag(memo.tags, (rule) => rule.hideFromTimeline === true)) continue;
         this.renderMemoCard(memo, {
           pinned: false,
           filePath: file.path,
@@ -2099,7 +2111,7 @@ export class WrotView extends ItemView {
     const currentFile = getDailyNoteFile(this.app, this.currentDate);
     const currentFilePath = currentFile?.path || "";
     const urls = renderTextWithTagsAndUrls(contentEl, memo.content, {
-      onTagClick: (tag) => this.openSearch(tag),
+      onTagClick: (tag) => this.plugin.openTagSearch(tag),
       // eslint-disable-next-line @typescript-eslint/no-misused-promises -- async handler intentionally used as a callback
       onCheckToggle: async (lineIndex) => {
         const file = getDailyNoteFile(this.app, this.currentDate);
@@ -2121,6 +2133,7 @@ export class WrotView extends ItemView {
       resolveLinkTarget: (linkName) => {
         return this.app.metadataCache.getFirstLinkpathDest(linkName, "") !== null;
       },
+      vaultName: this.app.vault.getName(),
       renderQuoteCard: (slot, fileName, blockId) => {
         renderQuoteCard(slot, fileName, blockId, this.app, currentFilePath, {
           timestampFormat: this.plugin.settings.timestampFormat,
@@ -2146,8 +2159,7 @@ export class WrotView extends ItemView {
           if (!isMathJaxReady()) throw new Error("MathJax not loaded yet");
           const rendered = renderMath(tex, true);
           blockEl.appendChild(rendered);
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
-          finishRenderMath();
+          void finishRenderMath();
         } catch {
           blockEl.classList.add("wr-math-fallback");
           blockEl.textContent = tex;
@@ -2294,7 +2306,7 @@ export class WrotView extends ItemView {
             const locked =
               this.isEditingTarget(memo) ||
               claimed ||
-              this.plugin.isProtectedFromDelete(memo.tags);
+              this.plugin.matchesRuleFlag(memo.tags, (rule) => rule.protectFromDelete === true);
             // Armed already when a previous opening took the first press.
             let armed = this.isDeleteArmed(memo);
             item
@@ -2365,10 +2377,6 @@ export class WrotView extends ItemView {
     }
   }
 
-  private insertAtLineStart(prefix: string): void {
-    insertAtLineStart(this.textarea, prefix);
-  }
-
   private async insertQuoteToForm(memo: Memo, srcFilePath: string): Promise<void> {
     const T = memo.time.replace(/[-:.TZ+]/g, "").slice(0, 17);
     const blockId = `wr-${T}`;
@@ -2399,23 +2407,11 @@ export class WrotView extends ItemView {
     ta.dispatchEvent(new Event("input"));
   }
 
-  private insertCodeBlock(): void {
-    insertFenceBlock(this.textarea, "~~~\n\n~~~");
-  }
-
-  private insertMathBlock(): void {
-    insertFenceBlock(this.textarea, "$$\n\n$$");
-  }
-
   private updateToolbarActive(listBtn: HTMLElement, checkBtn: HTMLElement, olBtn: HTMLElement): void {
     const { isList, isCheck, isOl } = lineMarkerState(this.textarea);
     listBtn.toggleClass("wr-toolbar-active", isList);
     checkBtn.toggleClass("wr-toolbar-active", isCheck);
     olBtn.toggleClass("wr-toolbar-active", isOl);
-  }
-
-  private isInsideMarker(marker: "**" | "*"): boolean {
-    return isInsideMarker(this.textarea, marker);
   }
 
   /**
@@ -2673,30 +2669,6 @@ export class WrotView extends ItemView {
 
   private updateEmbedBtnActive(embedBtn: HTMLElement): void {
     embedBtn.toggleClass("wr-toolbar-active", isInsideEmbed(this.textarea));
-  }
-
-  private toggleInlineWrap(open: string, close: string): void {
-    toggleInlineWrap(this.textarea, open, close);
-  }
-
-  private wrapSelection(open: string, close: string, spaceAfterClose = false): void {
-    wrapSelection(this.textarea, open, close, spaceAfterClose);
-  }
-
-  private wrapSelectionWithEmbedBrackets(): void {
-    wrapSelectionWithEmbedBrackets(this.textarea);
-  }
-
-  private toggleBlockPrefix(prefix: string): void {
-    toggleBlockPrefix(this.textarea, prefix);
-  }
-
-  private openSearch(tag: string): void {
-    this.plugin.openTagSearch(tag);
-  }
-
-  private insertMarkdownLink(): void {
-    insertMarkdownLink(this.textarea);
   }
 
   // Only one menu open at a time; the trigger keeps an active class while open.

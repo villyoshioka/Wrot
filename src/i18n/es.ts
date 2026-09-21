@@ -7,7 +7,7 @@ const es = {
   "settings.section.tagrules": "Reglas por etiqueta",
 
   "settings.item.viewPlacement.name": "Posición de visualización",
-  "settings.item.viewPlacement.desc": "Se aplica la próxima vez que abras Wrot.",
+  "settings.item.viewPlacement.desc": "Dónde se muestra Wrot.",
   "settings.option.viewPlacement.left": "Barra lateral izquierda",
   "settings.option.viewPlacement.right": "Barra lateral derecha",
   "settings.option.viewPlacement.main": "Área principal",
@@ -58,7 +58,7 @@ const es = {
   "settings.item.ogp.desc": "Obtiene datos de vista previa desde las URL. \nAl desactivarlo no se realiza ninguna conexión externa.",
 
   "settings.item.checkStrikethrough.name": "Tachado en tareas completadas",
-  "settings.item.checkStrikethrough.desc": "Si está desactivado, el texto se queda igual.",
+  "settings.item.checkStrikethrough.desc": "Si está desactivado, los elementos marcados no se tachan.",
 
   "settings.item.calendarDayShape.name": "Forma de los botones de fecha",
   "settings.item.calendarDayShape.desc": "Se aplica a los días del calendario.",
@@ -78,6 +78,8 @@ const es = {
   "settings.item.attachmentFolder.name": "Carpeta de destino",
   "settings.item.attachmentFolder.desc": "Si la carpeta no existe, se usa la configuración de Obsidian.",
   "settings.item.attachmentFolder.placeholder": "Selecciona una carpeta",
+  "settings.item.shrinkImages.name": "Comprimir imágenes",
+  "settings.item.shrinkImages.desc": "Comprime las imágenes adjuntas y elimina la ubicación y datos similares antes de guardarlas. \nLos GIF se dejan tal cual.",
 
   "settings.item.tagColorRules.name": "Usar reglas por etiqueta",
   "settings.item.tagColorRules.desc": "Permite cambiar el color, la integración de etiquetas y más por etiqueta. \nEn el color manda la etiqueta que aparece primero en el texto.",

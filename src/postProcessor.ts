@@ -6,7 +6,7 @@ import {
   finishRenderMath,
   Component,
 } from "obsidian";
-import { extractUrls, renderUrlPreviews, isSafeUrl, QUOTE_LINK_RE } from "./utils/urlRenderer";
+import { extractUrls, renderUrlPreviews, isSafeUrl, cleanUrl, extractObsidianFile, isOtherVault, QUOTE_LINK_RE } from "./utils/urlRenderer";
 import { renderQuoteCard, invalidateMemoCache, refreshQuoteCardsForFile } from "./utils/quoteCard";
 import { toggleCheckbox } from "./utils/memoWriter";
 import { segmentBlocks, type Segment } from "./utils/blockSegmenter";
@@ -526,13 +526,9 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin, parent: Compone
           // MathJax loads lazily (see utils/mathjax.ts). If not ready, fall through to the
           // fallback; wr-math-fallback marks the element for in-place replacement once loaded.
           if (!isMathJaxReady()) throw new Error("MathJax not loaded yet");
-          // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment, no-undef -- internal Obsidian/CodeMirror API or intentional pattern
-          const { renderMath, finishRenderMath } = require("obsidian");
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call -- internal Obsidian/CodeMirror API or intentional pattern
           const rendered = renderMath(mathContent, false);
           mathEl.appendChild(rendered);
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- call into untyped Obsidian/CodeMirror internal API
-          finishRenderMath();
+          void finishRenderMath();
         } catch {
           mathEl.classList.add("wr-math-fallback");
           mathEl.textContent = part;
@@ -541,26 +537,17 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin, parent: Compone
         frag.appendChild(mathEl);
         hasMatch = true;
       } else if (part.match(/^obsidian:\/\//)) {
-        const cleaned = part.replace(/[.,;:!?)]+$/, "");
+        const cleaned = cleanUrl(part);
         const trailing = part.slice(cleaned.length);
-        let fileName: string | null = null;
-        try {
-          const params = new URL(cleaned).searchParams;
-          const filePath = params.get("file");
-          if (filePath) {
-            const decoded = decodeURIComponent(filePath);
-            fileName = decoded.split("/").pop() || decoded;
-          }
-        // eslint-disable-next-line no-empty -- intentional no-op
-        } catch {}
-        const lowerName = fileName?.toLowerCase() || "";
-        const looksLikeImage = IMAGE_EXT_RE.test(lowerName);
-        const resolved = fileName ? plugin.app.metadataCache.getFirstLinkpathDest(fileName, "") : null;
+        const file = extractObsidianFile(cleaned);
+        const fileName = file?.name ?? null;
+        const looksLikeImage = !!file && IMAGE_EXT_RE.test(file.path);
+        const resolved = file ? plugin.app.metadataCache.getFirstLinkpathDest(file.path, "") : null;
         const isImageEmbed = looksLikeImage && resolved !== null;
-        const isUnresolvedImage = looksLikeImage && resolved === null;
+        const unresolved = !!file && resolved === null && !isOtherVault(cleaned, plugin.app.vault.getName());
         if (!isImageEmbed) {
           const link = createEl("a");
-          link.className = isUnresolvedImage
+          link.className = unresolved
             ? "wr-internal-link wr-internal-link-unresolved"
             : "wr-internal-link";
           link.textContent = fileName || cleaned;
@@ -577,7 +564,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin, parent: Compone
         tailUrls.push(cleaned);
         hasMatch = true;
       } else if (part.match(/^https?:\/\//)) {
-        const cleaned = part.replace(/[.,;:!?)]+$/, "");
+        const cleaned = cleanUrl(part);
         const trailing = part.slice(cleaned.length);
 
         const span = createSpan();
@@ -681,8 +668,7 @@ function renderMathBlockFragment(segment: Extract<Segment, { kind: "mathblock" }
     if (!isMathJaxReady()) throw new Error("MathJax not loaded yet");
     const rendered = renderMath(segment.tex, true);
     blockEl.appendChild(rendered);
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
-    finishRenderMath();
+    void finishRenderMath();
   } catch {
     blockEl.classList.add("wr-math-fallback");
     blockEl.textContent = segment.tex;
@@ -691,24 +677,6 @@ function renderMathBlockFragment(segment: Extract<Segment, { kind: "mathblock" }
   return blockEl;
 }
 
-/**
- * Wires a rendered checkbox back to the line it came from.
- *
- * `bodyLineIndex` is the 0-based line within the fence body, so the target line is the fence
- * line plus one plus that offset.
- */
-function attachCheckboxToggle(
-  cb: HTMLInputElement,
-  plugin: WrotPlugin,
-  block: HTMLElement,
-  bodyLineIndex: number,
-  blockBodyText: string
-): void {
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises -- async handler intentionally used as a callback
-  cb.addEventListener("click", async () => {
-    await toggleCheckboxForBlock(plugin, cb, block, bodyLineIndex, blockBodyText);
-  });
-}
 
 async function toggleCheckboxForBlock(
   plugin: WrotPlugin,
@@ -819,7 +787,10 @@ function convertListLines(
       const cb = createEl("input");
       cb.type = "checkbox";
       if (info.checked) cb.checked = true;
-      attachCheckboxToggle(cb, plugin, block, lineIndex, fullText);
+      // lineIndex is 0-based within the fence body; the writer adds the fence line offset.
+      cb.addEventListener("click", () => {
+        void toggleCheckboxForBlock(plugin, cb, block, lineIndex, fullText);
+      });
       li.appendChild(cb);
       if (info.checked && plugin.settings.checkStrikethrough) {
         const span = createSpan();
