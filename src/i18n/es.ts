@@ -40,6 +40,8 @@ const es = {
   "settings.item.updateLabel.desc": "Se usa mientras editas un post. \nDéjalo en blanco para un botón solo con icono (solo si hay uno configurado).",
   "settings.item.updateIcon.name": "Icono del botón de actualizar",
   "settings.item.updateIcon.desc": "Copia un nombre de icono desde {linkOpen}aquí{linkClose}. \nDéjalo vacío para usar el icono del botón de postear.",
+  "settings.item.submitGradient.name": "Degradado del botón de postear",
+  "settings.item.submitGradient.desc": "Si se activa, el botón de postear usa un degradado basado en el color de acento.",
   "settings.item.inputPlaceholder.name": "Mensaje de campo vacío",
   "settings.item.inputPlaceholder.desc": "Si se deja en blanco, se ocultará.",
 
@@ -80,6 +82,9 @@ const es = {
   "settings.item.attachmentFolder.placeholder": "Selecciona una carpeta",
   "settings.item.shrinkImages.name": "Comprimir imágenes",
   "settings.item.shrinkImages.desc": "Comprime las imágenes adjuntas y elimina la ubicación y datos similares antes de guardarlas. \nLos GIF se dejan tal cual.",
+  "settings.item.postHeading.name": "Encabezado de la plantilla",
+  "settings.item.postHeading.desc": "Los posts se añaden debajo del encabezado elegido.",
+  "settings.option.postHeading.none": "Ninguno",
 
   "settings.item.tagColorRules.name": "Usar reglas por etiqueta",
   "settings.item.tagColorRules.desc": "Permite cambiar el color, la integración de etiquetas y más por etiqueta. \nEn el color manda la etiqueta que aparece primero en el texto.",
@@ -164,6 +169,8 @@ const es = {
 
   "view.empty.noMemos": "No hay notas que mostrar",
   "view.notice.saveFailed": "Error al guardar la nota: {error}",
+  "view.notice.postHeadingMissing": "Esta nota no tiene el encabezado configurado, así que el post se añadió al final",
+  "view.notice.postHeadingNoTemplate": "No se encontró la plantilla de la nota diaria, así que el encabezado de la plantilla volvió a «Ninguno»",
   "view.notice.searchPluginNotFound":
     "No se encontró el complemento de búsqueda",
 

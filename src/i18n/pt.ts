@@ -40,6 +40,8 @@ const pt = {
   "settings.item.updateLabel.desc": "Usado enquanto edita uma postagem. \nDeixe em branco para um botão somente com ícone (apenas se houver um definido).",
   "settings.item.updateIcon.name": "Ícone do botão de atualizar",
   "settings.item.updateIcon.desc": "Copie um nome de ícone {linkOpen}aqui{linkClose}. \nDeixe vazio para usar o ícone do botão de postagem.",
+  "settings.item.submitGradient.name": "Degradê do botão de postagem",
+  "settings.item.submitGradient.desc": "Se ativado, o botão de postagem usa um degradê baseado na cor de destaque.",
   "settings.item.inputPlaceholder.name":
     "Mensagem de campo vazio no formulário",
   "settings.item.inputPlaceholder.desc": "Deixe em branco para ocultar.",
@@ -81,6 +83,9 @@ const pt = {
   "settings.item.attachmentFolder.placeholder": "Selecione uma pasta",
   "settings.item.shrinkImages.name": "Comprimir imagens",
   "settings.item.shrinkImages.desc": "Comprime as imagens anexadas e remove a localização e dados semelhantes antes de salvar. \nGIFs ficam como estão.",
+  "settings.item.postHeading.name": "Título do modelo",
+  "settings.item.postHeading.desc": "As postagens são adicionadas abaixo do título escolhido.",
+  "settings.option.postHeading.none": "Nenhum",
 
   "settings.item.tagColorRules.name": "Usar regras por tag",
   "settings.item.tagColorRules.desc": "Permite mudar a cor, a integração de tags e mais, por tag. \nNa cor, vale a tag que aparece primeiro no texto.",
@@ -161,6 +166,8 @@ const pt = {
 
   "view.empty.noMemos": "Não há notas para mostrar",
   "view.notice.saveFailed": "Falha ao salvar a nota: {error}",
+  "view.notice.postHeadingMissing": "Esta nota não tem o título definido, então a postagem foi adicionada ao final",
+  "view.notice.postHeadingNoTemplate": "O modelo da nota diária não foi encontrado, então o título do modelo voltou para “Nenhum”",
   "view.notice.searchPluginNotFound": "Plugin de busca não encontrado",
 
   "view.image.removeAria": "Excluir imagem",

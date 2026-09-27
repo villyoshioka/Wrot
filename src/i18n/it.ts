@@ -41,6 +41,8 @@ const it = {
   "settings.item.updateLabel.desc": "Usato durante la modifica di un post. \nLascia vuoto per un pulsante con la sola icona (solo se è impostata un'icona).",
   "settings.item.updateIcon.name": "Icona del pulsante Aggiorna",
   "settings.item.updateIcon.desc": "Copia un nome icona {linkOpen}qui{linkClose}. \nLascia vuoto per usare l'icona del pulsante Posta.",
+  "settings.item.submitGradient.name": "Sfumatura del pulsante Posta",
+  "settings.item.submitGradient.desc": "Se attivato, il pulsante Posta usa una sfumatura basata sul colore d'accento.",
   "settings.item.inputPlaceholder.name": "Messaggio segnaposto",
   "settings.item.inputPlaceholder.desc": "Lascia vuoto per nasconderlo.",
 
@@ -81,6 +83,9 @@ const it = {
   "settings.item.attachmentFolder.placeholder": "Seleziona una cartella",
   "settings.item.shrinkImages.name": "Comprimi immagini",
   "settings.item.shrinkImages.desc": "Comprime le immagini allegate e rimuove la posizione e dati simili prima del salvataggio. \nLe GIF restano invariate.",
+  "settings.item.postHeading.name": "Intestazione del modello",
+  "settings.item.postHeading.desc": "I post vengono aggiunti sotto l'intestazione scelta.",
+  "settings.option.postHeading.none": "Nessuna",
 
   "settings.item.tagColorRules.name": "Usa le regole per tag",
   "settings.item.tagColorRules.desc": "Permette di cambiare colore, integrazione dei tag e altro per ogni tag. \nPer il colore vince il tag che compare per primo nel testo.",
@@ -167,6 +172,8 @@ const it = {
 
   "view.empty.noMemos": "Nessuna nota da mostrare",
   "view.notice.saveFailed": "Salvataggio fallito: {error}",
+  "view.notice.postHeadingMissing": "Questa nota non contiene l'intestazione impostata, quindi il post è stato aggiunto in fondo",
+  "view.notice.postHeadingNoTemplate": "Il modello della nota giornaliera non è stato trovato, quindi l'intestazione del modello è tornata a «Nessuna»",
   "view.notice.searchPluginNotFound": "Plugin di ricerca non trovato",
 
   "view.image.removeAria": "Elimina immagine",

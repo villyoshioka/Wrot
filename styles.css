@@ -754,6 +754,17 @@ body .wr-submit-btn.wr-submit-active {
   color: var(--text-on-accent);
 }
 
+/* From --interactive-accent (themes may leave --accent-h/s/l at default), in OKLCH whose l tracks perceived lightness; @supports-gated since a failed var() value drops to transparent. */
+@supports (color: oklch(from red l c h)) and (width: calc(1px * sign(1))) {
+  body.wr-submit-gradient .wr-submit-btn.wr-submit-active {
+    background: linear-gradient(
+      to right,
+      oklch(from var(--interactive-accent) min(l + 0.08 * sign(0.75 - l), 0.85) c calc(h - 12)),
+      var(--interactive-accent)
+    );
+  }
+}
+
 .wr-pinned-section {
   display: flex;
   flex-direction: column;

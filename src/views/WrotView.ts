@@ -2,7 +2,8 @@ import { ItemView, WorkspaceLeaf, Notice, TFile, EventRef, setIcon, Menu, MenuIt
 import { VIEW_TYPE_WROT } from "../constants";
 import { parseMemos, Memo } from "../utils/memoParser";
 import { appendMemo, deleteMemo, toggleCheckbox, updateMemo } from "../utils/memoWriter";
-import { getOrCreateDailyNote, getDailyNoteFile, dailyNotePathFor } from "../utils/dailyNote";
+import { getOrCreateDailyNote, getDailyNoteFile, dailyNotePathFor, dailyNoteTemplateFile } from "../utils/dailyNote";
+import { headingLocator, waitForTemplater } from "../utils/postHeading";
 import { renderTextWithTagsAndUrls, renderUrlPreviews } from "../utils/urlRenderer";
 import { invalidateMemoCache, renderQuoteCard } from "../utils/quoteCard";
 import { ensureBlockIdOnFence } from "../utils/memoWriter";
@@ -1470,10 +1471,21 @@ export class WrotView extends ItemView {
     }
 
     try {
+      const settings = this.plugin.settings;
+      const templateGone = settings.postHeading !== "" && !dailyNoteTemplateFile(this.app);
+      if (templateGone) {
+        settings.postHeading = "";
+        await this.plugin.saveSettings();
+        new Notice(t("view.notice.postHeadingNoTemplate"));
+      }
+
+      const existed = getDailyNoteFile(this.app, this.currentDate) !== null;
       const file = await getOrCreateDailyNote(
         this.app,
-        this.currentDate
+        this.currentDate,
+        templateGone
       );
+      if (!existed) await waitForTemplater(this.app, file);
 
       let bodyText = rawText;
       const image = await this.pendingImageForSave();
@@ -1489,12 +1501,22 @@ export class WrotView extends ItemView {
       }
 
       this.markOwnWrite();
-      const postedTime = await appendMemo(this.app, file, bodyText);
+      const locate = headingLocator(settings.postHeading, this.currentDate);
+      let headingFound = true;
+      const postedTime = await appendMemo(this.app, file, bodyText, locate ? (lines) => {
+        const at = locate(lines);
+        headingFound = at !== null;
+        return at;
+      } : undefined);
+      if (!headingFound && !settings.postHeadingNoticed) {
+        new Notice(t("view.notice.postHeadingMissing"));
+        settings.postHeadingNoticed = true;
+        await this.plugin.saveSettings();
+      }
 
       // The armed day lands on the post the moment it exists. Its place was taken
       // when it was armed, so there is nothing left to check here.
       if (this.armedSchedule) {
-        const settings = this.plugin.settings;
         settings.scheduledPins = [
           { timestamp: postedTime, file: file.path, from: this.armedSchedule },
           ...(settings.scheduledPins ?? []),
@@ -1595,7 +1617,12 @@ export class WrotView extends ItemView {
         return;
       }
 
-      const memos = parseMemos(content);
+      // Posts under a heading and at the note's end can mix, so order by time; unparsable ones keep their slot.
+      const parsed = parseMemos(content);
+      const timeOf = (memo: Memo): number => Date.parse(memo.time);
+      const timed = parsed.filter((m) => !isNaN(timeOf(m))).sort((a, b) => timeOf(b) - timeOf(a));
+      let next = 0;
+      const memos = parsed.map((m) => (isNaN(timeOf(m)) ? m : timed[next++]));
 
       let rendered = 0;
       for (const memo of memos) {

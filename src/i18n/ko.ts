@@ -40,6 +40,8 @@ const ko = {
   "settings.item.updateLabel.desc": "게시물을 수정하는 동안 사용됩니다. \n비워두면 아이콘만 표시됩니다(아이콘이 설정된 경우에 한해).",
   "settings.item.updateIcon.name": "수정 버튼 아이콘",
   "settings.item.updateIcon.desc": "아이콘 이름은 {linkOpen}여기{linkClose}에서 복사하세요. \n비워두면 게시 버튼과 같은 아이콘이 사용됩니다.",
+  "settings.item.submitGradient.name": "게시 버튼 그라데이션",
+  "settings.item.submitGradient.desc": "켜면 게시 버튼이 강조 색상 기반의 그라데이션으로 표시됩니다.",
   "settings.item.inputPlaceholder.name": "입력창 안내 문구",
   "settings.item.inputPlaceholder.desc": "비워두면 표시되지 않습니다.",
 
@@ -80,6 +82,9 @@ const ko = {
   "settings.item.attachmentFolder.placeholder": "폴더 선택",
   "settings.item.shrinkImages.name": "이미지 압축 저장",
   "settings.item.shrinkImages.desc": "첨부 이미지를 압축하고 위치 정보 등을 삭제한 뒤 저장합니다.\nGIF는 대상이 아닙니다.",
+  "settings.item.postHeading.name": "템플릿 제목 지정",
+  "settings.item.postHeading.desc": "선택한 제목 아래에 게시물이 추가됩니다.",
+  "settings.option.postHeading.none": "지정 안 함",
 
   "settings.item.tagColorRules.name": "태그별 규칙 사용",
   "settings.item.tagColorRules.desc": "태그마다 색과 태그 통합 등을 다르게 설정할 수 있습니다. \n색은 본문에서 먼저 나온 태그가 우선합니다.",
@@ -159,6 +164,8 @@ const ko = {
 
   "view.empty.noMemos": "표시할 게시물이 없습니다",
   "view.notice.saveFailed": "저장 실패: {error}",
+  "view.notice.postHeadingMissing": "이 노트에는 설정한 제목이 없어 끝에 추가했습니다",
+  "view.notice.postHeadingNoTemplate": "데일리 노트 템플릿을 찾을 수 없어 템플릿 제목 지정을 '지정 안 함'으로 되돌렸습니다",
   "view.notice.searchPluginNotFound": "검색 플러그인을 찾을 수 없습니다.",
 
   "view.image.removeAria": "이미지 삭제",

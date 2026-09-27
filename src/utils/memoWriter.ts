@@ -133,17 +133,29 @@ export async function deleteMemo(
 
 declare const moment: typeof import("moment");
 
-/** Appends a memo and returns the timestamp it was filed under, which is its identity. */
+/**
+ * Appends a memo and returns the timestamp it was filed under, which is its identity.
+ * `locate` names the line to write after; when it has none the memo goes at the end.
+ */
 export async function appendMemo(
   app: App,
   file: TFile,
-  content: string
+  content: string,
+  locate?: (lines: string[]) => number | null
 ): Promise<string> {
   const time = moment().format("YYYY-MM-DDTHH:mm:ss.SSSZ");
 
   const memoBlock = "```wr " + time + "\n" + content + "\n```";
 
   await app.vault.process(file, (data) => {
+    const lines = data.split("\n");
+    const at = locate?.(lines) ?? null;
+    if (at !== null) {
+      const after = lines.slice(at + 1);
+      // One blank line on each side, so deleteMemo taking the one before leaves the rest intact.
+      const gap = after.length === 0 || after[0].trim() === "" ? [] : [""];
+      return [...lines.slice(0, at + 1), "", memoBlock, ...gap, ...after].join("\n");
+    }
     if (data.length === 0) return memoBlock;
     const separator = data.endsWith("\n\n")
       ? ""

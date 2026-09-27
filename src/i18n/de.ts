@@ -40,6 +40,8 @@ const de = {
   "settings.item.updateLabel.desc": "Wird während der Bearbeitung eines Beitrags verwendet. \nLeer lassen für eine reine Symbol-Schaltfläche (nur wenn ein Symbol festgelegt ist).",
   "settings.item.updateIcon.name": "Symbol der Aktualisieren-Schaltfläche",
   "settings.item.updateIcon.desc": "Symbolnamen {linkOpen}hier{linkClose} kopieren. \nLeer lassen übernimmt das Symbol der Posten-Schaltfläche.",
+  "settings.item.submitGradient.name": "Verlauf der Posten-Schaltfläche",
+  "settings.item.submitGradient.desc": "Wenn aktiviert, erhält die Posten-Schaltfläche einen Farbverlauf aus der Akzentfarbe.",
   "settings.item.inputPlaceholder.name": "Platzhaltertext im Eingabefeld",
   "settings.item.inputPlaceholder.desc": "Lassen Sie das Feld leer, um ihn auszublenden.",
 
@@ -80,6 +82,9 @@ const de = {
   "settings.item.attachmentFolder.placeholder": "Ordner wählen",
   "settings.item.shrinkImages.name": "Bilder komprimieren",
   "settings.item.shrinkImages.desc": "Komprimiert angehängte Bilder und entfernt Standort- und ähnliche Daten vor dem Speichern. \nGIFs bleiben unverändert.",
+  "settings.item.postHeading.name": "Vorlagenüberschrift",
+  "settings.item.postHeading.desc": "Posts werden unter der gewählten Überschrift eingefügt.",
+  "settings.option.postHeading.none": "Keine",
 
   "settings.item.tagColorRules.name": "Tag-Regeln verwenden",
   "settings.item.tagColorRules.desc": "Farbe, Tag-Integration und mehr lassen sich je Tag festlegen. \nBei der Farbe gewinnt das zuerst im Text stehende Tag.",
@@ -158,6 +163,8 @@ const de = {
 
   "view.empty.noMemos": "Keine Notizen anzuzeigen",
   "view.notice.saveFailed": "Fehler beim Speichern der Notiz: {error}",
+  "view.notice.postHeadingMissing": "Diese Notiz enthält die eingestellte Überschrift nicht, daher wurde der Post am Ende eingefügt",
+  "view.notice.postHeadingNoTemplate": "Die Vorlage für tägliche Notizen wurde nicht gefunden, daher wurde die Vorlagenüberschrift auf „Keine“ zurückgesetzt",
   "view.notice.searchPluginNotFound": "Such-Plugin nicht gefunden",
 
   "view.image.removeAria": "Bild löschen",

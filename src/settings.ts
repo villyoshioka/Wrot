@@ -13,6 +13,8 @@ import type WrotPlugin from "./main";
 import { t, defaultTimestampFormat, defaultHeaderDateFormat } from "./i18n";
 import { blendColor, toHex } from "./utils/color";
 import { HEX_COLOR_RE } from "./utils/patterns";
+import { dailyNoteTemplateFile } from "./utils/dailyNote";
+import { listTemplateHeadings } from "./utils/postHeading";
 
 export interface SubColorScope {
   buttons?: boolean;
@@ -153,6 +155,11 @@ export interface WrotSettings {
   tagColorRulesEnabled: boolean;
   tagColorRules: TagColorRule[];
   followObsidianFontSize: boolean;
+  submitGradient: boolean;
+  // A heading line from the daily note template, as written; "" files posts at the end.
+  postHeading: string;
+  // Whether the "heading not found" notice has been shown for the current postHeading.
+  postHeadingNoticed: boolean;
   // Deletion is irreversible and the plugin has no undo, so the menu item stays
   // out of sight until it is asked for.
   showPostDelete: boolean;
@@ -196,6 +203,9 @@ export const DEFAULT_SETTINGS: WrotSettings = {
   tagColorRulesEnabled: false,
   tagColorRules: [],
   followObsidianFontSize: false,
+  submitGradient: false,
+  postHeading: "",
+  postHeadingNoticed: false,
   showPostDelete: false,
   toolbarEditEnabled: true,
   toolbarLayout: [],
@@ -304,6 +314,7 @@ export class WrotSettingTab extends PluginSettingTab {
       // The folder row is only offered while this is on.
       useCustomAttachmentFolder: () => this.update(),
       followObsidianFontSize: () => this.plugin.applyFontFollow(),
+      submitGradient: () => this.plugin.applySubmitGradient(),
       calendarDayShape: () => this.plugin.applyCalendarDayShape(),
       checkStrikethrough: () => {
         this.plugin.refreshViews();
@@ -564,6 +575,7 @@ export class WrotSettingTab extends PluginSettingTab {
           },
           resetValue: () => defaultTimestampFormat(),
         }),
+        this.postHeadingRow(),
         this.themeColorRow("bgColorLight"),
         this.themeColorRow("textColorLight"),
         this.themeColorRow("bgColorDark"),
@@ -623,6 +635,11 @@ export class WrotSettingTab extends PluginSettingTab {
           resetValue: () => t("defaults.updateLabel"),
         }),
         this.iconRow("updateIcon"),
+        {
+          name: t("settings.item.submitGradient.name"),
+          desc: desc(t("settings.item.submitGradient.desc")),
+          control: { type: "toggle", key: "submitGradient" },
+        },
         this.textWithReset({
           name: t("settings.item.inputPlaceholder.name"),
           desc: t("settings.item.inputPlaceholder.desc"),
@@ -726,6 +743,50 @@ export class WrotSettingTab extends PluginSettingTab {
           control: { type: "toggle", key: "showPostDelete" },
         },
       ],
+    };
+  }
+
+  // The declarative dropdown takes a fixed option list, but the choices here are the
+  // template's headings, read afresh each time the row is drawn.
+  private postHeadingRow(): SettingDefinition {
+    const settings = this.plugin.settings;
+    const name = t("settings.item.postHeading.name");
+    const rowDesc = t("settings.item.postHeading.desc");
+    return {
+      name,
+      desc: desc(rowDesc),
+      render: (setting: Setting) => {
+        setting
+          .setName(name)
+          .setDesc(desc(rowDesc))
+          .addDropdown((dropdown) => {
+            // The value keeps the # marks, which fix the heading level; the label drops them.
+            const label = (heading: string): string => heading.replace(/^#+\s*/, "");
+            const fill = (headings: string[]): void => {
+              dropdown.selectEl.empty();
+              dropdown.addOption("", t("settings.option.postHeading.none"));
+              for (const heading of headings) dropdown.addOption(heading, label(heading));
+              dropdown.setValue(headings.includes(settings.postHeading) ? settings.postHeading : "");
+            };
+            fill([]);
+            dropdown.onChange(async (value) => {
+              settings.postHeading = value;
+              settings.postHeadingNoticed = false;
+              await this.plugin.saveSettings();
+            });
+            const templateFile = dailyNoteTemplateFile(this.app);
+            const read = templateFile ? this.app.vault.cachedRead(templateFile) : Promise.resolve("");
+            void read.then(async (template) => {
+              const headings = listTemplateHeadings(template);
+              fill(headings);
+              dropdown.setDisabled(headings.length === 0);
+              if (settings.postHeading && !headings.includes(settings.postHeading)) {
+                settings.postHeading = "";
+                await this.plugin.saveSettings();
+              }
+            });
+          });
+      },
     };
   }
 

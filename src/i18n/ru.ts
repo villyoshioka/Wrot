@@ -40,6 +40,8 @@ const ru = {
   "settings.item.updateLabel.desc": "Используется во время редактирования записи. \nОставьте пустым для кнопки только с иконкой (только если иконка задана).",
   "settings.item.updateIcon.name": "Иконка кнопки обновления",
   "settings.item.updateIcon.desc": "Название значка скопируйте {linkOpen}здесь{linkClose}. \nОставьте пустым, чтобы использовать значок кнопки поста.",
+  "settings.item.submitGradient.name": "Градиент кнопки поста",
+  "settings.item.submitGradient.desc": "Если включено, кнопка поста получает градиент на основе акцентного цвета.",
   "settings.item.inputPlaceholder.name": "Подсказка в пустом поле",
   "settings.item.inputPlaceholder.desc": "Оставьте поле пустым, чтобы скрыть подсказку.",
 
@@ -80,6 +82,9 @@ const ru = {
   "settings.item.attachmentFolder.placeholder": "Выберите папку",
   "settings.item.shrinkImages.name": "Сжимать изображения",
   "settings.item.shrinkImages.desc": "Сжимает прикреплённые изображения и удаляет геоданные и подобные сведения перед сохранением. \nGIF остаются без изменений.",
+  "settings.item.postHeading.name": "Заголовок шаблона",
+  "settings.item.postHeading.desc": "Посты добавляются под выбранным заголовком.",
+  "settings.option.postHeading.none": "Не выбран",
 
   "settings.item.tagColorRules.name": "Правила для тегов",
   "settings.item.tagColorRules.desc": "Позволяет задавать цвет, интеграцию тегов и другое для каждого тега. \nДля цвета побеждает тег, который встречается в тексте первым.",
@@ -159,6 +164,8 @@ const ru = {
 
   "view.empty.noMemos": "Нет записей для отображения",
   "view.notice.saveFailed": "Ошибка сохранения: {error}",
+  "view.notice.postHeadingMissing": "В этой заметке нет заданного заголовка, поэтому пост добавлен в конец",
+  "view.notice.postHeadingNoTemplate": "Шаблон ежедневной заметки не найден, поэтому заголовок шаблона сброшен на «Не выбран»",
   "view.notice.searchPluginNotFound": "Плагин поиска не найден",
 
   "view.image.removeAria": "Удалить изображение",

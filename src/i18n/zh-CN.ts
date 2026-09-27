@@ -40,6 +40,8 @@ const zhCN = {
   "settings.item.updateLabel.desc": "编辑内容时使用。 \n留空则仅显示图标（仅当已设置图标时）。",
   "settings.item.updateIcon.name": "更新按钮图标",
   "settings.item.updateIcon.desc": "图标名称可从{linkOpen}这里{linkClose}复制。 \n留空则使用发布按钮的图标。",
+  "settings.item.submitGradient.name": "发布按钮渐变",
+  "settings.item.submitGradient.desc": "开启后，发布按钮将使用基于强调色的渐变。",
   "settings.item.inputPlaceholder.name": "输入框占位文本",
   "settings.item.inputPlaceholder.desc": "留空则不显示。",
 
@@ -80,6 +82,9 @@ const zhCN = {
   "settings.item.attachmentFolder.placeholder": "选择文件夹",
   "settings.item.shrinkImages.name": "压缩图片后保存",
   "settings.item.shrinkImages.desc": "压缩附加的图片，并在保存前删除位置信息等数据。\nGIF 不在此列。",
+  "settings.item.postHeading.name": "模板标题指定",
+  "settings.item.postHeading.desc": "帖子将添加到所选标题下方。",
+  "settings.option.postHeading.none": "不指定",
 
   "settings.item.tagColorRules.name": "使用标签规则",
   "settings.item.tagColorRules.desc": "可按标签分别设置颜色和标签集成等。 \n颜色以正文中先出现的标签为准。",
@@ -163,6 +168,8 @@ const zhCN = {
 
   "view.empty.noMemos": "暂无可显示的笔记",
   "view.notice.saveFailed": "笔记保存失败：{error}",
+  "view.notice.postHeadingMissing": "此笔记中没有设置的标题，已添加到末尾",
+  "view.notice.postHeadingNoTemplate": "找不到日记模板，已将模板标题指定恢复为“不指定”",
   "view.notice.searchPluginNotFound": "未找到搜索插件",
 
   "view.image.removeAria": "删除图片",

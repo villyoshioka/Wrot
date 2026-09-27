@@ -44,6 +44,11 @@ export function dailyNotePathFor(date: ReturnType<typeof moment>): string {
   return buildNotePath(date).path;
 }
 
+/** The note's name as Templater's tp.file.title gives it: the basename, without folders. */
+export function dailyNoteTitle(date: ReturnType<typeof moment>): string {
+  return buildNotePath(date).filename.split("/").pop() ?? "";
+}
+
 export function getDailyNoteFile(
   app: App,
   date: ReturnType<typeof moment>
@@ -52,55 +57,80 @@ export function getDailyNoteFile(
   return file instanceof TFile ? file : null;
 }
 
+/**
+ * `skipTemplate` is for a caller that already knows the template is missing and has said
+ * so itself; reading it anyway would add getTemplateInfo's own Notice on top.
+ */
 export async function getOrCreateDailyNote(
   app: App,
-  date: ReturnType<typeof moment>
+  date: ReturnType<typeof moment>,
+  skipTemplate = false
 ): Promise<TFile> {
-  const { path, filename, format } = buildNotePath(date);
+  const { path } = buildNotePath(date);
   const existing = app.vault.getAbstractFileByPath(path);
   if (existing instanceof TFile) return existing;
 
   await ensureFolderForPath(app, path);
 
-  const template = getDailyNoteSettings()?.template?.trim() || "";
+  const template = skipTemplate ? "" : getDailyNoteSettings()?.template?.trim() || "";
 
   let body = "";
   if (template) {
     try {
       const [contents] = await getTemplateInfo(template);
-      body = contents
-        .replace(/{{\s*date\s*}}/gi, filename)
-        .replace(/{{\s*time\s*}}/gi, moment().format("HH:mm"))
-        .replace(/{{\s*title\s*}}/gi, filename)
-        .replace(
-          /{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi,
-          (_match, _type, calc, delta, unit, customFmt) => {
-            const now = moment();
-            const cur = date.clone().set({
-              hour: now.get("hour"),
-              minute: now.get("minute"),
-              second: now.get("second"),
-            });
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- argument from untyped Obsidian/CodeMirror internal API
-            if (calc) cur.add(parseInt(delta, 10), unit);
-            return customFmt
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access -- internal Obsidian/CodeMirror API or intentional pattern
-              ? cur.format(customFmt.substring(1).trim())
-              : cur.format(format);
-          }
-        )
-        .replace(
-          /{{\s*yesterday\s*}}/gi,
-          date.clone().subtract(1, "day").format(format)
-        )
-        .replace(
-          /{{\s*tomorrow\s*}}/gi,
-          date.clone().add(1, "day").format(format)
-        );
+      body = expandCoreTemplateVars(contents, date);
     } catch {
       body = "";
     }
   }
 
   return await app.vault.create(path, body);
+}
+
+/** Fills the core Templates plugin's {{date}}-style variables for the note of this date. */
+export function expandCoreTemplateVars(
+  text: string,
+  date: ReturnType<typeof moment>
+): string {
+  const { filename, format } = buildNotePath(date);
+  return text
+    .replace(/{{\s*date\s*}}/gi, filename)
+    .replace(/{{\s*time\s*}}/gi, moment().format("HH:mm"))
+    .replace(/{{\s*title\s*}}/gi, filename)
+    .replace(
+      /{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi,
+      (_match, _type, calc, delta, unit, customFmt) => {
+        const now = moment();
+        const cur = date.clone().set({
+          hour: now.get("hour"),
+          minute: now.get("minute"),
+          second: now.get("second"),
+        });
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- argument from untyped Obsidian/CodeMirror internal API
+        if (calc) cur.add(parseInt(delta, 10), unit);
+        return customFmt
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access -- internal Obsidian/CodeMirror API or intentional pattern
+          ? cur.format(customFmt.substring(1).trim())
+          : cur.format(format);
+      }
+    )
+    .replace(
+      /{{\s*yesterday\s*}}/gi,
+      date.clone().subtract(1, "day").format(format)
+    )
+    .replace(
+      /{{\s*tomorrow\s*}}/gi,
+      date.clone().add(1, "day").format(format)
+    );
+}
+
+/**
+ * The daily note template, or null when none is set or it cannot be found.
+ * Resolved here rather than through getTemplateInfo, which raises a Notice on a
+ * missing file — too loud for the settings screen reading it on every open.
+ */
+export function dailyNoteTemplateFile(app: App): TFile | null {
+  const template = getDailyNoteSettings()?.template?.trim() || "";
+  if (!template) return null;
+  return app.metadataCache.getFirstLinkpathDest(normalizePath(template), "");
 }

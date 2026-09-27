@@ -47,6 +47,7 @@ const enGB = {
   "view.image.removeAria": "Delete image",
   "defaults.headerDateFormat": "D MMMM YYYY",
   "defaults.timestampFormat": "DD/MM/YYYY HH:mm:ss",
+  "settings.item.submitGradient.desc": "When on, the post button uses a gradient based on the accent colour.",
 } satisfies Translations;
 
 export default enGB;

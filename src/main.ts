@@ -122,6 +122,7 @@ export default class WrotPlugin extends Plugin {
       // Touching body (class, inline property, adopted sheet) during load invalidates the
       // whole document's style; the recalc then lands in the startup measurement.
       this.applyFontFollow();
+      this.applySubmitGradient();
       this.applyCalendarDayShape();
       this.applyBgColor();
       // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure leaves pins and rules empty, which every reader tolerates
@@ -220,6 +221,12 @@ export default class WrotPlugin extends Plugin {
         } catch {}
       }
     });
+  }
+
+  applySubmitGradient(): void {
+    for (const doc of this.styleDocs()) {
+      doc.body.classList.toggle("wr-submit-gradient", this.settings.submitGradient);
+    }
   }
 
   applyFontFollow(): void {
@@ -353,6 +360,7 @@ export default class WrotPlugin extends Plugin {
     this.tagRuleSheet.sync(docs);
     this.fontSheet.sync(docs);
     this.applyFontFollow();
+    this.applySubmitGradient();
     this.applyCalendarDayShape();
   }
 
@@ -474,7 +482,7 @@ export default class WrotPlugin extends Plugin {
     this.bgSheet.remove();
     this.tagRuleSheet.remove();
     this.fontSheet.remove();
-    for (const doc of this.styleDocs()) doc.body.classList.remove("wr-font-follow");
+    for (const doc of this.styleDocs()) doc.body.classList.remove("wr-font-follow", "wr-submit-gradient");
   }
 
   async activateView(): Promise<void> {

@@ -33,6 +33,8 @@ Because every post drops straight into your daily notes, Wrot works hand-in-hand
   Set custom background and text colors for specific tags to visually group your feed by project, mood, or urgency ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/tag-rules.md)).
 - **Internal links and rich link previews**  
   Mention notes using standard `![[]]` syntax or paste links to generate rich OGP link cards, keeping your context clear at a glance ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/links-and-embeds.md)).
+- **Post under your template headings**  
+  Pick a heading from your daily note template and your posts land right under it instead of at the end of the note. Templater-powered templates work too ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/template-heading-selection.md)).
 - **Hassle-free image attachments**  
   Paste images straight from your clipboard, drop them onto the screen, or pick files using the attachment button. Check thumbnail previews before hitting post.
 - **Customizable look and feel**  

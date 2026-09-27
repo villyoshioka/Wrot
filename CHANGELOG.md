@@ -1,5 +1,18 @@
 # Release Notes
 
+## 2.28.0 - 2026-09-27
+
+### Updates
+
+- Updated dependencies
+
+### New Features
+
+- Added Template Heading Selection, which adds posts under a heading you pick from your daily note template (choose one in "Template Heading Selection" in the settings)
+- Added an accent-color gradient for the post button (turn on "Post Button Gradient" in the settings)
+
+---
+
 ## 2.27.0 - 2026-09-21
 
 ### Updates

@@ -40,6 +40,8 @@ const ja = {
   "settings.item.updateLabel.desc": "投稿の編集時に表示されます。\n空欄にするとアイコンのみ表示されます（アイコン設定時のみ）。",
   "settings.item.updateIcon.name": "更新ボタンのアイコン",
   "settings.item.updateIcon.desc": "アイコン名は {linkOpen}こちら{linkClose} からコピーできます。\n空欄にすると投稿ボタンと同じアイコンになります。",
+  "settings.item.submitGradient.name": "投稿ボタンのグラデーション",
+  "settings.item.submitGradient.desc": "オンにすると、投稿ボタンがアクセントカラーのグラデーションになります。",
   "settings.item.inputPlaceholder.name": "投稿フォームの空欄メッセージ",
   "settings.item.inputPlaceholder.desc": "空欄にするとメッセージを非表示にします。",
 
@@ -83,6 +85,9 @@ const ja = {
   "settings.item.attachmentFolder.placeholder": "フォルダを選択",
   "settings.item.shrinkImages.name": "画像を圧縮して保存",
   "settings.item.shrinkImages.desc": "添付画像を圧縮し、位置情報等を削除して保存します。\nGIFは対象外です。",
+  "settings.item.postHeading.name": "テンプレートの見出し指定",
+  "settings.item.postHeading.desc": "選んだ見出しの下に投稿が追加されます。",
+  "settings.option.postHeading.none": "指定なし",
 
   "settings.item.tagColorRules.name": "タグ別ルールを使う",
   "settings.item.tagColorRules.desc":
@@ -165,6 +170,8 @@ const ja = {
 
   "view.empty.noMemos": "表示できるメモがありません",
   "view.notice.saveFailed": "メモの保存に失敗しました: {error}",
+  "view.notice.postHeadingMissing": "このノートには設定した見出しが無いため、末尾に追加しました",
+  "view.notice.postHeadingNoTemplate": "デイリーノートのテンプレートが見つからないため、テンプレートの見出し指定を「指定なし」に戻しました",
   "view.notice.searchPluginNotFound": "検索プラグインが見つかりません",
 
   "view.image.removeAria": "画像を削除",

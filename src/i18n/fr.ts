@@ -41,6 +41,8 @@ const fr = {
   "settings.item.updateLabel.desc": "Utilisé pendant la modification d'un post. \nLaissez vide pour un bouton avec seulement l'icône (uniquement si une icône est définie).",
   "settings.item.updateIcon.name": "Icône du bouton Mettre à jour",
   "settings.item.updateIcon.desc": "Copiez un nom d'icône {linkOpen}ici{linkClose}. \nLaissez vide pour utiliser l'icône du bouton Poster.",
+  "settings.item.submitGradient.name": "Dégradé du bouton Poster",
+  "settings.item.submitGradient.desc": "Si activé, le bouton Poster utilise un dégradé basé sur la couleur d'accentuation.",
   "settings.item.inputPlaceholder.name": "Message du champ vide",
   "settings.item.inputPlaceholder.desc": "Laissez vide pour ne rien afficher.",
 
@@ -81,6 +83,9 @@ const fr = {
   "settings.item.attachmentFolder.placeholder": "Sélectionner un dossier",
   "settings.item.shrinkImages.name": "Compresser les images",
   "settings.item.shrinkImages.desc": "Compresse les images jointes et supprime la position et les données similaires avant l'enregistrement. \nLes GIF restent tels quels.",
+  "settings.item.postHeading.name": "Titre du modèle",
+  "settings.item.postHeading.desc": "Les posts sont ajoutés sous le titre choisi.",
+  "settings.option.postHeading.none": "Aucun",
 
   "settings.item.tagColorRules.name": "Utiliser les règles par tag",
   "settings.item.tagColorRules.desc": "Permet de changer la couleur, l'intégration des tags et plus, tag par tag. \nPour la couleur, le tag apparaissant en premier l'emporte.",
@@ -164,6 +169,8 @@ const fr = {
 
   "view.empty.noMemos": "Aucune note à afficher",
   "view.notice.saveFailed": "Échec de l'enregistrement de la note : {error}",
+  "view.notice.postHeadingMissing": "Cette note ne contient pas le titre défini, le post a donc été ajouté à la fin",
+  "view.notice.postHeadingNoTemplate": "Le modèle de note quotidienne est introuvable, le titre du modèle a donc été remis sur « Aucun »",
   "view.notice.searchPluginNotFound": "Plugin de recherche introuvable",
 
   "view.image.removeAria": "Supprimer l'image",

@@ -40,6 +40,8 @@ const en = {
   "settings.item.updateLabel.desc": "Used while editing a post. \nLeave blank for an icon-only button (only if an icon is set).",
   "settings.item.updateIcon.name": "Update Button Icon",
   "settings.item.updateIcon.desc": "Copy an icon name from {linkOpen}here{linkClose}. \nLeave blank to use the post button's icon.",
+  "settings.item.submitGradient.name": "Post Button Gradient",
+  "settings.item.submitGradient.desc": "When on, the post button uses a gradient based on the accent color.",
   "settings.item.inputPlaceholder.name": "Post Form Placeholder",
   "settings.item.inputPlaceholder.desc": "Leave blank to hide it.",
 
@@ -80,6 +82,9 @@ const en = {
   "settings.item.attachmentFolder.placeholder": "Select a folder",
   "settings.item.shrinkImages.name": "Compress Images",
   "settings.item.shrinkImages.desc": "Compresses attached images and removes location and similar data before saving. \nGIFs are left as is.",
+  "settings.item.postHeading.name": "Template Heading Selection",
+  "settings.item.postHeading.desc": "Posts are added under the heading you choose.",
+  "settings.option.postHeading.none": "None",
 
   "settings.item.tagColorRules.name": "Use Tag Rules",
   "settings.item.tagColorRules.desc": "Lets you change the color, tag integration and more per tag. \nFor color, the tag appearing first in the text wins.",
@@ -163,6 +168,8 @@ const en = {
 
   "view.empty.noMemos": "No notes to show",
   "view.notice.saveFailed": "Failed to save note: {error}",
+  "view.notice.postHeadingMissing": "This note does not have the heading you set, so the post was added to the end",
+  "view.notice.postHeadingNoTemplate": "The daily note template could not be found, so Template Heading Selection was reset to None",
   "view.notice.searchPluginNotFound": "Search plugin not found",
 
   "view.image.removeAria": "Remove image",

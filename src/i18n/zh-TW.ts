@@ -40,6 +40,8 @@ const zhTW = {
   "settings.item.updateLabel.desc": "編輯貼文時使用。 \n留空則僅顯示圖示（僅當已設定圖示時）。",
   "settings.item.updateIcon.name": "更新按鈕圖示",
   "settings.item.updateIcon.desc": "圖示名稱可從{linkOpen}這裡{linkClose}複製。 \n留空則使用發佈按鈕的圖示。",
+  "settings.item.submitGradient.name": "發佈按鈕漸層",
+  "settings.item.submitGradient.desc": "開啟後，發佈按鈕將使用以強調色為基礎的漸層。",
   "settings.item.inputPlaceholder.name": "貼文表單空白提示訊息",
   "settings.item.inputPlaceholder.desc": "留空則隱藏。",
 
@@ -80,6 +82,9 @@ const zhTW = {
   "settings.item.attachmentFolder.placeholder": "選擇資料夾",
   "settings.item.shrinkImages.name": "壓縮圖片後儲存",
   "settings.item.shrinkImages.desc": "壓縮附加的圖片，並在儲存前刪除位置資訊等資料。\nGIF 不在此列。",
+  "settings.item.postHeading.name": "範本標題指定",
+  "settings.item.postHeading.desc": "貼文將新增到所選標題下方。",
+  "settings.option.postHeading.none": "不指定",
 
   "settings.item.tagColorRules.name": "使用標籤規則",
   "settings.item.tagColorRules.desc": "可依標籤分別設定顏色與標籤整合等。 \n顏色以內文中先出現的標籤為準。",
@@ -163,6 +168,8 @@ const zhTW = {
 
   "view.empty.noMemos": "沒有可顯示的筆記",
   "view.notice.saveFailed": "筆記儲存失敗：{error}",
+  "view.notice.postHeadingMissing": "此筆記中沒有設定的標題，已新增到末尾",
+  "view.notice.postHeadingNoTemplate": "找不到每日筆記範本，已將範本標題指定恢復為「不指定」",
   "view.notice.searchPluginNotFound": "找不到搜尋插件",
 
   "view.image.removeAria": "刪除圖片",
