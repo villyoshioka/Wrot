@@ -30,9 +30,9 @@ You can attach screenshots and photos directly into your post.
 
 - **Saving behavior**: Images are **saved to your Vault only when you publish your post**. If you discard the post, the file won't be saved.
 - **Default folder**: By default, Wrot respects your main Obsidian preferences under Settings > Files and links > Default location for new attachments.
-  - If you turn on "Image Folder" in Wrot's settings, any images attached through Wrot will go into a dedicated folder instead. If that folder doesn't exist, Wrot automatically falls back to your main Obsidian setting.
+  - If you turn on "Custom attachment folder" in Wrot's settings, any images attached through Wrot will go into a dedicated folder instead. If that folder doesn't exist, Wrot automatically falls back to your main Obsidian setting.
 - **File names**: Images are automatically renamed using the format `Pasted Image YYYYMMDDHHmmss.<extension>`.
-- **Compression**: By default, attached images are compressed and stripped of location and similar embedded data before saving. Turn off "Compress Images" in Wrot's settings to save them as they are.
+- **Compression**: By default, attached images are compressed and stripped of location and similar embedded data before saving. Turn off "Compress images" in Wrot's settings to save them as they are.
   - Compressed images are saved as WebP. On iPhone and iPad, where WebP cannot be written, they become JPEG or PNG (with transparency) instead.
   - GIFs and other animated images are never compressed. An image that would not get smaller is also saved as is.
 
@@ -96,13 +96,13 @@ When you include an external URL, Wrot can display it as a rich preview card wit
 
 ### When Preview Cards Show Up
 
-- **"URL Preview"** is enabled in Wrot's settings
+- **"Link previews"** is enabled in Wrot's settings
 - The link starts with `http://` or `https://`
 - The destination website provides valid OGP metadata
 
 ### When Preview Cards Won't Show Up
 
-- URL Previews are turned off in settings
+- Link previews are turned off in settings
 - You are using internal links like `obsidian://`
 - The link points directly to an image file (the image itself will display instead)
 - The target page is restricted or doesn't share OGP data
@@ -123,6 +123,6 @@ Links to posts on `https://twitter.com/...` and `https://x.com/...` are automati
 
 ### Link preview cards aren't showing up
 
-- Double-check that "URL Preview" is turned on in Wrot's settings.
+- Double-check that "Link previews" is turned on in Wrot's settings.
 - Make sure the website actually supports OGP meta tags.
 - Direct links to image files will render as images rather than preview cards.

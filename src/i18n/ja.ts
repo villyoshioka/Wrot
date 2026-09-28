@@ -40,8 +40,8 @@ const ja = {
   "settings.item.updateLabel.desc": "投稿の編集時に表示されます。\n空欄にするとアイコンのみ表示されます（アイコン設定時のみ）。",
   "settings.item.updateIcon.name": "更新ボタンのアイコン",
   "settings.item.updateIcon.desc": "アイコン名は {linkOpen}こちら{linkClose} からコピーできます。\n空欄にすると投稿ボタンと同じアイコンになります。",
-  "settings.item.submitGradient.name": "投稿ボタンのグラデーション",
-  "settings.item.submitGradient.desc": "オンにすると、投稿ボタンがアクセントカラーのグラデーションになります。",
+  "settings.item.submitGradient.name": "投稿フォームのグラデーション",
+  "settings.item.submitGradient.desc": "オンにすると、投稿フォームのアクセントがグラデーションになります。",
   "settings.item.inputPlaceholder.name": "投稿フォームの空欄メッセージ",
   "settings.item.inputPlaceholder.desc": "空欄にするとメッセージを非表示にします。",
 

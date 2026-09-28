@@ -1,5 +1,20 @@
 # Release Notes
 
+## 2.28.1 - 2026-09-29
+
+### Improvements
+
+- Extended the gradient to the whole compose box, and renamed the setting to "Compose box gradient"
+- Adjusted the gradient colors
+- Improved translations
+
+### Bug Fixes
+
+- Fixed "Template heading selection" still being selectable on mobile when there are no headings to choose
+- Fixed the cursor disappearing on mobile after pressing a toolbar button while text was still being composed
+
+---
+
 ## 2.28.0 - 2026-09-27
 
 ### Updates

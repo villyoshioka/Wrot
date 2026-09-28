@@ -10,7 +10,7 @@ Moving a button to the menu won't affect how it works. Only disabled buttons are
 ## Entering Edit Mode
 
 1. Open the **⋯ (More)** menu on the far right of the toolbar.
-2. Select **"Edit Toolbar"**.
+2. Select **"Edit toolbar"**.
 
 This switches the toolbar into edit mode, lining up all available buttons in a single row.
 
@@ -18,7 +18,7 @@ This switches the toolbar into edit mode, lining up all available buttons in a s
 - **Semi-transparent (dimmed)**: Buttons stored in the ⋯ menu
 - **Semi-transparent with a slash**: Disabled buttons
 
-\*If "Edit Toolbar" isn't showing up in the menu, go to "Advanced" and turn on **"Show Toolbar Edit Button"**.
+\*If "Edit toolbar" isn't showing up in the menu, go to "Advanced" and turn on **"Show toolbar edit button"**.
 
 ---
 
@@ -57,7 +57,7 @@ Action buttons will appear at the end of the toolbar while you're editing.
 
 Buttons you move off the toolbar will live inside the ⋯ menu. Items in this menu follow a fixed order and won't change even if you rearrange your toolbar:
 
-> Image → Embed → List → Checklist → Numbered List → Code → Math → Quote → Bold → Italic → Link → Strikethrough → Highlight → Pin Later
+> Image → Embed → Bulleted list → Checklist → Numbered list → Code → Math → Quote → Bold → Italic → Link → Strikethrough → Highlight → Pin later
 
 ### Behavior Changes in the Menu
 
@@ -65,14 +65,14 @@ Almost everything works the exact same way as it does on the toolbar, with just 
 
 - **Bold and Italic**:
   On the toolbar, you can trigger these styles before you start typing. Inside the menu, they **only work when you have text selected** and stay greyed out otherwise.
-- **Pin Later**:
+- **Pin later**:
   If a note is pinned for a specific date, a checkmark appears next to this item (just like the button lighting up on the toolbar).
 
 ---
 
 ## Resetting to Default
 
-You can reset your toolbar back to its original layout anytime using **"Reset Toolbar"** under "Advanced".
+You can reset your toolbar back to its original layout anytime using **"Reset toolbar"** under "Advanced".
 To prevent accidental clicks, the first click asks for confirmation, and the second click runs the reset.
 
 ---
@@ -85,9 +85,9 @@ To prevent accidental clicks, the first click asks for confirmation, and the sec
 
 ## Troubleshooting
 
-### I can't see "Edit Toolbar" in the menu
+### I can't see "Edit toolbar" in the menu
 
-- Double-check that **"Show Toolbar Edit Button"** is turned on under "Advanced".
+- Double-check that **"Show toolbar edit button"** is turned on under "Advanced".
 - Make sure you aren't currently editing an existing note.
 
 ### Buttons aren't moving when I try to drag them
@@ -102,4 +102,4 @@ To prevent accidental clicks, the first click asks for confirmation, and the sec
 ### I'm missing a button
 
 - **Check the ⋯ menu**: Any button taken off the toolbar ends up here.
-- **Check if it's disabled**: If it's not in the menu either, it's turned off. Open "Edit Toolbar" and click the slashed button to bring it back.
+- **Check if it's disabled**: If it's not in the menu either, it's turned off. Open "Edit toolbar" and click the slashed button to bring it back.

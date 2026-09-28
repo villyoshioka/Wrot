@@ -755,14 +755,37 @@ body .wr-submit-btn.wr-submit-active {
 }
 
 /* From --interactive-accent (themes may leave --accent-h/s/l at default), in OKLCH whose l tracks perceived lightness; @supports-gated since a failed var() value drops to transparent. */
-@supports (color: oklch(from red l c h)) and (width: calc(1px * sign(1))) {
-  body.wr-submit-gradient .wr-submit-btn.wr-submit-active {
+/* clamp(-1, (0.5 - l) * 1000, 1) is ±1 by which side of mid lightness l sits: a sign() that needs no extra support check. */
+@supports (color: oklch(from red l c h)) {
+  body.wr-submit-gradient .wr-submit-btn.wr-submit-active,
+  body.wr-submit-gradient .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-selected {
     background: linear-gradient(
       to right,
-      oklch(from var(--interactive-accent) min(l + 0.08 * sign(0.75 - l), 0.85) c calc(h - 12)),
+      oklch(from var(--interactive-accent) calc(l + 0.08 * clamp(-1, (0.5 - l) * 1000, 1)) c calc(h - 12)),
       var(--interactive-accent)
     );
   }
+
+  .wr-gradient-defs stop:first-child {
+    stop-color: oklch(from var(--text-accent) calc(l + 0.08 * clamp(-1, (0.5 - l) * 1000, 1)) c calc(h - 12));
+  }
+
+  .wr-gradient-defs stop:last-child {
+    stop-color: var(--text-accent);
+  }
+
+  body.wr-submit-gradient .wr-input-toolbar .wr-toolbar-btn.wr-toolbar-active .svg-icon,
+  body.wr-submit-gradient .wr-input-toolbar.wr-toolbar-editing .wr-format-btn .svg-icon,
+  body.wr-submit-gradient .wr-input-toolbar .wr-toolbar-commit-btn .svg-icon {
+    stroke: url(#wr-accent-gradient);
+  }
+}
+
+/* display: none would stop the gradient from rendering. */
+.wr-gradient-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
 }
 
 .wr-pinned-section {
@@ -2493,6 +2516,16 @@ body.is-mobile .wr-settings .wr-tag-rule-group {
 .wr-settings .wr-tag-rule-group .wr-tag-rule-disabled {
   pointer-events: none;
   cursor: not-allowed;
+}
+
+/* The disabled attribute alone still lets a tap open the picker on mobile. */
+.wr-settings select:disabled {
+  pointer-events: none;
+  opacity: 0.35;
+}
+
+.wr-settings .wr-setting-disabled .setting-item-info {
+  opacity: 0.35;
 }
 
 /* On mobile the list renders its add-entry affordance as a row, which keeps the list's

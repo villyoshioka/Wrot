@@ -780,6 +780,7 @@ export class WrotSettingTab extends PluginSettingTab {
               const headings = listTemplateHeadings(template);
               fill(headings);
               dropdown.setDisabled(headings.length === 0);
+              setting.settingEl.toggleClass("wr-setting-disabled", headings.length === 0);
               if (settings.postHeading && !headings.includes(settings.postHeading)) {
                 settings.postHeading = "";
                 await this.plugin.saveSettings();

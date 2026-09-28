@@ -251,6 +251,16 @@ export class WrotView extends ItemView {
     container.empty();
     container.addClass("wr-container");
 
+    // currentColor can't carry a gradient; userSpaceOnUse because a per-path bbox is empty on vertical strokes.
+    const gradient = container
+      .createSvg("svg", { cls: "wr-gradient-defs", attr: { "aria-hidden": "true" } })
+      .createSvg("defs")
+      .createSvg("linearGradient", {
+        attr: { id: "wr-accent-gradient", gradientUnits: "userSpaceOnUse", x1: "0", y1: "0", x2: "24", y2: "0" },
+      });
+    gradient.createSvg("stop", { attr: { offset: "0" } });
+    gradient.createSvg("stop", { attr: { offset: "1" } });
+
     this.buildDateNav(container);
     this.buildInputArea(container);
     this.listContainer = container.createDiv({ cls: "wr-list" });
@@ -777,6 +787,30 @@ export class WrotView extends ItemView {
       btn.setAttr("aria-label", t(spec.labelKey));
       btn.setAttr("data-wr-action", spec.id);
       btn.addEventListener("mousedown", (e) => e.preventDefault());
+      // Rewriting mid-composition kills the iOS caret: force-commit, then replay. Must register first to stop the action; image skips it since its picker needs the original tap.
+      if (spec.id !== "image" && spec.id !== "schedule") {
+        let replaying = false;
+        btn.addEventListener("click", (e) => {
+          if (!this.imeComposing || replaying || toolbarSuppressed()) return;
+          e.stopImmediatePropagation();
+          const ta = this.textarea;
+          let done = false;
+          const finish = (): void => {
+            if (done) return;
+            done = true;
+            ta.removeEventListener("compositionend", finish);
+            // The fallback path never saw compositionend, but the blur ended it all the same.
+            this.imeComposing = false;
+            if (activeDocument.activeElement !== ta) rebuildFocus(ta, this.contentEl);
+            replaying = true;
+            btn.click();
+            replaying = false;
+          };
+          ta.addEventListener("compositionend", finish);
+          ta.blur();
+          window.setTimeout(finish, 150);
+        });
+      }
       this.toolbarBtns.set(spec.id, btn);
     }
     // Every id above was just registered, so the lookup cannot come back empty.

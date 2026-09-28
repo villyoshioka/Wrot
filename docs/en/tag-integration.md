@@ -45,7 +45,7 @@ Hashtags (`#`) inside URLs, links, inline code (` `), or formatted text aren't t
 
 ## How to Set It Up
 
-You can toggle this on or off under **Tag Integration** in the "Advanced" section. It is turned on by default.
+You can toggle this on or off under **Tag integration** in the "Advanced" section. It is turned on by default.
 
 - **When toggled off:** Tags go back to working strictly inside Wrot. They won't show up in the graph view or tag searches, and clicking a tag will just run a basic text search instead.
 
@@ -53,8 +53,8 @@ You can toggle this on or off under **Tag Integration** in the "Advanced" sectio
 
 If you have quick scratchpad tags that you'd rather not clutter your main graph or tag list with, you can exclude them individually using tag rules.
 
-1. Go to **Tag Rules** and toggle on **Use Tag Rules**.
-2. Add a rule for the tag you want to leave out, then turn on **Exclude from Tag Integration**.
+1. Go to **Tag Rules** and toggle on **Use tag rules**.
+2. Add a rule for the tag you want to leave out, then turn on **Exclude from tag integration**.
 
 Excluding a tag only hides the copies written inside Wrot from your graph and search results. Tags with the same name in your regular notes or properties won't be touched at all.
 
@@ -73,8 +73,8 @@ When you run this feature for the first time, Wrot generates a small helper file
 ### Tags aren't showing up in the Graph View
 
 - **Check your graph settings:** Make sure the Tags filter is toggled on in your graph view settings. Obsidian leaves this off by default.
-- **Check plugin settings:** Make sure Tag Integration is turned on in Wrot's settings.
-- **Check exclusion rules:** Double-check whether that tag has been set to Exclude from Tag Integration.
+- **Check plugin settings:** Make sure Tag integration is turned on in Wrot's settings.
+- **Check exclusion rules:** Double-check whether that tag has been set to Exclude from tag integration.
 - **Just started up?** If you just launched Obsidian or enabled the plugin, give it a moment to finish setting things up.
 
 ### Memos aren't showing up in Tag Search

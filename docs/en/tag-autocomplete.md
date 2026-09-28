@@ -46,7 +46,7 @@ Here’s a quick walkthrough on how to use it, how it works behind the scenes, a
 
 ## Turning It Off or Wiping History
 
-If you want to turn this off, head over to "Advanced" and toggle **Tag Autocomplete** off (it's ON by default).
+If you want to turn this off, head over to "Advanced" and toggle **Tag autocomplete** off (it's ON by default).
 
 - **Turning it off**: Stops the popup from showing up and pauses new tag tracking.
 - **Clearing history**: Switching the toggle OFF instantly wipes all your saved tag data (`tags.json`). Turning it back ON starts you off with a fresh, empty list.
@@ -58,7 +58,7 @@ If you want to turn this off, head over to "Advanced" and toggle **Tag Autocompl
 
 ### Suggestions aren't popping up
 
-- Double-check that "Tag Autocomplete" is turned ON under "Advanced".
+- Double-check that "Tag autocomplete" is turned ON under "Advanced".
 - Keep in mind that Wrot only suggests tags you've posted in the past. New tags won't show up until you've used them once.
 
 ### A tag I used isn't showing up
@@ -68,4 +68,4 @@ If you want to turn this off, head over to "Advanced" and toggle **Tag Autocompl
 
 ### Want to reset your list and start fresh?
 
-- Since you can't delete tags one by one, simply toggle "Tag Autocomplete" OFF and then back ON in settings. This wipes the slate clean so Wrot can start learning your tags from scratch.
+- Since you can't delete tags one by one, simply toggle "Tag autocomplete" OFF and then back ON in settings. This wipes the slate clean so Wrot can start learning your tags from scratch.

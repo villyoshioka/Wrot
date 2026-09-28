@@ -1,6 +1,6 @@
 # How to Use Template Heading Selection
 
-Wrot plays nicely with your daily note templates. By picking a target under "Template Heading Selection", you can tell Wrot exactly which heading your posts should land under. It is a great way to funnel quick thoughts into a section like "Today's Log", or just slip entries into the middle of a page rather than tacking them onto the end.
+Wrot plays nicely with your daily note templates. By picking a target under "Template heading selection", you can tell Wrot exactly which heading your posts should land under. It is a great way to funnel quick thoughts into a section like "Today's Log", or just slip entries into the middle of a page rather than tacking them onto the end.
 
 This works right out of the box with Obsidian's core templates, as well as setups powered by Templater.
 
@@ -11,7 +11,7 @@ Here is a quick walkthrough on how to set it up, where your entries end up, how 
 ## 1. How to Set It Up
 
 1. Open Obsidian settings, head to "Daily notes", and make sure your template is linked under "Template file location".
-2. In Wrot settings, scroll to the "General" section and open "Template Heading Selection".
+2. In Wrot settings, scroll to the "General" section and open "Template heading selection".
 3. Wrot will pull in every heading it finds in that template. Simply choose the one you want to use.
 
 - Leave it set to "None" if you want things to work the old way, which drops every post at the very end of your note.
@@ -89,7 +89,7 @@ If your daily note template is unlinked or the file has gone missing, Wrot reset
 
 ### When the Option Is Unavailable
 
-"Template Heading Selection" stays locked on "None" whenever:
+"Template heading selection" stays locked on "None" whenever:
 
 - You have not selected a daily note template
 - The template file is missing from your vault

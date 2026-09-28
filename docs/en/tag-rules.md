@@ -10,7 +10,7 @@ This guide walks you through setting up tag rules and explains how each option w
 
 ## 1. Enable the Feature
 
-To get started, head to your settings and toggle on **"Use Tag Rules"** under the "Tag Rules" section.
+To get started, head to your settings and toggle on **"Use tag rules"** under the "Tag Rules" section.
 
 - Enabling this creates a default rule that is unlocked and ready to customize right away.
 - Disabling it reverts your notes to your standard Obsidian theme colors, though your saved rules will remain intact.
@@ -46,7 +46,7 @@ This highlights elements like tags, internal links, and external URLs.
 - **When left blank**: Uses your Obsidian theme's default accent color.
 - **When set**: Styles tags and links in your chosen color. You can reset this at any time.
 
-### Sub Color and Application Scope
+### Secondary Color and Application Scope
 
 This styles secondary elements around your text, such as timestamps, list markers, and blockquotes.
 
@@ -58,7 +58,7 @@ This styles secondary elements around your text, such as timestamps, list marker
 | **Timestamps, etc.** | Timestamps, menu icons, and pin icons |
 | **Quotes**           | Blockquotes (`>`)                     |
 | **Lists**            | Bulleted lists and checkboxes         |
-| **OGP Cards**        | Link preview cards                    |
+| **Link previews**    | Link preview cards                    |
 
 ---
 
@@ -115,7 +115,7 @@ Your notes maintain a consistent look no matter which view mode you use.
 
 ### Colors Aren't Updating
 
-- Make sure "Use Tag Rules" is toggled on.
+- Make sure "Use tag rules" is toggled on.
 - Double-check that the tag name in your rule matches the tag in your note.
 - If your note has multiple tags, check whether a rule is assigned to the tag that appears first.
 
@@ -128,6 +128,6 @@ Your notes maintain a consistent look no matter which view mode you use.
 
 - Click the lock icon in the rule header to unlock it for editing.
 
-### Sub Color Isn't Applying to Some Parts
+### Secondary Color Isn't Applying to Some Parts
 
 - Head to the "Application Scope" section under sub-color and make sure the checkboxes for those elements are selected.
