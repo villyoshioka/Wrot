@@ -42,6 +42,11 @@ const es = {
   "settings.item.updateIcon.desc": "Copia el nombre de un icono desde {linkOpen}aquí{linkClose}. \nDéjalo en blanco para usar el mismo icono del botón de publicar.",
   "settings.item.submitGradient.name": "Degradado en el formulario de publicación",
   "settings.item.submitGradient.desc": "Si se activa, se aplica un degradado a los elementos destacados del formulario.",
+  "settings.item.submitGradientMode.name": "Brillo del degradado",
+  "settings.item.submitGradientMode.desc": "En automático, cambia según la luminosidad del color de acento.",
+  "settings.option.submitGradientMode.auto": "Automático",
+  "settings.option.submitGradientMode.light": "Más claro",
+  "settings.option.submitGradientMode.dark": "Más oscuro",
   "settings.item.inputPlaceholder.name": "Texto del campo vacío",
   "settings.item.inputPlaceholder.desc": "Si se deja en blanco, no se mostrará nada.",
 

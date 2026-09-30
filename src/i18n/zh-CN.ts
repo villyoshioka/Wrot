@@ -42,6 +42,11 @@ const zhCN = {
   "settings.item.updateIcon.desc": "可从{linkOpen}此处{linkClose}复制图标名称。\n留空则沿用发布按钮的图标。",
   "settings.item.submitGradient.name": "发布框渐变效果",
   "settings.item.submitGradient.desc": "开启后，发布框的强调部分将应用渐变色。",
+  "settings.item.submitGradientMode.name": "渐变亮度",
+  "settings.item.submitGradientMode.desc": "自动时将根据强调色的明暗切换。",
+  "settings.option.submitGradientMode.auto": "自动",
+  "settings.option.submitGradientMode.light": "更亮",
+  "settings.option.submitGradientMode.dark": "更暗",
   "settings.item.inputPlaceholder.name": "输入框占位文本",
   "settings.item.inputPlaceholder.desc": "留空则不显示占位文本。",
 

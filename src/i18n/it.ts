@@ -43,6 +43,11 @@ const it = {
   "settings.item.updateIcon.desc": "Copia il nome di un'icona da {linkOpen}qui{linkClose}. \nLascia vuoto per riutilizzare l'icona del pulsante di invio.",
   "settings.item.submitGradient.name": "Sfumatura del riquadro di invio",
   "settings.item.submitGradient.desc": "Se attivato, applica una sfumatura agli accenti nel riquadro di composizione.",
+  "settings.item.submitGradientMode.name": "Luminosità della sfumatura",
+  "settings.item.submitGradientMode.desc": "In automatico, si adatta alla luminosità del colore di accento.",
+  "settings.option.submitGradientMode.auto": "Automatico",
+  "settings.option.submitGradientMode.light": "Più chiaro",
+  "settings.option.submitGradientMode.dark": "Più scuro",
   "settings.item.inputPlaceholder.name": "Testo segnaposto",
   "settings.item.inputPlaceholder.desc": "Lascia vuoto per non mostrare alcun testo.",
 

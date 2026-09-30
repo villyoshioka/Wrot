@@ -42,6 +42,11 @@ const ru = {
   "settings.item.updateIcon.desc": "Имя иконки можно скопировать {linkOpen}отсюда{linkClose}. \nОставьте пустым, чтобы использовать иконку отправки.",
   "settings.item.submitGradient.name": "Градиент формы отправки",
   "settings.item.submitGradient.desc": "Добавляет градиент к акцентным элементам формы отправки.",
+  "settings.item.submitGradientMode.name": "Яркость градиента",
+  "settings.item.submitGradientMode.desc": "В автоматическом режиме зависит от яркости акцентного цвета.",
+  "settings.option.submitGradientMode.auto": "Автоматически",
+  "settings.option.submitGradientMode.light": "Светлее",
+  "settings.option.submitGradientMode.dark": "Темнее",
   "settings.item.inputPlaceholder.name": "Подсказка в поле ввода",
   "settings.item.inputPlaceholder.desc": "Оставьте пустым, чтобы убрать подсказку.",
 

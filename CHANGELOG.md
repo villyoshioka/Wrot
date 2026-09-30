@@ -1,5 +1,19 @@
 # Release Notes
 
+## 2.28.2 - 2026-09-30
+
+### Updates
+
+- Updated dependencies
+
+### Improvements
+
+- The gradient brightness can now be chosen (choose one in the settings)
+- Adjusted the gradient style
+- Rearranged the settings
+
+---
+
 ## 2.28.1 - 2026-09-29
 
 ### Improvements

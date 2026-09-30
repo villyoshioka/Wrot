@@ -755,22 +755,52 @@ body .wr-submit-btn.wr-submit-active {
 }
 
 /* From --interactive-accent (themes may leave --accent-h/s/l at default), in OKLCH whose l tracks perceived lightness; @supports-gated since a failed var() value drops to transparent. */
-/* clamp(-1, (0.5 - l) * 1000, 1) is ±1 by which side of mid lightness l sits: a sign() that needs no extra support check. */
+/* clamp(-1, (0.5 - l) * 1000, 1) is ±1 by which side of mid lightness l sits: a sign() that needs no extra support check.
+   --wr-grad-sign holds it as raw tokens, so its l resolves inside whichever oklch(from …) substitutes it. */
+/* max(0, sign) drops to 0 when darkening. */
 @supports (color: oklch(from red l c h)) {
+  body {
+    --wr-grad-sign: clamp(-1, (0.5 - l) * 1000, 1);
+  }
+
+  body[data-wr-gradient="light"] {
+    --wr-grad-sign: 1;
+  }
+
+  body[data-wr-gradient="dark"] {
+    --wr-grad-sign: -1;
+  }
+
   body.wr-submit-gradient .wr-submit-btn.wr-submit-active,
   body.wr-submit-gradient .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-selected {
+    --wr-grad-end: oklch(from var(--interactive-accent) calc(l + 0.05 * var(--wr-grad-sign)) calc(c * (1 - 0.1 * max(0, var(--wr-grad-sign)))) calc(h - 8));
     background: linear-gradient(
       to right,
-      oklch(from var(--interactive-accent) calc(l + 0.08 * clamp(-1, (0.5 - l) * 1000, 1)) c calc(h - 12)),
-      var(--interactive-accent)
+      var(--wr-grad-end) 0 25%,
+      color-mix(in oklch, var(--wr-grad-end) 67%, var(--interactive-accent)) 25% 50%,
+      color-mix(in oklch, var(--wr-grad-end) 33%, var(--interactive-accent)) 50% 75%,
+      var(--interactive-accent) 75%
     );
   }
 
-  .wr-gradient-defs stop:first-child {
-    stop-color: oklch(from var(--text-accent) calc(l + 0.08 * clamp(-1, (0.5 - l) * 1000, 1)) c calc(h - 12));
+  /* Four hard-edged bands; WrotView lays out each band as a pair of stops sharing its class. */
+  .wr-gradient-defs {
+    --wr-grad-end: oklch(from var(--text-accent) calc(l + 0.05 * var(--wr-grad-sign)) calc(c * (1 - 0.1 * max(0, var(--wr-grad-sign)))) calc(h - 8));
   }
 
-  .wr-gradient-defs stop:last-child {
+  .wr-gradient-defs .wr-grad-band-0 {
+    stop-color: var(--wr-grad-end);
+  }
+
+  .wr-gradient-defs .wr-grad-band-1 {
+    stop-color: color-mix(in oklch, var(--wr-grad-end) 67%, var(--text-accent));
+  }
+
+  .wr-gradient-defs .wr-grad-band-2 {
+    stop-color: color-mix(in oklch, var(--wr-grad-end) 33%, var(--text-accent));
+  }
+
+  .wr-gradient-defs .wr-grad-band-3 {
     stop-color: var(--text-accent);
   }
 

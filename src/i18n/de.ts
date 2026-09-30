@@ -42,6 +42,11 @@ const de = {
   "settings.item.updateIcon.desc": "Symbolnamen {linkOpen}hier kopieren{linkClose}.\nLeer lassen übernimmt das Symbol der Senden-Schaltfläche.",
   "settings.item.submitGradient.name": "Farbverlauf des Eingabeformulars",
   "settings.item.submitGradient.desc": "Aktiviert einen subtilen Farbverlauf auf den Akzentflächen des Formulars.",
+  "settings.item.submitGradientMode.name": "Helligkeit des Farbverlaufs",
+  "settings.item.submitGradientMode.desc": "„Automatisch“ richtet sich nach der Helligkeit der Akzentfarbe.",
+  "settings.option.submitGradientMode.auto": "Automatisch",
+  "settings.option.submitGradientMode.light": "Heller",
+  "settings.option.submitGradientMode.dark": "Dunkler",
   "settings.item.inputPlaceholder.name": "Platzhaltertext des Eingabefelds",
   "settings.item.inputPlaceholder.desc": "Leer lassen, um den Hinweistext auszublenden.",
 

@@ -43,6 +43,11 @@ const fr = {
   "settings.item.updateIcon.desc": "Copiez un nom d'icône {linkOpen}ici{linkClose}. \nLaissez vide pour réutiliser l'icône du bouton Publier.",
   "settings.item.submitGradient.name": "Dégradé du formulaire de publication",
   "settings.item.submitGradient.desc": "Si activé, applique un dégradé aux couleurs d'accentuation du formulaire.",
+  "settings.item.submitGradientMode.name": "Luminosité du dégradé",
+  "settings.item.submitGradientMode.desc": "En automatique, s'adapte à la luminosité de la couleur d'accentuation.",
+  "settings.option.submitGradientMode.auto": "Automatique",
+  "settings.option.submitGradientMode.light": "Plus clair",
+  "settings.option.submitGradientMode.dark": "Plus sombre",
   "settings.item.inputPlaceholder.name": "Texte indicatif",
   "settings.item.inputPlaceholder.desc": "Laissez vide pour ne rien afficher.",
 

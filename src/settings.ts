@@ -156,6 +156,7 @@ export interface WrotSettings {
   tagColorRules: TagColorRule[];
   followObsidianFontSize: boolean;
   submitGradient: boolean;
+  submitGradientMode: "auto" | "light" | "dark";
   // A heading line from the daily note template, as written; "" files posts at the end.
   postHeading: string;
   // Whether the "heading not found" notice has been shown for the current postHeading.
@@ -204,6 +205,7 @@ export const DEFAULT_SETTINGS: WrotSettings = {
   tagColorRules: [],
   followObsidianFontSize: false,
   submitGradient: false,
+  submitGradientMode: "auto",
   postHeading: "",
   postHeadingNoticed: false,
   showPostDelete: false,
@@ -314,7 +316,12 @@ export class WrotSettingTab extends PluginSettingTab {
       // The folder row is only offered while this is on.
       useCustomAttachmentFolder: () => this.update(),
       followObsidianFontSize: () => this.plugin.applyFontFollow(),
-      submitGradient: () => this.plugin.applySubmitGradient(),
+      submitGradient: () => {
+        this.plugin.applySubmitGradient();
+        // The mode row is only offered while the gradient is on.
+        this.refreshDomState();
+      },
+      submitGradientMode: () => this.plugin.applySubmitGradient(),
       calendarDayShape: () => this.plugin.applyCalendarDayShape(),
       checkStrikethrough: () => {
         this.plugin.refreshViews();
@@ -575,11 +582,11 @@ export class WrotSettingTab extends PluginSettingTab {
           },
           resetValue: () => defaultTimestampFormat(),
         }),
-        this.postHeadingRow(),
         this.themeColorRow("bgColorLight"),
         this.themeColorRow("textColorLight"),
         this.themeColorRow("bgColorDark"),
         this.themeColorRow("textColorDark"),
+        this.postHeadingRow(),
       ],
     };
   }
@@ -609,6 +616,25 @@ export class WrotSettingTab extends PluginSettingTab {
       type: "group",
       heading: t("settings.section.advanced"),
       items: [
+        {
+          name: t("settings.item.submitGradient.name"),
+          desc: desc(t("settings.item.submitGradient.desc")),
+          control: { type: "toggle", key: "submitGradient" },
+        },
+        {
+          name: t("settings.item.submitGradientMode.name"),
+          desc: desc(t("settings.item.submitGradientMode.desc")),
+          visible: () => settings.submitGradient,
+          control: {
+            type: "dropdown",
+            key: "submitGradientMode",
+            options: {
+              auto: t("settings.option.submitGradientMode.auto"),
+              light: t("settings.option.submitGradientMode.light"),
+              dark: t("settings.option.submitGradientMode.dark"),
+            },
+          },
+        },
         this.textWithReset({
           name: t("settings.item.submitLabel.name"),
           desc: t("settings.item.submitLabel.desc"),
@@ -635,11 +661,6 @@ export class WrotSettingTab extends PluginSettingTab {
           resetValue: () => t("defaults.updateLabel"),
         }),
         this.iconRow("updateIcon"),
-        {
-          name: t("settings.item.submitGradient.name"),
-          desc: desc(t("settings.item.submitGradient.desc")),
-          control: { type: "toggle", key: "submitGradient" },
-        },
         this.textWithReset({
           name: t("settings.item.inputPlaceholder.name"),
           desc: t("settings.item.inputPlaceholder.desc"),

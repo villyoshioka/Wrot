@@ -42,6 +42,11 @@ const zhTW = {
   "settings.item.updateIcon.desc": "圖示名稱可從{linkOpen}這裡{linkClose}複製。 \n留空則使用發布按鈕的圖示。",
   "settings.item.submitGradient.name": "發布表單漸層效果",
   "settings.item.submitGradient.desc": "開啟後，發布表單的重點部分將套用漸層效果。",
+  "settings.item.submitGradientMode.name": "漸層亮度",
+  "settings.item.submitGradientMode.desc": "自動時將依重點色的明暗切換。",
+  "settings.option.submitGradientMode.auto": "自動",
+  "settings.option.submitGradientMode.light": "較亮",
+  "settings.option.submitGradientMode.dark": "較暗",
   "settings.item.inputPlaceholder.name": "輸入框提示文字",
   "settings.item.inputPlaceholder.desc": "留空則隱藏。",
 

@@ -226,6 +226,7 @@ export default class WrotPlugin extends Plugin {
   applySubmitGradient(): void {
     for (const doc of this.styleDocs()) {
       doc.body.classList.toggle("wr-submit-gradient", this.settings.submitGradient);
+      doc.body.setAttr("data-wr-gradient", this.settings.submitGradientMode);
     }
   }
 
@@ -482,7 +483,10 @@ export default class WrotPlugin extends Plugin {
     this.bgSheet.remove();
     this.tagRuleSheet.remove();
     this.fontSheet.remove();
-    for (const doc of this.styleDocs()) doc.body.classList.remove("wr-font-follow", "wr-submit-gradient");
+    for (const doc of this.styleDocs()) {
+      doc.body.classList.remove("wr-font-follow", "wr-submit-gradient");
+      doc.body.removeAttribute("data-wr-gradient");
+    }
   }
 
   async activateView(): Promise<void> {

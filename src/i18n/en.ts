@@ -42,6 +42,11 @@ const en = {
   "settings.item.updateIcon.desc": "Copy an icon name from {linkOpen}here{linkClose}. \nLeave blank to use the Post button's icon.",
   "settings.item.submitGradient.name": "Compose box gradient",
   "settings.item.submitGradient.desc": "Adds a gradient accent to the compose box.",
+  "settings.item.submitGradientMode.name": "Gradient brightness",
+  "settings.item.submitGradientMode.desc": "Auto switches based on how light your accent color is.",
+  "settings.option.submitGradientMode.auto": "Auto",
+  "settings.option.submitGradientMode.light": "Lighter",
+  "settings.option.submitGradientMode.dark": "Darker",
   "settings.item.inputPlaceholder.name": "Compose placeholder text",
   "settings.item.inputPlaceholder.desc": "Leave blank to hide.",
 

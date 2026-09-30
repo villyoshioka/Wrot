@@ -25,6 +25,7 @@ const enGB = {
   "settings.tagRule.scope.list.desc": "When disabled, automatically calculated colours will be used.",
   "settings.tagRule.scope.ogp.name": "Apply secondary colour to link previews",
   "settings.tagRule.scope.ogp.desc": "When disabled, automatically calculated colours will be used.",
+  "settings.item.submitGradientMode.desc": "Auto switches based on how light your accent colour is.",
   "settings.item.toolbarEdit.desc": "Adds an option to customise the toolbar in the toolbar menu.",
   "view.formatMenu.math": "Maths",
   "defaults.headerDateFormat": "D MMMM YYYY",

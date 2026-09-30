@@ -42,6 +42,11 @@ const ja = {
   "settings.item.updateIcon.desc": "アイコン名は {linkOpen}こちら{linkClose} からコピーできます。\n空欄にすると投稿ボタンと同じアイコンになります。",
   "settings.item.submitGradient.name": "投稿フォームのグラデーション",
   "settings.item.submitGradient.desc": "オンにすると、投稿フォームのアクセントがグラデーションになります。",
+  "settings.item.submitGradientMode.name": "グラデーションの明るさ",
+  "settings.item.submitGradientMode.desc": "自動では、アクセントカラーの明るさに合わせて切り替わります。",
+  "settings.option.submitGradientMode.auto": "自動",
+  "settings.option.submitGradientMode.light": "明るく",
+  "settings.option.submitGradientMode.dark": "暗く",
   "settings.item.inputPlaceholder.name": "投稿フォームの空欄メッセージ",
   "settings.item.inputPlaceholder.desc": "空欄にするとメッセージを非表示にします。",
 

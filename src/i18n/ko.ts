@@ -42,6 +42,11 @@ const ko = {
   "settings.item.updateIcon.desc": "아이콘 이름은 {linkOpen}여기{linkClose}에서 복사할 수 있습니다. \n비워 두면 게시 버튼과 같은 아이콘이 사용됩니다.",
   "settings.item.submitGradient.name": "게시 폼 그라데이션",
   "settings.item.submitGradient.desc": "활성화하면 게시 폼의 강조 영역이 그라데이션으로 표시됩니다.",
+  "settings.item.submitGradientMode.name": "그라데이션 밝기",
+  "settings.item.submitGradientMode.desc": "자동으로 설정하면 강조 색상의 밝기에 맞춰 바뀝니다.",
+  "settings.option.submitGradientMode.auto": "자동",
+  "settings.option.submitGradientMode.light": "밝게",
+  "settings.option.submitGradientMode.dark": "어둡게",
   "settings.item.inputPlaceholder.name": "입력창 안내 문구",
   "settings.item.inputPlaceholder.desc": "비워 두면 표시되지 않습니다.",
 

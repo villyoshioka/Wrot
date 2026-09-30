@@ -258,8 +258,11 @@ export class WrotView extends ItemView {
       .createSvg("linearGradient", {
         attr: { id: "wr-accent-gradient", gradientUnits: "userSpaceOnUse", x1: "0", y1: "0", x2: "24", y2: "0" },
       });
-    gradient.createSvg("stop", { attr: { offset: "0" } });
-    gradient.createSvg("stop", { attr: { offset: "1" } });
+    for (let band = 0; band < 4; band++) {
+      for (const offset of [band / 4, (band + 1) / 4]) {
+        gradient.createSvg("stop", { cls: `wr-grad-band-${band}`, attr: { offset: String(offset) } });
+      }
+    }
 
     this.buildDateNav(container);
     this.buildInputArea(container);

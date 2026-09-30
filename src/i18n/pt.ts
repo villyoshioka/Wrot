@@ -42,6 +42,11 @@ const pt = {
   "settings.item.updateIcon.desc": "Copie o nome do ícone {linkOpen}aqui{linkClose}. \nDeixe em branco para usar o mesmo ícone do botão de postagem.",
   "settings.item.submitGradient.name": "Gradiente do formulário de postagem",
   "settings.item.submitGradient.desc": "Se ativado, aplica um gradiente no destaque do formulário de postagem.",
+  "settings.item.submitGradientMode.name": "Brilho do gradiente",
+  "settings.item.submitGradientMode.desc": "No automático, muda conforme a luminosidade da cor de destaque.",
+  "settings.option.submitGradientMode.auto": "Automático",
+  "settings.option.submitGradientMode.light": "Mais claro",
+  "settings.option.submitGradientMode.dark": "Mais escuro",
   "settings.item.inputPlaceholder.name": "Texto de espaço reservado",
   "settings.item.inputPlaceholder.desc": "Deixe em branco para ocultar.",
 
