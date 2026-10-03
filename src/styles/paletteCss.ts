@@ -1,4 +1,4 @@
-import { blendColor } from "../utils/color";
+import { blendColor, type CodeLightness } from "../utils/color";
 
 /** Colors resolved from the settings for the active theme mode. */
 interface WrPalette {
@@ -8,6 +8,7 @@ interface WrPalette {
   mutedColor: string;
   faintColor: string;
   unresolvedLinkColor: string;
+  codeLightness: CodeLightness;
 }
 
 /**
@@ -15,11 +16,15 @@ interface WrPalette {
  * user's chosen palette. Sits at boost level 2 in the specificity ladder.
  */
 export function buildPaletteCss(palette: WrPalette): string {
-  const { bgColor, hoverColor, textColor, mutedColor, faintColor, unresolvedLinkColor } = palette;
+  const { bgColor, hoverColor, textColor, mutedColor, faintColor, unresolvedLinkColor, codeLightness } = palette;
   return `/* @css */
       body {
         --wr-bg-color: ${bgColor};
         --wr-bg-hover: ${hoverColor};
+        --wr-code-text: ${textColor};
+        --wr-code-l: ${codeLightness.base};
+        --wr-code-muted-l: ${codeLightness.muted};
+        --wr-code-faint-l: ${codeLightness.faint};
       }
       body .wr-input-area,
       body .wr-card,
@@ -74,9 +79,9 @@ export function buildPaletteCss(palette: WrPalette): string {
       body .wr-plain-text,
       body div.block-language-wr *:not(.wr-embed-missing):not(.wr-internal-link-unresolved):not(.wr-internal-link):not(.wr-tag):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-check-done):not(.wr-quote-card-slot):not(.wr-quote-card-slot *):not(.wr-codeblock-display):not(.wr-codeblock-display *),
       body .wr-codeblock-line,
-      body .wr-codeblock-line *:not(.wr-embed-missing):not(.wr-internal-link-unresolved):not(.wr-internal-link):not(.wr-tag):not(.wr-url):not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-url-highlight):not(.wr-check-done):not(.wr-quote-card-slot):not(.wr-quote-card-slot *):not(.wr-codeblock-display):not(.wr-codeblock-display *),
+      body .wr-codeblock-line *:not(.wr-embed-missing):not(.wr-internal-link-unresolved):not(.wr-internal-link):not(.wr-tag):not(.wr-url):not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-url-highlight):not(.wr-check-done):not(.wr-quote-card-slot):not(.wr-quote-card-slot *):not(.wr-codeblock-display):not(.wr-codeblock-display *):not(.token),
       body .cm-line.wr-codeblock-line,
-      body .cm-line.wr-codeblock-line *:not(.wr-embed-missing):not(.wr-internal-link-unresolved):not(.wr-internal-link):not(.wr-tag):not(.wr-url):not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-url-highlight):not(.wr-check-done):not(.wr-quote-card-slot):not(.wr-quote-card-slot *):not(.wr-codeblock-display):not(.wr-codeblock-display *):not(.wr-lp-marker),
+      body .cm-line.wr-codeblock-line *:not(.wr-embed-missing):not(.wr-internal-link-unresolved):not(.wr-internal-link):not(.wr-tag):not(.wr-url):not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-url-highlight):not(.wr-check-done):not(.wr-quote-card-slot):not(.wr-quote-card-slot *):not(.wr-codeblock-display):not(.wr-codeblock-display *):not(.wr-lp-marker):not(.token),
       body .wr-reading-list li,
       body .wr-bullet-list li,
       body .wr-ordered-list li {

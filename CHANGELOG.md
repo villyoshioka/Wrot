@@ -1,5 +1,17 @@
 # Release Notes
 
+## 2.28.3 - 2026-10-03
+
+### Updates
+
+- Updated dependencies
+
+### Improvements
+
+- Adjusted code block highlight colors to stay readable against the background and text colors
+
+---
+
 ## 2.28.2 - 2026-09-30
 
 ### Updates

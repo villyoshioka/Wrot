@@ -1,5 +1,5 @@
 import type { SubColorScope, TagColorRule } from "../settings";
-import { blendColor, darkenColor } from "../utils/color";
+import { blendColor, codeLightness, darkenColor } from "../utils/color";
 import { HEX_COLOR_RE } from "../utils/patterns";
 
 /**
@@ -33,6 +33,7 @@ export function buildTagRuleCss(rules: TagColorRule[]): string {
       // Unresolved link/embed color: same blend logic as the base palette, from this rule's fg/bg.
       const mUnresolved = blendColor(fg, bg, 0.3);
       const cls = `wr-tag-rule-${i}`;
+      const codeL = codeLightness(fg, bg);
 
       parts.push(`/* @css */
       body .wr-card.${cls},
@@ -60,17 +61,28 @@ export function buildTagRuleCss(rules: TagColorRule[]): string {
       }
 
       body .wr-card.${cls} .wr-content,
-      body .wr-card.${cls} .wr-content *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-blockquote):not(.wr-quote-card-slot):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-blockquote *):not(.wr-quote-card-slot *) {
+      body .wr-card.${cls} .wr-content *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-blockquote):not(.wr-quote-card-slot):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-blockquote *):not(.wr-quote-card-slot *):not(.token) {
         color: ${fg};
       }
       body div.block-language-wr.${cls},
-      body div.block-language-wr.${cls} *:not(.wr-reading-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-url):not(.wr-blockquote):not(.wr-quote-card-slot):not(input[type="checkbox"]):not(.copy-code-button):not(.copy-code-button *):not(.wr-reading-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-url *):not(.wr-blockquote *):not(.wr-quote-card-slot *),
+      body div.block-language-wr.${cls} *:not(.wr-reading-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-url):not(.wr-blockquote):not(.wr-quote-card-slot):not(input[type="checkbox"]):not(.copy-code-button):not(.copy-code-button *):not(.wr-reading-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-url *):not(.wr-blockquote *):not(.wr-quote-card-slot *):not(.token),
       body pre.${cls},
-      body pre.${cls} *:not(.wr-reading-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-url):not(.wr-blockquote):not(.wr-quote-card-slot):not(input[type="checkbox"]):not(.copy-code-button):not(.copy-code-button *):not(.wr-reading-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-url *):not(.wr-blockquote *):not(.wr-quote-card-slot *) {
+      body pre.${cls} *:not(.wr-reading-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-url):not(.wr-blockquote):not(.wr-quote-card-slot):not(input[type="checkbox"]):not(.copy-code-button):not(.copy-code-button *):not(.wr-reading-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-url *):not(.wr-blockquote *):not(.wr-quote-card-slot *):not(.token) {
         color: ${fg};
       }
+      /* Code colors are worked out again from this rule's own text and background */
+      body .wr-card.${cls},
+      body div.block-language-wr.${cls},
+      body pre.${cls},
+      body .wr-lp-codeblock.${cls},
+      body .cm-line.wr-codeblock-line.${cls} {
+        --wr-code-text: ${fg};
+        --wr-code-l: ${codeL.base};
+        --wr-code-muted-l: ${codeL.muted};
+        --wr-code-faint-l: ${codeL.faint};
+      }
       body .cm-line.wr-codeblock-line.${cls},
-      body .cm-line.wr-codeblock-line.${cls} *:not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-internal-link):not(.wr-url-highlight):not(.wr-lp-marker):not(.wr-list-highlight):not(.wr-ol-highlight):not(.wr-quote-highlight):not(.wr-blockquote-wrap):not(.wr-check-unchecked):not(.wr-check-checked):not(.wr-check-done):not(.wr-quote-card-slot):not(.wr-embed-missing):not(input[type="checkbox"]):not(.wr-tag-highlight *):not(.wr-internal-link-highlight *):not(.wr-url-highlight *):not(.wr-blockquote-wrap *):not(.wr-quote-card-slot *) {
+      body .cm-line.wr-codeblock-line.${cls} *:not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-internal-link):not(.wr-url-highlight):not(.wr-lp-marker):not(.wr-list-highlight):not(.wr-ol-highlight):not(.wr-quote-highlight):not(.wr-blockquote-wrap):not(.wr-check-unchecked):not(.wr-check-checked):not(.wr-check-done):not(.wr-quote-card-slot):not(.wr-embed-missing):not(input[type="checkbox"]):not(.wr-tag-highlight *):not(.wr-internal-link-highlight *):not(.wr-url-highlight *):not(.wr-blockquote-wrap *):not(.wr-quote-card-slot *):not(.token) {
         color: ${fg};
       }
 

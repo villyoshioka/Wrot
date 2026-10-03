@@ -6,7 +6,7 @@ import {
   ViewUpdate,
 } from "@codemirror/view";
 import { RangeSetBuilder, StateEffect, StateField } from "@codemirror/state";
-import type { App } from "obsidian";
+import { editorLivePreviewField, type App } from "obsidian";
 import type WrotPlugin from "./main";
 import { findBlockRanges, type BlockRange } from "./utils/blockSegmenter";
 import {
@@ -20,10 +20,13 @@ import {
   tagPattern,
 } from "./utils/patterns";
 import { ListDepthTracker, parseListLine } from "./utils/listParser";
+import { tokenizeLines, type TokenSpan } from "./utils/prismTokens";
 
 const ogpFetched = StateEffect.define<null>();
 export const tagRulesChanged = StateEffect.define<null>();
 export const vaultFilesChanged = StateEffect.define<null>();
+// Prism finished loading, so code shown raw can now be colored.
+const codeTokensReady = StateEffect.define<null>();
 
 // ViewPlugin cannot emit block decorations, so line ranges to hide are passed to
 // this StateField, which collapses them with a block:true replace.
@@ -65,6 +68,16 @@ const italicMark = Decoration.mark({ class: "wr-italic-highlight" });
 const strikeMark = Decoration.mark({ class: "wr-strike-highlight" });
 const highlightMark = Decoration.mark({ class: "wr-highlight-highlight" });
 const replaceHidden = Decoration.replace({});
+
+const tokenMarkCache = new Map<string, Decoration>();
+function tokenMark(cls: string): Decoration {
+  let deco = tokenMarkCache.get(cls);
+  if (!deco) {
+    deco = Decoration.mark({ class: cls });
+    tokenMarkCache.set(cls, deco);
+  }
+  return deco;
+}
 
 const lineDecoCache = new Map<string, Decoration>();
 function makeLineDeco(classes: (string | null | undefined)[]): Decoration {
@@ -195,8 +208,9 @@ function buildDecorations(
   const hiddenRanges: { from: number; to: number }[] = [];
   const doc = view.state.doc;
 
-  // Source mode shows raw markdown with no replace decorations.
-  const isSourceMode = !view.contentDOM.closest(".is-live-preview");
+  // Source mode shows raw markdown with no replace decorations. Read from the editor state
+  // rather than the DOM: the mode's class can lag behind a switch.
+  const isSourceMode = !view.state.field(editorLivePreviewField, false);
 
   const cursorLineNums = new Set<number>();
   for (const range of view.state.selection.ranges) {
@@ -214,8 +228,12 @@ function buildDecorations(
 
   try {
     for (const block of blocks) {
+      // Source mode shows a memo as plain text, like any other code block: no memo background
+      // or text colors, so neither the line class the palette keys on nor the rule's class.
+      const wrLine = isSourceMode ? null : "wr-codeblock-line";
+      const memoRule = isSourceMode ? null : block.ruleClass;
       const openLine = doc.line(block.startLn);
-      builder.add(openLine.from, openLine.from, makeLineDeco(["wr-codeblock-line", block.ruleClass, block.blockId ? `wr-block-id-${block.blockId}` : null]));
+      builder.add(openLine.from, openLine.from, makeLineDeco([wrLine, memoRule, block.blockId ? `wr-block-id-${block.blockId}` : null]));
 
       // Live preview: cursor anywhere in the block shows it raw.
       const blockHasCursor = cursorInBlock(block);
@@ -234,6 +252,29 @@ function buildDecorations(
         }
       }
 
+      // Shown raw, code with a language keeps its colors, the way the editor colors a code
+      // block while it is being edited.
+      const rawTokens = new Map<number, TokenSpan[]>();
+      if (isSourceMode || blockHasCursor) {
+        for (const br of block.innerBlocks) {
+          if (br.kind !== "codeblock" || !br.lang) continue;
+          const docStart = block.startLn + 1 + br.startLine;
+          const docEnd = block.startLn + 1 + br.endLine;
+          const closed = docEnd > docStart && /^\s*~{3,}\s*$/.test(doc.line(docEnd).text);
+          const lastContent = closed ? docEnd - 1 : docEnd;
+          if (lastContent <= docStart) continue;
+          const code: string[] = [];
+          for (let k = docStart + 1; k <= lastContent; k++) code.push(doc.line(k).text);
+          const tokens = tokenizeLines(code.join("\n"), br.lang, () => {
+            try {
+              view.dispatch({ effects: codeTokensReady.of(null) });
+            // eslint-disable-next-line no-empty -- the view may be gone by the time Prism lands
+            } catch {}
+          });
+          tokens?.forEach((spans, i) => rawTokens.set(docStart + 1 + i, spans));
+        }
+      }
+
       // Nesting depth builds up across the block's lines, so the tracker spans the whole loop.
       const listDepth = new ListDepthTracker();
       let lastQuoteDepth = 0;
@@ -246,7 +287,8 @@ function buildDecorations(
 
         // Raw view keeps nested blocks as plain text too.
         if (showRaw && innerBlockInsideDocLines.has(j)) {
-          builder.add(l.from, l.from, makeLineDeco(["wr-codeblock-line", block.ruleClass, block.blockId ? `wr-block-id-${block.blockId}` : null]));
+          builder.add(l.from, l.from, makeLineDeco([wrLine, memoRule, block.blockId ? `wr-block-id-${block.blockId}` : null]));
+          for (const t of rawTokens.get(j) ?? []) builder.add(l.from + t.from, l.from + t.to, tokenMark(t.cls));
           continue;
         }
 
@@ -271,7 +313,7 @@ function buildDecorations(
             widgetContent = innerBodyLines.join("\n");
           }
 
-          builder.add(l.from, l.from, makeLineDeco(["wr-codeblock-line", block.ruleClass, block.blockId ? `wr-block-id-${block.blockId}` : null]));
+          builder.add(l.from, l.from, makeLineDeco([wrLine, memoRule, block.blockId ? `wr-block-id-${block.blockId}` : null]));
 
           // ViewPlugin can only emit inline replace, not block replace.
           const startLine = doc.line(docStart);
@@ -341,11 +383,11 @@ function buildDecorations(
           }
         } else if ((isQuoteLine || quoteInnerIsList) && !showRaw) {
           const depthClass = `wr-blockquote-depth-${Math.min(quoteDepth, 5)}`;
-          builder.add(l.from, l.from, makeLineDeco(["wr-codeblock-line", "wr-blockquote-line", depthClass, block.ruleClass, block.blockId ? `wr-block-id-${block.blockId}` : null]));
+          builder.add(l.from, l.from, makeLineDeco([wrLine, "wr-blockquote-line", depthClass, memoRule, block.blockId ? `wr-block-id-${block.blockId}` : null]));
         } else if (hasObsidianUrl) {
-          builder.add(l.from, l.from, makeLineDeco(["wr-codeblock-line", "wr-obsidian-url-line", block.ruleClass, block.blockId ? `wr-block-id-${block.blockId}` : null]));
+          builder.add(l.from, l.from, makeLineDeco([wrLine, "wr-obsidian-url-line", memoRule, block.blockId ? `wr-block-id-${block.blockId}` : null]));
         } else {
-          builder.add(l.from, l.from, makeLineDeco(["wr-codeblock-line", block.ruleClass, block.blockId ? `wr-block-id-${block.blockId}` : null]));
+          builder.add(l.from, l.from, makeLineDeco([wrLine, memoRule, block.blockId ? `wr-block-id-${block.blockId}` : null]));
         }
 
         const entries: { from: number; to: number; deco: Decoration }[] = [];
@@ -655,7 +697,7 @@ function buildDecorations(
       }
 
       const closeLine = doc.line(block.endLn);
-      builder.add(closeLine.from, closeLine.from, makeLineDeco(["wr-codeblock-line", block.ruleClass, block.blockId ? `wr-block-id-${block.blockId}` : null]));
+      builder.add(closeLine.from, closeLine.from, makeLineDeco([wrLine, memoRule, block.blockId ? `wr-block-id-${block.blockId}` : null]));
 
       const endLine = doc.line(block.endLn);
 
@@ -816,13 +858,18 @@ export function createWrEditorExtension(ogpCache: OGPCache, app: App, plugin: Wr
           tr.effects.some((e) => e.is(tagRulesChanged))
         );
         const hasVaultFilesEffect = update.transactions.some((tr) =>
-          tr.effects.some((e) => e.is(vaultFilesChanged))
+          tr.effects.some((e) => e.is(vaultFilesChanged) || e.is(codeTokensReady))
         );
 
-        if (update.docChanged || update.viewportChanged || update.selectionSet || hasOgpEffect || hasTagRulesEffect || hasVaultFilesEffect) {
+        // Switching between source mode and live preview changes nothing else the checks see.
+        const modeChanged =
+          update.startState.field(editorLivePreviewField, false) !== update.state.field(editorLivePreviewField, false);
+
+        if (update.docChanged || update.viewportChanged || update.selectionSet || hasOgpEffect || hasTagRulesEffect || hasVaultFilesEffect || modeChanged) {
           // Cursor-only updates cannot change block structure: reuse cached blocks to skip
           // the full doc scan. Decorations still rebuild since cursorInBlock may change.
           const structureMayChange =
+            modeChanged ||
             update.docChanged ||
             update.viewportChanged ||
             hasOgpEffect ||

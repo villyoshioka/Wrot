@@ -1302,6 +1302,53 @@ body .wr-math-highlight:not(#x) {
   margin: 0.5em 0;
 }
 
+/* Token colors take the theme's code color for their hue, at a lightness worked out from the
+   memo's text and background (--wr-code-l and its muted/faint steps for punctuation and
+   comments, set by the palette or a tag rule), so code stays clear on whatever background
+   Wrot is given. The theme's colors are captured on body: the
+   block below points the code variables back at them, which would otherwise loop. Where
+   relative colors are unsupported the theme's colors apply unchanged, since a failed one
+   would drop to transparent. */
+body {
+  --wr-code-theme-keyword: var(--code-keyword);
+  --wr-code-theme-function: var(--code-function);
+  --wr-code-theme-value: var(--code-value);
+  --wr-code-theme-string: var(--code-string);
+  --wr-code-theme-tag: var(--code-tag);
+  --wr-code-theme-operator: var(--code-operator);
+}
+
+.wr-codeblock-display {
+  --code-normal: var(--wr-code-text);
+}
+
+@supports (color: oklch(from red l c h)) {
+  .wr-codeblock-display,
+  .cm-line.wr-codeblock-line .token {
+    --code-keyword: oklch(from var(--wr-code-theme-keyword) var(--wr-code-l) c h);
+    --code-function: oklch(from var(--wr-code-theme-function) var(--wr-code-l) c h);
+    --code-value: oklch(from var(--wr-code-theme-value) var(--wr-code-l) c h);
+    --code-string: oklch(from var(--wr-code-theme-string) var(--wr-code-l) c h);
+    --code-tag: oklch(from var(--wr-code-theme-tag) var(--wr-code-l) c h);
+    --code-operator: oklch(from var(--wr-code-theme-operator) var(--wr-code-l) c h);
+    --code-punctuation: oklch(from var(--wr-code-text) var(--wr-code-muted-l) c h);
+    --code-comment: oklch(from var(--wr-code-text) var(--wr-code-faint-l) c h);
+  }
+}
+
+/* Code shown raw in the editor (source mode, or live preview with the cursor in the memo):
+   Wrot marks Prism's tokens itself. In live preview they take the same colors as rendered
+   code; source mode drops the memo's colors, so there the theme's code colors apply as they
+   are. One ID so the editor's own code span colors do not win. */
+body .HyperMD-codeblock .token:is(.comment, .prolog, .doctype, .cdata):not(#x) { color: var(--code-comment); }
+body .HyperMD-codeblock .token.punctuation:not(#x) { color: var(--code-punctuation); }
+body .HyperMD-codeblock .token:is(.property, .tag, .boolean, .number, .constant, .symbol, .deleted):not(#x) { color: var(--code-tag); }
+body .HyperMD-codeblock .token:is(.selector, .attr-name, .string, .char, .builtin, .inserted):not(#x) { color: var(--code-string); }
+body .HyperMD-codeblock .token:is(.operator, .entity, .url):not(#x) { color: var(--code-operator); }
+body .HyperMD-codeblock .token:is(.atrule, .attr-value, .keyword):not(#x) { color: var(--code-keyword); }
+body .HyperMD-codeblock .token:is(.function, .class-name):not(#x) { color: var(--code-function); }
+body .HyperMD-codeblock .token:is(.regex, .important, .variable):not(#x) { color: var(--code-value); }
+
 /* Inherit outer memo background only (so tag-color rules flow through).
    Text color / token color should follow Obsidian's Prism theme, so we do NOT
    set `color` on pre/code here. */

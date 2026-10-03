@@ -16,7 +16,7 @@ import { createWrEditorExtension, tagRulesChanged, vaultFilesChanged } from "./e
 import { OGPCache } from "./utils/ogpCache";
 import { GraphTagInjector } from "./utils/graphTags";
 import { ATTACHMENT_EXT_RE, matchTags, tagPattern } from "./utils/patterns";
-import { blendColor, darkenColor, validHex } from "./utils/color";
+import { blendColor, codeLightness, darkenColor, validHex } from "./utils/color";
 import { boostSelectors, WrStyleSheet } from "./styles/styleInjector";
 import { buildPaletteCss } from "./styles/paletteCss";
 import { buildTagRuleCss } from "./styles/tagRuleCss";
@@ -273,6 +273,7 @@ export default class WrotPlugin extends Plugin {
       mutedColor: blendColor(textColor, bgColor, 0.45),
       faintColor: blendColor(textColor, bgColor, 0.6),
       unresolvedLinkColor: blendColor(textColor, bgColor, 0.3),
+      codeLightness: codeLightness(textColor, bgColor),
     });
     this.bgSheet.apply(boostSelectors(css, 2), this.styleDocs());
   }
