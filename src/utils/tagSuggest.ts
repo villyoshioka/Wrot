@@ -33,7 +33,7 @@ export function mergeRecentTags(existing: string[], used: string[]): string[] {
 
 interface TagSuggestOptions {
   field: ComposerField;
-  // Parent element hosting the popover (view body = wr-container); positioned and
+  // Parent element hosting the popover (view body = wrot-container); positioned and
   // clamped in container coordinates, same as the calendar popover.
   container: HTMLElement;
   // Candidates (no leading #, newest first); read on every call to reflect current settings.
@@ -53,7 +53,7 @@ interface ActiveToken {
 // an invisible dummy input to rebuild the session; both are editable, so the keyboard stays open.
 export function rebuildFocus(ta: ComposerField, container: HTMLElement): void {
   const dummy = container.createEl("input", {
-    cls: "wr-focus-bounce",
+    cls: "wrot-focus-bounce",
     attr: { type: "text" },
   });
   dummy.focus({ preventScroll: true });
@@ -228,7 +228,7 @@ export class TagSuggest {
 
   private renderItems(matches: string[]): void {
     if (!this.popover) {
-      this.popover = this.opts.container.createDiv({ cls: "wr-tag-suggest" });
+      this.popover = this.opts.container.createDiv({ cls: "wrot-tag-suggest" });
       // Keep clicks inside the popover from bubbling out (same as the calendar popover).
       this.popover.addEventListener("click", (e) => e.stopPropagation());
       // iOS synthesizes delayed compatibility mouse events after a tap; their default
@@ -245,7 +245,7 @@ export class TagSuggest {
 
     matches.forEach((tag, index) => {
       const item = this.popover!.createDiv({
-        cls: "wr-tag-suggest-item",
+        cls: "wrot-tag-suggest-item",
         text: `#${tag}`,
       });
       // Confirm on pointerup, not click (iOS WebKit may not fire click, which would
@@ -287,7 +287,7 @@ export class TagSuggest {
 
   private applySelection(): void {
     this.itemEls.forEach((el, index) => {
-      el.toggleClass("wr-tag-suggest-item-selected", index === this.selectedIndex);
+      el.toggleClass("wrot-tag-suggest-item-selected", index === this.selectedIndex);
     });
     this.itemEls[this.selectedIndex]?.scrollIntoView({ block: "nearest" });
   }

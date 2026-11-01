@@ -29,14 +29,14 @@ import type { OGPCache } from "../utils/ogpCache";
  * reading view does. The marker carries the indent instead, and the text after it follows.
  */
 function indentClass(depth: number): string {
-  return depth > 0 ? ` wr-lp-indent-${depth}` : "";
+  return depth > 0 ? ` wrot-lp-indent-${depth}` : "";
 }
 
 export class BulletWidget extends WidgetType {
   constructor(private depth: number = 0) { super(); }
   toDOM(): HTMLElement {
     const span = createSpan();
-    span.className = `wr-lp-marker wr-lp-bullet${indentClass(this.depth)}`;
+    span.className = `wrot-lp-marker wrot-lp-bullet${indentClass(this.depth)}`;
     return span;
   }
   eq(other: BulletWidget): boolean { return this.depth === other.depth; }
@@ -46,7 +46,7 @@ export class CheckboxWidget extends WidgetType {
   constructor(private checked: boolean, private depth: number = 0) { super(); }
   toDOM(view: EditorView): HTMLElement {
     const wrap = createSpan();
-    wrap.className = `wr-lp-marker wr-lp-check${indentClass(this.depth)}`;
+    wrap.className = `wrot-lp-marker wrot-lp-check${indentClass(this.depth)}`;
     const cb = createEl("input");
     cb.type = "checkbox";
     cb.checked = this.checked;
@@ -121,12 +121,12 @@ function onTap(el: HTMLElement, fn: () => void): void {
 export class TagWidget extends WidgetType {
   constructor(private tag: string, private plugin: WrotPlugin) { super(); }
   toDOM(): HTMLElement {
-    const span = createSpan({ cls: "wr-tag-highlight wr-tag-clickable", text: this.tag });
+    const span = createSpan({ cls: "wrot-tag-highlight wrot-tag-clickable", text: this.tag });
     onTap(span, () => {
       // Press feedback: remove class and force reflow so rapid clicks re-trigger the flash.
-      span.classList.remove("wr-tag-flash");
+      span.classList.remove("wrot-tag-flash");
       void span.offsetWidth;
-      span.classList.add("wr-tag-flash");
+      span.classList.add("wrot-tag-flash");
       this.plugin.openTagSearch(this.tag);
     });
     return span;
@@ -139,7 +139,7 @@ export class OlMarkerWidget extends WidgetType {
   constructor(private label: string, private depth: number = 0) { super(); }
   toDOM(): HTMLElement {
     const span = createSpan();
-    span.className = `wr-lp-marker wr-lp-ol${indentClass(this.depth)}`;
+    span.className = `wrot-lp-marker wrot-lp-ol${indentClass(this.depth)}`;
     span.textContent = this.label;
     return span;
   }
@@ -157,8 +157,8 @@ export class ObsidianLinkWidget extends WidgetType {
   toDOM(): HTMLElement {
     const link = createEl("a");
     link.className = this.unresolved
-      ? "wr-internal-link wr-internal-link-unresolved"
-      : "wr-internal-link";
+      ? "wrot-internal-link wrot-internal-link-unresolved"
+      : "wrot-internal-link";
     link.textContent = this.displayName;
     onTap(link, () => {
       if (isSafeUrl(this.url)) window.open(this.url);
@@ -177,7 +177,7 @@ export class MdLinkWidget extends WidgetType {
   constructor(private label: string, private url: string) { super(); }
   toDOM(): HTMLElement {
     const link = createEl("a");
-    link.className = "wr-url-highlight";
+    link.className = "wrot-url-highlight";
     link.textContent = this.label;
     onTap(link, () => {
       if (isSafeUrl(this.url)) window.open(this.url, "_blank");
@@ -200,8 +200,8 @@ export class InternalLinkWidget extends WidgetType {
   toDOM(): HTMLElement {
     const link = createEl("a");
     link.className = this.resolved
-      ? "wr-internal-link"
-      : "wr-internal-link wr-internal-link-unresolved";
+      ? "wrot-internal-link"
+      : "wrot-internal-link wrot-internal-link-unresolved";
     link.textContent = this.display;
     onTap(link, () => {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
@@ -219,7 +219,7 @@ export class EmbedMissingWidget extends WidgetType {
   constructor(private fileName: string) { super(); }
   toDOM(): HTMLElement {
     const span = createSpan();
-    span.className = "wr-embed-missing";
+    span.className = "wrot-embed-missing";
     span.textContent = `![[${this.fileName}]]`;
     return span;
   }
@@ -236,7 +236,7 @@ export class MathWidget extends WidgetType {
   constructor(private tex: string) { super(); }
   toDOM(): HTMLElement {
     const span = createSpan();
-    span.className = "wr-math";
+    span.className = "wrot-math";
     try {
       // Branch explicitly instead of relying on renderMath's behavior when MathJax is missing.
       if (!this.hadMathJax) throw new Error("MathJax not loaded yet");
@@ -244,7 +244,7 @@ export class MathWidget extends WidgetType {
       span.appendChild(rendered);
       void finishRenderMath();
     } catch {
-      span.classList.add("wr-math-fallback");
+      span.classList.add("wrot-math-fallback");
       span.textContent = `$${this.tex}$`;
       requestMathJax();
     }
@@ -261,7 +261,7 @@ export class CodeBlockWidget extends WidgetType {
   ) { super(); }
   toDOM(): HTMLElement {
     const container = createDiv();
-    container.className = "wr-codeblock-display wr-lp-codeblock wr-codeblock-line";
+    container.className = "wrot-codeblock-display wrot-lp-codeblock wrot-codeblock-line";
     if (this.ruleClass) container.classList.add(this.ruleClass);
 
     const pre = container.createEl("pre");
@@ -291,7 +291,7 @@ export class MathBlockWidget extends WidgetType {
   constructor(private tex: string, private ruleClass: string | null) { super(); }
   toDOM(): HTMLElement {
     const container = createDiv();
-    container.className = "wr-math-display wr-lp-mathblock wr-codeblock-line";
+    container.className = "wrot-math-display wrot-lp-mathblock wrot-codeblock-line";
     if (this.ruleClass) container.classList.add(this.ruleClass);
     try {
       // Branch explicitly instead of relying on renderMath's behavior when MathJax is missing.
@@ -300,7 +300,7 @@ export class MathBlockWidget extends WidgetType {
       container.appendChild(rendered);
       void finishRenderMath();
     } catch {
-      container.classList.add("wr-math-fallback");
+      container.classList.add("wrot-math-fallback");
       container.textContent = this.tex;
       requestMathJax();
     }
@@ -320,12 +320,12 @@ export class EmbedImageWidget extends WidgetType {
   ) { super(); }
   toDOM(): HTMLElement {
     const container = createDiv();
-    // Avoids CSS :has(): children always contain wr-embed-img, so set the state class directly.
-    container.className = "wr-media-area wr-lp-media wr-has-img";
+    // Avoids CSS :has(): children always contain wrot-embed-img, so set the state class directly.
+    container.className = "wrot-media-area wrot-lp-media wrot-has-img";
     if (this.ruleClass) container.classList.add(this.ruleClass);
     for (const { src, alt } of this.images) {
       const img = createEl("img");
-      img.className = "wr-embed-img";
+      img.className = "wrot-embed-img";
       img.src = src;
       img.alt = alt;
       img.loading = "lazy";
@@ -346,9 +346,9 @@ export class InlineEmbedImageWidget extends WidgetType {
   constructor(private src: string, private alt: string) { super(); }
   toDOM(): HTMLElement {
     const wrapper = createDiv();
-    wrapper.className = "wr-lp-inline-img-wrapper";
+    wrapper.className = "wrot-lp-inline-img-wrapper";
     const img = createEl("img");
-    img.className = "wr-embed-img wr-lp-inline-img";
+    img.className = "wrot-embed-img wrot-lp-inline-img";
     img.src = this.src;
     img.alt = this.alt;
     img.loading = "lazy";
@@ -393,7 +393,7 @@ export class UrlPreviewWidget extends WidgetType {
 
   toDOM(): HTMLElement {
     const container = createDiv();
-    container.className = "wr-media-area wr-lp-media";
+    container.className = "wrot-media-area wrot-lp-media";
     if (this.ruleClass) container.classList.add(this.ruleClass);
 
     for (const pu of this.parsedUrls) {
@@ -461,12 +461,12 @@ export class QuoteBlockWidget extends WidgetType {
 
   toDOM(): HTMLElement {
     const container = createDiv();
-    container.className = "wr-quote-block";
+    container.className = "wrot-quote-block";
     if (this.ruleClass) container.classList.add(this.ruleClass);
 
     if (this.parsedUrls.length > 0) {
       const mediaArea = createDiv();
-      mediaArea.className = "wr-media-area wr-lp-media";
+      mediaArea.className = "wrot-media-area wrot-lp-media";
       if (this.ruleClass) mediaArea.classList.add(this.ruleClass);
       let hasContent = false;
       for (const pu of this.parsedUrls) {
@@ -489,7 +489,7 @@ export class QuoteBlockWidget extends WidgetType {
     }
 
     const slot = createSpan();
-    slot.className = "wr-quote-card-slot wr-lp-quote-card";
+    slot.className = "wrot-quote-card-slot wrot-lp-quote-card";
     if (this.ruleClass) slot.classList.add(this.ruleClass);
     renderQuoteCard(slot, this.fileName, this.blockId, this.app, this.currentFilePath, {
       timestampFormat: this.timestampFormat,

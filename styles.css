@@ -11,7 +11,7 @@
    Injected sheets sit at the end of <head> so ties resolve in their favor.
    Priority-flag opponents (some themes / mobile app) win by design. */
 
-.wr-container {
+.wrot-container {
   padding: 12px 12px 0;
   display: flex;
   flex-direction: column;
@@ -24,19 +24,19 @@
 /* Cap width and center when placed in the main area (tab). Only margin-inline
    is set: vertical margins stay with the parent flex, or mobile main-area
    content drifts upward. */
-.workspace-split.mod-root .workspace-leaf-content[data-type="wrot-view"] .wr-container {
+.workspace-split.mod-root .workspace-leaf-content[data-type="wrot-view"] .wrot-container {
   max-width: 760px;
   margin-inline: auto;
 }
 
-.wr-date-nav {
+.wrot-date-nav {
   display: flex;
   align-items: center;
   gap: 2px;
   margin-bottom: 12px;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-nav-btn {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-nav-btn {
   background: none;
   border: none;
   box-shadow: none;
@@ -51,36 +51,36 @@
   justify-content: center;
 }
 
-.wr-nav-btn .svg-icon {
+.wrot-nav-btn .svg-icon {
   width: 20px;
   height: 20px;
 }
 
 /* Follow Obsidian's UI font size but never shrink below default (20px / 14px baseline = 1.429) */
-body.wr-font-follow .wr-nav-btn .svg-icon {
-  width: max(20px, calc(var(--wr-font-text) * 1.429));
-  height: max(20px, calc(var(--wr-font-text) * 1.429));
+body.wrot-font-follow .wrot-nav-btn .svg-icon {
+  width: max(20px, calc(var(--wrot-font-text) * 1.429));
+  height: max(20px, calc(var(--wrot-font-text) * 1.429));
 }
 
 /* Suppress Obsidian's button:focus-visible background lingering after a click.
    Placed before :hover so the later hover rule still wins while hovering. */
-.workspace-leaf-content[data-type="wrot-view"] .wr-nav-btn:focus,
-.workspace-leaf-content[data-type="wrot-view"] .wr-nav-btn:focus-visible {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-nav-btn:focus,
+.workspace-leaf-content[data-type="wrot-view"] .wrot-nav-btn:focus-visible {
   background: none;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-nav-btn:hover {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-nav-btn:hover {
   background: rgba(var(--mono-rgb-100), 0.05);
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-nav-btn:active {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-nav-btn:active {
   background: rgba(var(--mono-rgb-100), 0.08);
   color: var(--text-accent);
 }
 
-.wr-date-label {
+.wrot-date-label {
   font-weight: 600;
-  font-size: var(--wr-font-date);
+  font-size: var(--wrot-font-date);
   color: var(--text-normal);
   flex: 1;
   text-align: center;
@@ -91,16 +91,16 @@ body.wr-font-follow .wr-nav-btn .svg-icon {
   white-space: nowrap;
 }
 
-.wr-date-label:hover {
+.wrot-date-label:hover {
   color: var(--text-accent);
 }
 
-.wr-date-label:active,
-.wr-date-label-active {
+.wrot-date-label:active,
+.wrot-date-label-active {
   opacity: 0.7;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-today-btn {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-today-btn {
   background: none;
   border: none;
   box-shadow: none;
@@ -108,54 +108,54 @@ body.wr-font-follow .wr-nav-btn .svg-icon {
   border-radius: 6px;
   padding: 4px 14px;
   cursor: pointer;
-  font-size: var(--wr-font-ui-small);
+  font-size: var(--wrot-font-ui-small);
   line-height: 1;
   min-height: 0;
   margin-left: auto;
 }
 
 /* Suppress Obsidian's default button:focus-visible background lingering after a click */
-.workspace-leaf-content[data-type="wrot-view"] .wr-today-btn:focus,
-.workspace-leaf-content[data-type="wrot-view"] .wr-today-btn:focus-visible {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-today-btn:focus,
+.workspace-leaf-content[data-type="wrot-view"] .wrot-today-btn:focus-visible {
   background: none;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-today-btn:hover {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-today-btn:hover {
   background: rgba(var(--mono-rgb-100), 0.05);
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-today-btn:active {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-today-btn:active {
   background: rgba(var(--mono-rgb-100), 0.08);
   color: var(--text-accent);
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-btn {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-btn {
   margin-left: 2px;
   position: relative;
 }
 
 /* While the calendar is open, pin the light hover tint so the darker :active
    color (0.08) cannot cut in on arrow taps and flicker. */
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-btn.wr-toolbar-active,
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-btn.wr-toolbar-active:hover,
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-btn.wr-toolbar-active:active {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-btn.wrot-toolbar-active,
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-btn.wrot-toolbar-active:hover,
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-btn.wrot-toolbar-active:active {
   background: rgba(var(--mono-rgb-100), 0.05);
 }
 
-/* Custom calendar popover. Positioned by JS inside wr-container so it never overflows the sidebar edge; custom-drawn for cross-platform consistency, colors follow the configured bg/text. */
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-popover {
+/* Custom calendar popover. Positioned by JS inside wrot-container so it never overflows the sidebar edge; custom-drawn for cross-platform consistency, colors follow the configured bg/text. */
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-popover {
   position: absolute;
   z-index: 50;
   width: max-content;
   padding: 8px;
-  background: var(--wr-bg-color, #f8f8f8);
+  background: var(--wrot-bg-color, #f8f8f8);
   border: 1px solid rgba(var(--mono-rgb-100), 0.12);
   border-radius: 10px;
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.14);
   user-select: none;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-header {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -163,8 +163,8 @@ body.wr-font-follow .wr-nav-btn .svg-icon {
   margin-bottom: 6px;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-month-label {
-  font-size: var(--wr-font-ui-small);
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-month-label {
+  font-size: var(--wrot-font-ui-small);
   font-weight: 600;
   color: var(--text-normal);
   text-align: center;
@@ -180,18 +180,18 @@ body.wr-font-follow .wr-nav-btn .svg-icon {
   min-height: 0;
 }
 
-/* Match .wr-date-label: no hover box, only lower opacity while pressed */
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-month-label:hover,
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-month-label:focus,
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-month-label:focus-visible {
+/* Match .wrot-date-label: no hover box, only lower opacity while pressed */
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-month-label:hover,
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-month-label:focus,
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-month-label:focus-visible {
   background: none;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-month-label:active {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-month-label:active {
   opacity: 0.7;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-nav-btn {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-nav-btn {
   background: none;
   border: none;
   box-shadow: none;
@@ -208,70 +208,70 @@ body.wr-font-follow .wr-nav-btn .svg-icon {
 
 /* Suppress the lingering focus background after a click; placed before :hover
    so the later hover rule still wins while hovering. */
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-nav-btn:focus,
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-nav-btn:focus-visible {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-nav-btn:focus,
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-nav-btn:focus-visible {
   background: none;
 }
 
 /* Same hover/pressed convention as the main prev/next day buttons */
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-nav-btn:hover {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-nav-btn:hover {
   background: rgba(var(--mono-rgb-100), 0.05);
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-nav-btn:active {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-nav-btn:active {
   background: rgba(var(--mono-rgb-100), 0.08);
   color: var(--text-accent);
 }
 
 /* No earlier page holds a selectable day: the arrow goes away, its slot stays so the label does not shift */
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-nav-btn:disabled {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-nav-btn:disabled {
   visibility: hidden;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-nav-btn .svg-icon {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-nav-btn .svg-icon {
   width: 16px;
   height: 16px;
 }
 
 /* Follow Obsidian's UI font size but never shrink below default (16px / 14px baseline = 1.143) */
-body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
-  width: max(16px, calc(var(--wr-font-text) * 1.143));
-  height: max(16px, calc(var(--wr-font-text) * 1.143));
+body.wrot-font-follow .wrot-calendar-nav-btn .svg-icon {
+  width: max(16px, calc(var(--wrot-font-text) * 1.143));
+  height: max(16px, calc(var(--wrot-font-text) * 1.143));
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-weekdays {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   margin-bottom: 2px;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-weekday {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-weekday {
   text-align: center;
-  font-size: var(--wr-font-ui-smaller);
+  font-size: var(--wrot-font-ui-smaller);
   color: var(--text-muted);
   padding: 2px 0;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-grid {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-grid {
   display: grid;
   /* minmax(0, …): the cells have a definite em width, so plain 1fr could not shrink below it in narrow panes */
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 1px;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-grid.wr-calendar-grid-years {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-grid.wrot-calendar-grid-years {
   grid-template-columns: repeat(3, 1fr);
   gap: 4px;
   padding: 4px 0;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-year {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-year {
   background: none;
   border: none;
   box-shadow: none;
   cursor: pointer;
   color: var(--text-normal);
-  font-size: var(--wr-font-ui-small);
+  font-size: var(--wrot-font-ui-small);
   line-height: 1;
   min-height: 0;
   padding: 8px 0;
@@ -281,32 +281,32 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
   justify-content: center;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-year:hover {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-year:hover {
   background: rgba(var(--mono-rgb-100), 0.05);
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-year.wr-calendar-day-selected,
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-year.wr-calendar-day-selected.wr-calendar-day-today {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-year.wrot-calendar-day-selected,
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-year.wrot-calendar-day-selected.wrot-calendar-day-today {
   background: var(--interactive-accent);
   color: var(--text-on-accent);
   font-weight: 600;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-day {
   background: none;
   border: none;
   box-shadow: none;
   cursor: pointer;
   color: var(--text-normal);
-  font-size: var(--wr-font-ui-small);
+  font-size: var(--wrot-font-ui-small);
   line-height: 1;
   min-height: 0;
   padding: 0;
   /* Obsidian gives every button a fixed height; with width: 100% + aspect-ratio the
      cell width was derived from that height, so two heavy digits overflowed. A definite
-     em width (28px at the 13px default) plus height: auto makes the font size decide
+     em width (30px at the 13px default) plus height: auto makes the font size decide
      and keeps the cell square. max-width lets narrow panes shrink it. */
-  width: 2.154em;
+  width: 2.308em;
   height: auto;
   max-width: 100%;
   min-width: 0;
@@ -315,26 +315,26 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--wr-cal-day-radius, 50%);
+  border-radius: var(--wrot-cal-day-radius, 50%);
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day:hover {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-day:hover {
   background: rgba(var(--mono-rgb-100), 0.05);
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-outside {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-day-outside {
   color: var(--text-faint);
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-today {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-day-today {
   color: var(--text-accent);
   font-weight: 600;
 }
 
 /* Out of range for this picker: still readable, but inert. Declared after the
    today rule so a disabled today loses the accent too. */
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-disabled,
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-disabled:hover {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-day-disabled,
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-day-disabled:hover {
   color: var(--text-faint);
   font-weight: inherit;
   background: none;
@@ -343,36 +343,36 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
 }
 
 /* Selected beats the today highlight (hence the compound selector) */
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-selected,
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-selected.wr-calendar-day-today {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-day-selected,
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-day-selected.wrot-calendar-day-today {
   background: var(--interactive-accent);
   color: var(--text-on-accent);
   font-weight: 600;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-selected:hover {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-day-selected:hover {
   background: var(--interactive-accent-hover, var(--interactive-accent));
 }
 
 /* Tag suggestion dropdown. Positioned by JS from the editor's caret coordinates. */
-.workspace-leaf-content[data-type="wrot-view"] .wr-tag-suggest {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-tag-suggest {
   position: absolute;
   z-index: 50;
   width: max-content;
   max-height: 240px;
   overflow-y: auto;
   padding: 4px;
-  background: var(--wr-bg-color, #f8f8f8);
+  background: var(--wrot-bg-color, #f8f8f8);
   border: 1px solid rgba(var(--mono-rgb-100), 0.12);
   border-radius: 8px;
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.14);
   user-select: none;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-tag-suggest-item {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-tag-suggest-item {
   padding: 5px 10px;
   border-radius: 5px;
-  font-size: var(--wr-font-ui-small);
+  font-size: var(--wrot-font-ui-small);
   color: var(--text-normal);
   cursor: pointer;
   white-space: nowrap;
@@ -380,55 +380,55 @@ body.wr-font-follow .wr-calendar-nav-btn .svg-icon {
   text-overflow: ellipsis;
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-tag-suggest-item:hover {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-tag-suggest-item:hover {
   background: rgba(var(--mono-rgb-100), 0.05);
 }
 
-.workspace-leaf-content[data-type="wrot-view"] .wr-tag-suggest-item-selected,
-.workspace-leaf-content[data-type="wrot-view"] .wr-tag-suggest-item-selected:hover {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-tag-suggest-item-selected,
+.workspace-leaf-content[data-type="wrot-view"] .wrot-tag-suggest-item-selected:hover {
   background: rgba(var(--mono-rgb-100), 0.05);
 }
 
-.is-mobile .workspace-leaf-content[data-type="wrot-view"] .wr-tag-suggest-item {
+.is-mobile .workspace-leaf-content[data-type="wrot-view"] .wrot-tag-suggest-item {
   padding: 8px 12px;
 }
 
 /* The link button's window, positioned by JS below the form. */
-body .wr-link-popover {
+body .wrot-link-popover {
   position: absolute;
   z-index: 50;
   width: 320px;
   box-sizing: border-box;
   padding: 6px;
-  background: var(--wr-bg-color, #f8f8f8);
+  background: var(--wrot-bg-color, #f8f8f8);
   border: 1px solid rgba(var(--mono-rgb-100), 0.12);
   border-radius: 10px;
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.14);
 }
 
-body .wr-link-popover-row {
+body .wrot-link-popover-row {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
 /* One ID level so Obsidian's form-control rules (mobile ones included) do not win. */
-body .wr-link-popover-input:not(#x) {
+body .wrot-link-popover-input:not(#x) {
   flex: 1;
   min-width: 0;
   height: auto;
   padding: 4px 8px;
-  font-size: var(--wr-font-ui-small);
+  font-size: var(--wrot-font-ui-small);
   line-height: 1.4;
 }
 
-body .wr-link-popover-unlink:not(#x) {
+body .wrot-link-popover-unlink:not(#x) {
   flex-shrink: 0;
   display: flex;
   align-items: center;
   height: auto;
   padding: 4px 8px;
-  font-size: var(--wr-font-ui-small);
+  font-size: var(--wrot-font-ui-small);
   background: none;
   border: none;
   border-radius: 6px;
@@ -436,34 +436,34 @@ body .wr-link-popover-unlink:not(#x) {
   cursor: pointer;
 }
 
-body .wr-link-popover-unlink:not(#x):hover {
+body .wrot-link-popover-unlink:not(#x):hover {
   background: rgba(var(--mono-rgb-100), 0.05);
 }
 
-body .wr-link-popover-unlink:not(#x):active {
+body .wrot-link-popover-unlink:not(#x):active {
   background: rgba(var(--mono-rgb-100), 0.08);
 }
 
-body .wr-link-popover-unlink .svg-icon {
+body .wrot-link-popover-unlink .svg-icon {
   width: 1.2em;
   height: 1.2em;
 }
 
-body .wr-link-popover-suggest {
+body .wrot-link-popover-suggest {
   margin-top: 4px;
 }
 
-body .wr-link-popover-suggest:empty {
+body .wrot-link-popover-suggest:empty {
   display: none;
 }
 
-body .wr-link-popover-item {
+body .wrot-link-popover-item {
   display: flex;
   align-items: baseline;
   gap: 8px;
   padding: 6px 10px;
   border-radius: 5px;
-  font-size: var(--wr-font-ui-small);
+  font-size: var(--wrot-font-ui-small);
   color: var(--text-normal);
   cursor: pointer;
   white-space: nowrap;
@@ -471,36 +471,36 @@ body .wr-link-popover-item {
   user-select: none;
 }
 
-body .wr-link-popover-item:hover,
-body .wr-link-popover-item-selected {
+body .wrot-link-popover-item:hover,
+body .wrot-link-popover-item-selected {
   background: rgba(var(--mono-rgb-100), 0.05);
 }
 
-body .wr-link-popover-item-name,
-body .wr-link-popover-item-folder {
+body .wrot-link-popover-item-name,
+body .wrot-link-popover-item-folder {
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-body .wr-link-popover-item-name {
+body .wrot-link-popover-item-name {
   flex-shrink: 0;
   max-width: 70%;
 }
 
-body .wr-link-popover-item-folder {
+body .wrot-link-popover-item-folder {
   color: var(--text-faint);
 }
 
-.is-mobile .wr-link-popover-item {
+.is-mobile .wrot-link-popover-item {
   padding: 10px 12px;
-  font-size: var(--wr-font-text);
+  font-size: var(--wrot-font-text);
 }
 
 /* Invisible focusable input used to rebuild the iOS input session after a
    forced IME commit (the caret fails to render when refocusing the textarea
    directly). Must stay editable-looking to the OS so the keyboard stays open;
    it is created, focused and removed within a single confirm() run. */
-.workspace-leaf-content[data-type="wrot-view"] .wr-focus-bounce {
+.workspace-leaf-content[data-type="wrot-view"] .wrot-focus-bounce {
   position: fixed;
   bottom: 0;
   left: 0;
@@ -512,14 +512,14 @@ body .wr-link-popover-item-folder {
   pointer-events: none;
 }
 
-.wr-input-area {
+.wrot-input-area {
   margin-bottom: 8px;
-  background: var(--wr-bg-color, #f8f8f8);
+  background: var(--wrot-bg-color, #f8f8f8);
   border-radius: 12px;
   padding: 6px 14px 8px;
 }
 
-.wr-input-header {
+.wrot-input-header {
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -529,13 +529,13 @@ body .wr-link-popover-item-folder {
 
 /* The composer is a CodeMirror editor (.cm-editor), whatever its class name. */
 /* At least two lines (2 × line-height 1.6) at any font size. */
-body .wr-textarea {
+body .wrot-textarea {
   width: 100%;
   height: auto;
   min-height: max(48px, 3.2em);
   box-shadow: none;
   padding: 0;
-  font-size: var(--wr-font-text);
+  font-size: var(--wrot-font-text);
   font-family: inherit;
   color: var(--text-normal);
   box-sizing: border-box;
@@ -544,7 +544,7 @@ body .wr-textarea {
 }
 
 /* CodeMirror's base theme sets these on its own classes one level deep. */
-body .wr-textarea .cm-scroller {
+body .wrot-textarea .cm-scroller {
   font-family: inherit;
   line-height: inherit;
   overflow: visible;
@@ -552,31 +552,31 @@ body .wr-textarea .cm-scroller {
 
 /* caret-color: CodeMirror's base theme hardcodes black/white; Obsidian's own fields use
    its caret variable (the accent on mobile), which the textarea used to pick up. */
-body .wr-textarea .cm-content {
+body .wrot-textarea .cm-content {
   position: relative;
   padding: 0;
   color: inherit;
   caret-color: var(--caret-color);
 }
 
-body .wr-textarea .cm-line {
+body .wrot-textarea .cm-line {
   padding: 0;
 }
 
 /* Reset Obsidian / theme editor decoration (borders, the focus outline) */
-body .wr-textarea:not(#x),
-body .wr-textarea.cm-focused:not(#x) {
+body .wrot-textarea:not(#x),
+body .wrot-textarea.cm-focused:not(#x) {
   border: none;
   outline: none;
 }
 
 /* Themes may paint editor backgrounds, so win with 3 ID levels;
    priority-flag opponents win by design. */
-body .wr-textarea:not(#x#y#z) {
+body .wrot-textarea:not(#x#y#z) {
   background: transparent;
 }
 
-body .wr-textarea.wr-composer-empty .cm-content::before {
+body .wrot-textarea.wrot-composer-empty .cm-content::before {
   content: attr(aria-placeholder);
   position: absolute;
   inset: 0 0 auto 0;
@@ -585,7 +585,7 @@ body .wr-textarea.wr-composer-empty .cm-content::before {
 }
 
 /* Min-width so a wide number grows the slot. */
-body .wr-textarea .wr-cv-mark {
+body .wrot-textarea .wrot-cv-mark {
   display: inline-block;
   min-width: max(22px, calc(1em + 8px));
   padding-right: 6px;
@@ -593,7 +593,7 @@ body .wr-textarea .wr-cv-mark {
   text-align: right;
 }
 
-body .wr-textarea .wr-cv-bullet {
+body .wrot-textarea .wrot-cv-bullet {
   display: inline-block;
   width: 0.36em;
   height: 0.36em;
@@ -605,24 +605,24 @@ body .wr-textarea .wr-cv-bullet {
 }
 
 /* Set by holdRange while a popover or menu holds the focus. */
-body .wr-textarea .wr-held-range {
+body .wrot-textarea .wrot-held-range {
   background-color: color-mix(in srgb, var(--interactive-accent) 25%, transparent);
 }
 
-body .wr-textarea .wr-cv-link {
+body .wrot-textarea .wrot-cv-link {
   color: var(--text-accent);
 }
 
 /* Text being composed at a decoration's end, set by composerVisual. */
-::highlight(wr-composing) {
-  color: var(--wr-composing-color);
+::highlight(wrot-composing) {
+  color: var(--wrot-composing-color);
 }
 
-body .wr-textarea .wr-cv-hidden {
+body .wrot-textarea .wrot-cv-hidden {
   display: none;
 }
 
-body .wr-textarea .wr-cv-ol {
+body .wrot-textarea .wrot-cv-ol {
   display: inline-block;
   min-width: 1em;
   text-align: center;
@@ -630,7 +630,7 @@ body .wr-textarea .wr-cv-ol {
 }
 
 /* Form controls carry their own small font size; inherit it so em tracks the form. -0.12em centres it 0.38em up. */
-body .wr-textarea .wr-cv-check:not(#x) {
+body .wrot-textarea .wrot-cv-check:not(#x) {
   --checkbox-size: 1em;
   font-size: inherit;
   width: var(--checkbox-size);
@@ -639,13 +639,13 @@ body .wr-textarea .wr-cv-check:not(#x) {
   vertical-align: -0.12em;
 }
 
-body .wr-textarea .cm-line.wr-cv-quote {
+body .wrot-textarea .cm-line.wrot-cv-quote {
   position: relative;
   padding-inline-start: 18px;
   color: var(--text-muted);
 }
 
-body .wr-textarea .cm-line.wr-cv-quote::before {
+body .wrot-textarea .cm-line.wrot-cv-quote::before {
   content: "";
   position: absolute;
   left: 5px;
@@ -655,41 +655,41 @@ body .wr-textarea .cm-line.wr-cv-quote::before {
   background-color: var(--text-muted);
 }
 
-body .wr-textarea .cm-line.wr-cv-quote-2 {
+body .wrot-textarea .cm-line.wrot-cv-quote-2 {
   padding-inline-start: 36px;
 }
 
-body .wr-textarea .cm-line.wr-cv-quote-2::before {
+body .wrot-textarea .cm-line.wrot-cv-quote-2::before {
   box-shadow:
     18px 0 0 0 var(--text-muted);
 }
 
-body .wr-textarea .cm-line.wr-cv-quote-3 {
+body .wrot-textarea .cm-line.wrot-cv-quote-3 {
   padding-inline-start: 54px;
 }
 
-body .wr-textarea .cm-line.wr-cv-quote-3::before {
+body .wrot-textarea .cm-line.wrot-cv-quote-3::before {
   box-shadow:
     18px 0 0 0 var(--text-muted),
     36px 0 0 0 var(--text-muted);
 }
 
-body .wr-textarea .cm-line.wr-cv-quote-4 {
+body .wrot-textarea .cm-line.wrot-cv-quote-4 {
   padding-inline-start: 72px;
 }
 
-body .wr-textarea .cm-line.wr-cv-quote-4::before {
+body .wrot-textarea .cm-line.wrot-cv-quote-4::before {
   box-shadow:
     18px 0 0 0 var(--text-muted),
     36px 0 0 0 var(--text-muted),
     54px 0 0 0 var(--text-muted);
 }
 
-body .wr-textarea .cm-line.wr-cv-quote-5 {
+body .wrot-textarea .cm-line.wrot-cv-quote-5 {
   padding-inline-start: 90px;
 }
 
-body .wr-textarea .cm-line.wr-cv-quote-5::before {
+body .wrot-textarea .cm-line.wrot-cv-quote-5::before {
   box-shadow:
     18px 0 0 0 var(--text-muted),
     36px 0 0 0 var(--text-muted),
@@ -697,7 +697,7 @@ body .wr-textarea .cm-line.wr-cv-quote-5::before {
     72px 0 0 0 var(--text-muted);
 }
 
-.wr-input-toolbar {
+.wrot-input-toolbar {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -705,11 +705,11 @@ body .wr-textarea .cm-line.wr-cv-quote-5::before {
   margin-top: 4px;
 }
 
-.wr-input-toolbar.wr-toolbar-wrapped {
+.wrot-input-toolbar.wrot-toolbar-wrapped {
   gap: 4px 8px;
 }
 
-body .wr-toolbar-btn {
+body .wrot-toolbar-btn {
   box-shadow: none;
   outline: none;
   cursor: pointer;
@@ -717,7 +717,7 @@ body .wr-toolbar-btn {
 }
 
 /* Reset Obsidian / theme button background */
-body .wr-toolbar-btn:not(#x) {
+body .wrot-toolbar-btn:not(#x) {
   background: none;
 }
 
@@ -725,163 +725,163 @@ body .wr-toolbar-btn:not(#x) {
    button offsetTop, so the modes must agree on widths. If a theme overrides
    only normal mode, the ResizeObserver re-toggles the class every frame — the
    "twitching form" seen with Primary / Mado 11 / Kakano. */
-body .wr-toolbar-btn:not(#x#y#z) {
+body .wrot-toolbar-btn:not(#x#y#z) {
   border: none;
   padding: 2px;
   margin: 0;
   min-width: auto;
 }
 
-body .wr-input-toolbar.wr-toolbar-wrapped .wr-toolbar-btn:not(#x#y#z) {
+body .wrot-input-toolbar.wrot-toolbar-wrapped .wrot-toolbar-btn:not(#x#y#z) {
   padding: 6px 2px;
   min-height: 0;
   height: auto;
 }
 
-.wr-toolbar-btn:hover {
+.wrot-toolbar-btn:hover {
   color: var(--text-normal);
 }
 
-.wr-toolbar-btn:active {
+.wrot-toolbar-btn:active {
   color: var(--text-accent);
 }
 
 /* Press feedback rides on opacity, not colour: the palette stamp sits above the
    colour rules right here, so a colour swap alone never lands. Hover is skipped
    on mobile, where it sticks to the last-tapped button after the touch ends. */
-body:not(.is-mobile) .wr-toolbar-btn:hover {
+body:not(.is-mobile) .wrot-toolbar-btn:hover {
   opacity: 0.8;
 }
 
-body .wr-toolbar-btn:active {
+body .wrot-toolbar-btn:active {
   opacity: 0.55;
 }
 
-.wr-toolbar-btn.wr-toolbar-active {
+.wrot-toolbar-btn.wrot-toolbar-active {
   color: var(--text-accent);
 }
 
-.wr-toolbar-btn.wr-toolbar-disabled {
+.wrot-toolbar-btn.wrot-toolbar-disabled {
   color: var(--text-faint);
   cursor: not-allowed;
   pointer-events: none;
 }
 
-.wr-toolbar-btn.wr-toolbar-ime-muted {
+.wrot-toolbar-btn.wrot-toolbar-ime-muted {
   opacity: 0.45;
   pointer-events: none;
 }
 
 /* Icon size lives in a variable so the arranging slash can scale with it. Overridden
    below for mobile and font-follow with the same precedence as the icon rules. */
-.wr-toolbar-btn {
-  --wr-toolbar-icon: 18px;
+.wrot-toolbar-btn {
+  --wrot-toolbar-icon: 18px;
 }
 
-.wr-toolbar-btn .svg-icon {
+.wrot-toolbar-btn .svg-icon {
   width: 18px;
   height: 18px;
 }
 
 /* Dragging owns the gesture; without this the panel scrolls under the finger. */
-.wr-input-toolbar.wr-toolbar-editing {
+.wrot-input-toolbar.wrot-toolbar-editing {
   touch-action: none;
   padding-bottom: 4px;
 }
 
-.wr-toolbar-arranging .wr-card,
-.wr-toolbar-arranging .wr-submit-btn,
-.wr-toolbar-arranging .wr-thumbnail-container,
-.wr-toolbar-arranging .wr-pending-quote-container {
+.wrot-toolbar-arranging .wrot-card,
+.wrot-toolbar-arranging .wrot-submit-btn,
+.wrot-toolbar-arranging .wrot-thumbnail-container,
+.wrot-toolbar-arranging .wrot-pending-quote-container {
   pointer-events: none;
 }
 
-.wr-toolbar-arranging .wr-submit-btn {
+.wrot-toolbar-arranging .wrot-submit-btn {
   opacity: 0.45;
 }
 
-.wr-input-toolbar.wr-toolbar-editing.wr-toolbar-wrapped {
+.wrot-input-toolbar.wrot-toolbar-editing.wrot-toolbar-wrapped {
   row-gap: 12px;
 }
 
-body .wr-input-toolbar.wr-toolbar-editing .wr-format-btn .svg-icon:not(#x#y#z) {
+body .wrot-input-toolbar.wrot-toolbar-editing .wrot-format-btn .svg-icon:not(#x#y#z) {
   color: var(--text-accent);
 }
 
 /* Greyed-out and IME-muted states both cut pointer events; arranging outranks them,
    at ID level because that is where those states are pinned. */
-body .wr-input-toolbar.wr-toolbar-editing .wr-toolbar-btn:not(#x#y#z) {
+body .wrot-input-toolbar.wrot-toolbar-editing .wrot-toolbar-btn:not(#x#y#z) {
   pointer-events: auto;
   cursor: grab;
 }
 
-body .wr-toolbar-btn.wr-toolbar-commit-btn .svg-icon:not(#x#y#z) {
+body .wrot-toolbar-btn.wrot-toolbar-commit-btn .svg-icon:not(#x#y#z) {
   color: var(--text-accent);
 }
 
-.wr-input-toolbar.wr-toolbar-editing .wr-toolbar-btn.wr-toolbar-off {
+.wrot-input-toolbar.wrot-toolbar-editing .wrot-toolbar-btn.wrot-toolbar-off {
   opacity: 0.45;
 }
 
-.wr-input-toolbar.wr-toolbar-editing .wr-toolbar-btn.wr-toolbar-disabled-slot {
+.wrot-input-toolbar.wrot-toolbar-editing .wrot-toolbar-btn.wrot-toolbar-disabled-slot {
   position: relative;
 }
 
-.wr-input-toolbar.wr-toolbar-editing .wr-toolbar-btn.wr-toolbar-disabled-slot::after {
+.wrot-input-toolbar.wrot-toolbar-editing .wrot-toolbar-btn.wrot-toolbar-disabled-slot::after {
   content: "";
   position: absolute;
   left: 50%;
   top: 50%;
-  width: calc(var(--wr-toolbar-icon) * 1.33);
-  height: max(2px, calc(var(--wr-toolbar-icon) * 0.11));
+  width: calc(var(--wrot-toolbar-icon) * 1.33);
+  height: max(2px, calc(var(--wrot-toolbar-icon) * 0.11));
   border-radius: 999px;
   background: currentColor;
   transform: translate(-50%, -50%) rotate(-45deg);
   pointer-events: none;
 }
 
-.wr-toolbar-btn.wr-toolbar-dragging:not(#x) {
-  background: var(--wr-bg-color, var(--background-primary));
-  background-color: var(--wr-bg-color, var(--background-primary));
+.wrot-toolbar-btn.wrot-toolbar-dragging:not(#x) {
+  background: var(--wrot-bg-color, var(--background-primary));
+  background-color: var(--wrot-bg-color, var(--background-primary));
   border-radius: var(--radius-s);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   cursor: grabbing;
   z-index: 1;
 }
 
-.wr-input-toolbar .wr-toolbar-gap {
+.wrot-input-toolbar .wrot-toolbar-gap {
   flex: 0 0 auto;
   border-radius: var(--radius-s);
   background: var(--background-modifier-hover);
 }
 
 /* Follow Obsidian's UI font size but never shrink below default (18px / 14px baseline = 1.286) */
-body.wr-font-follow .wr-toolbar-btn {
-  --wr-toolbar-icon: max(18px, calc(var(--wr-font-text) * 1.286));
+body.wrot-font-follow .wrot-toolbar-btn {
+  --wrot-toolbar-icon: max(18px, calc(var(--wrot-font-text) * 1.286));
 }
 
-body.wr-font-follow .wr-toolbar-btn .svg-icon {
-  width: var(--wr-toolbar-icon);
-  height: var(--wr-toolbar-icon);
+body.wrot-font-follow .wrot-toolbar-btn .svg-icon {
+  width: var(--wrot-toolbar-icon);
+  height: var(--wrot-toolbar-icon);
 }
 
 /* Obsidian fixes button height; a scaled-up icon would spill out of it into the form's bottom padding */
-body.wr-font-follow .wr-toolbar-btn:not(#x#y#z) {
+body.wrot-font-follow .wrot-toolbar-btn:not(#x#y#z) {
   height: auto;
   min-height: var(--input-height);
 }
 
-.wr-thumbnail-container {
+.wrot-thumbnail-container {
   margin: 6px 0 4px;
 }
 
-.wr-thumbnail {
+.wrot-thumbnail {
   position: relative;
   display: inline-block;
   max-width: 120px;
 }
 
-.wr-thumbnail-img {
+.wrot-thumbnail-img {
   display: block;
   max-width: 120px;
   max-height: 120px;
@@ -890,7 +890,7 @@ body.wr-font-follow .wr-toolbar-btn:not(#x#y#z) {
   border-radius: 6px;
 }
 
-body .wr-thumbnail-remove {
+body .wrot-thumbnail-remove {
   position: absolute;
   top: -6px;
   right: -6px;
@@ -908,29 +908,29 @@ body .wr-thumbnail-remove {
 }
 
 /* Only the × responds: the card is a preview and must not navigate. */
-.wr-pending-quote-container {
+.wrot-pending-quote-container {
   margin: 6px 0 4px;
 }
 
-.wr-pending-quote {
+.wrot-pending-quote {
   position: relative;
 }
 
-.wr-pending-quote .wr-quote-card {
+.wrot-pending-quote .wrot-quote-card {
   pointer-events: none;
 }
 
 /* Reset Obsidian / theme button padding */
-body .wr-thumbnail-remove:not(#x) {
+body .wrot-thumbnail-remove:not(#x) {
   padding: 0;
 }
 
-.wr-thumbnail-remove .svg-icon {
+.wrot-thumbnail-remove .svg-icon {
   width: 14px;
   height: 14px;
 }
 
-body .wr-submit-btn {
+body .wrot-submit-btn {
   background: rgba(var(--mono-rgb-100), 0.08);
   border: none;
   box-shadow: none;
@@ -938,7 +938,7 @@ body .wr-submit-btn {
   /* 4px 14px at the 13px default; scales with the label under follow-font */
   padding: 0.308em 1.077em;
   border-radius: 8px;
-  font-size: var(--wr-font-ui-small);
+  font-size: var(--wrot-font-ui-small);
   cursor: pointer;
   font-weight: 500;
   color: var(--text-muted);
@@ -947,7 +947,7 @@ body .wr-submit-btn {
 /* Pushed to the left edge by the auto margin against the header's flex-end, and
    flush with the textarea's edge. Declared at the same ID-level specificity as
    the shared toolbar metrics, which otherwise zero the margin out. */
-body .wr-cancel-btn:not(#x#y#z) {
+body .wrot-cancel-btn:not(#x#y#z) {
   margin-right: auto;
   padding-left: 0;
   padding-right: 6px;
@@ -955,115 +955,115 @@ body .wr-cancel-btn:not(#x#y#z) {
 
 /* Same size as the toolbar glyphs; only the stroke is nudged, since a bare ×
    carries fewer strokes and reads thinner at the shared weight. */
-body .wr-cancel-btn .svg-icon {
+body .wrot-cancel-btn .svg-icon {
   stroke-width: 2.2;
 }
 
 /* Obsidian gives buttons an author-level display, which beats the user agent's
    [hidden] rule — outside edit mode the button needs this to actually go away. */
-body .wr-cancel-btn[hidden] {
+body .wrot-cancel-btn[hidden] {
   display: none;
 }
 
-body .wr-submit-btn:not(.wr-submit-active) {
+body .wrot-submit-btn:not(.wrot-submit-active) {
   cursor: default;
   pointer-events: none;
 }
 
-.wr-submit-icon {
+.wrot-submit-icon {
   display: inline-flex;
   align-items: center;
   vertical-align: middle;
 }
 
-.wr-submit-icon .svg-icon {
+.wrot-submit-icon .svg-icon {
   /* 12px at the 13px default; scales with the label under follow-font */
   width: 0.923em;
   height: 0.923em;
 }
 
 /* Same fixed-height spill as the toolbar buttons */
-body.wr-font-follow .wr-submit-btn {
+body.wrot-font-follow .wrot-submit-btn {
   height: auto;
   min-height: var(--input-height);
 }
 
-body .wr-submit-btn.wr-submit-active {
+body .wrot-submit-btn.wrot-submit-active {
   background: var(--interactive-accent);
   color: var(--text-on-accent);
 }
 
 /* From --interactive-accent (themes may leave --accent-h/s/l at default), in OKLCH whose l tracks perceived lightness; @supports-gated since a failed var() value drops to transparent. */
 /* clamp(-1, (0.5 - l) * 1000, 1) is ±1 by which side of mid lightness l sits: a sign() that needs no extra support check.
-   --wr-grad-sign holds it as raw tokens, so its l resolves inside whichever oklch(from …) substitutes it. */
+   --wrot-grad-sign holds it as raw tokens, so its l resolves inside whichever oklch(from …) substitutes it. */
 /* max(0, sign) drops to 0 when darkening. */
 @supports (color: oklch(from red l c h)) {
   body {
-    --wr-grad-sign: clamp(-1, (0.5 - l) * 1000, 1);
+    --wrot-grad-sign: clamp(-1, (0.5 - l) * 1000, 1);
   }
 
-  body[data-wr-gradient="light"] {
-    --wr-grad-sign: 1;
+  body[data-wrot-gradient="light"] {
+    --wrot-grad-sign: 1;
   }
 
-  body[data-wr-gradient="dark"] {
-    --wr-grad-sign: -1;
+  body[data-wrot-gradient="dark"] {
+    --wrot-grad-sign: -1;
   }
 
-  body.wr-submit-gradient .wr-submit-btn.wr-submit-active,
-  body.wr-submit-gradient .workspace-leaf-content[data-type="wrot-view"] .wr-calendar-day-selected {
-    --wr-grad-end: oklch(from var(--interactive-accent) calc(l + 0.05 * var(--wr-grad-sign)) calc(c * (1 - 0.1 * max(0, var(--wr-grad-sign)))) calc(h - 8));
+  body.wrot-submit-gradient .wrot-submit-btn.wrot-submit-active,
+  body.wrot-submit-gradient .workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-day-selected {
+    --wrot-grad-end: oklch(from var(--interactive-accent) calc(l + 0.05 * var(--wrot-grad-sign)) calc(c * (1 - 0.1 * max(0, var(--wrot-grad-sign)))) calc(h - 8));
     background: linear-gradient(
       to right,
-      var(--wr-grad-end) 0 25%,
-      color-mix(in oklch, var(--wr-grad-end) 67%, var(--interactive-accent)) 25% 50%,
-      color-mix(in oklch, var(--wr-grad-end) 33%, var(--interactive-accent)) 50% 75%,
+      var(--wrot-grad-end) 0 25%,
+      color-mix(in oklch, var(--wrot-grad-end) 67%, var(--interactive-accent)) 25% 50%,
+      color-mix(in oklch, var(--wrot-grad-end) 33%, var(--interactive-accent)) 50% 75%,
       var(--interactive-accent) 75%
     );
   }
 
   /* Four hard-edged bands; WrotView lays out each band as a pair of stops sharing its class. */
-  .wr-gradient-defs {
-    --wr-grad-end: oklch(from var(--text-accent) calc(l + 0.05 * var(--wr-grad-sign)) calc(c * (1 - 0.1 * max(0, var(--wr-grad-sign)))) calc(h - 8));
+  .wrot-gradient-defs {
+    --wrot-grad-end: oklch(from var(--text-accent) calc(l + 0.05 * var(--wrot-grad-sign)) calc(c * (1 - 0.1 * max(0, var(--wrot-grad-sign)))) calc(h - 8));
   }
 
-  .wr-gradient-defs .wr-grad-band-0 {
-    stop-color: var(--wr-grad-end);
+  .wrot-gradient-defs .wrot-grad-band-0 {
+    stop-color: var(--wrot-grad-end);
   }
 
-  .wr-gradient-defs .wr-grad-band-1 {
-    stop-color: color-mix(in oklch, var(--wr-grad-end) 67%, var(--text-accent));
+  .wrot-gradient-defs .wrot-grad-band-1 {
+    stop-color: color-mix(in oklch, var(--wrot-grad-end) 67%, var(--text-accent));
   }
 
-  .wr-gradient-defs .wr-grad-band-2 {
-    stop-color: color-mix(in oklch, var(--wr-grad-end) 33%, var(--text-accent));
+  .wrot-gradient-defs .wrot-grad-band-2 {
+    stop-color: color-mix(in oklch, var(--wrot-grad-end) 33%, var(--text-accent));
   }
 
-  .wr-gradient-defs .wr-grad-band-3 {
+  .wrot-gradient-defs .wrot-grad-band-3 {
     stop-color: var(--text-accent);
   }
 
-  body.wr-submit-gradient .wr-input-toolbar .wr-toolbar-btn.wr-toolbar-active .svg-icon,
-  body.wr-submit-gradient .wr-input-toolbar.wr-toolbar-editing .wr-format-btn .svg-icon,
-  body.wr-submit-gradient .wr-input-toolbar .wr-toolbar-commit-btn .svg-icon {
-    stroke: url(#wr-accent-gradient);
+  body.wrot-submit-gradient .wrot-input-toolbar .wrot-toolbar-btn.wrot-toolbar-active .svg-icon,
+  body.wrot-submit-gradient .wrot-input-toolbar.wrot-toolbar-editing .wrot-format-btn .svg-icon,
+  body.wrot-submit-gradient .wrot-input-toolbar .wrot-toolbar-commit-btn .svg-icon {
+    stroke: url(#wrot-accent-gradient);
   }
 }
 
 /* display: none would stop the gradient from rendering. */
-.wr-gradient-defs {
+.wrot-gradient-defs {
   position: absolute;
   width: 0;
   height: 0;
 }
 
-.wr-pinned-section {
+.wrot-pinned-section {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.wr-pinned-section.wr-pinned-fixed {
+.wrot-pinned-section.wrot-pinned-fixed {
   margin-bottom: 8px;
   /* Caps the box so tall pins cannot squeeze the timeline below to nothing. */
   flex: 0 0 auto;
@@ -1071,7 +1071,7 @@ body .wr-submit-btn.wr-submit-active {
   overflow-y: auto;
 }
 
-.wr-list {
+.wrot-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -1081,49 +1081,49 @@ body .wr-submit-btn.wr-submit-active {
   /* The floor is empty space the schedule picker adds under the last card when it
      needs somewhere to open into. Zero at rest; its height is measured, so only the
      value comes from script. */
-  padding-bottom: calc(4px + var(--wr-list-floor, 0px));
+  padding-bottom: calc(4px + var(--wrot-list-floor, 0px));
 }
 
 /* Held still while the schedule picker is open: it is placed against the card's
    position at the time, so scrolling either way would slide the card out from
    under it. */
-.wr-list.wr-list-held {
+.wrot-list.wrot-list-held {
   overflow-y: hidden;
 }
 
-.wr-empty {
+.wrot-empty {
   text-align: center;
   color: var(--text-muted);
   padding: 24px 0;
-  font-size: var(--wr-font-text);
+  font-size: var(--wrot-font-text);
 }
 
-.wr-card {
-  background: var(--wr-bg-color, #f8f8f8);
+.wrot-card {
+  background: var(--wrot-bg-color, #f8f8f8);
   border-radius: 10px;
   padding: 12px 14px;
   position: relative;
-  font-size: var(--wr-font-text);
+  font-size: var(--wrot-font-text);
 }
 
-/* Edit mode: the tint is painted on an ::after overlay, not the card background the palette sheet owns, so there is no specificity fight; tag-rule cards get their accent from inline --wr-editing-* vars set in JS (same convention as the quote-jump flash). */
-.wr-card.wr-card-editing {
+/* Edit mode: the tint is painted on an ::after overlay, not the card background the palette sheet owns, so there is no specificity fight; tag-rule cards get their accent from inline --wrot-editing-* vars set in JS (same convention as the quote-jump flash). */
+.wrot-card.wrot-card-editing {
   /* Inset ring: an outer ring extends past the card bounds and gets clipped by
      the scrolling list container, so the accent ring is drawn inside instead. */
-  box-shadow: inset 0 0 0 1.5px var(--wr-editing-ring-color, hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.45));
+  box-shadow: inset 0 0 0 1.5px var(--wrot-editing-ring-color, hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.45));
 }
 
-body .wr-card.wr-card-editing .wr-menu-btn .svg-icon:not(#x) {
-  color: var(--wr-editing-accent, var(--text-accent));
-  stroke: var(--wr-editing-accent, var(--text-accent));
+body .wrot-card.wrot-card-editing .wrot-menu-btn .svg-icon:not(#x) {
+  color: var(--wrot-editing-accent, var(--text-accent));
+  stroke: var(--wrot-editing-accent, var(--text-accent));
 }
 
-.wr-card.wr-card-editing::after {
+.wrot-card.wrot-card-editing::after {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background-color: var(--wr-editing-tint-color, hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.07));
+  background-color: var(--wrot-editing-tint-color, hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.07));
   border-radius: inherit;
   /* Above the card's own content, but below overlapping siblings like the tag
      suggest dropdown (z-index: 50) — the card has no z-index of its own, so
@@ -1131,22 +1131,22 @@ body .wr-card.wr-card-editing .wr-menu-btn .svg-icon:not(#x) {
   z-index: 1;
 }
 
-.wr-card.wr-card-menu-locked .wr-menu-btn,
-.wr-toolbar-arranging .wr-card .wr-menu-btn {
+.wrot-card.wrot-card-menu-locked .wrot-menu-btn,
+.wrot-toolbar-arranging .wrot-card .wrot-menu-btn {
   opacity: 0.3;
   pointer-events: none;
 }
 
-.wr-card-footer {
+.wrot-card-footer {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-top: 7px;
   /* Room for the pin indicator, which sits outside the row; the menu button must not run under it */
-  padding-right: calc(max(14px, var(--wr-font-text)) + 8px);
+  padding-right: calc(max(14px, var(--wrot-font-text)) + 8px);
 }
 
-.wr-timestamp {
+.wrot-timestamp {
   font-size: 0.85em;
   line-height: 1;
   color: var(--text-muted);
@@ -1157,36 +1157,36 @@ body .wr-card.wr-card-editing .wr-menu-btn .svg-icon:not(#x) {
   text-overflow: ellipsis;
 }
 
-.wr-card-footer .wr-menu-btn {
+.wrot-card-footer .wrot-menu-btn {
   flex: 0 0 auto;
 }
 
 /* Tags (timeline / RV / rendered LV) */
-.wr-tag {
+.wrot-tag {
   color: var(--text-accent);
 }
 
-.wr-tag,
-.wr-reading-tag,
-.wr-tag-clickable {
+.wrot-tag,
+.wrot-reading-tag,
+.wrot-tag-clickable {
   cursor: pointer;
 }
 
-.wr-tag:hover {
+.wrot-tag:hover {
   text-decoration: none;
 }
 
-.wr-tag:active,
-.wr-reading-tag:active,
-.wr-tag-clickable:active {
+.wrot-tag:active,
+.wrot-reading-tag:active,
+.wrot-tag-clickable:active {
   opacity: 0.55;
 }
 
-.wr-tag-flash {
-  animation: wr-tag-flash 500ms ease-out;
+.wrot-tag-flash {
+  animation: wrot-tag-flash 500ms ease-out;
 }
 
-@keyframes wr-tag-flash {
+@keyframes wrot-tag-flash {
   from {
     filter: brightness(1.1);
   }
@@ -1197,13 +1197,13 @@ body .wr-card.wr-card-editing .wr-menu-btn .svg-icon:not(#x) {
 }
 
 /* Live Preview: tag highlight in qm code blocks */
-body .wr-tag-highlight:not(#x) {
+body .wrot-tag-highlight:not(#x) {
   color: var(--text-accent);
 }
 
 /* List styles (timeline) */
-.wr-bullet-list,
-.wr-ordered-list {
+.wrot-bullet-list,
+.wrot-ordered-list {
   list-style: none;
   margin: 2px 0;
   padding-left: 0;
@@ -1211,15 +1211,15 @@ body .wr-tag-highlight:not(#x) {
 
 /* The marker slot: 22px at the default size, widening with larger text so a box sized
    in em never runs into the item's text. */
-.wr-bullet-list>li,
-.wr-ordered-list>li {
+.wrot-bullet-list>li,
+.wrot-ordered-list>li {
   padding-left: max(22px, calc(1em + 8px));
   position: relative;
 }
 
 /* Dot drawn in currentColor so the ::before colour stamps reach it; 0.08em above the line's middle. */
-.wr-bullet-list>li:not(.wr-check-item)::before,
-ul.wr-reading-list>li:not(.wr-check-item)::before {
+.wrot-bullet-list>li:not(.wrot-check-item)::before,
+ul.wrot-reading-list>li:not(.wrot-check-item)::before {
   content: "";
   position: absolute;
   left: calc(max(22px, calc(1em + 8px)) - 6px - 0.5em - 0.18em);
@@ -1231,21 +1231,21 @@ ul.wr-reading-list>li:not(.wr-check-item)::before {
   color: var(--text-muted);
 }
 
-.wr-ordered-list {
-  counter-reset: wr-ol-tl;
+.wrot-ordered-list {
+  counter-reset: wrot-ol-tl;
 }
 
-.wr-ordered-list>li {
-  counter-increment: wr-ol-tl;
+.wrot-ordered-list>li {
+  counter-increment: wrot-ol-tl;
 }
 
-.wr-ordered-list>li::before {
-  content: counter(wr-ol-tl) ".";
+.wrot-ordered-list>li::before {
+  content: counter(wrot-ol-tl) ".";
 }
 
 /* Right-anchored so a wider number ("10.") grows away from the text. */
-.wr-ordered-list>li::before,
-ol.wr-reading-list>li::before {
+.wrot-ordered-list>li::before,
+ol.wrot-reading-list>li::before {
   position: absolute;
   right: calc(100% - max(22px, calc(1em + 8px)) + 6px);
   min-width: 1em;
@@ -1255,47 +1255,47 @@ ol.wr-reading-list>li::before {
 }
 
 /* List styles (reading view) */
-ul.wr-reading-list,
-ol.wr-reading-list {
+ul.wrot-reading-list,
+ol.wrot-reading-list {
   list-style: none;
   margin: 2px 0;
   padding-left: 0;
 }
 
 /* RV lists match the code-block typography (must beat theme font rules for lists) */
-body ul.wr-reading-list:not(#x),
-body ol.wr-reading-list:not(#x) {
+body ul.wrot-reading-list:not(#x),
+body ol.wrot-reading-list:not(#x) {
   font-size: var(--code-size);
   font-family: var(--font-monospace);
 }
 
-ul.wr-reading-list>li,
-ol.wr-reading-list>li {
+ul.wrot-reading-list>li,
+ol.wrot-reading-list>li {
   padding-left: max(22px, calc(1em + 8px));
   position: relative;
 }
 
-body ul.wr-reading-list:not(#x)>li,
-body ol.wr-reading-list:not(#x)>li {
+body ul.wrot-reading-list:not(#x)>li,
+body ol.wrot-reading-list:not(#x)>li {
   margin-inline-start: 0;
 }
 
-ol.wr-reading-list {
-  counter-reset: wr-ol;
+ol.wrot-reading-list {
+  counter-reset: wrot-ol;
 }
 
-ol.wr-reading-list>li {
-  counter-increment: wr-ol;
+ol.wrot-reading-list>li {
+  counter-increment: wrot-ol;
 }
 
 /* Text font, not monospace: a monospace "1." is wider than the checkbox and juts out. */
-ol.wr-reading-list>li::before {
-  content: counter(wr-ol) ".";
+ol.wrot-reading-list>li::before {
+  content: counter(wrot-ol) ".";
   font-family: var(--font-text, var(--default-font));
 }
 
 /* Monospace puts the line's middle off the kana's, so RV markers join the first line and are placed from the baseline; the margins cancel their width. */
-body ul.wr-reading-list:not(#x)>li:not(.wr-check-item)::before {
+body ul.wrot-reading-list:not(#x)>li:not(.wrot-check-item)::before {
   position: static;
   display: inline-block;
   margin-inline-start: calc(-6px - 0.68em);
@@ -1304,7 +1304,7 @@ body ul.wr-reading-list:not(#x)>li:not(.wr-check-item)::before {
 }
 
 /* Centred in a checkbox-wide box; a wider number spills out both sides of it. */
-body ol.wr-reading-list:not(#x)>li::before {
+body ol.wrot-reading-list:not(#x)>li::before {
   position: static;
   display: inline-flex;
   justify-content: center;
@@ -1314,8 +1314,8 @@ body ol.wr-reading-list:not(#x)>li::before {
 }
 
 /* The sub-list selector outranks the timeline's first-line anchoring for nested items. */
-body .wr-reading-list:not(#x) .wr-check-item input[type="checkbox"],
-body .wr-reading-list:not(#x) .wr-check-item.wr-has-sublist>input[type="checkbox"] {
+body .wrot-reading-list:not(#x) .wrot-check-item input[type="checkbox"],
+body .wrot-reading-list:not(#x) .wrot-check-item.wrot-has-sublist>input[type="checkbox"] {
   position: relative;
   top: auto;
   left: auto;
@@ -1325,9 +1325,9 @@ body .wr-reading-list:not(#x) .wr-check-item.wr-has-sublist>input[type="checkbox
   margin-inline-end: 6px;
 }
 
-.wr-bullet-list li,
-.wr-reading-list li,
-.wr-ordered-list li {
+.wrot-bullet-list li,
+.wrot-reading-list li,
+.wrot-ordered-list li {
   margin: 1px 0;
 }
 
@@ -1335,14 +1335,14 @@ body .wr-reading-list:not(#x) .wr-check-item.wr-has-sublist>input[type="checkbox
    A child list sits inside its parent item, which already carries the 22px marker slot, so
    each level steps in by that much on its own. Only the gap above and below needs dropping:
    a nested list is part of the item, not a new block. */
-li>.wr-bullet-list,
-li>.wr-ordered-list,
-li>.wr-reading-list {
+li>.wrot-bullet-list,
+li>.wrot-ordered-list,
+li>.wrot-reading-list {
   margin: 0;
 }
 
 /* Timeline: check item */
-.wr-bullet-list .wr-check-item {
+.wrot-bullet-list .wrot-check-item {
   list-style: none;
 }
 
@@ -1351,8 +1351,8 @@ li>.wr-reading-list {
    metrics, and their metric rules target task-list classes Wrot's bare
    inputs don't carry — so the :not(#x) specificity boost is enough here. */
 /* Obsidian sizes the checked mark (::after) from --checkbox-size. */
-.wr-bullet-list .wr-check-item input[type="checkbox"]:not(#x),
-.wr-reading-list .wr-check-item input[type="checkbox"]:not(#x) {
+.wrot-bullet-list .wrot-check-item input[type="checkbox"]:not(#x),
+.wrot-reading-list .wrot-check-item input[type="checkbox"]:not(#x) {
   --checkbox-size: 1em;
   position: absolute;
   left: calc(max(22px, calc(1em + 8px)) - 6px - var(--checkbox-size));
@@ -1365,18 +1365,18 @@ li>.wr-reading-list {
 }
 
 /* Mixed from --checkbox-border-color so the palette's and tag rules' colours still apply. */
-.wr-bullet-list .wr-check-item input[type="checkbox"]:not(#x):not(:checked),
-.wr-reading-list .wr-check-item input[type="checkbox"]:not(#x):not(:checked),
-.wr-lp-check input[type="checkbox"]:not(#x):not(:checked),
-body .wr-textarea .wr-cv-check:not(#x):not(:checked) {
+.wrot-bullet-list .wrot-check-item input[type="checkbox"]:not(#x):not(:checked),
+.wrot-reading-list .wrot-check-item input[type="checkbox"]:not(#x):not(:checked),
+.wrot-lp-check input[type="checkbox"]:not(#x):not(:checked),
+body .wrot-textarea .wrot-cv-check:not(#x):not(:checked) {
   border-color: color-mix(in srgb, var(--checkbox-border-color) 55%, transparent);
 }
 
 /* The mark's layer must cover exactly the inside of the border, or it rounds to device pixels apart from the box and drifts. */
-.wr-bullet-list .wr-check-item input[type="checkbox"]:not(#x):checked::after,
-.wr-reading-list .wr-check-item input[type="checkbox"]:not(#x):checked::after,
-.wr-lp-check input[type="checkbox"]:not(#x):checked::after,
-body .wr-textarea .wr-cv-check:not(#x):checked::after {
+.wrot-bullet-list .wrot-check-item input[type="checkbox"]:not(#x):checked::after,
+.wrot-reading-list .wrot-check-item input[type="checkbox"]:not(#x):checked::after,
+.wrot-lp-check input[type="checkbox"]:not(#x):checked::after,
+body .wrot-textarea .wrot-cv-check:not(#x):checked::after {
   inset: 0;
   width: auto;
   height: auto;
@@ -1386,49 +1386,49 @@ body .wr-textarea .wr-cv-check:not(#x):checked::after {
 
 /* An item holding a nested list is as tall as its whole subtree, so the centered box would
    sink to the middle of the group. Anchor it to the first line instead. */
-.wr-bullet-list .wr-check-item.wr-has-sublist>input[type="checkbox"]:not(#x),
-.wr-reading-list .wr-check-item.wr-has-sublist>input[type="checkbox"]:not(#x) {
+.wrot-bullet-list .wrot-check-item.wrot-has-sublist>input[type="checkbox"]:not(#x),
+.wrot-reading-list .wrot-check-item.wrot-has-sublist>input[type="checkbox"]:not(#x) {
   top: calc(0.5lh - var(--checkbox-size) / 2);
   transform: none;
 }
 
 /* Live Preview: list/checklist highlights */
-body .wr-list-highlight:not(#x) {
+body .wrot-list-highlight:not(#x) {
   color: var(--text-muted);
 }
 
-body .wr-check-unchecked:not(#x) {
+body .wrot-check-unchecked:not(#x) {
   color: var(--text-muted);
 }
 
-body .wr-check-checked:not(#x) {
+body .wrot-check-checked:not(#x) {
   color: var(--text-muted);
 }
 
-body .wr-check-done:not(#x) {
+body .wrot-check-done:not(#x) {
   text-decoration: line-through;
   color: var(--text-muted);
 }
 
-body .wr-ol-highlight:not(#x) {
+body .wrot-ol-highlight:not(#x) {
   color: var(--text-muted);
 }
 
-.wr-internal-link {
+.wrot-internal-link {
   color: var(--text-accent);
   cursor: pointer;
   text-decoration: none;
 }
 
-.wr-internal-link:hover {
+.wrot-internal-link:hover {
   text-decoration: underline;
 }
 
-body .wr-internal-link-highlight:not(#x) {
+body .wrot-internal-link-highlight:not(#x) {
   color: var(--text-accent);
 }
 
-.wr-embed-img {
+.wrot-embed-img {
   max-width: 100%;
   border-radius: 8px;
   margin: 4px 0;
@@ -1438,21 +1438,21 @@ body .wr-internal-link-highlight:not(#x) {
 /* RV: tail images of a normal post. Extra bottom margin balances the space
    the copy button creates above. RV appends the image directly under
    pre.language-wr (not .block-language-wr), hence both parent selectors. */
-pre.language-wr>.wr-embed-img,
-.block-language-wr>.wr-embed-img {
+pre.language-wr>.wrot-embed-img,
+.block-language-wr>.wrot-embed-img {
   margin-bottom: 24px;
 }
 
 /* Quote-marker posts with an inline image: the wrapper's padding-right shrinks
    the image's available width so its right edge aligns with the wr block's
    right padding; the left side keeps the natural cm-line padding. */
-.wr-lp-inline-img-wrapper {
+.wrot-lp-inline-img-wrapper {
   display: block;
   box-sizing: border-box;
   padding-right: 16px;
 }
 
-.wr-embed-img.wr-lp-inline-img {
+.wrot-embed-img.wrot-lp-inline-img {
   display: block;
   margin: 4px 0;
   max-width: 100%;
@@ -1460,49 +1460,49 @@ pre.language-wr>.wr-embed-img,
 
 /* Quote-marker posts: an image directly under <code> is overlapped by the copy
    button; margin-top pushes it clear. Normal posts never get this class. */
-.wr-embed-img.wr-rv-inline-img {
+.wrot-embed-img.wrot-rv-inline-img {
   display: block;
   margin: 32px 0 4px 0;
   max-width: 100%;
 }
 
-.wr-embed-missing {
+.wrot-embed-missing {
   color: var(--text-muted);
   font-style: italic;
 }
 
-body .wr-internal-link-unresolved {
+body .wrot-internal-link-unresolved {
   color: var(--text-muted);
   font-style: italic;
 }
 
-body .wr-inline-code {
+body .wrot-inline-code {
   background: rgba(var(--mono-rgb-100), 0.08);
   padding: 2px 5px;
 }
 
 /* Typography must beat the theme's rules for code elements. */
-body .wr-inline-code:not(#x) {
+body .wrot-inline-code:not(#x) {
   border-radius: 4px;
   font-size: 1em;
   font-family: var(--font-monospace);
   color: var(--text-normal);
 }
 
-.wr-backtick {
+.wrot-backtick {
   font-size: 0;
   width: 0;
   overflow: hidden;
   display: inline;
 }
 
-body code.language-wr span.wr-inline-code {
+body code.language-wr span.wrot-inline-code {
   background: rgba(var(--mono-rgb-100), 0.08);
   padding: 2px 5px;
   border-radius: 4px;
 }
 
-body code.language-wr span.wr-inline-code:not(#x) {
+body code.language-wr span.wrot-inline-code:not(#x) {
   display: inline;
   color: var(--text-normal);
   font-size: 1em;
@@ -1512,7 +1512,7 @@ body code.language-wr span.wr-inline-code:not(#x) {
    inside: backtick / content / backtick). Seams in the 3-span case cannot be
    erased in CSS (semi-transparent backgrounds + subpixel boundaries), so no
    rounded corners — always a flat square band. */
-body .wr-inline-code-highlight {
+body .wrot-inline-code-highlight {
   background: rgba(var(--mono-rgb-100), 0.08);
   border-radius: 0;
   /* Middle span carries the horizontal padding so spans meet padding-to-padding;
@@ -1525,23 +1525,23 @@ body .wr-inline-code-highlight {
 }
 
 /* The monospace font must beat the CodeMirror token-level font rules */
-body .wr-inline-code-highlight:not(#x) {
+body .wrot-inline-code-highlight:not(#x) {
   font-family: var(--font-monospace);
 }
 
 /* Cursor-inside state: the end backtick spans are direct children of
    .cm-hmd-codeblock; zero their inner padding to avoid doubling against the
    middle span. */
-.cm-hmd-codeblock>.wr-inline-code-highlight:first-child {
+.cm-hmd-codeblock>.wrot-inline-code-highlight:first-child {
   padding-right: 0;
 }
 
-.cm-hmd-codeblock>.wr-inline-code-highlight:last-child:not(:first-child) {
+.cm-hmd-codeblock>.wrot-inline-code-highlight:last-child:not(:first-child) {
   padding-left: 0;
 }
 
 /* Reading View: hidden code element (kept for copy button) */
-body code.wr-code-hidden:not(#x) {
+body code.wrot-code-hidden:not(#x) {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -1554,7 +1554,7 @@ body code.wr-code-hidden:not(#x) {
 }
 
 /* Reading View: plain text rendered outside code */
-.wr-plain-text {
+.wrot-plain-text {
   font-size: var(--code-size);
   font-family: var(--font-monospace);
   color: var(--code-normal);
@@ -1564,52 +1564,52 @@ body code.wr-code-hidden:not(#x) {
 }
 
 /* The theme's highlight colour where it sets one; 1.14 no longer defines it itself and falls
-   back to its yellow, as this does (kept visible on the memo's background, see --wr-hl-*). */
-body .wr-highlight {
-  background: var(--text-highlight-bg, var(--wr-hl-yellow, color-mix(in oklch, var(--color-yellow) 30%, transparent)));
+   back to its yellow, as this does (kept visible on the memo's background, see --wrot-hl-*). */
+body .wrot-highlight {
+  background: var(--text-highlight-bg, var(--wrot-hl-yellow, color-mix(in oklch, var(--color-yellow) 30%, transparent)));
   padding: 1px 2px;
   border-radius: 2px;
 }
 
-/* --wr-hb per colour: the palette/tag-rule --wr-hl-* (see visibleHighlight), else Obsidian's own. */
+/* --wrot-hb per colour: the palette/tag-rule --wrot-hl-* (see visibleHighlight), else Obsidian's own. */
 [data-highlight="red"] {
-  --wr-hb: var(--wr-hl-red, var(--highlight-background-red));
+  --wrot-hb: var(--wrot-hl-red, var(--highlight-background-red));
 }
 
 [data-highlight="orange"] {
-  --wr-hb: var(--wr-hl-orange, var(--highlight-background-orange));
+  --wrot-hb: var(--wrot-hl-orange, var(--highlight-background-orange));
 }
 
 [data-highlight="yellow"] {
-  --wr-hb: var(--wr-hl-yellow, var(--highlight-background-yellow));
+  --wrot-hb: var(--wrot-hl-yellow, var(--highlight-background-yellow));
 }
 
 [data-highlight="green"] {
-  --wr-hb: var(--wr-hl-green, var(--highlight-background-green));
+  --wrot-hb: var(--wrot-hl-green, var(--highlight-background-green));
 }
 
 [data-highlight="blue"] {
-  --wr-hb: var(--wr-hl-blue, var(--highlight-background-blue));
+  --wrot-hb: var(--wrot-hl-blue, var(--highlight-background-blue));
 }
 
 [data-highlight="purple"] {
-  --wr-hb: var(--wr-hl-purple, var(--highlight-background-purple));
+  --wrot-hb: var(--wrot-hl-purple, var(--highlight-background-purple));
 }
 
-body .wr-highlight[data-highlight]:not(#x),
-body .wr-highlight-highlight[data-highlight]:not(#x) {
-  background: var(--wr-hb);
+body .wrot-highlight[data-highlight]:not(#x),
+body .wrot-highlight-highlight[data-highlight]:not(#x) {
+  background: var(--wrot-hb);
 }
 
-.wr-math {
+.wrot-math {
   display: inline;
 }
 
-body .wr-math-highlight:not(#x) {
+body .wrot-math-highlight:not(#x) {
   color: var(--text-accent);
 }
 
-.wr-math-display {
+.wrot-math-display {
   display: block;
   margin: 0.5em 0;
   overflow-x: auto;
@@ -1619,46 +1619,46 @@ body .wr-math-highlight:not(#x) {
 /* Hide raw TeX until MathJax lazy-load swaps in the rendered math. visibility
    (not display) keeps approximate layout and avoids a double reflow. MathJax
    is a local app resource, so permanent load failure is not a real case. */
-.wr-math-fallback {
+.wrot-math-fallback {
   visibility: hidden;
 }
 
 /* Fenced code block (Timeline / RV / LV) */
-.wr-codeblock-display {
+.wrot-codeblock-display {
   margin: 0.5em 0;
 }
 
 /* Token colors take the theme's code color for their hue, at a lightness worked out from the
-   memo's text and background (--wr-code-l and its muted/faint steps for punctuation and
+   memo's text and background (--wrot-code-l and its muted/faint steps for punctuation and
    comments, set by the palette or a tag rule), so code stays clear on whatever background
    Wrot is given. The theme's colors are captured on body: the
    block below points the code variables back at them, which would otherwise loop. Where
    relative colors are unsupported the theme's colors apply unchanged, since a failed one
    would drop to transparent. */
 body {
-  --wr-code-theme-keyword: var(--code-keyword);
-  --wr-code-theme-function: var(--code-function);
-  --wr-code-theme-value: var(--code-value);
-  --wr-code-theme-string: var(--code-string);
-  --wr-code-theme-tag: var(--code-tag);
-  --wr-code-theme-operator: var(--code-operator);
+  --wrot-code-theme-keyword: var(--code-keyword);
+  --wrot-code-theme-function: var(--code-function);
+  --wrot-code-theme-value: var(--code-value);
+  --wrot-code-theme-string: var(--code-string);
+  --wrot-code-theme-tag: var(--code-tag);
+  --wrot-code-theme-operator: var(--code-operator);
 }
 
-.wr-codeblock-display {
-  --code-normal: var(--wr-code-text);
+.wrot-codeblock-display {
+  --code-normal: var(--wrot-code-text);
 }
 
 @supports (color: oklch(from red l c h)) {
-  .wr-codeblock-display,
-  .cm-line.wr-codeblock-line .token {
-    --code-keyword: oklch(from var(--wr-code-theme-keyword) var(--wr-code-l) c h);
-    --code-function: oklch(from var(--wr-code-theme-function) var(--wr-code-l) c h);
-    --code-value: oklch(from var(--wr-code-theme-value) var(--wr-code-l) c h);
-    --code-string: oklch(from var(--wr-code-theme-string) var(--wr-code-l) c h);
-    --code-tag: oklch(from var(--wr-code-theme-tag) var(--wr-code-l) c h);
-    --code-operator: oklch(from var(--wr-code-theme-operator) var(--wr-code-l) c h);
-    --code-punctuation: oklch(from var(--wr-code-text) var(--wr-code-muted-l) c h);
-    --code-comment: oklch(from var(--wr-code-text) var(--wr-code-faint-l) c h);
+  .wrot-codeblock-display,
+  .cm-line.wrot-codeblock-line .token {
+    --code-keyword: oklch(from var(--wrot-code-theme-keyword) var(--wrot-code-l) c h);
+    --code-function: oklch(from var(--wrot-code-theme-function) var(--wrot-code-l) c h);
+    --code-value: oklch(from var(--wrot-code-theme-value) var(--wrot-code-l) c h);
+    --code-string: oklch(from var(--wrot-code-theme-string) var(--wrot-code-l) c h);
+    --code-tag: oklch(from var(--wrot-code-theme-tag) var(--wrot-code-l) c h);
+    --code-operator: oklch(from var(--wrot-code-theme-operator) var(--wrot-code-l) c h);
+    --code-punctuation: oklch(from var(--wrot-code-text) var(--wrot-code-muted-l) c h);
+    --code-comment: oklch(from var(--wrot-code-text) var(--wrot-code-faint-l) c h);
   }
 }
 
@@ -1678,23 +1678,23 @@ body .HyperMD-codeblock .token:is(.regex, .important, .variable):not(#x) { color
 /* Inherit outer memo background only (so tag-color rules flow through).
    Text color / token color should follow Obsidian's Prism theme, so we do NOT
    set `color` on pre/code here. */
-body .wr-codeblock-display pre:not(#x),
-body .wr-codeblock-display pre code:not(#x) {
+body .wrot-codeblock-display pre:not(#x),
+body .wrot-codeblock-display pre code:not(#x) {
   background: inherit;
 }
 
-body .wr-codeblock-display pre {
+body .wrot-codeblock-display pre {
   border-radius: 6px;
   overflow-x: auto;
   border: none;
 }
 
-body .wr-codeblock-display pre:not(#x) {
+body .wrot-codeblock-display pre:not(#x) {
   margin: 0;
   padding: 0.6em 0 0.6em 0;
 }
 
-.wr-codeblock-display pre code {
+.wrot-codeblock-display pre code {
   font-family: var(--font-monospace);
   font-size: 0.9em;
   line-height: 1.5;
@@ -1703,14 +1703,14 @@ body .wr-codeblock-display pre:not(#x) {
 
 /* Inside Reading View, the outer wr code block hides its own code element;
    our nested code-block display should not be hidden */
-.block-language-wr .wr-codeblock-display,
-.block-language-wr .wr-math-display {
+.block-language-wr .wrot-codeblock-display,
+.block-language-wr .wrot-math-display {
   display: block;
 }
 
 /* Live Preview: make widget occupy its own line cleanly */
-.wr-lp-codeblock,
-.wr-lp-mathblock {
+.wrot-lp-codeblock,
+.wrot-lp-mathblock {
   display: block;
   /* LV wraps the widget in a block replace; keep spacing identical to RV / Timeline */
   margin: 0;
@@ -1719,66 +1719,66 @@ body .wr-codeblock-display pre:not(#x) {
 
 /* Hide Obsidian's auto copy/flair buttons on nested code blocks; the memo
    already has its own copy button in the footer. */
-body .wr-codeblock-display .copy-code-button:not(#x),
-body .wr-codeblock-display .code-block-flair:not(#x),
-body .wr-codeblock-display .edit-block-button:not(#x) {
+body .wrot-codeblock-display .copy-code-button:not(#x),
+body .wrot-codeblock-display .code-block-flair:not(#x),
+body .wrot-codeblock-display .edit-block-button:not(#x) {
   display: none;
 }
 
 /* Live Preview: obsidian:// URL line height fix */
-body .wr-obsidian-url-line {
+body .wrot-obsidian-url-line {
   height: auto;
   max-height: 1.8em;
 }
 
-body .wr-obsidian-url-line:not(#x) {
+body .wrot-obsidian-url-line:not(#x) {
   overflow: hidden;
 }
 
 /* Blockquote (shared) */
-body .wr-blockquote {
+body .wrot-blockquote {
   border-left: 3px solid var(--text-muted);
   margin: 4px 5px;
 }
 
 /* Must beat the theme's blockquote decoration (color, italics, background) */
-body .wr-blockquote:not(#x) {
+body .wrot-blockquote:not(#x) {
   color: var(--text-muted);
   font-style: normal;
   background: none;
 }
 
-body .wr-blockquote *:not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-tag *):not(.wr-internal-link *):not(.wr-url *):not(.wr-reading-tag *):not(.wr-reading-url *):not(#x) {
+body .wrot-blockquote *:not(.wrot-tag):not(.wrot-internal-link):not(.wrot-url):not(.wrot-reading-tag):not(.wrot-reading-url):not(.wrot-tag *):not(.wrot-internal-link *):not(.wrot-url *):not(.wrot-reading-tag *):not(.wrot-reading-url *):not(#x) {
   color: var(--text-muted);
 }
 
-/* Blockquote: timeline inherits .wr-content font */
-body .wr-content .wr-blockquote {
+/* Blockquote: timeline inherits .wrot-content font */
+body .wrot-content .wrot-blockquote {
   padding-left: 10px;
   font-size: inherit;
   font-family: inherit;
 }
 
 /* Blockquote: reading view matches code block text */
-body .block-language-wr>.wr-blockquote,
-body pre>.wr-blockquote {
+body .block-language-wr>.wrot-blockquote,
+body pre>.wrot-blockquote {
   padding-left: 10px;
 }
 
-body .block-language-wr>.wr-blockquote:not(#x),
-body pre>.wr-blockquote:not(#x) {
+body .block-language-wr>.wrot-blockquote:not(#x),
+body pre>.wrot-blockquote:not(#x) {
   font-size: var(--code-size);
   font-family: var(--font-monospace);
 }
 
-/* Blockquote inside the quote-card body preview: outside .wr-content /
+/* Blockquote inside the quote-card body preview: outside .wrot-content /
    .block-language-wr the padding-left collapses to 0 and LV/RV bar-to-text
    gaps diverge, so state it explicitly. */
-body .wr-quote-card-body .wr-blockquote {
+body .wrot-quote-card-body .wrot-blockquote {
   padding-left: 10px;
 }
 
-body .wr-quote-highlight:not(#x) {
+body .wrot-quote-highlight:not(#x) {
   color: var(--text-muted);
 }
 
@@ -1808,7 +1808,7 @@ pre.language-wr .copy-code-button svg :not(#x#y#z),
   background: transparent;
 }
 
-.wr-spacer {
+.wrot-spacer {
   height: 1em;
 }
 
@@ -1816,64 +1816,64 @@ pre.language-wr .copy-code-button svg :not(#x#y#z),
    metric rules (one class stronger than their margin: 0) so it survives them
    in both wrap modes; a mode-independent margin cannot re-trigger the wrap
    oscillation. */
-body .wr-toolbar-btn.wr-format-btn:not(#x#y#z) {
+body .wrot-toolbar-btn.wrot-format-btn:not(#x#y#z) {
   margin-left: 8px;
 }
 
 /* That margin sets the overflow button apart from the actions beside it. With every action
    put away there is nothing to be set apart from, and it would only indent the bar. */
-body .wr-toolbar-btn.wr-format-btn:first-child:not(#x#y#z) {
+body .wrot-toolbar-btn.wrot-format-btn:first-child:not(#x#y#z) {
   margin-left: 0;
 }
 
 /* Alone at the start of a wrapped row it lines up with the row above instead of sitting
    a margin's width inside it. Shifted rather than unmargined, so the width the wrap was
    measured from does not change under it. */
-.wr-input-toolbar:not(.wr-toolbar-editing) .wr-format-btn.wr-toolbar-row-start {
+.wrot-input-toolbar:not(.wrot-toolbar-editing) .wrot-format-btn.wrot-toolbar-row-start {
   transform: translateX(-8px);
 }
 
 /* Nor while arranging: there it stands next to the confirm rather than apart from the
    actions, and the pair reads as one. Applied in both wrap modes, so widths still agree. */
-body .wr-input-toolbar.wr-toolbar-editing .wr-toolbar-btn.wr-format-btn:not(#x#y#z) {
+body .wrot-input-toolbar.wrot-toolbar-editing .wrot-toolbar-btn.wrot-format-btn:not(#x#y#z) {
   margin-left: 0;
 }
 
-body .wr-toolbar-disabled {
+body .wrot-toolbar-disabled {
   opacity: 0.3;
   cursor: default;
   pointer-events: none;
 }
 
 /* Live Preview: format highlights */
-body .wr-bold-highlight {
+body .wrot-bold-highlight {
   font-weight: bold;
 }
 
-body .wr-italic-highlight {
+body .wrot-italic-highlight {
   font-style: italic;
 }
 
-body .wr-strike-highlight {
+body .wrot-strike-highlight {
   text-decoration: line-through;
 }
 
-body .wr-highlight-highlight {
-  background: var(--text-highlight-bg, var(--wr-hl-yellow, color-mix(in oklch, var(--color-yellow) 30%, transparent)));
+body .wrot-highlight-highlight {
+  background: var(--text-highlight-bg, var(--wrot-hl-yellow, color-mix(in oklch, var(--color-yellow) 30%, transparent)));
 }
 
 /* Live Preview: blockquote line */
-body .wr-blockquote-line:not(#x) {
+body .wrot-blockquote-line:not(#x) {
   color: var(--text-muted);
 }
 
-.wr-blockquote-wrap {
+.wrot-blockquote-wrap {
   color: var(--text-muted);
 }
 
 /* LV blockquote vertical bar: matches RV blockquote spacing.
    Bar-to-bar gap = 18px (margin 5 + border 3 + padding 10), bar-to-text gap = 10px. */
-body .cm-line.wr-blockquote-line:not(#x) {
+body .cm-line.wrot-blockquote-line:not(#x) {
   position: relative;
   padding-inline-start: calc(var(--size-4-4) + 18px);
   /* When a quote starts with a URL, on iOS WebKit the wrapped whitespace left
@@ -1884,7 +1884,7 @@ body .cm-line.wr-blockquote-line:not(#x) {
   word-break: break-all;
 }
 
-.cm-line.wr-blockquote-line::before {
+.cm-line.wrot-blockquote-line::before {
   content: "";
   position: absolute;
   left: calc(var(--size-4-4) + 5px);
@@ -1894,40 +1894,40 @@ body .cm-line.wr-blockquote-line:not(#x) {
   background-color: var(--text-muted);
 }
 
-body .cm-line.wr-blockquote-depth-2:not(#x) {
+body .cm-line.wrot-blockquote-depth-2:not(#x) {
   padding-inline-start: calc(var(--size-4-4) + 36px);
 }
 
-.cm-line.wr-blockquote-depth-2::before {
+.cm-line.wrot-blockquote-depth-2::before {
   box-shadow: 18px 0 0 0 var(--text-muted);
 }
 
-body .cm-line.wr-blockquote-depth-3:not(#x) {
+body .cm-line.wrot-blockquote-depth-3:not(#x) {
   padding-inline-start: calc(var(--size-4-4) + 54px);
 }
 
-.cm-line.wr-blockquote-depth-3::before {
+.cm-line.wrot-blockquote-depth-3::before {
   box-shadow:
     18px 0 0 0 var(--text-muted),
     36px 0 0 0 var(--text-muted);
 }
 
-body .cm-line.wr-blockquote-depth-4:not(#x) {
+body .cm-line.wrot-blockquote-depth-4:not(#x) {
   padding-inline-start: calc(var(--size-4-4) + 72px);
 }
 
-.cm-line.wr-blockquote-depth-4::before {
+.cm-line.wrot-blockquote-depth-4::before {
   box-shadow:
     18px 0 0 0 var(--text-muted),
     36px 0 0 0 var(--text-muted),
     54px 0 0 0 var(--text-muted);
 }
 
-body .cm-line.wr-blockquote-depth-5:not(#x) {
+body .cm-line.wrot-blockquote-depth-5:not(#x) {
   padding-inline-start: calc(var(--size-4-4) + 90px);
 }
 
-.cm-line.wr-blockquote-depth-5::before {
+.cm-line.wrot-blockquote-depth-5::before {
   box-shadow:
     18px 0 0 0 var(--text-muted),
     36px 0 0 0 var(--text-muted),
@@ -1937,7 +1937,7 @@ body .cm-line.wr-blockquote-depth-5:not(#x) {
 
 /* Live Preview: shared marker style */
 /* On the baseline: the monospace line's middle sits away from the kana's (see reading view). */
-.wr-lp-marker {
+.wrot-lp-marker {
   display: inline-block;
   white-space: nowrap;
   width: max(22px, calc(1em + 8px));
@@ -1947,12 +1947,12 @@ body .cm-line.wr-blockquote-depth-5:not(#x) {
   text-align: right;
 }
 
-body .wr-lp-marker:not(#x) {
+body .wrot-lp-marker:not(#x) {
   color: var(--text-muted);
 }
 
 /* Padding centres the number on the checkbox line; no inner element, as colour stamps reach inside the marker. */
-.wr-lp-marker.wr-lp-ol {
+.wrot-lp-marker.wrot-lp-ol {
   width: auto;
   min-width: max(22px, calc(1em + 8px));
   padding-right: max(0px, calc(12px + 1em - max(22px, calc(1em + 8px))));
@@ -1960,8 +1960,8 @@ body .wr-lp-marker:not(#x) {
   font-family: var(--font-text, var(--default-font));
 }
 
-/* A pseudo-element, not a child: colour stamps skip .wr-lp-marker but reach elements inside it. */
-.wr-lp-bullet::before {
+/* A pseudo-element, not a child: colour stamps skip .wrot-lp-marker but reach elements inside it. */
+.wrot-lp-bullet::before {
   content: "";
   display: inline-block;
   width: 0.36em;
@@ -1974,26 +1974,26 @@ body .wr-lp-marker:not(#x) {
 
 /* Nesting in live preview: the marker carries the offset, since a line here cannot hold a
    child list. Steps match the marker slot the rendered views use. */
-.wr-lp-marker.wr-lp-indent-1 {
+.wrot-lp-marker.wrot-lp-indent-1 {
   margin-inline-start: calc(max(22px, calc(1em + 8px)) * 1);
 }
 
-.wr-lp-marker.wr-lp-indent-2 {
+.wrot-lp-marker.wrot-lp-indent-2 {
   margin-inline-start: calc(max(22px, calc(1em + 8px)) * 2);
 }
 
-.wr-lp-marker.wr-lp-indent-3 {
+.wrot-lp-marker.wrot-lp-indent-3 {
   margin-inline-start: calc(max(22px, calc(1em + 8px)) * 3);
 }
 
-.wr-lp-marker.wr-lp-indent-4 {
+.wrot-lp-marker.wrot-lp-indent-4 {
   margin-inline-start: calc(max(22px, calc(1em + 8px)) * 4);
 }
 
 /* Native checkbox metrics — same survey-based reasoning as the timeline
    checkbox block above (size and checked mark included); :not(#x) outranks themes'
    non-priority rules. */
-.wr-lp-check input[type="checkbox"]:not(#x) {
+.wrot-lp-check input[type="checkbox"]:not(#x) {
   --checkbox-size: 1em;
   font-size: inherit;
   width: var(--checkbox-size);
@@ -2005,19 +2005,19 @@ body .wr-lp-marker:not(#x) {
   cursor: default;
 }
 
-.wr-content {
-  font-size: var(--wr-font-text);
+.wrot-content {
+  font-size: var(--wrot-font-text);
   line-height: 1.5;
   color: var(--text-normal);
   white-space: pre-wrap;
   word-break: break-word;
 }
 
-.wr-copy-btn {
+.wrot-copy-btn {
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  font-size: var(--wr-font-ui-smaller);
+  font-size: var(--wrot-font-ui-smaller);
   line-height: 1;
   color: var(--text-muted);
   cursor: pointer;
@@ -2026,23 +2026,23 @@ body .wr-lp-marker:not(#x) {
   padding: 0;
 }
 
-.wr-copy-btn:hover {
+.wrot-copy-btn:hover {
   color: var(--text-muted);
 }
 
-.wr-copy-btn .svg-icon {
+.wrot-copy-btn .svg-icon {
   width: 11px;
   height: 11px;
   color: var(--text-muted);
   stroke: var(--text-muted);
 }
 
-body .wr-copy-btn.wr-copy-done .svg-icon {
+body .wrot-copy-btn.wrot-copy-done .svg-icon {
   color: var(--text-accent);
   stroke: var(--text-accent);
 }
 
-.wr-menu-btn {
+.wrot-menu-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2057,28 +2057,28 @@ body .wr-copy-btn.wr-copy-done .svg-icon {
 
 /* Invisible hit-area expansion so the icon is easier to tap on mobile
    without growing the visible button or shifting the card layout. */
-.wr-menu-btn::before {
+.wrot-menu-btn::before {
   content: "";
   position: absolute;
   inset: -8px;
 }
 
-.wr-menu-btn:hover {
+.wrot-menu-btn:hover {
   color: var(--text-normal);
 }
 
 /* Same press feedback as the toolbar icons: opacity, since the palette stamp
    sits above the colour rule above. Hover is skipped on mobile, where it sticks
    to the last-tapped button after the touch ends. */
-body:not(.is-mobile) .wr-menu-btn:hover {
+body:not(.is-mobile) .wrot-menu-btn:hover {
   opacity: 0.8;
 }
 
-body .wr-menu-btn:active {
+body .wrot-menu-btn:active {
   opacity: 0.55;
 }
 
-.wr-menu-btn .svg-icon {
+.wrot-menu-btn .svg-icon {
   width: 14px;
   height: 14px;
   color: var(--text-muted);
@@ -2086,12 +2086,12 @@ body .wr-menu-btn:active {
 }
 
 /* Follow Obsidian's UI font size but never shrink below default (14px / 14px baseline = 1.0) */
-body.wr-font-follow .wr-menu-btn .svg-icon {
-  width: max(14px, var(--wr-font-text));
-  height: max(14px, var(--wr-font-text));
+body.wrot-font-follow .wrot-menu-btn .svg-icon {
+  width: max(14px, var(--wrot-font-text));
+  height: max(14px, var(--wrot-font-text));
 }
 
-body .wr-menu-btn.wr-toolbar-active .svg-icon:not(#x) {
+body .wrot-menu-btn.wrot-toolbar-active .svg-icon:not(#x) {
   /* Beat Obsidian's default SVG color/stroke rules with ID-level specificity */
   color: var(--text-accent);
   stroke: var(--text-accent);
@@ -2099,7 +2099,7 @@ body .wr-menu-btn.wr-toolbar-active .svg-icon:not(#x) {
 
 /* Pin indicator: absolute-positioned at the card's bottom-right on the footer
    row; rendered only when pinned, so no slot is reserved otherwise. */
-.wr-pin-indicator {
+.wrot-pin-indicator {
   position: absolute;
   right: 14px;
   bottom: 12px;
@@ -2110,37 +2110,37 @@ body .wr-menu-btn.wr-toolbar-active .svg-icon:not(#x) {
   pointer-events: none;
 }
 
-.wr-pin-indicator .svg-icon {
+.wrot-pin-indicator .svg-icon {
   width: 14px;
   height: 14px;
   color: var(--text-muted);
   stroke: var(--text-muted);
 }
 
-body.wr-font-follow .wr-pin-indicator .svg-icon {
-  width: max(14px, var(--wr-font-text));
-  height: max(14px, var(--wr-font-text));
+body.wrot-font-follow .wrot-pin-indicator .svg-icon {
+  width: max(14px, var(--wrot-font-text));
+  height: max(14px, var(--wrot-font-text));
 }
 
 /* Arrived from an "pin later": the same pin, filled in. Lucide draws its icons as
    outlines, so filling the path is all it takes to tell the two apart. */
-.wr-pin-indicator-filled .svg-icon {
+.wrot-pin-indicator-filled .svg-icon {
   fill: currentColor;
 }
 
 /* Date drums inside the schedule menu: the row drops its item look and hosts the columns. */
-.wr-menu .wr-menu-drum {
+.wrot-menu .wrot-menu-drum {
   padding: 2px 6px 6px;
 }
 
-.wr-drum-row {
+.wrot-drum-row {
   display: flex;
   gap: 4px;
   position: relative;
 }
 
 /* The band the rows come to rest in, drawn once behind all three columns. */
-.wr-drum-row::before {
+.wrot-drum-row::before {
   content: "";
   position: absolute;
   left: 0;
@@ -2153,7 +2153,7 @@ body.wr-font-follow .wr-pin-indicator .svg-icon {
   pointer-events: none;
 }
 
-.wr-drum-col {
+.wrot-drum-col {
   height: 140px; /* five rows of 28px: one at rest, two visible either side */
   overflow-y: auto;
   /* Keeps a roll that reaches the floor from handing the rest of its momentum to
@@ -2165,35 +2165,35 @@ body.wr-font-follow .wr-pin-indicator .svg-icon {
   flex: 1;
 }
 
-.wr-drum-col::-webkit-scrollbar {
+.wrot-drum-col::-webkit-scrollbar {
   display: none;
 }
 
-.wr-drum-col-year {
+.wrot-drum-col-year {
   flex: 1.3; /* four digits against one or two elsewhere */
 }
 
-.wr-drum-item {
+.wrot-drum-item {
   height: 28px;
   line-height: 28px;
   scroll-snap-align: center;
-  font-size: var(--wr-font-ui-small);
+  font-size: var(--wrot-font-ui-small);
   color: var(--text-muted);
   white-space: nowrap;
 }
 
-.wr-drum-item-disabled {
+.wrot-drum-item-disabled {
   color: var(--text-faint);
 }
 
 /* Half the visible height at each end, so the first and last rows can reach the band. */
-.wr-drum-pad {
+.wrot-drum-pad {
   height: 56px;
 }
 
 /* The top run-up doubles as the window on to the days already gone: they sit at its
    bottom edge, just above the band, and the drum stops before it can reach them. */
-.wr-drum-pad-top {
+.wrot-drum-pad-top {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -2203,40 +2203,40 @@ body.wr-font-follow .wr-pin-indicator .svg-icon {
 
 /* Obsidian menus keep a fixed UI size; under follow-font ours track the text size
    (16px / 14px baseline = 1.143 for the icons, never below the default). */
-body.wr-font-follow .wr-menu .menu-item {
-  font-size: var(--wr-font-ui-small);
+body.wrot-font-follow .wrot-menu .menu-item {
+  font-size: var(--wrot-font-ui-small);
 }
 
-body.wr-font-follow .wr-menu .menu-item-icon .svg-icon {
-  width: max(16px, calc(var(--wr-font-text) * 1.143));
-  height: max(16px, calc(var(--wr-font-text) * 1.143));
+body.wrot-font-follow .wrot-menu .menu-item-icon .svg-icon {
+  width: max(16px, calc(var(--wrot-font-text) * 1.143));
+  height: max(16px, calc(var(--wrot-font-text) * 1.143));
 }
 
 /* Obsidian hides a desktop menu's overflow and scrolls it by mouse position. The view caps the
    menu at the window's edge (openMenu), so the list needs a real scroll to reach the rest. */
-body:not(.is-phone) .wr-menu .menu-scroll {
+body:not(.is-phone) .wrot-menu .menu-scroll {
   overflow-y: auto;
 }
 
 /* Obsidian keeps the phone sheet's safe-area padding inside .menu-scroll, at the end of the
    scrolled content: once scaled rows overflow 60vh it is out of sight. Moved to the sheet itself
    so the band shows whether or not the list scrolls, and is not doubled when it does not. */
-body.wr-font-follow.is-phone .wr-menu {
+body.wrot-font-follow.is-phone .wrot-menu {
   --menu-padding: var(--size-4-2) var(--size-4-4) 0;
-  padding-bottom: calc(var(--safe-area-inset-bottom) + var(--wr-font-text) * 0.5);
+  padding-bottom: calc(var(--safe-area-inset-bottom) + var(--wrot-font-text) * 0.5);
 }
 
 /* Menu hint line used when the pin-limit is reached. Renders as an
    inert sub-label under the disabled "Pin" item. */
-.wr-menu .menu-item.wr-menu-hint {
-  font-size: var(--wr-font-ui-smaller);
+.wrot-menu .menu-item.wrot-menu-hint {
+  font-size: var(--wrot-font-ui-smaller);
   opacity: 0.75;
   cursor: default;
   padding-top: 0;
 }
 
 /* First line of a block in the "Copy code" / "Copy math" picker, cut short to fit the menu. */
-.wr-menu .wr-block-pick {
+.wrot-menu .wrot-block-pick {
   display: block;
   max-width: 16em;
   overflow: hidden;
@@ -2247,7 +2247,7 @@ body.wr-font-follow.is-phone .wr-menu {
 /* The confirm wording is far longer than the label it replaces, and the menu is
    already sized and placed by the time it swaps in. Let this one row wrap rather
    than run past the menu edge; growing taller is fine, being cut off is not. */
-.wr-menu .menu-item.wr-menu-delete .menu-item-title {
+.wrot-menu .menu-item.wrot-menu-delete .menu-item-title {
   white-space: normal;
   overflow-wrap: anywhere;
 }
@@ -2255,25 +2255,25 @@ body.wr-font-follow.is-phone .wr-menu {
 /* Mobile: Unlike other items, Delete stays open on tap, leaving hover/select active.
 Disabled these globally on the row; scoping highlights to the armed state ensures
 they clear on disarm. :active is kept for tap feedback. */
-body.is-mobile .wr-menu .menu-item.wr-menu-delete:not(:active):not(#x#y#z),
-body.is-mobile .wr-menu .menu-item.wr-menu-delete:hover:not(:active):not(#x#y#z),
-body.is-mobile .wr-menu .menu-item.wr-menu-delete:focus:not(:active):not(#x#y#z),
-body.is-mobile .wr-menu .menu-item.wr-menu-delete.selected:not(:active):not(#x#y#z),
-body.is-mobile .wr-menu .menu-item.wr-menu-delete.is-active:not(:active):not(#x#y#z),
-body.is-mobile .wr-menu .menu-item.wr-menu-delete.is-focused:not(:active):not(#x#y#z) {
+body.is-mobile .wrot-menu .menu-item.wrot-menu-delete:not(:active):not(#x#y#z),
+body.is-mobile .wrot-menu .menu-item.wrot-menu-delete:hover:not(:active):not(#x#y#z),
+body.is-mobile .wrot-menu .menu-item.wrot-menu-delete:focus:not(:active):not(#x#y#z),
+body.is-mobile .wrot-menu .menu-item.wrot-menu-delete.selected:not(:active):not(#x#y#z),
+body.is-mobile .wrot-menu .menu-item.wrot-menu-delete.is-active:not(:active):not(#x#y#z),
+body.is-mobile .wrot-menu .menu-item.wrot-menu-delete.is-focused:not(:active):not(#x#y#z) {
   background: transparent;
 }
 
 /* Mobile: Obsidian's Menu adds is-disabled, but tap-highlight and :active
    backgrounds arrive via other paths; kill every state explicitly, with the
    body prefix to beat the default menu-item rules. */
-body .wr-menu .menu-item.is-disabled:not(#x),
-body .wr-menu .menu-item.is-disabled:hover:not(#x),
-body .wr-menu .menu-item.is-disabled:active:not(#x),
-body .wr-menu .menu-item.is-disabled:focus:not(#x),
-body .wr-menu .menu-item.is-disabled.selected:not(#x),
-body .wr-menu .menu-item.is-disabled.is-active:not(#x),
-body .wr-menu .menu-item.is-disabled.is-focused:not(#x) {
+body .wrot-menu .menu-item.is-disabled:not(#x),
+body .wrot-menu .menu-item.is-disabled:hover:not(#x),
+body .wrot-menu .menu-item.is-disabled:active:not(#x),
+body .wrot-menu .menu-item.is-disabled:focus:not(#x),
+body .wrot-menu .menu-item.is-disabled.selected:not(#x),
+body .wrot-menu .menu-item.is-disabled.is-active:not(#x),
+body .wrot-menu .menu-item.is-disabled.is-focused:not(#x) {
   background: transparent;
   -webkit-tap-highlight-color: transparent;
   cursor: default;
@@ -2285,18 +2285,18 @@ body .wr-menu .menu-item.is-disabled.is-focused:not(#x) {
 /* Parent of the rendered wr block (RV / processor output) */
 body div.block-language-wr,
 body .language-wr {
-  background: var(--wr-bg-color, #f8f8f8);
+  background: var(--wrot-bg-color, #f8f8f8);
 }
 
 /* Live Preview: code block lines */
-body .wr-codeblock-line {
-  background-color: var(--wr-bg-color, #f8f8f8);
+body .wrot-codeblock-line {
+  background-color: var(--wrot-bg-color, #f8f8f8);
 }
 
 /* Reserve right padding on body lines only (so text avoids the ~28px-wide
    flair). The end line carries the media-area widget, so keep its previous
    state (no right margin) to preserve the balance of images / OGP cards. */
-body .wr-codeblock-line:not(.HyperMD-codeblock-end):not(#x) {
+body .wrot-codeblock-line:not(.HyperMD-codeblock-end):not(#x) {
   padding-right: 32px;
 }
 
@@ -2312,24 +2312,24 @@ body div.block-language-wr:not(#x) {
   display: block;
 }
 
-body div.block-language-wr *:not(.wr-inline-code-highlight):not(svg):not(svg *),
-body .wr-flair-bg:not(svg):not(svg *) {
-  background: var(--wr-bg-color, #f8f8f8);
+body div.block-language-wr *:not(.wrot-inline-code-highlight):not(svg):not(svg *),
+body .wrot-flair-bg:not(svg):not(svg *) {
+  background: var(--wrot-bg-color, #f8f8f8);
 }
 
 /* LV: .code-block-flair doubles as the copy button and its hit area extends
    across the memo text — never fill it with the card color; keep transparent. */
-body .wr-codeblock-line .code-block-flair:not(#x) {
+body .wrot-codeblock-line .code-block-flair:not(#x) {
   background: transparent;
 }
 
 /* Exclude elements that carry their own background color */
-body div.block-language-wr .wr-inline-code {
+body div.block-language-wr .wrot-inline-code {
   background: rgba(var(--mono-rgb-100), 0.08);
 }
 
-body div.block-language-wr .wr-highlight {
-  background: var(--text-highlight-bg, var(--wr-hl-yellow, color-mix(in oklch, var(--color-yellow) 30%, transparent)));
+body div.block-language-wr .wrot-highlight {
+  background: var(--text-highlight-bg, var(--wrot-hl-yellow, color-mix(in oklch, var(--color-yellow) 30%, transparent)));
 }
 
 body .block-language-wr pre:not(#x) {
@@ -2356,50 +2356,50 @@ body pre.language-wr .copy-code-button:not(#x) {
 }
 
 /* RV: quotes/images/URL cards bring their own spacing; revert to the default
-   bottom padding. wr-rv-rich-tail is set in postProcessor (a :has() selector
+   bottom padding. wrot-rv-rich-tail is set in postProcessor (a :has() selector
    here triggered the performance warning). */
-body pre.language-wr.wr-rv-rich-tail:not(#x) {
+body pre.language-wr.wrot-rv-rich-tail:not(#x) {
   padding-bottom: 12px;
 }
 
 /* URL & rich preview */
 
 /* Inline URL links (sidebar + reading view) */
-.wr-url,
-.wr-reading-url {
+.wrot-url,
+.wrot-reading-url {
   color: var(--text-accent);
   text-decoration: underline;
   cursor: pointer;
   word-break: break-all;
 }
 
-.wr-url:hover,
-.wr-reading-url:hover {
+.wrot-url:hover,
+.wrot-reading-url:hover {
   opacity: 0.8;
 }
 
 /* Live Preview: URL highlight */
-.wr-url-highlight {
+.wrot-url-highlight {
   text-decoration: underline;
 }
 
-/* CodeMirror can invert the nesting of wr-url-highlight / wr-blockquote-wrap
+/* CodeMirror can invert the nesting of wrot-url-highlight / wrot-blockquote-wrap
    on posts after the first, letting the muted quote color override the URL
-   accent by inheritance; force accent on everything under wr-url-highlight. */
-body .wr-url-highlight:not(#x),
-body .wr-url-highlight *:not(#x) {
+   accent by inheritance; force accent on everything under wrot-url-highlight. */
+body .wrot-url-highlight:not(#x),
+body .wrot-url-highlight *:not(#x) {
   color: var(--text-accent);
   -webkit-text-fill-color: var(--text-accent);
 }
 
-body .wr-media-area {
+body .wrot-media-area {
   margin-top: 8px;
   overflow: hidden;
   box-sizing: border-box;
   width: 100%;
 }
 
-body .wr-media-area:not(#x) {
+body .wrot-media-area:not(#x) {
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -2407,7 +2407,7 @@ body .wr-media-area:not(#x) {
 }
 
 /* OGP cache miss / fetch failure can leave the area empty; collapse all spacing */
-body .wr-media-area:empty:not(#x) {
+body .wrot-media-area:empty:not(#x) {
   margin: 0;
   padding: 0;
   gap: 0;
@@ -2417,33 +2417,33 @@ body .wr-media-area:empty:not(#x) {
 /* LV: an empty media widget on the closing fence line adds height (line break
    + widgetBuffer). The line must stay visible for the fence characters, so
    only the empty widget is pulled out of layout. */
-.cm-line.wr-codeblock-line.HyperMD-codeblock-end>.wr-media-area:empty:not(#x) {
+.cm-line.wrot-codeblock-line.HyperMD-codeblock-end>.wrot-media-area:empty:not(#x) {
   position: absolute;
   width: 0;
 }
 
-body .block-language-wr>.wr-media-area {
+body .block-language-wr>.wrot-media-area {
   padding: 0 16px 12px;
 }
 
 /* RV image-URL posts get the same bottom spacing as normal images so the
-   "image post" experience matches; wr-media-area may sit directly under
+   "image post" experience matches; wrot-media-area may sit directly under
    pre.language-wr, so target both parents. */
-body pre.language-wr>.wr-media-area.wr-has-link,
-body .block-language-wr>.wr-media-area.wr-has-link {
+body pre.language-wr>.wrot-media-area.wrot-has-link,
+body .block-language-wr>.wrot-media-area.wrot-has-link {
   padding-bottom: 28px;
 }
 
-body .wr-media-link {
+body .wrot-media-link {
   max-width: 100%;
 }
 
-body .wr-media-link:not(#x) {
+body .wrot-media-link:not(#x) {
   display: flex;
   justify-content: flex-start;
 }
 
-body .wr-inline-img {
+body .wrot-inline-img {
   max-width: 100%;
   width: auto;
   height: auto;
@@ -2451,16 +2451,16 @@ body .wr-inline-img {
   cursor: pointer;
 }
 
-body .wr-inline-img:not(#x) {
+body .wrot-inline-img:not(#x) {
   display: block;
 }
 
-body .wr-ogp-card {
+body .wrot-ogp-card {
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   overflow: hidden;
   cursor: pointer;
-  background: var(--wr-bg-color, #f8f8f8);
+  background: var(--wrot-bg-color, #f8f8f8);
   text-decoration: none;
   width: 100%;
   max-width: 100%;
@@ -2474,7 +2474,7 @@ body .wr-ogp-card {
 /* min-height rather than height: how many lines the text takes depends on the column width,
    so a narrow pane needs more of them for the same card. A fixed height squeezes the body's
    children below their own content height and clips them mid-line. */
-body .wr-ogp-card:not(#x) {
+body .wrot-ogp-card:not(#x) {
   display: flex;
   flex-direction: row;
   align-items: stretch;
@@ -2483,22 +2483,22 @@ body .wr-ogp-card:not(#x) {
   padding: 0;
 }
 
-body .wr-ogp-card:hover {
+body .wrot-ogp-card:hover {
   /* Known issue: with a tag color configured, the injected tag-rule CSS wins
      over this hover. The same hover color is also stamped by the injected bg
      CSS later in <head>, which enforces the value. */
-  background: var(--wr-bg-hover, #e8e6e1);
+  background: var(--wrot-bg-hover, #e8e6e1);
   border-color: rgba(0, 0, 0, 0.2);
 }
 
-body .wr-ogp-thumb {
+body .wrot-ogp-thumb {
   object-fit: cover;
   margin: 0;
 }
 
 /* Stretched rather than fixed at 120px, so the thumbnail still fills the card when the
    text grows it taller. object-fit keeps the crop centred. */
-body .wr-ogp-thumb:not(#x) {
+body .wrot-ogp-thumb:not(#x) {
   width: 120px;
   height: auto;
   align-self: stretch;
@@ -2507,21 +2507,21 @@ body .wr-ogp-thumb:not(#x) {
   padding: 0;
 }
 
-body .wr-ogp-body {
+body .wrot-ogp-body {
   padding: 8px 12px;
   overflow: hidden;
   min-width: 0;
 }
 
-body .wr-ogp-body:not(#x) {
+body .wrot-ogp-body:not(#x) {
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
-body .wr-ogp-title {
-  font-size: var(--wr-font-ui-small);
+body .wrot-ogp-title {
+  font-size: var(--wrot-font-ui-small);
   font-weight: 600;
   line-height: 1.3;
   text-overflow: ellipsis;
@@ -2530,13 +2530,13 @@ body .wr-ogp-title {
   color: var(--text-normal);
 }
 
-body .wr-ogp-title:not(#x) {
+body .wrot-ogp-title:not(#x) {
   overflow: hidden;
   display: -webkit-box;
 }
 
-body .wr-ogp-desc {
-  font-size: var(--wr-font-ui-smaller);
+body .wrot-ogp-desc {
+  font-size: var(--wrot-font-ui-smaller);
   color: var(--text-muted);
   margin-top: 2px;
   text-overflow: ellipsis;
@@ -2544,106 +2544,106 @@ body .wr-ogp-desc {
   -webkit-box-orient: vertical;
 }
 
-body .wr-ogp-desc:not(#x) {
+body .wrot-ogp-desc:not(#x) {
   overflow: hidden;
   display: -webkit-box;
 }
 
 /* Held to one line like the title and description above it. A site name long enough to wrap
    ("坂ノ途中 | 100年先もつづく、農業を。") would otherwise take a second line on its own. */
-body .wr-ogp-site {
-  font-size: calc(var(--wr-font-ui-smaller) - 1px);
+body .wrot-ogp-site {
+  font-size: calc(var(--wrot-font-ui-smaller) - 1px);
   color: var(--text-faint);
   margin-top: 4px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-body .wr-ogp-site:not(#x) {
+body .wrot-ogp-site:not(#x) {
   overflow: hidden;
 }
 
-.wr-twitter-card {
+.wrot-twitter-card {
   border-left: 3px solid #1da1f2;
 }
 
-.wr-ogp-loading {
-  font-size: var(--wr-font-ui-smaller);
+.wrot-ogp-loading {
+  font-size: var(--wrot-font-ui-smaller);
   color: var(--text-muted);
   padding: 4px 0;
 }
 
-/* LV widget preview area: cancel wr-media-area's margin-top; vertical spacing
+/* LV widget preview area: cancel wrot-media-area's margin-top; vertical spacing
    is owned by the children instead */
-body .wr-lp-media {
+body .wrot-lp-media {
   padding: 0 16px 0 2px;
   white-space: normal;
 }
 
-body .wr-lp-media:not(#x) {
+body .wrot-lp-media:not(#x) {
   margin-top: 0;
   font-family: var(--font-interface);
-  font-size: var(--wr-font-text);
+  font-size: var(--wrot-font-text);
 }
 
 /* Images get thicker padding-bottom to balance the ~25px gap the widgetBuffer
    spans create above them on the closing fence line. Normal images and image
    URLs read the same to the user, so both get it; URL-card-only areas do not */
-body .wr-lp-media.wr-has-img,
-body .wr-lp-media.wr-has-link {
+body .wrot-lp-media.wrot-has-img,
+body .wrot-lp-media.wrot-has-link {
   padding-bottom: 24px;
 }
 
 /* Mobile adjustments */
-.is-mobile .wr-container {
+.is-mobile .wrot-container {
   padding: 6px 12px;
 }
 
-.is-mobile .wr-date-nav {
+.is-mobile .wrot-date-nav {
   gap: 4px;
   margin-bottom: 6px;
 }
 
-body.is-mobile .wr-nav-btn {
+body.is-mobile .wrot-nav-btn {
   padding: 2px 6px;
 }
 
-body.is-mobile .wr-today-btn {
+body.is-mobile .wrot-today-btn {
   padding: 2px 8px;
 }
 
 /* Mobile: kill lingering :hover/:focus backgrounds, keep :active feedback.
    Obsidian mobile sometimes applies these; win with 3 ID levels. If the app
    ever uses the priority flag here, losing is the accepted trade-off. */
-body.is-mobile .wr-nav-btn:focus:not(.wr-toolbar-active):not(#x#y#z),
-body.is-mobile .wr-nav-btn:focus-visible:not(.wr-toolbar-active):not(#x#y#z),
-body.is-mobile .wr-today-btn:focus:not(#x#y#z),
-body.is-mobile .wr-today-btn:focus-visible:not(#x#y#z) {
+body.is-mobile .wrot-nav-btn:focus:not(.wrot-toolbar-active):not(#x#y#z),
+body.is-mobile .wrot-nav-btn:focus-visible:not(.wrot-toolbar-active):not(#x#y#z),
+body.is-mobile .wrot-today-btn:focus:not(#x#y#z),
+body.is-mobile .wrot-today-btn:focus-visible:not(#x#y#z) {
   background: transparent;
 }
 
-body.is-mobile .wr-nav-btn:hover:not(.wr-toolbar-active):not(#x#y#z),
-body.is-mobile .wr-today-btn:hover:not(#x#y#z) {
+body.is-mobile .wrot-nav-btn:hover:not(.wrot-toolbar-active):not(#x#y#z),
+body.is-mobile .wrot-today-btn:hover:not(#x#y#z) {
   background: transparent;
 }
 
 /* Press feedback must outrank the resets above; the same ID boost keeps source
    order decisive. No color here: press text color stays on the injected stamp. */
-body.is-mobile .wr-nav-btn:active:not(.wr-toolbar-active):not(#x#y#z),
-body.is-mobile .wr-today-btn:active:not(#x#y#z) {
+body.is-mobile .wrot-nav-btn:active:not(.wrot-toolbar-active):not(#x#y#z),
+body.is-mobile .wrot-today-btn:active:not(#x#y#z) {
   background: rgba(var(--mono-rgb-100), 0.08);
 }
 
 /* While the calendar is open, pin the faint glow: the mobile :active rule
    above would flicker on arrow taps; the extra class + same ID boost holds
    the light tint. */
-body.is-mobile .wr-calendar-btn.wr-toolbar-active:not(#x#y#z),
-body.is-mobile .wr-calendar-btn.wr-toolbar-active:active:not(#x#y#z),
-body.is-mobile .wr-calendar-btn.wr-toolbar-active:hover:not(#x#y#z) {
+body.is-mobile .wrot-calendar-btn.wrot-toolbar-active:not(#x#y#z),
+body.is-mobile .wrot-calendar-btn.wrot-toolbar-active:active:not(#x#y#z),
+body.is-mobile .wrot-calendar-btn.wrot-toolbar-active:hover:not(#x#y#z) {
   background: rgba(var(--mono-rgb-100), 0.05);
 }
 
-.is-mobile .wr-date-label {
+.is-mobile .wrot-date-label {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2651,54 +2651,54 @@ body.is-mobile .wr-calendar-btn.wr-toolbar-active:hover:not(#x#y#z) {
 }
 
 /* Mobile: finger-sized day cells; wider cap, max-height lids the vertical size */
-body.is-mobile .wr-calendar-day {
-  width: 2.615em;
+body.is-mobile .wrot-calendar-day {
+  width: 2.769em;
 }
 
 /* Mobile: on touch :hover sticks until the next tap, so after switching from
    year to month mode the cell under the tap point would keep a faint
    background; kill it (selected highlight preserved separately). */
-body.is-mobile .wr-calendar-day:hover:not(.wr-calendar-day-selected),
-body.is-mobile .wr-calendar-year:hover {
+body.is-mobile .wrot-calendar-day:hover:not(.wrot-calendar-day-selected),
+body.is-mobile .wrot-calendar-year:hover {
   background: none;
 }
 
 /* Mobile: still show press feedback at tap time (same convention as the arrow
    buttons); the selected highlight keeps its priority. */
-body.is-mobile .wr-calendar-day:active:not(.wr-calendar-day-selected),
-body.is-mobile .wr-calendar-year:active {
+body.is-mobile .wrot-calendar-day:active:not(.wrot-calendar-day-selected),
+body.is-mobile .wrot-calendar-year:active {
   background: rgba(var(--mono-rgb-100), 0.08);
 }
 
 /* Mobile: arrow buttons — kill lingering :hover/:focus, keep :active only;
    same ID-level boost as above. */
-body.is-mobile .wr-calendar-nav-btn:focus:not(#x#y#z),
-body.is-mobile .wr-calendar-nav-btn:focus-visible:not(#x#y#z),
-body.is-mobile .wr-calendar-nav-btn:hover:not(#x#y#z) {
+body.is-mobile .wrot-calendar-nav-btn:focus:not(#x#y#z),
+body.is-mobile .wrot-calendar-nav-btn:focus-visible:not(#x#y#z),
+body.is-mobile .wrot-calendar-nav-btn:hover:not(#x#y#z) {
   background: transparent;
 }
 
-body.is-mobile .wr-calendar-nav-btn:active:not(#x#y#z) {
+body.is-mobile .wrot-calendar-nav-btn:active:not(#x#y#z) {
   background: rgba(var(--mono-rgb-100), 0.08);
 }
 
-.is-mobile .wr-input-area {
+.is-mobile .wrot-input-area {
   padding: 4px 10px 4px;
   margin-bottom: 8px;
   border-radius: 8px;
 }
 
-.is-mobile .wr-input-header {
+.is-mobile .wrot-input-header {
   margin-top: 4px;
   margin-bottom: 8px;
 }
 
-body.is-mobile .wr-submit-btn:not(#x) {
+body.is-mobile .wrot-submit-btn:not(#x) {
   -webkit-appearance: none;
   appearance: none;
 }
 
-body.is-mobile .wr-submit-btn {
+body.is-mobile .wrot-submit-btn {
   padding: 6px 14px;
   border-radius: 8px;
   min-height: 0;
@@ -2707,131 +2707,131 @@ body.is-mobile .wr-submit-btn {
   line-height: 1.4;
 }
 
-body.is-mobile .wr-submit-btn.wr-submit-icon-only {
+body.is-mobile .wrot-submit-btn.wrot-submit-icon-only {
   padding: 0;
   height: calc(var(--input-height) * 0.72);
   width: calc(var(--input-height) * 0.9);
 }
 
-.is-mobile .wr-textarea {
+.is-mobile .wrot-textarea {
   min-height: 2.8em;
   line-height: 1.4;
 }
 
 /* Obsidian mobile draws form-field borders; win by ID-level specificity
    instead of the priority flag (loses only to priority-flag opponents). */
-body.is-mobile .wr-textarea:not(#x#y#z),
-body.is-mobile .wr-textarea.cm-focused:not(#x#y#z) {
+body.is-mobile .wrot-textarea:not(#x#y#z),
+body.is-mobile .wrot-textarea.cm-focused:not(#x#y#z) {
   border: none;
   outline: none;
 }
 
-.is-mobile .wr-input-toolbar {
+.is-mobile .wrot-input-toolbar {
   gap: 8px;
   margin-top: 2px;
 }
 
-.is-mobile .wr-input-toolbar.wr-toolbar-wrapped {
+.is-mobile .wrot-input-toolbar.wrot-toolbar-wrapped {
   gap: 4px 8px;
 }
 
 /* Same ID-level pinning as the desktop rules: both wrap modes must agree on
    button widths or the wrap detection oscillates (see the desktop comment). */
-body.is-mobile .wr-toolbar-btn:not(#x#y#z) {
+body.is-mobile .wrot-toolbar-btn:not(#x#y#z) {
   padding: 2px;
 }
 
-body.is-mobile .wr-input-toolbar.wr-toolbar-wrapped .wr-toolbar-btn:not(#x#y#z) {
+body.is-mobile .wrot-input-toolbar.wrot-toolbar-wrapped .wrot-toolbar-btn:not(#x#y#z) {
   padding: 6px 2px;
 }
 
 /* The desktop rule loses to the mobile wrap gap above, which comes later; restated here
    so arranging gets the same room between rows on both. */
-.is-mobile .wr-input-toolbar.wr-toolbar-editing.wr-toolbar-wrapped {
+.is-mobile .wrot-input-toolbar.wrot-toolbar-editing.wrot-toolbar-wrapped {
   row-gap: 12px;
 }
 
-.is-mobile .wr-toolbar-btn {
-  --wr-toolbar-icon: 16px;
+.is-mobile .wrot-toolbar-btn {
+  --wrot-toolbar-icon: 16px;
 }
 
-.is-mobile .wr-toolbar-btn .svg-icon {
+.is-mobile .wrot-toolbar-btn .svg-icon {
   width: 16px;
   height: 16px;
 }
 
-.is-mobile .wr-card {
+.is-mobile .wrot-card {
   padding: 10px 10px 6px;
   border-radius: 8px;
 }
 
-.is-mobile .wr-content {
+.is-mobile .wrot-content {
   line-height: 1.4;
 }
 
-.is-mobile .wr-card-footer {
+.is-mobile .wrot-card-footer {
   margin-top: 5px;
   gap: 6px;
 }
 
 /* Pin indicator offsets mirror the card padding; the mobile card shrinks its
    padding, so mirror that here or the pin floats off the footer row. */
-.is-mobile .wr-pin-indicator {
+.is-mobile .wrot-pin-indicator {
   right: 10px;
   bottom: 6px;
 }
 
-body:not(.wr-font-follow).is-mobile .wr-today-btn {
+body:not(.wrot-font-follow).is-mobile .wrot-today-btn {
   font-size: 11px;
 }
 
-body:not(.wr-font-follow).is-mobile .wr-date-label {
+body:not(.wrot-font-follow).is-mobile .wrot-date-label {
   font-size: 13px;
 }
 
-body:not(.wr-font-follow).is-mobile .wr-submit-btn {
+body:not(.wrot-font-follow).is-mobile .wrot-submit-btn {
   font-size: 13px;
 }
 
-body:not(.wr-font-follow).is-mobile .wr-textarea {
+body:not(.wrot-font-follow).is-mobile .wrot-textarea {
   font-size: 13px;
 }
 
-body:not(.wr-font-follow).is-mobile .wr-content {
+body:not(.wrot-font-follow).is-mobile .wrot-content {
   font-size: 13px;
 }
 
-body:not(.wr-font-follow).is-mobile .wr-timestamp {
+body:not(.wrot-font-follow).is-mobile .wrot-timestamp {
   font-size: 10px;
 }
 
-.is-mobile .wr-list {
+.is-mobile .wrot-list {
   gap: 10px;
   padding-bottom: 16px;
 }
 
 /* Mobile OGP card: :hover sticks after a tap, so show the PC hover color only
    while pressed (:active); the OS tap highlight would double the glow, disable it. */
-body.is-mobile .wr-ogp-card {
+body.is-mobile .wrot-ogp-card {
   -webkit-tap-highlight-color: transparent;
 }
 
 /* Duplicated by the injected bg CSS (later in <head>); these copies cover the
    sheet-absent case. Kept below tag-rule CSS so rule-colored cards keep their color. */
-body.is-mobile .wr-ogp-card:hover {
-  background: var(--wr-bg-color, #f8f8f8);
+body.is-mobile .wrot-ogp-card:hover {
+  background: var(--wrot-bg-color, #f8f8f8);
   border-color: rgba(0, 0, 0, 0.1);
 }
 
-body.is-mobile .wr-ogp-card:active {
-  background: var(--wr-bg-hover, #e8e6e1);
+body.is-mobile .wrot-ogp-card:active {
+  background: var(--wrot-bg-hover, #e8e6e1);
   border-color: rgba(0, 0, 0, 0.2);
 }
 
 /* Settings color picker: Obsidian mobile styles input[type="color"] with
    normal-priority rules only, so load order + specificity wins without the
    priority flag. */
-body.is-mobile .wr-settings input[type="color"] {
+body.is-mobile .wrot-settings input[type="color"] {
   --swatch-width: 48px;
   --swatch-height: 48px;
   --swatch-radius: 50%;
@@ -2854,7 +2854,7 @@ body.is-mobile .wr-settings input[type="color"] {
   overflow: hidden;
 }
 
-body.is-mobile .wr-settings input[type="color"]::-webkit-color-swatch-wrapper {
+body.is-mobile .wrot-settings input[type="color"]::-webkit-color-swatch-wrapper {
   padding: 0;
   margin: 0;
   border-radius: 50%;
@@ -2862,7 +2862,7 @@ body.is-mobile .wr-settings input[type="color"]::-webkit-color-swatch-wrapper {
   height: 48px;
 }
 
-body.is-mobile .wr-settings input[type="color"]::-webkit-color-swatch {
+body.is-mobile .wrot-settings input[type="color"]::-webkit-color-swatch {
   border: none;
   border-radius: 50%;
   width: 48px;
@@ -2871,12 +2871,12 @@ body.is-mobile .wr-settings input[type="color"]::-webkit-color-swatch {
 
 /* iPad (tablet) adjustments */
 @media (min-width: 768px) {
-  .is-mobile .wr-input-area {
+  .is-mobile .wrot-input-area {
     overflow-x: hidden;
     box-sizing: border-box;
   }
 
-  .is-mobile .wr-container {
+  .is-mobile .wrot-container {
     overflow-x: hidden;
   }
 }
@@ -2885,7 +2885,7 @@ body.is-mobile .wr-settings input[type="color"]::-webkit-color-swatch {
    every other settings row is laid out by Obsidian. */
 /* Rows inside the rules list inherit the list's compact style, which reads as cramped next
    to the rest of the settings. Restore the spacing the other rows use. */
-.wr-settings .wr-tag-rule-group .setting-item {
+.wrot-settings .wrot-tag-rule-group .setting-item {
   padding: 20px 16px;
   gap: 12px;
 }
@@ -2894,25 +2894,25 @@ body.is-mobile .wr-settings input[type="color"]::-webkit-color-swatch {
    back on the regular ones — track, thumb, and the thumb's travel when switched on.
    Desktop only: the small size is not applied on mobile. The :not() raises specificity
    above the list rule without the priority flag. */
-body:not(.is-mobile) .wr-settings .wr-tag-rule-group .checkbox-container:not(#x) {
+body:not(.is-mobile) .wrot-settings .wrot-tag-rule-group .checkbox-container:not(#x) {
   width: var(--toggle-width);
   height: calc(var(--toggle-thumb-height) + var(--toggle-border-width) * 2);
 }
 
-body:not(.is-mobile) .wr-settings .wr-tag-rule-group .checkbox-container:not(#x)::after {
+body:not(.is-mobile) .wrot-settings .wrot-tag-rule-group .checkbox-container:not(#x)::after {
   width: var(--toggle-thumb-width);
   height: var(--toggle-thumb-height);
   margin: var(--toggle-border-width) 0 0 0;
   transform: translate3d(var(--toggle-border-width), 0, 0);
 }
 
-body:not(.is-mobile) .wr-settings .wr-tag-rule-group .checkbox-container.is-enabled:not(#x)::after {
+body:not(.is-mobile) .wrot-settings .wrot-tag-rule-group .checkbox-container.is-enabled:not(#x)::after {
   transform: translate3d(calc(var(--toggle-width) - var(--toggle-thumb-width) - var(--toggle-border-width)),
       0,
       0);
 }
 
-body:not(.is-mobile) .wr-settings .wr-tag-rule-group .checkbox-container:active:not(#x)::after {
+body:not(.is-mobile) .wrot-settings .wrot-tag-rule-group .checkbox-container:active:not(#x)::after {
   width: calc(var(--toggle-thumb-width) + var(--toggle-border-width) * 4);
   height: calc(var(--toggle-thumb-height) + var(--toggle-border-width) * 4);
   margin-top: calc(var(--toggle-border-width) * -1);
@@ -2920,55 +2920,55 @@ body:not(.is-mobile) .wr-settings .wr-tag-rule-group .checkbox-container:active:
 
 /* Scrolling to a freshly added rule on mobile: the settings page keeps a bar fixed across
    the top, so a group aligned to the very top would put its number row underneath it. */
-body.is-mobile .wr-settings .wr-tag-rule-group {
+body.is-mobile .wrot-settings .wrot-tag-rule-group {
   scroll-margin-top: 64px;
 }
 
 /* Locked tag rule: gray out editable fields only; the label row holding the
    lock toggle stays full-opacity so the unlock affordance is clear. */
-.wr-settings .wr-tag-rule-group.wr-tag-rule-locked .setting-item:not(.wr-tag-rule-label-setting) {
+.wrot-settings .wrot-tag-rule-group.wrot-tag-rule-locked .setting-item:not(.wrot-tag-rule-label-setting) {
   opacity: 0.55;
 }
 
-.wr-settings .wr-tag-rule-group .wr-tag-rule-disabled {
+.wrot-settings .wrot-tag-rule-group .wrot-tag-rule-disabled {
   pointer-events: none;
   cursor: not-allowed;
 }
 
 /* The disabled attribute alone still lets a tap open the picker on mobile. */
-.wr-settings select:disabled {
+.wrot-settings select:disabled {
   pointer-events: none;
   opacity: 0.35;
 }
 
-.wr-settings .wr-setting-disabled .setting-item-info {
+.wrot-settings .wrot-setting-disabled .setting-item-info {
   opacity: 0.35;
 }
 
 /* On mobile the list renders its add-entry affordance as a row, which keeps the list's
    compact height and sits shorter than everything around it. */
-body.is-mobile .wr-settings .setting-group.mod-list .setting-item:not(#x) {
+body.is-mobile .wrot-settings .setting-group.mod-list .setting-item:not(#x) {
   padding-top: 20px;
   padding-bottom: 20px;
 }
 
-.wr-settings .setting-group.mod-list .setting-item.mod-add-item:not(#x) {
+.wrot-settings .setting-group.mod-list .setting-item.mod-add-item:not(#x) {
   padding: 20px 16px;
 }
 
-body:not(.is-mobile) .wr-settings .setting-item.mod-add-item:not(#x):hover {
+body:not(.is-mobile) .wrot-settings .setting-item.mod-add-item:not(#x):hover {
   background: none;
 }
 
-body:not(.is-mobile) .wr-settings .setting-item.mod-add-item:hover .setting-item-name,
-body:not(.is-mobile) .wr-settings .setting-item.mod-add-item:hover .setting-item-icon {
+body:not(.is-mobile) .wrot-settings .setting-item.mod-add-item:hover .setting-item-name,
+body:not(.is-mobile) .wrot-settings .setting-item.mod-add-item:hover .setting-item-icon {
   opacity: 0.7;
 }
 
 /* Mobile stacks the label above the control, which splits the swatch and its reset button
    off onto their own line. Colour rows are short enough to stay on one line, so they keep
    the single-row layout; every other row is left to Obsidian. */
-body.is-mobile .wr-settings .setting-item.wr-reverse-controls:not(#x) {
+body.is-mobile .wrot-settings .setting-item.wrot-reverse-controls:not(#x) {
   display: flex;
   flex-wrap: nowrap;
   flex-direction: row;
@@ -2976,14 +2976,14 @@ body.is-mobile .wr-settings .setting-item.wr-reverse-controls:not(#x) {
   gap: 12px;
 }
 
-body.is-mobile .wr-settings .setting-item.wr-reverse-controls>.setting-item-info:not(#x) {
+body.is-mobile .wrot-settings .setting-item.wrot-reverse-controls>.setting-item-info:not(#x) {
   flex: 1 1 auto;
   min-width: 0;
   width: auto;
   margin: 0;
 }
 
-body.is-mobile .wr-settings .setting-item.wr-reverse-controls>.setting-item-control:not(#x) {
+body.is-mobile .wrot-settings .setting-item.wrot-reverse-controls>.setting-item-control:not(#x) {
   flex: 0 0 auto;
   justify-content: flex-end;
   width: auto;
@@ -2993,39 +2993,39 @@ body.is-mobile .wr-settings .setting-item.wr-reverse-controls>.setting-item-cont
 
 /* Reverse the control row visually (reset left of the picker) via `order`;
    row-reverse would change the flex main-axis behaviour. */
-.wr-settings .setting-item.wr-reverse-controls .setting-item-control> :first-child {
+.wrot-settings .setting-item.wrot-reverse-controls .setting-item-control> :first-child {
   order: 2;
 }
 
-.wr-settings .setting-item.wr-reverse-controls .setting-item-control> :last-child {
+.wrot-settings .setting-item.wrot-reverse-controls .setting-item-control> :last-child {
   order: 1;
 }
 
 /* Narrow settings pane (tablet portrait, split panes): rows keep label and control on one
    line, which squeezes text fields down to a sliver. Stack those rows instead — only the
    text-input ones cramp; everything else is left to Obsidian. Text-input rows are tagged
-   wr-text-input-row at render time (all of them are hand-rendered), so no :has() is needed.
+   wrot-text-input-row at render time (all of them are hand-rendered), so no :has() is needed.
    Measured against the pane itself rather than the viewport, since the pane is often far
    narrower than the window. */
-.wr-settings {
+.wrot-settings {
   container-type: inline-size;
 }
 
 @container (max-width: 600px) {
-  body .wr-settings .setting-item.wr-text-input-row:not(#x) {
+  body .wrot-settings .setting-item.wrot-text-input-row:not(#x) {
     display: flex;
     flex-direction: column;
     align-items: stretch;
     gap: 6px;
   }
 
-  body .wr-settings .setting-item.wr-text-input-row>.setting-item-info:not(#x) {
+  body .wrot-settings .setting-item.wrot-text-input-row>.setting-item-info:not(#x) {
     width: 100%;
     flex: 0 0 auto;
     margin: 0;
   }
 
-  body .wr-settings .setting-item.wr-text-input-row>.setting-item-control:not(#x) {
+  body .wrot-settings .setting-item.wrot-text-input-row>.setting-item-control:not(#x) {
     width: 100%;
     flex: 0 0 auto;
     justify-content: flex-start;
@@ -3033,7 +3033,7 @@ body.is-mobile .wr-settings .setting-item.wr-reverse-controls>.setting-item-cont
     padding: 0;
   }
 
-  .wr-settings .setting-item .setting-item-control input[type="text"] {
+  .wrot-settings .setting-item .setting-item-control input[type="text"] {
     flex: 1 1 auto;
     min-width: 0;
   }
@@ -3041,41 +3041,41 @@ body.is-mobile .wr-settings .setting-item.wr-reverse-controls>.setting-item-cont
 
 /* Authored description breaks ("\n" in locale strings) are desktop-only; mobile
    columns are narrow enough that natural wrapping suffices. */
-body.is-mobile .wr-settings .wr-pc-break {
+body.is-mobile .wrot-settings .wrot-pc-break {
   display: none;
 }
 
 /* Links inside a setting description inherit the muted description color, which reads as
    plain text; :not(#x) lifts specificity above that inherited rule, and the fill color is
    set alongside it because inherited -webkit-text-fill-color wins over color alone. */
-body .wr-settings-link:not(#x) {
+body .wrot-settings-link:not(#x) {
   color: var(--text-accent);
   -webkit-text-fill-color: var(--text-accent);
   text-decoration: none;
 }
 
-body .wr-settings-link:not(#x):hover {
+body .wrot-settings-link:not(#x):hover {
   opacity: 0.8;
 }
 
 /* Wrot quote card (Twitter quote-RT style) */
-.wr-quote-card-slot {
+.wrot-quote-card-slot {
   display: block;
   margin: 6px 0 0 0;
 }
 
-/* LV: under wr-quote-block no negative margin is needed; lay it flat */
-.cm-line .wr-quote-card-slot.wr-lp-quote-card {
+/* LV: under wrot-quote-block no negative margin is needed; lay it flat */
+.cm-line .wrot-quote-card-slot.wrot-lp-quote-card {
   display: block;
   margin: 0 var(--size-4-4, 16px) 0 0;
 }
 
-/* Slots inside wr-quote-block keep only the right margin so they do not hit the wr fence's right edge */
-.wr-quote-block>.wr-quote-card-slot.wr-lp-quote-card {
+/* Slots inside wrot-quote-block keep only the right margin so they do not hit the wr fence's right edge */
+.wrot-quote-block>.wrot-quote-card-slot.wrot-lp-quote-card {
   margin: 0 var(--size-4-4, 16px) 0 0;
 }
 
-.wr-quote-card {
+.wrot-quote-card {
   display: block;
   text-decoration: none;
   color: inherit;
@@ -3088,17 +3088,17 @@ body .wr-settings-link:not(#x):hover {
   cursor: pointer;
 }
 
-.wr-quote-card:hover {
+.wrot-quote-card:hover {
   border-color: var(--text-normal);
   background-color: rgba(0, 0, 0, 0.06);
   text-decoration: none;
 }
 
-.theme-dark .wr-quote-card:hover {
+.theme-dark .wrot-quote-card:hover {
   background-color: rgba(255, 255, 255, 0.06);
 }
 
-.wr-quote-card-body {
+.wrot-quote-card-body {
   font-size: 0.9em;
   color: var(--text-muted);
   /* Line limiting happens in JS on logical lines (PREVIEW_MAX_LINES = 3).
@@ -3112,61 +3112,61 @@ body .wr-settings-link:not(#x):hover {
 }
 
 /* main.ts stamps textColor on everything in the wr block via
-   "body .cm-line.wr-codeblock-line *" (0,0,2,1); including wr-quote-card-slot
+   "body .cm-line.wrot-codeblock-line *" (0,0,2,1); including wrot-quote-card-slot
    lifts these to 0,0,3,1 so the muted color wins */
-body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body,
-body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body *:not(.wr-tag):not(.wr-url):not(.wr-internal-link):not(.wr-nested-quote-marker):not(.wr-tag *):not(.wr-url *):not(.wr-internal-link *):not(.wr-quote-image-marker):not(.wr-quote-math-marker):not(.wr-quote-code-marker):not(.wr-quote-image-marker *):not(.wr-quote-math-marker *):not(.wr-quote-code-marker *),
-body .wr-quote-card-slot .wr-quote-card .wr-quote-card-meta {
+body .wrot-quote-card-slot .wrot-quote-card .wrot-quote-card-body,
+body .wrot-quote-card-slot .wrot-quote-card .wrot-quote-card-body *:not(.wrot-tag):not(.wrot-url):not(.wrot-internal-link):not(.wrot-nested-quote-marker):not(.wrot-tag *):not(.wrot-url *):not(.wrot-internal-link *):not(.wrot-quote-image-marker):not(.wrot-quote-math-marker):not(.wrot-quote-code-marker):not(.wrot-quote-image-marker *):not(.wrot-quote-math-marker *):not(.wrot-quote-code-marker *),
+body .wrot-quote-card-slot .wrot-quote-card .wrot-quote-card-meta {
   color: var(--text-muted);
 }
 
 /* The dashed border is also stated explicitly with raised specificity so main.ts rules cannot affect it */
-body .wr-quote-card-slot .wr-quote-card {
+body .wrot-quote-card-slot .wrot-quote-card {
   border-color: var(--text-muted);
 }
 
 /* Accent targets inside the quote card body (tags / URLs / internal links)
    override back to accent color with even stronger specificity */
-body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-tag,
-body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-url,
-body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-internal-link {
+body .wrot-quote-card-slot .wrot-quote-card .wrot-quote-card-body .wrot-tag,
+body .wrot-quote-card-slot .wrot-quote-card .wrot-quote-card-body .wrot-url,
+body .wrot-quote-card-slot .wrot-quote-card .wrot-quote-card-body .wrot-internal-link {
   color: var(--text-accent);
 }
 
 /* Flat "one line = one block" preview: inline markers instead of ul/ol/li
    keep the 3-line clip stable */
-.wr-quote-card-line {
+.wrot-quote-card-line {
   display: flex;
   align-items: baseline;
   white-space: pre-wrap;
   word-break: break-word;
 }
 
-.wr-quote-card-line-text {
+.wrot-quote-card-line-text {
   flex: 1 1 auto;
   min-width: 0;
 }
 
 /* Nesting in the card: one marker-slot width per level, matching the flat line layout. */
-.wr-quote-card-line-depth-1 {
+.wrot-quote-card-line-depth-1 {
   margin-inline-start: 1.4em;
 }
 
-.wr-quote-card-line-depth-2 {
+.wrot-quote-card-line-depth-2 {
   margin-inline-start: 2.8em;
 }
 
-.wr-quote-card-line-depth-3 {
+.wrot-quote-card-line-depth-3 {
   margin-inline-start: 4.2em;
 }
 
-.wr-quote-card-line-depth-4 {
+.wrot-quote-card-line-depth-4 {
   margin-inline-start: 5.6em;
 }
 
 /* Marker slot: bullet / "1." / circle check share a fixed width so text aligns.
    Text glyphs + CSS-drawn check avoid theme checkbox style interference */
-.wr-quote-card-marker-slot {
+.wrot-quote-card-marker-slot {
   flex: 0 0 1.4em;
   display: inline-flex;
   align-items: center;
@@ -3177,7 +3177,7 @@ body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-internal-link {
 
 /* Apple Reminders-style circular check marker. A 1em circle; when checked,
    a checkmark is drawn inside (built from CSS borders) */
-.wr-quote-card-check {
+.wrot-quote-card-check {
   display: inline-block;
   width: 0.95em;
   height: 0.95em;
@@ -3188,12 +3188,12 @@ body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-internal-link {
   flex: 0 0 auto;
 }
 
-.wr-quote-card-check-done {
+.wrot-quote-card-check-done {
   background-color: var(--text-muted);
   border-color: var(--text-muted);
 }
 
-.wr-quote-card-check-done::after {
+.wrot-quote-card-check-done::after {
   content: "";
   position: absolute;
   left: 28%;
@@ -3205,15 +3205,15 @@ body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-internal-link {
   transform: rotate(45deg);
 }
 
-.wr-quote-card-body .wr-tag,
-.wr-quote-card-body .wr-url,
-.wr-quote-card-body .wr-internal-link {
+.wrot-quote-card-body .wrot-tag,
+.wrot-quote-card-body .wrot-url,
+.wrot-quote-card-body .wrot-internal-link {
   color: var(--text-accent);
 }
 
-/* LV: wrapper for wr-quote-block (URL preview + quote card), placed as an
+/* LV: wrapper for wrot-quote-block (URL preview + quote card), placed as an
    inline widget at endLine.to in posts that contain a quote */
-.wr-quote-block {
+.wrot-quote-block {
   display: block;
   /* Cancel the ~16px top gap from the widgetBuffer spans on the closing fence
      line so the body and quote card sit at a natural distance */
@@ -3221,92 +3221,92 @@ body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-internal-link {
 }
 
 /* Gap between the URL preview (incl. image URLs) and the quote card. Matches the look of quotes following a normal ![[]] image */
-.wr-quote-block>.wr-media-area {
+.wrot-quote-block>.wrot-media-area {
   margin-bottom: 28px;
 }
 
-/* RV / timeline: when an image URL .wr-media-link sits right before the
+/* RV / timeline: when an image URL .wrot-media-link sits right before the
    quote card, pad it up to match the spacing after a normal (![[]]) image */
-.wr-media-area.wr-has-link+.wr-quote-card-slot {
+.wrot-media-area.wrot-has-link+.wrot-quote-card-slot {
   margin-top: 25px;
 }
 
-/* Under wr-quote-block the quote card hangs right below, so the tail
-   padding-bottom is unnecessary; wr-quote-block's margin owns the spacing */
-.wr-quote-block>.wr-lp-media.wr-has-img,
-.wr-quote-block>.wr-lp-media.wr-has-link {
+/* Under wrot-quote-block the quote card hangs right below, so the tail
+   padding-bottom is unnecessary; wrot-quote-block's margin owns the spacing */
+.wrot-quote-block>.wrot-lp-media.wrot-has-img,
+.wrot-quote-block>.wrot-lp-media.wrot-has-link {
   padding-bottom: 0;
 }
 
-.wr-quote-block>.wr-quote-card-slot {
+.wrot-quote-block>.wrot-quote-card-slot {
   margin-top: 0;
 }
 
 /* Image / math / code markers in the quote-card preview: inline-flex drifts
    off the text baseline, so use plain inline and align the svg itself */
-.wr-quote-image-marker,
-.wr-quote-math-marker,
-.wr-quote-code-marker {
+.wrot-quote-image-marker,
+.wrot-quote-math-marker,
+.wrot-quote-code-marker {
   color: var(--text-muted);
 }
 
-.wr-quote-image-marker-icon,
-.wr-quote-math-marker-icon,
-.wr-quote-code-marker-icon {
+.wrot-quote-image-marker-icon,
+.wrot-quote-math-marker-icon,
+.wrot-quote-code-marker-icon {
   display: inline;
   margin-right: 0.2em;
   color: inherit;
 }
 
-.wr-quote-image-marker-icon .svg-icon,
-.wr-quote-math-marker-icon .svg-icon,
-.wr-quote-code-marker-icon .svg-icon {
+.wrot-quote-image-marker-icon .svg-icon,
+.wrot-quote-math-marker-icon .svg-icon,
+.wrot-quote-code-marker-icon .svg-icon {
   width: 1em;
   height: 1em;
   vertical-align: -0.15em;
 }
 
 /* Nested-quote marker (X-style "QT: ...") */
-.wr-nested-quote-marker {
+.wrot-nested-quote-marker {
   color: var(--text-muted);
 }
 
-.wr-quote-card-meta {
+.wrot-quote-card-meta {
   font-size: 0.8em;
   color: var(--text-muted);
   font-family: var(--font-text, var(--default-font));
 }
 
-.wr-quote-card-dead {
+.wrot-quote-card-dead {
   cursor: default;
   opacity: 0.65;
 }
 
-.wr-quote-card-dead:hover {
+.wrot-quote-card-dead:hover {
   border-color: var(--text-muted);
 }
 
-/* Quote-card jump flash. JS sets --wr-flash-color for tag-rule accents; theme
+/* Quote-card jump flash. JS sets --wrot-flash-color for tag-rule accents; theme
    accent otherwise. Painted only on an ::after overlay so the block's own
    background stays intact — never animate background-color directly: animations
    beat normal declarations regardless of specificity and blank the card. */
-.cm-line.wr-codeblock-line.wr-quote-jump-flash,
-.block-language-wr.wr-quote-jump-flash,
-pre.wr-quote-jump-flash,
-.wr-card.wr-quote-jump-flash {
+.cm-line.wrot-codeblock-line.wrot-quote-jump-flash,
+.block-language-wr.wrot-quote-jump-flash,
+pre.wrot-quote-jump-flash,
+.wrot-card.wrot-quote-jump-flash {
   position: relative;
 }
 
-.cm-line.wr-codeblock-line.wr-quote-jump-flash::after,
-.block-language-wr.wr-quote-jump-flash::after,
-pre.wr-quote-jump-flash::after,
-.wr-card.wr-quote-jump-flash::after {
+.cm-line.wrot-codeblock-line.wrot-quote-jump-flash::after,
+.block-language-wr.wrot-quote-jump-flash::after,
+pre.wrot-quote-jump-flash::after,
+.wrot-card.wrot-quote-jump-flash::after {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background-color: var(--wr-flash-color, hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.22));
-  animation: wr-quote-jump-flash-overlay 1.4s ease-out 1 forwards;
+  background-color: var(--wrot-flash-color, hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.22));
+  animation: wrot-quote-jump-flash-overlay 1.4s ease-out 1 forwards;
   border-radius: inherit;
   /* Above the RV copy button (z-index: 100): tag-rule cards paint the button
      with an opaque card color, and without this the un-tinted button box
@@ -3315,7 +3315,7 @@ pre.wr-quote-jump-flash::after,
   z-index: 150;
 }
 
-@keyframes wr-quote-jump-flash-overlay {
+@keyframes wrot-quote-jump-flash-overlay {
   0% {
     opacity: 0;
   }

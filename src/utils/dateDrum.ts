@@ -38,10 +38,10 @@ export function buildDateDrum(host: HTMLElement, opts: DateDrumOptions): void {
   let month = earliest.month();
   let day = earliest.date();
 
-  const drums = host.createDiv({ cls: "wr-drum-row" });
-  const yearCol = drums.createDiv({ cls: "wr-drum-col wr-drum-col-year" });
-  const monthCol = drums.createDiv({ cls: "wr-drum-col" });
-  const dayCol = drums.createDiv({ cls: "wr-drum-col" });
+  const drums = host.createDiv({ cls: "wrot-drum-row" });
+  const yearCol = drums.createDiv({ cls: "wrot-drum-col wrot-drum-col-year" });
+  const monthCol = drums.createDiv({ cls: "wrot-drum-col" });
+  const dayCol = drums.createDiv({ cls: "wrot-drum-col" });
 
   const monthNames = moment.localeData().monthsShort();
 
@@ -60,7 +60,7 @@ export function buildDateDrum(host: HTMLElement, opts: DateDrumOptions): void {
     d >= earliest.date();
 
   const rowHeight = (col: HTMLElement): number => {
-    const first = col.querySelector<HTMLElement>(".wr-drum-item");
+    const first = col.querySelector<HTMLElement>(".wrot-drum-item");
     return first?.offsetHeight || 1;
   };
 
@@ -83,14 +83,14 @@ export function buildDateDrum(host: HTMLElement, opts: DateDrumOptions): void {
     selectedIndex: number
   ): void => {
     col.empty();
-    const pad = col.createDiv({ cls: "wr-drum-pad wr-drum-pad-top" });
+    const pad = col.createDiv({ cls: "wrot-drum-pad wrot-drum-pad-top" });
     for (const label of pastLabels) {
-      pad.createDiv({ cls: "wr-drum-item wr-drum-item-disabled", text: label });
+      pad.createDiv({ cls: "wrot-drum-item wrot-drum-item-disabled", text: label });
     }
     for (const label of labels) {
-      col.createDiv({ cls: "wr-drum-item", text: label });
+      col.createDiv({ cls: "wrot-drum-item", text: label });
     }
-    col.createDiv({ cls: "wr-drum-pad" });
+    col.createDiv({ cls: "wrot-drum-pad" });
     // Layout has to exist before a row height can be measured, so placement waits a frame.
     window.setTimeout(() => scrollToIndex(col, selectedIndex), 0);
   };

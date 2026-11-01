@@ -1,4 +1,31 @@
 import { App, TFile } from "obsidian";
+import { parseMemos } from "./memoParser";
+
+// lineIndex counts lines of the trimmed memo content. Returns false when nothing matched.
+export async function setMemoCheckbox(
+  app: App,
+  file: TFile,
+  memoTimestamp: string,
+  lineIndex: number,
+  checked: boolean
+): Promise<boolean> {
+  let found = false;
+  await app.vault.process(file, (data) => {
+    const memo = parseMemos(data).find((m) => m.time === memoTimestamp);
+    if (!memo) return data;
+    const body = memo.rawBlock.split("\n").slice(1);
+    let leading = 0;
+    while (leading < body.length && body[leading].trim() === "") leading++;
+    const lines = data.split("\n");
+    const lineNumber = memo.lineStart + 1 + leading + lineIndex;
+    const match = lines[lineNumber]?.match(/^((?:>\s?)*[ \t\u3000]*- \[)[ x](\] .*)$/);
+    if (!match) return data;
+    found = true;
+    lines[lineNumber] = match[1] + (checked ? "x" : " ") + match[2];
+    return lines.join("\n");
+  });
+  return found;
+}
 
 export async function toggleCheckbox(
   app: App,

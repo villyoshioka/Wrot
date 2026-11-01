@@ -47,9 +47,9 @@ export default class WrotPlugin extends Plugin {
   private pinFixedUnset = false;
   // Side-file read (pins, rules, layout, draft), settled after layout; writers await it so a save never lands on unread values.
   private deferredState: Promise<void> | null = null;
-  private bgSheet = new WrStyleSheet("wr-bg-override");
-  private tagRuleSheet = new WrStyleSheet("wr-tag-rule-override");
-  private fontSheet = new WrStyleSheet("wr-font-override");
+  private bgSheet = new WrStyleSheet("wrot-bg-override");
+  private tagRuleSheet = new WrStyleSheet("wrot-tag-rule-override");
+  private fontSheet = new WrStyleSheet("wrot-font-override");
   // Documents of the open popout windows. Runtime styles go to every window Wrot can appear
   // in, not just the focused one: with settings opened in their own window, that window would
   // otherwise be the only one to get them.
@@ -227,32 +227,32 @@ export default class WrotPlugin extends Plugin {
 
   applySubmitGradient(): void {
     for (const doc of this.styleDocs()) {
-      doc.body.classList.toggle("wr-submit-gradient", this.settings.submitGradient);
-      doc.body.setAttr("data-wr-gradient", this.settings.submitGradientMode);
+      doc.body.classList.toggle("wrot-submit-gradient", this.settings.submitGradient);
+      doc.body.setAttr("data-wrot-gradient", this.settings.submitGradientMode);
     }
   }
 
   applyFontFollow(): void {
     for (const doc of this.styleDocs()) {
-      doc.body.classList.toggle("wr-font-follow", this.settings.followObsidianFontSize);
+      doc.body.classList.toggle("wrot-font-follow", this.settings.followObsidianFontSize);
     }
     if (this.settings.followObsidianFontSize) {
       // Scale from --font-text-size to preserve the 14:13:12 size ratio.
       this.fontSheet.apply(`/* @css */
         body {
-          --wr-font-text: var(--font-text-size);
-          --wr-font-ui-small: calc(var(--font-text-size) * 0.929);
-          --wr-font-ui-smaller: calc(var(--font-text-size) * 0.857);
-          --wr-font-date: min(var(--font-text-size), 24px);
+          --wrot-font-text: var(--font-text-size);
+          --wrot-font-ui-small: calc(var(--font-text-size) * 0.929);
+          --wrot-font-ui-smaller: calc(var(--font-text-size) * 0.857);
+          --wrot-font-date: min(var(--font-text-size), 24px);
         }
       `, this.styleDocs());
     } else {
       this.fontSheet.apply(`/* @css */
         body {
-          --wr-font-text: 14px;
-          --wr-font-ui-small: 13px;
-          --wr-font-ui-smaller: 12px;
-          --wr-font-date: 14px;
+          --wrot-font-text: 14px;
+          --wrot-font-ui-small: 13px;
+          --wrot-font-ui-smaller: 12px;
+          --wrot-font-date: 14px;
         }
       `, this.styleDocs());
     }
@@ -329,11 +329,11 @@ export default class WrotPlugin extends Plugin {
     if (!rule) return null;
     const idx = this.settings.tagColorRules.indexOf(rule);
     if (idx < 0) return null;
-    return `wr-tag-rule-${idx}`;
+    return `wrot-tag-rule-${idx}`;
   }
 
   getRuleAccentColor(ruleClass: string): string | null {
-    const m = ruleClass.match(/^wr-tag-rule-(\d+)$/);
+    const m = ruleClass.match(/^wrot-tag-rule-(\d+)$/);
     if (!m) return null;
     const idx = parseInt(m[1], 10);
     const rule = this.settings.tagColorRules?.[idx];
@@ -347,7 +347,7 @@ export default class WrotPlugin extends Plugin {
     const radiusMap = { circle: "50%", rounded: "6px", square: "0px" } as const;
     const radius = radiusMap[this.settings.calendarDayShape ?? "circle"];
     for (const doc of this.styleDocs()) {
-      doc.body.style.setProperty("--wr-cal-day-radius", radius);
+      doc.body.style.setProperty("--wrot-cal-day-radius", radius);
     }
   }
 
@@ -383,15 +383,15 @@ export default class WrotPlugin extends Plugin {
   }
 
   refreshReadingViews(): void {
-    // Sweep stale wr-tag-rule-<n> classes off existing blocks; settings-UI classes lack the numeric suffix.
+    // Sweep stale wrot-tag-rule-<n> classes off existing blocks; settings-UI classes lack the numeric suffix.
     const sweepSelector =
-      '.wr-card[class*="wr-tag-rule-"], ' +
-      'div.block-language-wr[class*="wr-tag-rule-"], ' +
-      'pre[class*="wr-tag-rule-"], ' +
-      '.cm-line[class*="wr-tag-rule-"], ' +
-      '.code-block-flair[class*="wr-tag-rule-"], ' +
-      '.copy-code-button[class*="wr-tag-rule-"], ' +
-      '.wr-flair-bg[class*="wr-tag-rule-"]';
+      '.wrot-card[class*="wrot-tag-rule-"], ' +
+      'div.block-language-wr[class*="wrot-tag-rule-"], ' +
+      'pre[class*="wrot-tag-rule-"], ' +
+      '.cm-line[class*="wrot-tag-rule-"], ' +
+      '.code-block-flair[class*="wrot-tag-rule-"], ' +
+      '.copy-code-button[class*="wrot-tag-rule-"], ' +
+      '.wrot-flair-bg[class*="wrot-tag-rule-"]';
     // Every window, not just the focused one: a change made from a separate settings
     // window would otherwise never reach the notes the user is looking at.
     const docs = this.styleDocs();
@@ -399,7 +399,7 @@ export default class WrotPlugin extends Plugin {
       doc.querySelectorAll<HTMLElement>(sweepSelector).forEach((el) => {
         const existing = Array.from(el.classList);
         for (const cls of existing) {
-          if (/^wr-tag-rule-\d+$/.test(cls)) el.classList.remove(cls);
+          if (/^wrot-tag-rule-\d+$/.test(cls)) el.classList.remove(cls);
         }
       });
     }
@@ -426,14 +426,14 @@ export default class WrotPlugin extends Plugin {
         if (el.instanceOf(HTMLElement)) targets.push(el);
       });
 
-      const rawText = code.getAttribute("data-wr-original") || code.textContent || "";
+      const rawText = code.getAttribute("data-wrot-original") || code.textContent || "";
       const blockTags = matchTags(rawText);
       const rule = this.findTagColorRule(blockTags);
       if (!rule) return;
       const idx = this.settings.tagColorRules.indexOf(rule);
       if (idx < 0) return;
 
-      const cls = `wr-tag-rule-${idx}`;
+      const cls = `wrot-tag-rule-${idx}`;
       for (const t of targets) t.classList.add(cls);
     });
   }
@@ -489,8 +489,8 @@ export default class WrotPlugin extends Plugin {
     this.tagRuleSheet.remove();
     this.fontSheet.remove();
     for (const doc of this.styleDocs()) {
-      doc.body.classList.remove("wr-font-follow", "wr-submit-gradient");
-      doc.body.removeAttribute("data-wr-gradient");
+      doc.body.classList.remove("wrot-font-follow", "wrot-submit-gradient");
+      doc.body.removeAttribute("data-wrot-gradient");
     }
   }
 

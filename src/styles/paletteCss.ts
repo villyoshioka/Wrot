@@ -13,10 +13,10 @@ interface WrPalette {
   highlightTheme: Record<string, string>;
 }
 
-/** Highlight colour variables (--wr-hl-red …) kept visible on the given background. */
+/** Highlight colour variables (--wrot-hl-red …) kept visible on the given background. */
 export function highlightVars(theme: Record<string, string>, bg: string): string {
   return Object.entries(theme)
-    .map(([name, color]) => `--wr-hl-${name}: ${visibleHighlight(color, bg)};`)
+    .map(([name, color]) => `--wrot-hl-${name}: ${visibleHighlight(color, bg)};`)
     .join("\n        ");
 }
 
@@ -30,20 +30,20 @@ export function buildPaletteCss(palette: WrPalette): string {
   const quoteLink = `color-mix(in srgb, var(--text-accent) 40%, ${bgColor})`;
   return `/* @css */
       body {
-        --wr-bg-color: ${bgColor};
+        --wrot-bg-color: ${bgColor};
         ${highlightVars(highlightTheme, bgColor)}
-        --wr-bg-hover: ${hoverColor};
-        --wr-code-text: ${textColor};
-        --wr-code-l: ${codeLightness.base};
-        --wr-code-muted-l: ${codeLightness.muted};
-        --wr-code-faint-l: ${codeLightness.faint};
+        --wrot-bg-hover: ${hoverColor};
+        --wrot-code-text: ${textColor};
+        --wrot-code-l: ${codeLightness.base};
+        --wrot-code-muted-l: ${codeLightness.muted};
+        --wrot-code-faint-l: ${codeLightness.faint};
       }
-      body .wr-input-area,
-      body .wr-card,
+      body .wrot-input-area,
+      body .wrot-card,
       body div.block-language-wr,
       body .language-wr,
-      body .wr-ogp-card,
-      body .wr-codeblock-line {
+      body .wrot-ogp-card,
+      body .wrot-codeblock-line {
         background: ${bgColor};
         background-color: ${bgColor};
       }
@@ -51,298 +51,298 @@ export function buildPaletteCss(palette: WrPalette): string {
         background: ${bgColor};
         background-color: ${bgColor};
       }
-      body .wr-flair-bg {
+      body .wrot-flair-bg {
         background: ${bgColor};
         background-color: ${bgColor};
       }
-      body div.block-language-wr .wr-inline-code {
+      body div.block-language-wr .wrot-inline-code {
         background: rgba(0, 0, 0, 0.08);
       }
-      body div.block-language-wr .wr-highlight {
-        background: var(--text-highlight-bg, var(--wr-hl-yellow, color-mix(in oklch, var(--color-yellow) 30%, transparent)));
+      body div.block-language-wr .wrot-highlight {
+        background: var(--text-highlight-bg, var(--wrot-hl-yellow, color-mix(in oklch, var(--color-yellow) 30%, transparent)));
       }
       /* LV: code-block-flair doubles as the copy button; its hit area covers the memo tail, so keep it transparent */
-      body .wr-codeblock-line .code-block-flair {
+      body .wrot-codeblock-line .code-block-flair {
         background: transparent;
         background-color: transparent;
       }
-      body .wr-ogp-card:hover {
+      body .wrot-ogp-card:hover {
         background: ${hoverColor};
         background-color: ${hoverColor};
       }
       /* Mobile: neutralize the sticky post-tap :hover; show the PC hover color only while :active */
-      body.is-mobile .wr-ogp-card:hover {
+      body.is-mobile .wrot-ogp-card:hover {
         background: ${bgColor};
         background-color: ${bgColor};
       }
-      body.is-mobile .wr-ogp-card:active {
+      body.is-mobile .wrot-ogp-card:active {
         background: ${hoverColor};
         background-color: ${hoverColor};
       }
-      /* Body textColor stamp. wr-check-done is excluded so the later mutedColor rule wins:
+      /* Body textColor stamp. wrot-check-done is excluded so the later mutedColor rule wins:
          RV's pre structure never receives this rule, so LV must use the same color source */
-      body .wr-content,
-      body .wr-textarea,
-      body .wr-date-label,
-      body .wr-calendar-month-label,
-      body .wr-calendar-day:not(.wr-calendar-day-selected):not(.wr-calendar-day-today):not(.wr-calendar-day-outside):not(.wr-calendar-day-disabled),
-      body .wr-calendar-year:not(.wr-calendar-day-selected):not(.wr-calendar-day-today):not(.wr-calendar-day-disabled),
-      body .wr-inline-code,
-      body .wr-plain-text,
-      body div.block-language-wr *:not(.wr-embed-missing):not(.wr-internal-link-unresolved):not(.wr-internal-link):not(.wr-tag):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url):not(.wr-check-done):not(.wr-quote-card-slot):not(.wr-quote-card-slot *):not(.wr-codeblock-display):not(.wr-codeblock-display *),
-      body .wr-codeblock-line,
-      body .wr-codeblock-line *:not(.wr-embed-missing):not(.wr-internal-link-unresolved):not(.wr-internal-link):not(.wr-tag):not(.wr-url):not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-url-highlight):not(.wr-check-done):not(.wr-quote-card-slot):not(.wr-quote-card-slot *):not(.wr-codeblock-display):not(.wr-codeblock-display *):not(.token),
-      body .cm-line.wr-codeblock-line,
-      body .cm-line.wr-codeblock-line *:not(.wr-embed-missing):not(.wr-internal-link-unresolved):not(.wr-internal-link):not(.wr-tag):not(.wr-url):not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-url-highlight):not(.wr-check-done):not(.wr-quote-card-slot):not(.wr-quote-card-slot *):not(.wr-codeblock-display):not(.wr-codeblock-display *):not(.wr-lp-marker):not(.token),
-      body .wr-reading-list li,
-      body .wr-bullet-list li,
-      body .wr-ordered-list li {
+      body .wrot-content,
+      body .wrot-textarea,
+      body .wrot-date-label,
+      body .wrot-calendar-month-label,
+      body .wrot-calendar-day:not(.wrot-calendar-day-selected):not(.wrot-calendar-day-today):not(.wrot-calendar-day-outside):not(.wrot-calendar-day-disabled),
+      body .wrot-calendar-year:not(.wrot-calendar-day-selected):not(.wrot-calendar-day-today):not(.wrot-calendar-day-disabled),
+      body .wrot-inline-code,
+      body .wrot-plain-text,
+      body div.block-language-wr *:not(.wrot-embed-missing):not(.wrot-internal-link-unresolved):not(.wrot-internal-link):not(.wrot-tag):not(.wrot-url):not(.wrot-reading-tag):not(.wrot-reading-url):not(.wrot-check-done):not(.wrot-quote-card-slot):not(.wrot-quote-card-slot *):not(.wrot-codeblock-display):not(.wrot-codeblock-display *),
+      body .wrot-codeblock-line,
+      body .wrot-codeblock-line *:not(.wrot-embed-missing):not(.wrot-internal-link-unresolved):not(.wrot-internal-link):not(.wrot-tag):not(.wrot-url):not(.wrot-tag-highlight):not(.wrot-internal-link-highlight):not(.wrot-url-highlight):not(.wrot-check-done):not(.wrot-quote-card-slot):not(.wrot-quote-card-slot *):not(.wrot-codeblock-display):not(.wrot-codeblock-display *):not(.token),
+      body .cm-line.wrot-codeblock-line,
+      body .cm-line.wrot-codeblock-line *:not(.wrot-embed-missing):not(.wrot-internal-link-unresolved):not(.wrot-internal-link):not(.wrot-tag):not(.wrot-url):not(.wrot-tag-highlight):not(.wrot-internal-link-highlight):not(.wrot-url-highlight):not(.wrot-check-done):not(.wrot-quote-card-slot):not(.wrot-quote-card-slot *):not(.wrot-codeblock-display):not(.wrot-codeblock-display *):not(.wrot-lp-marker):not(.token),
+      body .wrot-reading-list li,
+      body .wrot-bullet-list li,
+      body .wrot-ordered-list li {
         color: ${textColor};
       }
-      body .wr-calendar-weekday,
-      body .wr-calendar-nav-btn {
+      body .wrot-calendar-weekday,
+      body .wrot-calendar-nav-btn {
         color: ${mutedColor};
       }
-      body .wr-calendar-day-outside {
+      body .wrot-calendar-day-outside {
         color: ${faintColor};
       }
       /* Out of range for this picker. Declared after the today rule so a day that is
          both today and out of reach reads as out of reach. */
-      body .wr-calendar-day-disabled,
-      body .wr-calendar-day-disabled.wr-calendar-day-today,
-      body .wr-calendar-day-disabled.wr-calendar-day-selected {
+      body .wrot-calendar-day-disabled,
+      body .wrot-calendar-day-disabled.wrot-calendar-day-today,
+      body .wrot-calendar-day-disabled.wrot-calendar-day-selected {
         color: ${faintColor};
         font-weight: inherit;
       }
       /* Restore Prism token colors inside nested code blocks */
-      body .wr-codeblock-display code[class*="language-"],
-      body .wr-codeblock-display pre[class*="language-"] {
+      body .wrot-codeblock-display code[class*="language-"],
+      body .wrot-codeblock-display pre[class*="language-"] {
         color: var(--code-normal);
       }
-      body .wr-codeblock-display .token.comment,
-      body .wr-codeblock-display .token.prolog,
-      body .wr-codeblock-display .token.doctype,
-      body .wr-codeblock-display .token.cdata { color: var(--code-comment); }
-      body .wr-codeblock-display .token.punctuation { color: var(--code-punctuation); }
-      body .wr-codeblock-display .token.property,
-      body .wr-codeblock-display .token.tag,
-      body .wr-codeblock-display .token.boolean,
-      body .wr-codeblock-display .token.number,
-      body .wr-codeblock-display .token.constant,
-      body .wr-codeblock-display .token.symbol,
-      body .wr-codeblock-display .token.deleted { color: var(--code-tag); }
-      body .wr-codeblock-display .token.selector,
-      body .wr-codeblock-display .token.attr-name,
-      body .wr-codeblock-display .token.string,
-      body .wr-codeblock-display .token.char,
-      body .wr-codeblock-display .token.builtin,
-      body .wr-codeblock-display .token.inserted { color: var(--code-string); }
-      body .wr-codeblock-display .token.operator,
-      body .wr-codeblock-display .token.entity,
-      body .wr-codeblock-display .token.url,
-      body .wr-codeblock-display .language-css .token.string,
-      body .wr-codeblock-display .style .token.string { color: var(--code-operator); }
-      body .wr-codeblock-display .token.atrule,
-      body .wr-codeblock-display .token.attr-value,
-      body .wr-codeblock-display .token.keyword { color: var(--code-keyword); }
-      body .wr-codeblock-display .token.function,
-      body .wr-codeblock-display .token.class-name { color: var(--code-function); }
-      body .wr-codeblock-display .token.regex,
-      body .wr-codeblock-display .token.important,
-      body .wr-codeblock-display .token.variable { color: var(--code-value); }
-      body .wr-nav-btn,
-      body .wr-today-btn,
-      body .wr-toolbar-btn,
-      body .wr-copy-btn,
-      body .wr-copy-btn .svg-icon,
-      body .wr-menu-btn,
-      body .wr-menu-btn .svg-icon,
-      body .wr-pin-indicator,
-      body .wr-pin-indicator .svg-icon,
-      body .wr-timestamp,
-      body .wr-submit-btn,
-      body .wr-empty,
-      body .wr-ogp-title,
-      body .wr-ogp-desc,
-      body .wr-ogp-site,
-      body .wr-flair-bg,
-      body .wr-codeblock-line .code-block-flair,
-      body .cm-line.wr-codeblock-line .wr-lp-marker,
-      body .cm-line.wr-codeblock-line .wr-list-highlight,
-      body .cm-line.wr-codeblock-line .wr-check-unchecked,
-      body .cm-line.wr-codeblock-line .wr-check-checked,
-      body .cm-line.wr-codeblock-line .wr-ol-highlight,
-      body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body,
-      body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body *:not(.wr-tag):not(.wr-url):not(.wr-internal-link):not(.wr-nested-quote-marker):not(.wr-quote-image-marker):not(.wr-quote-math-marker):not(.wr-quote-code-marker):not(.wr-quote-image-marker *):not(.wr-quote-math-marker *):not(.wr-quote-code-marker *):not(.wr-tag *):not(.wr-url *):not(.wr-internal-link *),
-      body .wr-quote-card-slot .wr-quote-card .wr-quote-card-meta,
-      body .wr-quote-card-slot .wr-quote-card .wr-quote-image-marker,
-      body .wr-quote-card-slot .wr-quote-card .wr-quote-math-marker,
-      body .wr-quote-card-slot .wr-quote-card .wr-quote-code-marker,
-      body .wr-quote-card-slot .wr-quote-card .wr-nested-quote-marker {
+      body .wrot-codeblock-display .token.comment,
+      body .wrot-codeblock-display .token.prolog,
+      body .wrot-codeblock-display .token.doctype,
+      body .wrot-codeblock-display .token.cdata { color: var(--code-comment); }
+      body .wrot-codeblock-display .token.punctuation { color: var(--code-punctuation); }
+      body .wrot-codeblock-display .token.property,
+      body .wrot-codeblock-display .token.tag,
+      body .wrot-codeblock-display .token.boolean,
+      body .wrot-codeblock-display .token.number,
+      body .wrot-codeblock-display .token.constant,
+      body .wrot-codeblock-display .token.symbol,
+      body .wrot-codeblock-display .token.deleted { color: var(--code-tag); }
+      body .wrot-codeblock-display .token.selector,
+      body .wrot-codeblock-display .token.attr-name,
+      body .wrot-codeblock-display .token.string,
+      body .wrot-codeblock-display .token.char,
+      body .wrot-codeblock-display .token.builtin,
+      body .wrot-codeblock-display .token.inserted { color: var(--code-string); }
+      body .wrot-codeblock-display .token.operator,
+      body .wrot-codeblock-display .token.entity,
+      body .wrot-codeblock-display .token.url,
+      body .wrot-codeblock-display .language-css .token.string,
+      body .wrot-codeblock-display .style .token.string { color: var(--code-operator); }
+      body .wrot-codeblock-display .token.atrule,
+      body .wrot-codeblock-display .token.attr-value,
+      body .wrot-codeblock-display .token.keyword { color: var(--code-keyword); }
+      body .wrot-codeblock-display .token.function,
+      body .wrot-codeblock-display .token.class-name { color: var(--code-function); }
+      body .wrot-codeblock-display .token.regex,
+      body .wrot-codeblock-display .token.important,
+      body .wrot-codeblock-display .token.variable { color: var(--code-value); }
+      body .wrot-nav-btn,
+      body .wrot-today-btn,
+      body .wrot-toolbar-btn,
+      body .wrot-copy-btn,
+      body .wrot-copy-btn .svg-icon,
+      body .wrot-menu-btn,
+      body .wrot-menu-btn .svg-icon,
+      body .wrot-pin-indicator,
+      body .wrot-pin-indicator .svg-icon,
+      body .wrot-timestamp,
+      body .wrot-submit-btn,
+      body .wrot-empty,
+      body .wrot-ogp-title,
+      body .wrot-ogp-desc,
+      body .wrot-ogp-site,
+      body .wrot-flair-bg,
+      body .wrot-codeblock-line .code-block-flair,
+      body .cm-line.wrot-codeblock-line .wrot-lp-marker,
+      body .cm-line.wrot-codeblock-line .wrot-list-highlight,
+      body .cm-line.wrot-codeblock-line .wrot-check-unchecked,
+      body .cm-line.wrot-codeblock-line .wrot-check-checked,
+      body .cm-line.wrot-codeblock-line .wrot-ol-highlight,
+      body .wrot-quote-card-slot .wrot-quote-card .wrot-quote-card-body,
+      body .wrot-quote-card-slot .wrot-quote-card .wrot-quote-card-body *:not(.wrot-tag):not(.wrot-url):not(.wrot-internal-link):not(.wrot-nested-quote-marker):not(.wrot-quote-image-marker):not(.wrot-quote-math-marker):not(.wrot-quote-code-marker):not(.wrot-quote-image-marker *):not(.wrot-quote-math-marker *):not(.wrot-quote-code-marker *):not(.wrot-tag *):not(.wrot-url *):not(.wrot-internal-link *),
+      body .wrot-quote-card-slot .wrot-quote-card .wrot-quote-card-meta,
+      body .wrot-quote-card-slot .wrot-quote-card .wrot-quote-image-marker,
+      body .wrot-quote-card-slot .wrot-quote-card .wrot-quote-math-marker,
+      body .wrot-quote-card-slot .wrot-quote-card .wrot-quote-code-marker,
+      body .wrot-quote-card-slot .wrot-quote-card .wrot-nested-quote-marker {
         color: ${mutedColor};
       }
       /* Block quotes (> lines) one step fainter than the other sub-colour text */
-      body .cm-line.wr-codeblock-line .wr-quote-highlight,
-      body .wr-blockquote,
-      body .wr-blockquote *,
-      body .cm-line.wr-blockquote-line,
-      body .cm-line.wr-blockquote-line *,
-      body .wr-textarea .cm-line.wr-cv-quote,
-      body .wr-textarea .cm-line.wr-cv-quote * {
+      body .cm-line.wrot-codeblock-line .wrot-quote-highlight,
+      body .wrot-blockquote,
+      body .wrot-blockquote *,
+      body .cm-line.wrot-blockquote-line,
+      body .cm-line.wrot-blockquote-line *,
+      body .wrot-textarea .cm-line.wrot-cv-quote,
+      body .wrot-textarea .cm-line.wrot-cv-quote * {
         color: ${faintColor};
       }
-      body .wr-quote-card-slot .wr-quote-card {
+      body .wrot-quote-card-slot .wrot-quote-card {
         border-color: ${mutedColor};
       }
-      body .wr-quote-card-slot .wr-quote-card .wr-quote-card-body .wr-blockquote {
+      body .wrot-quote-card-slot .wrot-quote-card .wrot-quote-card-body .wrot-blockquote {
         border-left-color: ${mutedColor};
       }
-      body .wr-ogp-card {
+      body .wrot-ogp-card {
         border-color: ${mutedColor};
       }
       /* Re-declared at higher specificity so marker colors also reach LV widget DOM */
-      body .cm-line .wr-lp-marker:not(#x#y#z),
-      body .cm-line .wr-list-highlight:not(#x#y#z),
-      body .cm-line .wr-check-unchecked:not(#x#y#z),
-      body .cm-line .wr-check-checked:not(#x#y#z),
-      body .cm-line .wr-ol-highlight:not(#x#y#z),
-      body .cm-line .wr-ogp-title:not(#x#y#z),
-      body .cm-line .wr-ogp-desc:not(#x#y#z),
-      body .cm-line .wr-ogp-site:not(#x#y#z),
-      body .cm-line .wr-ogp-loading:not(#x#y#z) {
+      body .cm-line .wrot-lp-marker:not(#x#y#z),
+      body .cm-line .wrot-list-highlight:not(#x#y#z),
+      body .cm-line .wrot-check-unchecked:not(#x#y#z),
+      body .cm-line .wrot-check-checked:not(#x#y#z),
+      body .cm-line .wrot-ol-highlight:not(#x#y#z),
+      body .cm-line .wrot-ogp-title:not(#x#y#z),
+      body .cm-line .wrot-ogp-desc:not(#x#y#z),
+      body .cm-line .wrot-ogp-site:not(#x#y#z),
+      body .cm-line .wrot-ogp-loading:not(#x#y#z) {
         color: ${mutedColor};
       }
-      body .cm-line .wr-quote-highlight:not(#x#y#z),
-      body .cm-line.wr-blockquote-line:not(#x#y#z),
-      body .cm-line .wr-blockquote-wrap:not(#x#y#z),
-      body .cm-line .wr-blockquote-wrap:not(#x#y#z) *:not(.wr-tag-highlight):not(.wr-internal-link-highlight):not(.wr-url-highlight):not(.wr-math-highlight):not(.wr-tag):not(.wr-internal-link):not(.wr-url):not(.wr-reading-tag):not(.wr-reading-url) {
+      body .cm-line .wrot-quote-highlight:not(#x#y#z),
+      body .cm-line.wrot-blockquote-line:not(#x#y#z),
+      body .cm-line .wrot-blockquote-wrap:not(#x#y#z),
+      body .cm-line .wrot-blockquote-wrap:not(#x#y#z) *:not(.wrot-tag-highlight):not(.wrot-internal-link-highlight):not(.wrot-url-highlight):not(.wrot-math-highlight):not(.wrot-tag):not(.wrot-internal-link):not(.wrot-url):not(.wrot-reading-tag):not(.wrot-reading-url) {
         color: ${faintColor};
       }
       /* Checkbox border uses the sub color; checked fill uses the theme accent */
-      body .wr-check-item input[type="checkbox"],
-      body .wr-bullet-list .wr-check-item input[type="checkbox"],
-      body .wr-reading-list .wr-check-item input[type="checkbox"],
-      body .wr-lp-check input[type="checkbox"] {
+      body .wrot-check-item input[type="checkbox"],
+      body .wrot-bullet-list .wrot-check-item input[type="checkbox"],
+      body .wrot-reading-list .wrot-check-item input[type="checkbox"],
+      body .wrot-lp-check input[type="checkbox"] {
         --checkbox-border-color: ${mutedColor};
         --checkbox-border-color-hover: ${mutedColor};
         --checkbox-color: var(--text-accent);
         --checkbox-color-hover: var(--text-accent);
         accent-color: var(--text-accent);
       }
-      body .wr-textarea.wr-composer-empty .cm-content::before {
+      body .wrot-textarea.wrot-composer-empty .cm-content::before {
         color: ${faintColor};
       }
-      body .wr-toolbar-btn.wr-toolbar-active {
+      body .wrot-toolbar-btn.wrot-toolbar-active {
         color: var(--text-accent);
       }
       /* Menu-open 3-dot button: (0,3,1) beats the muted rule above (0,2,1);
          declared here rather than relying on the static CSS equivalent */
-      body .wr-menu-btn.wr-toolbar-active .svg-icon {
+      body .wrot-menu-btn.wrot-toolbar-active .svg-icon {
         color: var(--text-accent);
         stroke: var(--text-accent);
       }
-      body .cm-line.wr-codeblock-line .wr-tag-highlight,
-      body .cm-line.wr-codeblock-line .wr-url-highlight,
-      body .cm-line.wr-codeblock-line .wr-internal-link-highlight,
-      body .cm-line.wr-codeblock-line .wr-math-highlight {
+      body .cm-line.wrot-codeblock-line .wrot-tag-highlight,
+      body .cm-line.wrot-codeblock-line .wrot-url-highlight,
+      body .cm-line.wrot-codeblock-line .wrot-internal-link-highlight,
+      body .cm-line.wrot-codeblock-line .wrot-math-highlight {
         color: var(--text-accent);
       }
-      body .wr-check-done {
+      body .wrot-check-done {
         color: ${mutedColor};
       }
-      body .wr-blockquote-wrap {
+      body .wrot-blockquote-wrap {
         color: ${faintColor};
       }
-      body .wr-blockquote,
-      body .wr-blockquote-wrap {
+      body .wrot-blockquote,
+      body .wrot-blockquote-wrap {
         border-left-color: ${faintColor};
       }
       /* LV quote bars (::before, nested via box-shadow) use the same colour as RV's
          border-left so both views share one color source; tag-rule CSS (tier 4) still wins */
-      body .cm-line.wr-blockquote-line::before,
-      body .wr-textarea .cm-line.wr-cv-quote::before {
+      body .cm-line.wrot-blockquote-line::before,
+      body .wrot-textarea .cm-line.wrot-cv-quote::before {
         background-color: ${faintColor};
       }
-      body .cm-line.wr-blockquote-depth-2::before,
-      body .wr-textarea .cm-line.wr-cv-quote-2::before {
+      body .cm-line.wrot-blockquote-depth-2::before,
+      body .wrot-textarea .cm-line.wrot-cv-quote-2::before {
         box-shadow: 18px 0 0 0 ${faintColor};
       }
-      body .cm-line.wr-blockquote-depth-3::before,
-      body .wr-textarea .cm-line.wr-cv-quote-3::before {
+      body .cm-line.wrot-blockquote-depth-3::before,
+      body .wrot-textarea .cm-line.wrot-cv-quote-3::before {
         box-shadow:
           18px 0 0 0 ${faintColor},
           36px 0 0 0 ${faintColor};
       }
-      body .cm-line.wr-blockquote-depth-4::before,
-      body .wr-textarea .cm-line.wr-cv-quote-4::before {
+      body .cm-line.wrot-blockquote-depth-4::before,
+      body .wrot-textarea .cm-line.wrot-cv-quote-4::before {
         box-shadow:
           18px 0 0 0 ${faintColor},
           36px 0 0 0 ${faintColor},
           54px 0 0 0 ${faintColor};
       }
-      body .cm-line.wr-blockquote-depth-5::before,
-      body .wr-textarea .cm-line.wr-cv-quote-5::before {
+      body .cm-line.wrot-blockquote-depth-5::before,
+      body .wrot-textarea .cm-line.wrot-cv-quote-5::before {
         box-shadow:
           18px 0 0 0 ${faintColor},
           36px 0 0 0 ${faintColor},
           54px 0 0 0 ${faintColor},
           72px 0 0 0 ${faintColor};
       }
-      body .wr-bullet-list > li:not(.wr-check-item)::before,
-      body .wr-ordered-list > li::before,
-      body ul.wr-reading-list > li:not(.wr-check-item)::before,
-      body ol.wr-reading-list > li::before {
+      body .wrot-bullet-list > li:not(.wrot-check-item)::before,
+      body .wrot-ordered-list > li::before,
+      body ul.wrot-reading-list > li:not(.wrot-check-item)::before,
+      body ol.wrot-reading-list > li::before {
         color: ${mutedColor};
       }
       /* Lists inside block quotes take the quote's colour throughout: text, markers and
          checkbox borders (links and tags keep their own) */
-      body .wr-blockquote li,
-      body .wr-blockquote .wr-check-done,
-      body .wr-blockquote .wr-bullet-list > li:not(.wr-check-item)::before,
-      body .wr-blockquote .wr-ordered-list > li::before,
-      body .wr-blockquote ul.wr-reading-list > li:not(.wr-check-item)::before,
-      body .wr-blockquote ol.wr-reading-list > li::before,
-      body .cm-line.wr-blockquote-line .wr-lp-marker:not(#x#y#z) {
+      body .wrot-blockquote li,
+      body .wrot-blockquote .wrot-check-done,
+      body .wrot-blockquote .wrot-bullet-list > li:not(.wrot-check-item)::before,
+      body .wrot-blockquote .wrot-ordered-list > li::before,
+      body .wrot-blockquote ul.wrot-reading-list > li:not(.wrot-check-item)::before,
+      body .wrot-blockquote ol.wrot-reading-list > li::before,
+      body .cm-line.wrot-blockquote-line .wrot-lp-marker:not(#x#y#z) {
         color: ${faintColor};
       }
-      body .wr-textarea .cm-line.wr-cv-quote .wr-cv-bullet {
+      body .wrot-textarea .cm-line.wrot-cv-quote .wrot-cv-bullet {
         background-color: ${faintColor};
       }
-      body .wr-blockquote .wr-check-item input[type="checkbox"],
-      body .cm-line.wr-blockquote-line .wr-lp-check input[type="checkbox"],
-      body .wr-textarea .cm-line.wr-cv-quote .wr-cv-check {
+      body .wrot-blockquote .wrot-check-item input[type="checkbox"],
+      body .cm-line.wrot-blockquote-line .wrot-lp-check input[type="checkbox"],
+      body .wrot-textarea .cm-line.wrot-cv-quote .wrot-cv-check {
         --checkbox-border-color: ${faintColor};
         --checkbox-border-color-hover: ${faintColor};
       }
-      body .wr-tag,
-      body .wr-reading-tag,
-      body .wr-internal-link,
-      body .wr-url,
-      body .wr-reading-url,
-      body div.block-language-wr a.wr-internal-link,
-      body div.block-language-wr .wr-reading-tag,
-      body div.block-language-wr .wr-reading-url,
+      body .wrot-tag,
+      body .wrot-reading-tag,
+      body .wrot-internal-link,
+      body .wrot-url,
+      body .wrot-reading-url,
+      body div.block-language-wr a.wrot-internal-link,
+      body div.block-language-wr .wrot-reading-tag,
+      body div.block-language-wr .wrot-reading-url,
       body div.block-language-wr a,
-      body .cm-line.wr-codeblock-line .wr-internal-link,
-      body .cm-line.wr-codeblock-line .wr-url {
+      body .cm-line.wrot-codeblock-line .wrot-internal-link,
+      body .cm-line.wrot-codeblock-line .wrot-url {
         color: var(--text-accent);
       }
       /* Links inside block quotes: the accent faded toward the background as far as quote text
          is (faintColor), so they still read as links without standing out of the quote */
-      body .wr-blockquote .wr-internal-link:not(.wr-internal-link-unresolved),
-      body .wr-blockquote .wr-url,
-      body .wr-blockquote .wr-reading-url,
-      body div.block-language-wr .wr-blockquote a.wr-internal-link:not(.wr-internal-link-unresolved),
-      body .wr-textarea .cm-line.wr-cv-quote .wr-cv-link {
+      body .wrot-blockquote .wrot-internal-link:not(.wrot-internal-link-unresolved),
+      body .wrot-blockquote .wrot-url,
+      body .wrot-blockquote .wrot-reading-url,
+      body div.block-language-wr .wrot-blockquote a.wrot-internal-link:not(.wrot-internal-link-unresolved),
+      body .wrot-textarea .cm-line.wrot-cv-quote .wrot-cv-link {
         color: ${quoteLink};
       }
       /* LV: either nesting of link and quote marks, over the ID-level quote colour */
-      body .cm-line.wr-blockquote-line .wr-internal-link-highlight:not(.wr-internal-link-unresolved):not(#x#y#z),
-      body .cm-line.wr-blockquote-line .wr-internal-link-highlight:not(.wr-internal-link-unresolved) *:not(#x#y#z),
-      body .cm-line.wr-blockquote-line .wr-internal-link:not(.wr-internal-link-unresolved):not(#x#y#z),
-      body .cm-line.wr-blockquote-line .wr-url-highlight:not(#x#y#z),
-      body .cm-line.wr-blockquote-line .wr-url-highlight *:not(#x#y#z),
-      body .cm-line.wr-blockquote-line .wr-url:not(#x#y#z) {
+      body .cm-line.wrot-blockquote-line .wrot-internal-link-highlight:not(.wrot-internal-link-unresolved):not(#x#y#z),
+      body .cm-line.wrot-blockquote-line .wrot-internal-link-highlight:not(.wrot-internal-link-unresolved) *:not(#x#y#z),
+      body .cm-line.wrot-blockquote-line .wrot-internal-link:not(.wrot-internal-link-unresolved):not(#x#y#z),
+      body .cm-line.wrot-blockquote-line .wrot-url-highlight:not(#x#y#z),
+      body .cm-line.wrot-blockquote-line .wrot-url-highlight *:not(#x#y#z),
+      body .cm-line.wrot-blockquote-line .wrot-url:not(#x#y#z) {
         color: ${quoteLink};
         -webkit-text-fill-color: ${quoteLink};
       }
@@ -350,84 +350,84 @@ export function buildPaletteCss(palette: WrPalette): string {
          so both take the palette's faint colour. The tag-rule sheet groups them the same way;
          without the embed selectors here they would fall back to the theme's muted colour,
          which is unrelated to Wrot's own background. */
-      body .cm-line.wr-codeblock-line .wr-internal-link.wr-internal-link-unresolved,
-      body div.block-language-wr a.wr-internal-link.wr-internal-link-unresolved,
-      body .wr-internal-link.wr-internal-link-unresolved,
-      body .cm-line.wr-codeblock-line .wr-embed-missing,
-      body div.block-language-wr .wr-embed-missing,
-      body .wr-embed-missing {
+      body .cm-line.wrot-codeblock-line .wrot-internal-link.wrot-internal-link-unresolved,
+      body div.block-language-wr a.wrot-internal-link.wrot-internal-link-unresolved,
+      body .wrot-internal-link.wrot-internal-link-unresolved,
+      body .cm-line.wrot-codeblock-line .wrot-embed-missing,
+      body div.block-language-wr .wrot-embed-missing,
+      body .wrot-embed-missing {
         color: ${unresolvedLinkColor};
       }
-      body .wr-submit-btn.wr-submit-active {
+      body .wrot-submit-btn.wrot-submit-active {
         color: var(--text-on-accent);
       }
-      body .wr-copy-btn .svg-icon,
-      body .wr-menu-btn .svg-icon,
-      body .wr-pin-indicator .svg-icon {
+      body .wrot-copy-btn .svg-icon,
+      body .wrot-menu-btn .svg-icon,
+      body .wrot-pin-indicator .svg-icon {
         stroke: ${mutedColor};
       }
-      body .wr-menu {
+      body .wrot-menu {
         background: ${bgColor};
         background-color: ${bgColor};
         border-color: ${hoverColor};
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
       }
-      body .wr-menu .menu-item {
+      body .wrot-menu .menu-item {
         color: ${textColor};
         background-color: ${bgColor};
       }
-      body .wr-menu .menu-item .menu-item-icon .svg-icon {
+      body .wrot-menu .menu-item .menu-item-icon .svg-icon {
         color: ${mutedColor};
         stroke: ${mutedColor};
       }
       /* The tick on a checked item says a state is live, so it keeps the accent instead
          of the muted colour every other icon in the menu carries. */
-      body .wr-menu .menu-item .menu-item-icon.mod-checked .svg-icon {
+      body .wrot-menu .menu-item .menu-item-icon.mod-checked .svg-icon {
         color: var(--text-accent);
         stroke: var(--text-accent);
       }
-      .is-mobile body .wr-menu .menu-item:not(.is-label):not(.is-disabled):hover,
-      .is-mobile body .wr-menu .menu-item:not(.is-label):not(.is-disabled):active,
-      body .wr-menu .menu-item:not(.is-disabled):hover,
-      body .wr-menu .menu-item:not(.is-disabled).selected,
-      body .wr-menu .menu-item:not(.is-disabled).is-selected,
-      body .wr-menu .menu-item:not(.is-disabled):active {
+      .is-mobile body .wrot-menu .menu-item:not(.is-label):not(.is-disabled):hover,
+      .is-mobile body .wrot-menu .menu-item:not(.is-label):not(.is-disabled):active,
+      body .wrot-menu .menu-item:not(.is-disabled):hover,
+      body .wrot-menu .menu-item:not(.is-disabled).selected,
+      body .wrot-menu .menu-item:not(.is-disabled).is-selected,
+      body .wrot-menu .menu-item:not(.is-disabled):active {
         background-color: ${hoverColor};
       }
       /* The chosen day below the drums: it reads as a label, so it takes no hover
          fill like the rows above it — only the text answers the pointer. Declared
          here to land after the shared hover rule. */
-      .is-mobile body .wr-menu .menu-item.wr-menu-schedule-confirm:hover,
-      .is-mobile body .wr-menu .menu-item.wr-menu-schedule-confirm:active,
-      body .wr-menu .menu-item.wr-menu-schedule-confirm:hover,
-      body .wr-menu .menu-item.wr-menu-schedule-confirm.selected,
-      body .wr-menu .menu-item.wr-menu-schedule-confirm.is-selected,
-      body .wr-menu .menu-item.wr-menu-schedule-confirm:active {
+      .is-mobile body .wrot-menu .menu-item.wrot-menu-schedule-confirm:hover,
+      .is-mobile body .wrot-menu .menu-item.wrot-menu-schedule-confirm:active,
+      body .wrot-menu .menu-item.wrot-menu-schedule-confirm:hover,
+      body .wrot-menu .menu-item.wrot-menu-schedule-confirm.selected,
+      body .wrot-menu .menu-item.wrot-menu-schedule-confirm.is-selected,
+      body .wrot-menu .menu-item.wrot-menu-schedule-confirm:active {
         background-color: ${bgColor};
         color: ${mutedColor};
       }
-      body .wr-menu .menu-item.wr-menu-schedule-confirm:hover .menu-item-icon .svg-icon {
+      body .wrot-menu .menu-item.wrot-menu-schedule-confirm:hover .menu-item-icon .svg-icon {
         color: ${mutedColor};
         stroke: ${mutedColor};
       }
-      body .wr-menu .menu-separator {
+      body .wrot-menu .menu-separator {
         border-color: ${hoverColor};
         background: transparent;
         background-color: transparent;
       }
-      body .wr-menu .menu-item.is-disabled {
+      body .wrot-menu .menu-item.is-disabled {
         color: ${faintColor};
       }
-      body .wr-thumbnail-remove {
+      body .wrot-thumbnail-remove {
         background: ${blendColor(textColor, bgColor, 0.7)};
         background-color: ${blendColor(textColor, bgColor, 0.7)};
         color: ${bgColor};
       }
-      body .wr-thumbnail-remove .svg-icon {
+      body .wrot-thumbnail-remove .svg-icon {
         color: ${bgColor};
         stroke: ${bgColor};
       }
-      body .wr-thumbnail-remove:hover {
+      body .wrot-thumbnail-remove:hover {
         background: ${blendColor(textColor, bgColor, 0.5)};
         background-color: ${blendColor(textColor, bgColor, 0.5)};
       }

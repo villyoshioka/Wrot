@@ -42,22 +42,22 @@ export function requestMathJax(): void {
     });
 }
 
-// Upgrades only .wr-math-fallback elements in place; no full view re-render, so nothing else moves.
+// Upgrades only .wrot-math-fallback elements in place; no full view re-render, so nothing else moves.
 export function upgradeMathFallbacks(): void {
   if (!isMathJaxReady()) return;
-  const els = Array.from(activeDocument.querySelectorAll<HTMLElement>(".wr-math-fallback"));
+  const els = Array.from(activeDocument.querySelectorAll<HTMLElement>(".wrot-math-fallback"));
   if (els.length === 0) return;
   let patched = false;
   for (const el of els) {
-    // Inline (.wr-math) holds "$tex$"; block (.wr-math-display) holds raw tex.
-    const isBlock = el.classList.contains("wr-math-display");
+    // Inline (.wrot-math) holds "$tex$"; block (.wrot-math-display) holds raw tex.
+    const isBlock = el.classList.contains("wrot-math-display");
     const raw = el.textContent ?? "";
     const tex = isBlock ? raw : raw.replace(/^\$/, "").replace(/\$$/, "");
     try {
       const rendered = renderMath(tex, isBlock);
       el.empty();
       el.appendChild(rendered);
-      el.classList.remove("wr-math-fallback");
+      el.classList.remove("wrot-math-fallback");
       patched = true;
     // eslint-disable-next-line no-empty -- 失敗した要素はフォールバック表示のまま残す
     } catch {}

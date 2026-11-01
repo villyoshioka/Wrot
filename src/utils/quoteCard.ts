@@ -42,7 +42,7 @@ export function refreshQuoteCardsForFile(
 ): void {
   const baseName = file.basename;
   const cards = activeDocument.querySelectorAll<HTMLElement>(
-    `.wr-quote-card[data-quote-file="${CSS.escape(baseName)}"]`
+    `.wrot-quote-card[data-quote-file="${CSS.escape(baseName)}"]`
   );
   cards.forEach((card) => {
     const slot = card.parentElement;
@@ -90,8 +90,8 @@ function updateQuoteCardInPlace(
     checkStrikethrough?: boolean;
   }
 ): boolean {
-  const bodyEl = card.querySelector<HTMLElement>(".wr-quote-card-body");
-  const metaEl = card.querySelector<HTMLElement>(".wr-quote-card-meta");
+  const bodyEl = card.querySelector<HTMLElement>(".wrot-quote-card-body");
+  const metaEl = card.querySelector<HTMLElement>(".wrot-quote-card-meta");
   if (!bodyEl || !metaEl) return false;
 
   const file = app.metadataCache.getFirstLinkpathDest(opts.fileName, opts.currentFilePath);
@@ -108,10 +108,10 @@ function updateQuoteCardInPlace(
       markDead(card, bodyEl, metaEl);
       return;
     }
-    card.classList.remove("wr-quote-card-dead");
+    card.classList.remove("wrot-quote-card-dead");
     fillCardBody(bodyEl, metaEl, found, app, opts.timestampFormat, opts.checkStrikethrough);
     Array.from(card.classList)
-      .filter((c) => /^wr-tag-rule-\d+$/.test(c))
+      .filter((c) => /^wrot-tag-rule-\d+$/.test(c))
       .forEach((c) => card.classList.remove(c));
     if (opts.resolveRuleClass) {
       const cls = opts.resolveRuleClass(found.content);
@@ -175,28 +175,28 @@ const PREVIEW_MARKERS: readonly PreviewMarker[] = [
     re: /[\s]*\[\[[^\[\]]+#\^wr-\d{17}\]\][\s]*/g,
     placeholder: "QT:",
     replacement: " QT:",
-    cls: "wr-nested-quote-marker",
+    cls: "wrot-nested-quote-marker",
     label: "QT: ...",
   },
   {
     // eslint-disable-next-line no-useless-escape -- escape kept for regex readability
     re: /!\[\[[^\[\]]+\.(?:png|jpe?g|gif|webp|svg|bmp)\]\]/gi,
     placeholder: "@@WR_IMAGE_EMBED@@",
-    cls: "wr-quote-image-marker",
+    cls: "wrot-quote-image-marker",
     icon: "image",
     label: " image",
   },
   {
     re: /\$\$[\s\S]+?\$\$/g,
     placeholder: "@@WR_MATH_BLOCK@@",
-    cls: "wr-quote-math-marker",
+    cls: "wrot-quote-math-marker",
     icon: "sigma",
     label: " math",
   },
   {
     re: /(?:```|~~~)[\s\S]+?(?:```|~~~)/g,
     placeholder: "@@WR_CODE_BLOCK@@",
-    cls: "wr-quote-code-marker",
+    cls: "wrot-quote-code-marker",
     icon: "code",
     label: " code",
   },
@@ -289,35 +289,35 @@ function renderPreviewLines(
     } else {
       listDepth.reset();
     }
-    const lineEl = bodyEl.createDiv({ cls: "wr-quote-card-line" });
-    if (itemDepth > 0) lineEl.addClass(`wr-quote-card-line-depth-${itemDepth}`);
+    const lineEl = bodyEl.createDiv({ cls: "wrot-quote-card-line" });
+    if (itemDepth > 0) lineEl.addClass(`wrot-quote-card-line-depth-${itemDepth}`);
 
     if (info?.kind === "check") {
-      const slot = lineEl.createSpan({ cls: "wr-quote-card-marker-slot wr-quote-card-marker-check" });
+      const slot = lineEl.createSpan({ cls: "wrot-quote-card-marker-slot wrot-quote-card-marker-check" });
       slot.createSpan({
         cls: info.checked
-          ? "wr-quote-card-check wr-quote-card-check-done"
-          : "wr-quote-card-check",
+          ? "wrot-quote-card-check wrot-quote-card-check-done"
+          : "wrot-quote-card-check",
       });
       const textSpan = lineEl.createSpan({
         cls: info.checked && checkStrikethrough
-          ? "wr-quote-card-line-text wr-check-done"
-          : "wr-quote-card-line-text",
+          ? "wrot-quote-card-line-text wrot-check-done"
+          : "wrot-quote-card-line-text",
       });
       renderTextWithTagsAndUrls(textSpan, info.content, inlineCallbacks);
     } else if (info?.kind === "bullet") {
-      const slot = lineEl.createSpan({ cls: "wr-quote-card-marker-slot wr-quote-card-marker-bullet" });
+      const slot = lineEl.createSpan({ cls: "wrot-quote-card-marker-slot wrot-quote-card-marker-bullet" });
       slot.textContent = "・";
-      const textSpan = lineEl.createSpan({ cls: "wr-quote-card-line-text" });
+      const textSpan = lineEl.createSpan({ cls: "wrot-quote-card-line-text" });
       renderTextWithTagsAndUrls(textSpan, info.content, inlineCallbacks);
     } else if (info?.kind === "ol") {
-      const slot = lineEl.createSpan({ cls: "wr-quote-card-marker-slot wr-quote-card-marker-ol" });
+      const slot = lineEl.createSpan({ cls: "wrot-quote-card-marker-slot wrot-quote-card-marker-ol" });
       // Numbered by position, matching the rendered views rather than what was typed.
       slot.textContent = `${itemOrdinal}.`;
-      const textSpan = lineEl.createSpan({ cls: "wr-quote-card-line-text" });
+      const textSpan = lineEl.createSpan({ cls: "wrot-quote-card-line-text" });
       renderTextWithTagsAndUrls(textSpan, info.content, inlineCallbacks);
     } else {
-      const textSpan = lineEl.createSpan({ cls: "wr-quote-card-line-text" });
+      const textSpan = lineEl.createSpan({ cls: "wrot-quote-card-line-text" });
       renderTextWithTagsAndUrls(textSpan, line, inlineCallbacks);
     }
   }
@@ -339,7 +339,7 @@ function fillCardBody(
 }
 
 function markDead(card: HTMLElement, bodyEl: HTMLElement, metaEl: HTMLElement): void {
-  card.classList.add("wr-quote-card-dead");
+  card.classList.add("wrot-quote-card-dead");
   bodyEl.textContent = t("quote.card.notFound");
   metaEl.textContent = "";
 }
@@ -404,8 +404,8 @@ function flashJumpTargetReadingView(
     stopResizeWatch();
     const targets = collectFlashTargets(blockId);
     for (const el of targets) {
-      el.classList.remove("wr-quote-jump-flash");
-      el.style.removeProperty("--wr-flash-color");
+      el.classList.remove("wrot-quote-jump-flash");
+      el.style.removeProperty("--wrot-flash-color");
     }
     removeInterruptListeners();
   };
@@ -435,22 +435,22 @@ function flashJumpTargetReadingView(
     for (const el of targets) {
       if (flashed.has(el)) continue;
       flashed.add(el);
-      el.classList.remove("wr-quote-jump-flash");
+      el.classList.remove("wrot-quote-jump-flash");
       void el.offsetWidth;
-      const ruleClass = Array.from(el.classList).find((c) => /^wr-tag-rule-\d+$/.test(c));
+      const ruleClass = Array.from(el.classList).find((c) => /^wrot-tag-rule-\d+$/.test(c));
       const accent = ruleClass && resolveRuleAccent ? resolveRuleAccent(ruleClass) : null;
       if (accent) {
         const r = parseInt(accent.slice(1, 3), 16);
         const g = parseInt(accent.slice(3, 5), 16);
         const b = parseInt(accent.slice(5, 7), 16);
-        el.style.setProperty("--wr-flash-color", `rgba(${r}, ${g}, ${b}, 0.22)`);
+        el.style.setProperty("--wrot-flash-color", `rgba(${r}, ${g}, ${b}, 0.22)`);
       } else {
-        el.style.removeProperty("--wr-flash-color");
+        el.style.removeProperty("--wrot-flash-color");
       }
-      el.classList.add("wr-quote-jump-flash");
+      el.classList.add("wrot-quote-jump-flash");
       schedule(() => {
-        el.classList.remove("wr-quote-jump-flash");
-        el.style.removeProperty("--wr-flash-color");
+        el.classList.remove("wrot-quote-jump-flash");
+        el.style.removeProperty("--wrot-flash-color");
       }, flashDuration);
     }
   };
@@ -609,8 +609,8 @@ function flashJumpTarget(
     stopResizeWatch();
     const targets = collectFlashTargets(blockId);
     for (const el of targets) {
-      el.classList.remove("wr-quote-jump-flash");
-      el.style.removeProperty("--wr-flash-color");
+      el.classList.remove("wrot-quote-jump-flash");
+      el.style.removeProperty("--wrot-flash-color");
     }
     removeInterruptListeners();
   };
@@ -639,22 +639,22 @@ function flashJumpTarget(
     for (const el of targets) {
       if (flashed.has(el)) continue;
       flashed.add(el);
-      el.classList.remove("wr-quote-jump-flash");
+      el.classList.remove("wrot-quote-jump-flash");
       void el.offsetWidth;
-      const ruleClass = Array.from(el.classList).find((c) => /^wr-tag-rule-\d+$/.test(c));
+      const ruleClass = Array.from(el.classList).find((c) => /^wrot-tag-rule-\d+$/.test(c));
       const accent = ruleClass && resolveRuleAccent ? resolveRuleAccent(ruleClass) : null;
       if (accent) {
         const r = parseInt(accent.slice(1, 3), 16);
         const g = parseInt(accent.slice(3, 5), 16);
         const b = parseInt(accent.slice(5, 7), 16);
-        el.style.setProperty("--wr-flash-color", `rgba(${r}, ${g}, ${b}, 0.22)`);
+        el.style.setProperty("--wrot-flash-color", `rgba(${r}, ${g}, ${b}, 0.22)`);
       } else {
-        el.style.removeProperty("--wr-flash-color");
+        el.style.removeProperty("--wrot-flash-color");
       }
-      el.classList.add("wr-quote-jump-flash");
+      el.classList.add("wrot-quote-jump-flash");
       schedule(() => {
-        el.classList.remove("wr-quote-jump-flash");
-        el.style.removeProperty("--wr-flash-color");
+        el.classList.remove("wrot-quote-jump-flash");
+        el.style.removeProperty("--wrot-flash-color");
       }, flashDuration);
     }
   };
@@ -780,24 +780,24 @@ function scrollElementIntoCenter(el: HTMLElement): void {
 function collectFlashTargets(blockId: string): HTMLElement[] {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- assertion needed for cross-version Obsidian typings
   const all = Array.from(
-    activeDocument.querySelectorAll(`.wr-block-id-${blockId}`)
+    activeDocument.querySelectorAll(`.wrot-block-id-${blockId}`)
   ) as HTMLElement[];
 
   if (!Platform.isMobile) return all;
 
   if (Platform.isPhone) {
-    return all.filter((el) => !el.classList.contains("wr-card"));
+    return all.filter((el) => !el.classList.contains("wrot-card"));
   }
 
   // Tablets: include timeline cards only when the Wrot view is in a pinned sidebar
   // (.workspace-drawer.is-pinned); an unpinned (transient) drawer is excluded.
-  const wrCardEls = all.filter((el) => el.classList.contains("wr-card"));
+  const wrCardEls = all.filter((el) => el.classList.contains("wrot-card"));
   const isUnpinnedDrawer = wrCardEls.some((el) => {
     const drawer = el.closest(".workspace-drawer");
     return drawer !== null && !drawer.classList.contains("is-pinned");
   });
   if (isUnpinnedDrawer) {
-    return all.filter((el) => !el.classList.contains("wr-card"));
+    return all.filter((el) => !el.classList.contains("wrot-card"));
   }
   return all;
 }
@@ -824,7 +824,7 @@ export function renderQuoteCard(
   const checkStrikethrough = options?.checkStrikethrough ?? false;
   // An <a href> lets Obsidian's internal link handling swallow mousedown/mouseup so the
   // click may never arrive; use <div role="link"> with our own click handler instead.
-  const card = slot.createDiv({ cls: "wr-quote-card" });
+  const card = slot.createDiv({ cls: "wrot-quote-card" });
   card.setAttr("role", "link");
   card.setAttr("tabindex", "0");
   card.dataset.quoteFile = fileName;
@@ -833,8 +833,8 @@ export function renderQuoteCard(
   if (timestampFormat) card.dataset.quoteTsFormat = timestampFormat;
   // Stored in dataset so refreshQuoteCardsForFile can carry the setting over.
   if (checkStrikethrough) card.dataset.quoteStrike = "1";
-  const bodyEl = card.createDiv({ cls: "wr-quote-card-body", text: "…" });
-  const metaEl = card.createDiv({ cls: "wr-quote-card-meta" });
+  const bodyEl = card.createDiv({ cls: "wrot-quote-card-body", text: "…" });
+  const metaEl = card.createDiv({ cls: "wrot-quote-card-meta" });
 
   const file = app.metadataCache.getFirstLinkpathDest(fileName, currentFilePath);
   if (!(file instanceof TFile)) {
@@ -892,7 +892,7 @@ export function renderQuoteCard(
     fillCardBody(bodyEl, metaEl, memo, app, timestampFormat, checkStrikethrough);
     if (resolveRuleClass) {
       Array.from(card.classList)
-        .filter((c) => /^wr-tag-rule-\d+$/.test(c))
+        .filter((c) => /^wrot-tag-rule-\d+$/.test(c))
         .forEach((c) => card.classList.remove(c));
       const cls = resolveRuleClass(memo.content);
       if (cls) card.classList.add(cls);

@@ -129,7 +129,7 @@ export function renderTextWithTagsAndUrls(
 
   for (const segment of segments) {
     if (segment.kind === "codeblock") {
-      const blockEl = container.createDiv({ cls: "wr-codeblock-display" });
+      const blockEl = container.createDiv({ cls: "wrot-codeblock-display" });
       if (callbacks.renderCodeBlock) {
         callbacks.renderCodeBlock(segment.code, segment.lang, blockEl, segment.fenceTildes);
       } else {
@@ -142,19 +142,19 @@ export function renderTextWithTagsAndUrls(
     }
 
     if (segment.kind === "mathblock") {
-      const blockEl = container.createDiv({ cls: "wr-math-display" });
+      const blockEl = container.createDiv({ cls: "wrot-math-display" });
       if (callbacks.renderMathBlock) {
         callbacks.renderMathBlock(segment.tex, blockEl);
       } else {
         try {
           // MathJax loads lazily. If not ready, fall through to the fallback;
-          // wr-math-fallback marks the element for re-render once onMathJaxReady fires.
+          // wrot-math-fallback marks the element for re-render once onMathJaxReady fires.
           if (!isMathJaxReady()) throw new Error("MathJax not loaded yet");
           const rendered = renderMath(segment.tex, true);
           blockEl.appendChild(rendered);
           void finishRenderMath();
         } catch {
-          blockEl.classList.add("wr-math-fallback");
+          blockEl.classList.add("wrot-math-fallback");
           blockEl.textContent = segment.tex;
           requestMathJax();
         }
@@ -179,7 +179,7 @@ function renderTextSegment(
   const lines = text.split("\n");
 
   const makeList = (tag: ListTag) =>
-    createEl(tag, { cls: tag === "ul" ? "wr-bullet-list" : "wr-ordered-list" });
+    createEl(tag, { cls: tag === "ul" ? "wrot-bullet-list" : "wrot-ordered-list" });
   const makeItem = () => createEl("li");
 
   const listStack = new NestedListStack(makeList, makeItem);
@@ -207,20 +207,20 @@ function renderTextSegment(
       renderInlineTokens(li, info.content, callbacks, urls, seen);
       return li;
     }
-    li.addClass("wr-check-item");
+    li.addClass("wrot-check-item");
     const checkbox = li.createEl("input", { attr: { type: "checkbox" } });
     if (info.checked) checkbox.checked = true;
     // Always wrap the text in a span: modify-driven re-render is suppressed to prevent
     // card flicker, so strikethrough is toggled instantly via this span's class instead.
     const textContainer = li.createSpan(
-      info.checked && callbacks.checkStrikethrough ? { cls: "wr-check-done" } : {}
+      info.checked && callbacks.checkStrikethrough ? { cls: "wrot-check-done" } : {}
     );
     if (callbacks.onCheckToggle) {
       const cb = callbacks.onCheckToggle;
       checkbox.addEventListener("click", () => {
         cb(lineIndex, checkbox.checked);
         if (callbacks.checkStrikethrough) {
-          textContainer.classList.toggle("wr-check-done", checkbox.checked);
+          textContainer.classList.toggle("wrot-check-done", checkbox.checked);
         }
       });
     } else {
@@ -244,7 +244,7 @@ function renderTextSegment(
       }
       while (quoteStack.length < depth) {
         const parent = quoteStack.length > 0 ? quoteStack[quoteStack.length - 1] : container;
-        const bq = parent.createEl("blockquote", { cls: "wr-blockquote" });
+        const bq = parent.createEl("blockquote", { cls: "wrot-blockquote" });
         quoteStack.push(bq);
       }
       const target = quoteStack[quoteStack.length - 1];
@@ -312,7 +312,7 @@ function renderInlineTokens(
 
     const codeMatch = part.match(/^`([^`]+)`$/);
     if (codeMatch) {
-      container.createEl("code", { cls: "wr-inline-code", text: codeMatch[1] });
+      container.createEl("code", { cls: "wrot-inline-code", text: codeMatch[1] });
       continue;
     }
     const boldMatch = part.match(/^\*\*(.+)\*\*$/);
@@ -334,7 +334,7 @@ function renderInlineTokens(
     if (highlightMatch) {
       const inner = highlightMatch[1];
       const tint = highlightColor(inner);
-      const mark = container.createEl("mark", { cls: "wr-highlight" });
+      const mark = container.createEl("mark", { cls: "wrot-highlight" });
       if (tint) mark.setAttr("data-highlight", tint.color);
       renderInlineTokens(mark, tint ? inner.slice(tint.length) : inner, callbacks, urls, seen);
       continue;
@@ -347,7 +347,7 @@ function renderInlineTokens(
       const url = mdLinkMatch[2];
       if (isSafeUrl(url)) {
         const link = container.createEl("a", {
-          cls: "wr-url",
+          cls: "wrot-url",
           text: label,
           href: url,
         });
@@ -376,16 +376,16 @@ function renderInlineTokens(
         const src = callbacks.resolveImagePath(fileName);
         if (src) {
           container.createEl("img", {
-            cls: "wr-embed-img",
+            cls: "wrot-embed-img",
             attr: { src, alt: fileName, loading: "lazy" },
           });
         } else {
-          container.createSpan({ cls: "wr-embed-missing", text: `![[${fileName}]]` });
+          container.createSpan({ cls: "wrot-embed-missing", text: `![[${fileName}]]` });
         }
       } else {
         const { target, display } = splitLinkAlias(fileName);
         const resolved = callbacks.resolveLinkTarget ? callbacks.resolveLinkTarget(target) : true;
-        const cls = resolved ? "wr-internal-link" : "wr-internal-link wr-internal-link-unresolved";
+        const cls = resolved ? "wrot-internal-link" : "wrot-internal-link wrot-internal-link-unresolved";
         const linkEl = container.createEl("a", { cls, text: display });
         if (callbacks.onInternalLinkClick) {
           const cb = callbacks.onInternalLinkClick;
@@ -400,12 +400,12 @@ function renderInlineTokens(
       const linkName = linkMatch[1];
       const quoteMatch = linkName.match(QUOTE_LINK_RE);
       if (quoteMatch && callbacks.renderQuoteCard) {
-        const slot = container.createSpan({ cls: "wr-quote-card-slot" });
+        const slot = container.createSpan({ cls: "wrot-quote-card-slot" });
         callbacks.renderQuoteCard(slot, quoteMatch[1], quoteMatch[2]);
       } else {
         const { target, display } = splitLinkAlias(linkName);
         const resolved = callbacks.resolveLinkTarget ? callbacks.resolveLinkTarget(target) : true;
-        const cls = resolved ? "wr-internal-link" : "wr-internal-link wr-internal-link-unresolved";
+        const cls = resolved ? "wrot-internal-link" : "wrot-internal-link wrot-internal-link-unresolved";
         const linkEl = container.createEl("a", { cls, text: display });
         if (callbacks.onInternalLinkClick) {
           const cb = callbacks.onInternalLinkClick;
@@ -418,7 +418,7 @@ function renderInlineTokens(
       }
     } else if (TAG_TOKEN_RE.test(part)) {
       const tagEl = container.createSpan({
-        cls: "wr-tag",
+        cls: "wrot-tag",
         text: part,
       });
       if (callbacks.onTagClick) {
@@ -426,24 +426,24 @@ function renderInlineTokens(
         tagEl.addEventListener("click", (e) => {
           e.stopPropagation();
           // Remove the class and force a reflow so the flash animation restarts on every click.
-          tagEl.classList.remove("wr-tag-flash");
+          tagEl.classList.remove("wrot-tag-flash");
           void tagEl.offsetWidth;
-          tagEl.classList.add("wr-tag-flash");
+          tagEl.classList.add("wrot-tag-flash");
           cb(part);
         });
       }
     } else if (part.match(/^\$([^$]+)\$$/)) {
       const mathContent = part.slice(1, -1);
-      const mathEl = container.createSpan({ cls: "wr-math" });
+      const mathEl = container.createSpan({ cls: "wrot-math" });
       try {
         // MathJax loads lazily. If not ready, fall through to the fallback;
-        // wr-math-fallback marks the element for re-render once onMathJaxReady fires.
+        // wrot-math-fallback marks the element for re-render once onMathJaxReady fires.
         if (!isMathJaxReady()) throw new Error("MathJax not loaded yet");
         const rendered = renderMath(mathContent, false);
         mathEl.appendChild(rendered);
         void finishRenderMath();
       } catch {
-        mathEl.classList.add("wr-math-fallback");
+        mathEl.classList.add("wrot-math-fallback");
         mathEl.textContent = part;
         requestMathJax();
       }
@@ -461,8 +461,8 @@ function renderInlineTokens(
       if (!isImageEmbed) {
         const displayName = file?.name || url;
         const cls = unresolved
-          ? "wr-internal-link wr-internal-link-unresolved"
-          : "wr-internal-link";
+          ? "wrot-internal-link wrot-internal-link-unresolved"
+          : "wrot-internal-link";
         const link = container.createEl("a", {
           cls,
           text: displayName,
@@ -486,7 +486,7 @@ function renderInlineTokens(
 
       if (isSafeUrl(url)) {
         const link = container.createEl("a", {
-          cls: "wr-url",
+          cls: "wrot-url",
           text: url,
           href: url,
         });
@@ -525,13 +525,13 @@ export function renderImagePreview(
   url: string,
   resolveImagePath?: (fileName: string) => string | null
 ): void {
-  const wrapper = createEl("a", { cls: "wr-media-link" });
+  const wrapper = createEl("a", { cls: "wrot-media-link" });
   wrapper.href = url;
   wrapper.target = "_blank";
   wrapper.rel = "noopener";
   makeClickableLink(wrapper, url);
 
-  const img = createEl("img", { cls: "wr-inline-img" });
+  const img = createEl("img", { cls: "wrot-inline-img" });
   if (isSafeUrl(url, HTTP_ONLY)) {
     img.src = url;
   } else if (url.startsWith("obsidian://") && resolveImagePath) {
@@ -543,31 +543,31 @@ export function renderImagePreview(
   wrapper.appendChild(img);
   container.appendChild(wrapper);
   // :has() workaround: add a state class to the container so CSS can use a plain selector.
-  container.classList.add("wr-has-link");
+  container.classList.add("wrot-has-link");
 }
 
 export function renderOGPCard(
   container: HTMLElement,
   data: OGPData
 ): void {
-  const card = createEl("a", { cls: "wr-ogp-card" });
+  const card = createEl("a", { cls: "wrot-ogp-card" });
   card.href = data.url;
   card.target = "_blank";
   card.rel = "noopener";
   makeClickableLink(card, data.url);
 
   if (data.image && isSafeUrl(data.image, HTTP_ONLY)) {
-    const thumb = createEl("img", { cls: "wr-ogp-thumb" });
+    const thumb = createEl("img", { cls: "wrot-ogp-thumb" });
     thumb.src = data.image;
     thumb.loading = "lazy";
     card.appendChild(thumb);
   }
 
-  const body = createDiv({ cls: "wr-ogp-body" });
-  if (data.title) body.appendChild(createDiv({ cls: "wr-ogp-title", text: data.title }));
-  if (data.description) body.appendChild(createDiv({ cls: "wr-ogp-desc", text: data.description }));
+  const body = createDiv({ cls: "wrot-ogp-body" });
+  if (data.title) body.appendChild(createDiv({ cls: "wrot-ogp-title", text: data.title }));
+  if (data.description) body.appendChild(createDiv({ cls: "wrot-ogp-desc", text: data.description }));
   const siteName = data.siteName || extractDomain(data.url);
-  body.appendChild(createDiv({ cls: "wr-ogp-site", text: siteName }));
+  body.appendChild(createDiv({ cls: "wrot-ogp-site", text: siteName }));
   card.appendChild(body);
   container.appendChild(card);
 }
@@ -576,23 +576,23 @@ export function renderTwitterCard(
   container: HTMLElement,
   data: OGPData
 ): void {
-  const card = createEl("a", { cls: "wr-ogp-card wr-twitter-card" });
+  const card = createEl("a", { cls: "wrot-ogp-card wrot-twitter-card" });
   card.href = data.url;
   card.target = "_blank";
   card.rel = "noopener";
   makeClickableLink(card, data.url);
 
   if (data.image && isSafeUrl(data.image, HTTP_ONLY)) {
-    const thumb = createEl("img", { cls: "wr-ogp-thumb" });
+    const thumb = createEl("img", { cls: "wrot-ogp-thumb" });
     thumb.src = data.image;
     thumb.loading = "lazy";
     card.appendChild(thumb);
   }
 
-  const body = createDiv({ cls: "wr-ogp-body" });
-  if (data.title) body.appendChild(createDiv({ cls: "wr-ogp-title", text: data.title }));
-  if (data.description) body.appendChild(createDiv({ cls: "wr-ogp-desc", text: data.description }));
-  body.appendChild(createDiv({ cls: "wr-ogp-site", text: "X (Twitter)" }));
+  const body = createDiv({ cls: "wrot-ogp-body" });
+  if (data.title) body.appendChild(createDiv({ cls: "wrot-ogp-title", text: data.title }));
+  if (data.description) body.appendChild(createDiv({ cls: "wrot-ogp-desc", text: data.description }));
+  body.appendChild(createDiv({ cls: "wrot-ogp-site", text: "X (Twitter)" }));
   card.appendChild(body);
   container.appendChild(card);
 }
@@ -620,7 +620,7 @@ export function renderUrlPreviews(
       const cached = ogpCache.get(pu.url);
       if (cached) {
         if (!cached.title && !cached.description) continue;
-        const host = createDiv({ cls: "wr-ogp-loading" });
+        const host = createDiv({ cls: "wrot-ogp-loading" });
         host.textContent = "";
         container.appendChild(host);
         render(host, cached);
@@ -629,7 +629,7 @@ export function renderUrlPreviews(
       // Already known to be unresolvable, or previews are off: no card, no loading flash.
       if (ogpCache.isResolved(pu.url) || !ogpCache.canFetch(pu.url)) continue;
 
-      const placeholder = createDiv({ cls: "wr-ogp-loading" });
+      const placeholder = createDiv({ cls: "wrot-ogp-loading" });
       container.appendChild(placeholder);
       // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
       ogpCache.fetchOGP(pu.url).then((data) => {

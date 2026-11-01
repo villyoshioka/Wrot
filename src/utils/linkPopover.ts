@@ -45,15 +45,15 @@ function suggestNotes(app: App, query: string): TFile[] {
 export function openLinkPopover(opts: LinkPopoverOptions): LinkPopoverHandle {
   const { app, anchor, container, initial, editing, onSubmit, onUnlink, onClose } = opts;
 
-  const popover = container.createDiv({ cls: "wr-link-popover" });
-  const row = popover.createDiv({ cls: "wr-link-popover-row" });
+  const popover = container.createDiv({ cls: "wrot-link-popover" });
+  const row = popover.createDiv({ cls: "wrot-link-popover-row" });
   const input = row.createEl("input", {
-    cls: "wr-link-popover-input",
+    cls: "wrot-link-popover-input",
     attr: { type: "text", placeholder: t("view.linkPopover.placeholder"), spellcheck: "false", autocapitalize: "off" },
   });
   if (initial) input.value = initial;
   if (editing) {
-    const unlink = row.createEl("button", { cls: "wr-link-popover-unlink" });
+    const unlink = row.createEl("button", { cls: "wrot-link-popover-unlink" });
     setIcon(unlink, "unlink");
     unlink.setAttr("aria-label", t("view.linkPopover.unlink"));
     unlink.addEventListener("click", () => {
@@ -61,7 +61,7 @@ export function openLinkPopover(opts: LinkPopoverOptions): LinkPopoverHandle {
       close();
     });
   }
-  const list = popover.createDiv({ cls: "wr-link-popover-suggest" });
+  const list = popover.createDiv({ cls: "wrot-link-popover-suggest" });
 
   let files: TFile[] = [];
   let selected = -1;
@@ -76,11 +76,11 @@ export function openLinkPopover(opts: LinkPopoverOptions): LinkPopoverHandle {
   const renderList = (): void => {
     list.empty();
     files.forEach((file, i) => {
-      const item = list.createDiv({ cls: "wr-link-popover-item" });
-      if (i === selected) item.addClass("wr-link-popover-item-selected");
-      item.createSpan({ cls: "wr-link-popover-item-name", text: file.basename });
+      const item = list.createDiv({ cls: "wrot-link-popover-item" });
+      if (i === selected) item.addClass("wrot-link-popover-item-selected");
+      item.createSpan({ cls: "wrot-link-popover-item-name", text: file.basename });
       const folder = file.parent && !file.parent.isRoot() ? file.parent.path : "";
-      if (folder) item.createSpan({ cls: "wr-link-popover-item-folder", text: folder });
+      if (folder) item.createSpan({ cls: "wrot-link-popover-item-folder", text: folder });
       // Keep focus in the field: a tap that moved it would drop the mobile keyboard.
       item.addEventListener("pointerdown", (e) => e.preventDefault());
       item.addEventListener("click", () => pick(file));

@@ -223,11 +223,11 @@ function setDisabled(el: HTMLElement | null, disabled: boolean): void {
   if (disabled) {
     el.setAttr("disabled", "true");
     el.setAttr("aria-disabled", "true");
-    el.addClass("wr-tag-rule-disabled");
+    el.addClass("wrot-tag-rule-disabled");
   } else {
     el.removeAttribute("disabled");
     el.removeAttribute("aria-disabled");
-    el.removeClass("wr-tag-rule-disabled");
+    el.removeClass("wrot-tag-rule-disabled");
   }
 }
 
@@ -236,7 +236,7 @@ function setDisabled(el: HTMLElement | null, disabled: boolean): void {
 // these breaks there.
 function appendWithBreaks(target: DocumentFragment | HTMLElement, text: string): void {
   text.split("\n").forEach((part, i) => {
-    if (i > 0) target.createEl("br", { cls: "wr-pc-break" });
+    if (i > 0) target.createEl("br", { cls: "wrot-pc-break" });
     target.appendText(part);
   });
 }
@@ -280,7 +280,7 @@ export class WrotSettingTab extends PluginSettingTab {
   constructor(app: App, plugin: WrotPlugin) {
     super(app, plugin);
     this.plugin = plugin;
-    this.containerEl.addClass("wr-settings");
+    this.containerEl.addClass("wrot-settings");
   }
 
   hide(): void {
@@ -469,7 +469,7 @@ export class WrotSettingTab extends PluginSettingTab {
         setting
           .setName(options.name)
           .setDesc(desc(options.desc))
-          .setClass("wr-text-input-row")
+          .setClass("wrot-text-input-row")
           .addText((text) => {
             field = text;
             text
@@ -509,7 +509,7 @@ export class WrotSettingTab extends PluginSettingTab {
         setting
           .setName(options.name)
           .setDesc(desc(options.desc))
-          .setClass("wr-reverse-controls")
+          .setClass("wrot-reverse-controls")
           .addColorPicker((component) => {
             picker = component;
             component.setValue(options.read()).onChange(async (value) => {
@@ -801,7 +801,7 @@ export class WrotSettingTab extends PluginSettingTab {
               const headings = listTemplateHeadings(template);
               fill(headings);
               dropdown.setDisabled(headings.length === 0);
-              setting.settingEl.toggleClass("wr-setting-disabled", headings.length === 0);
+              setting.settingEl.toggleClass("wrot-setting-disabled", headings.length === 0);
               if (settings.postHeading && !headings.includes(settings.postHeading)) {
                 settings.postHeading = "";
                 await this.plugin.saveSettings();
@@ -870,7 +870,7 @@ export class WrotSettingTab extends PluginSettingTab {
         const link = frag.createEl("a", {
           // Without a class of our own the anchor inherits the muted description color and
           // stops reading as a link.
-          cls: "wr-settings-link",
+          cls: "wrot-settings-link",
           text: template.slice(linkOpenIdx + "{linkOpen}".length, linkCloseIdx),
           href: t("settings.item.submitIcon.lucideUrl"),
         });
@@ -889,7 +889,7 @@ export class WrotSettingTab extends PluginSettingTab {
         setting
           .setName(t(`settings.item.${key}.name`))
           .setDesc(buildDesc())
-          .setClass("wr-text-input-row")
+          .setClass("wrot-text-input-row")
           .addText((text) => {
             field = text;
             text
@@ -987,7 +987,7 @@ export class WrotSettingTab extends PluginSettingTab {
     const host = setting.settingEl;
     host.empty();
     host.removeClass("setting-item");
-    host.addClass("wr-tag-rule-host");
+    host.addClass("wrot-tag-rule-host");
     build(host);
   }
 
@@ -1006,7 +1006,7 @@ export class WrotSettingTab extends PluginSettingTab {
     this.update();
     // After the redraw: the new rule is the last group.
     window.requestAnimationFrame(() => {
-      const groups = this.containerEl.querySelectorAll(".wr-tag-rule-group");
+      const groups = this.containerEl.querySelectorAll(".wrot-tag-rule-group");
       groups[groups.length - 1]?.scrollIntoView({ block: "start", behavior: "smooth" });
     });
   }
@@ -1243,12 +1243,12 @@ export class WrotSettingTab extends PluginSettingTab {
       trailing,
     } = options;
 
-    const groupEl = host.createDiv({ cls: "wr-tag-rule-group" });
+    const groupEl = host.createDiv({ cls: "wrot-tag-rule-group" });
     const isUnlocked = (): boolean => this.unlockedRules.has(ruleKey);
 
     const labelSetting = new Setting(groupEl)
       .setName(t("settings.tagRule.label", { n: ruleNumber }))
-      .setClass("wr-tag-rule-label-setting");
+      .setClass("wrot-tag-rule-label-setting");
 
     let lockBtnEl: HTMLElement | null = null;
     labelSetting.addExtraButton((btn) => {
@@ -1289,7 +1289,7 @@ export class WrotSettingTab extends PluginSettingTab {
     new Setting(groupEl)
       .setName(t("settings.tagRule.tag.name"))
       .setDesc(desc(t("settings.tagRule.tag.desc")))
-      .setClass("wr-text-input-row")
+      .setClass("wrot-text-input-row")
       .addText((text) => {
         tagInputEl = text.inputEl;
         text
@@ -1304,7 +1304,7 @@ export class WrotSettingTab extends PluginSettingTab {
     new Setting(groupEl)
       .setName(t("settings.tagRule.bg.name"))
       .setDesc(desc(t("settings.tagRule.bg.desc")))
-      .setClass("wr-reverse-controls")
+      .setClass("wrot-reverse-controls")
       .addColorPicker((picker) => {
         bgPickerEl = pickerInputEl(picker);
         picker.setValue(this.resolveRuleBg(initial.bgColor)).onChange(async (v) => {
@@ -1317,7 +1317,7 @@ export class WrotSettingTab extends PluginSettingTab {
     new Setting(groupEl)
       .setName(t("settings.tagRule.fg.name"))
       .setDesc(desc(t("settings.tagRule.fg.desc")))
-      .setClass("wr-reverse-controls")
+      .setClass("wrot-reverse-controls")
       .addColorPicker((picker) => {
         fgPickerEl = pickerInputEl(picker);
         picker.setValue(this.resolveRuleText(initial.textColor)).onChange(async (v) => {
@@ -1332,7 +1332,7 @@ export class WrotSettingTab extends PluginSettingTab {
     new Setting(groupEl)
       .setName(t("settings.tagRule.accent.name"))
       .setDesc(desc(t("settings.tagRule.accent.desc")))
-      .setClass("wr-reverse-controls")
+      .setClass("wrot-reverse-controls")
       .addColorPicker((picker) => {
         accentPicker = picker;
         accentPickerEl = pickerInputEl(picker);
@@ -1360,7 +1360,7 @@ export class WrotSettingTab extends PluginSettingTab {
     new Setting(groupEl)
       .setName(t("settings.tagRule.sub.name"))
       .setDesc(desc(t("settings.tagRule.sub.desc")))
-      .setClass("wr-reverse-controls")
+      .setClass("wrot-reverse-controls")
       .addColorPicker((picker) => {
         subPicker = picker;
         subPickerEl = pickerInputEl(picker);
@@ -1387,7 +1387,7 @@ export class WrotSettingTab extends PluginSettingTab {
         });
       });
 
-    const scopeContainer = groupEl.createDiv({ cls: "wr-sub-color-scope" });
+    const scopeContainer = groupEl.createDiv({ cls: "wrot-sub-color-scope" });
     const scopeToggleEls: HTMLElement[] = [];
 
     let noIntegrationToggleEl: HTMLElement | null = null;
@@ -1469,7 +1469,7 @@ export class WrotSettingTab extends PluginSettingTab {
 
     const applyLockState = () => {
       const unlocked = isUnlocked();
-      groupEl.toggleClass("wr-tag-rule-locked", !unlocked);
+      groupEl.toggleClass("wrot-tag-rule-locked", !unlocked);
       setDisabled(tagInputEl, !unlocked);
       setDisabled(bgPickerEl, !unlocked);
       setDisabled(fgPickerEl, !unlocked);

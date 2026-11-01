@@ -223,7 +223,7 @@ export class NestedListStack {
         }
         // Marked so the styles can tell an item that holds a list from a plain one, without
         // asking the selector to look at what is inside it.
-        host.classList.add("wr-has-sublist");
+        host.classList.add("wrot-has-sublist");
         host.appendChild(el);
       }
       this.levels.push({ el, tag });

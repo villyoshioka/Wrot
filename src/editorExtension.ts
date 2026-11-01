@@ -57,25 +57,25 @@ const hiddenLineStateField = StateField.define<DecorationSet>({
 import { cleanUrl, extractUrls, extractObsidianFile, isOtherVault, isSafeUrl, QUOTE_LINK_RE } from "./utils/urlRenderer";
 import type { OGPCache } from "./utils/ogpCache";
 
-const tagMark = Decoration.mark({ class: "wr-tag-highlight" });
-const urlMark = Decoration.mark({ class: "wr-url-highlight" });
-const olMark = Decoration.mark({ class: "wr-ol-highlight" });
-const internalLinkMark = Decoration.mark({ class: "wr-internal-link-highlight" });
+const tagMark = Decoration.mark({ class: "wrot-tag-highlight" });
+const urlMark = Decoration.mark({ class: "wrot-url-highlight" });
+const olMark = Decoration.mark({ class: "wrot-ol-highlight" });
+const internalLinkMark = Decoration.mark({ class: "wrot-internal-link-highlight" });
 const internalLinkUnresolvedMark = Decoration.mark({
-  class: "wr-internal-link-highlight wr-internal-link-unresolved",
+  class: "wrot-internal-link-highlight wrot-internal-link-unresolved",
 });
-const inlineCodeMark = Decoration.mark({ class: "wr-inline-code-highlight" });
-const mathMark = Decoration.mark({ class: "wr-math-highlight" });
-const boldMark = Decoration.mark({ class: "wr-bold-highlight" });
-const italicMark = Decoration.mark({ class: "wr-italic-highlight" });
-const strikeMark = Decoration.mark({ class: "wr-strike-highlight" });
-const highlightMark = Decoration.mark({ class: "wr-highlight-highlight" });
+const inlineCodeMark = Decoration.mark({ class: "wrot-inline-code-highlight" });
+const mathMark = Decoration.mark({ class: "wrot-math-highlight" });
+const boldMark = Decoration.mark({ class: "wrot-bold-highlight" });
+const italicMark = Decoration.mark({ class: "wrot-italic-highlight" });
+const strikeMark = Decoration.mark({ class: "wrot-strike-highlight" });
+const highlightMark = Decoration.mark({ class: "wrot-highlight-highlight" });
 const tintedHighlightMarks = new Map<string, Decoration>();
 function highlightMarkFor(color: string | undefined): Decoration {
   if (!color) return highlightMark;
   let mark = tintedHighlightMarks.get(color);
   if (!mark) {
-    mark = Decoration.mark({ class: "wr-highlight-highlight", attributes: { "data-highlight": color } });
+    mark = Decoration.mark({ class: "wrot-highlight-highlight", attributes: { "data-highlight": color } });
     tintedHighlightMarks.set(color, mark);
   }
   return mark;
@@ -183,7 +183,7 @@ function findWrBlocks(view: EditorView, plugin: WrotPlugin | null): WrBlock[] {
       const rule = plugin.findTagColorRule(tags);
       if (rule) {
         const idx = plugin.settings.tagColorRules.indexOf(rule);
-        if (idx >= 0) ruleClass = `wr-tag-rule-${idx}`;
+        if (idx >= 0) ruleClass = `wrot-tag-rule-${idx}`;
       }
     }
 
@@ -243,10 +243,10 @@ function buildDecorations(
     for (const block of blocks) {
       // Source mode shows a memo as plain text, like any other code block: no memo background
       // or text colors, so neither the line class the palette keys on nor the rule's class.
-      const wrLine = isSourceMode ? null : "wr-codeblock-line";
+      const wrLine = isSourceMode ? null : "wrot-codeblock-line";
       const memoRule = isSourceMode ? null : block.ruleClass;
       const openLine = doc.line(block.startLn);
-      builder.add(openLine.from, openLine.from, makeLineDeco([wrLine, memoRule, block.blockId ? `wr-block-id-${block.blockId}` : null]));
+      builder.add(openLine.from, openLine.from, makeLineDeco([wrLine, memoRule, block.blockId ? `wrot-block-id-${block.blockId}` : null]));
 
       // Live preview: cursor anywhere in the block shows it raw.
       const blockHasCursor = cursorInBlock(block);
@@ -300,7 +300,7 @@ function buildDecorations(
 
         // Raw view keeps nested blocks as plain text too.
         if (showRaw && innerBlockInsideDocLines.has(j)) {
-          builder.add(l.from, l.from, makeLineDeco([wrLine, memoRule, block.blockId ? `wr-block-id-${block.blockId}` : null]));
+          builder.add(l.from, l.from, makeLineDeco([wrLine, memoRule, block.blockId ? `wrot-block-id-${block.blockId}` : null]));
           for (const t of rawTokens.get(j) ?? []) builder.add(l.from + t.from, l.from + t.to, tokenMark(t.cls));
           continue;
         }
@@ -326,7 +326,7 @@ function buildDecorations(
             widgetContent = innerBodyLines.join("\n");
           }
 
-          builder.add(l.from, l.from, makeLineDeco([wrLine, memoRule, block.blockId ? `wr-block-id-${block.blockId}` : null]));
+          builder.add(l.from, l.from, makeLineDeco([wrLine, memoRule, block.blockId ? `wrot-block-id-${block.blockId}` : null]));
 
           // ViewPlugin can only emit inline replace, not block replace.
           const startLine = doc.line(docStart);
@@ -395,12 +395,12 @@ function buildDecorations(
             hiddenRanges.push({ from: l.from, to: l.to });
           }
         } else if ((isQuoteLine || quoteInnerIsList) && !showRaw) {
-          const depthClass = `wr-blockquote-depth-${Math.min(quoteDepth, 5)}`;
-          builder.add(l.from, l.from, makeLineDeco([wrLine, "wr-blockquote-line", depthClass, memoRule, block.blockId ? `wr-block-id-${block.blockId}` : null]));
+          const depthClass = `wrot-blockquote-depth-${Math.min(quoteDepth, 5)}`;
+          builder.add(l.from, l.from, makeLineDeco([wrLine, "wrot-blockquote-line", depthClass, memoRule, block.blockId ? `wrot-block-id-${block.blockId}` : null]));
         } else if (hasObsidianUrl) {
-          builder.add(l.from, l.from, makeLineDeco([wrLine, "wr-obsidian-url-line", memoRule, block.blockId ? `wr-block-id-${block.blockId}` : null]));
+          builder.add(l.from, l.from, makeLineDeco([wrLine, "wrot-obsidian-url-line", memoRule, block.blockId ? `wrot-block-id-${block.blockId}` : null]));
         } else {
-          builder.add(l.from, l.from, makeLineDeco([wrLine, memoRule, block.blockId ? `wr-block-id-${block.blockId}` : null]));
+          builder.add(l.from, l.from, makeLineDeco([wrLine, memoRule, block.blockId ? `wrot-block-id-${block.blockId}` : null]));
         }
 
         const entries: { from: number; to: number; deco: Decoration }[] = [];
@@ -409,11 +409,11 @@ function buildDecorations(
 
         if (isQuoteLine) {
           if (showRaw) {
-            entries.push({ from: l.from, to: l.from + quotePrefix, deco: Decoration.mark({ class: "wr-quote-highlight" }) });
+            entries.push({ from: l.from, to: l.from + quotePrefix, deco: Decoration.mark({ class: "wrot-quote-highlight" }) });
           } else {
             entries.push({ from: l.from, to: l.from + quotePrefix, deco: replaceHidden });
             if (l.to > l.from + quotePrefix) {
-              entries.push({ from: l.from + quotePrefix, to: l.to, deco: Decoration.mark({ class: "wr-blockquote-wrap" }) });
+              entries.push({ from: l.from + quotePrefix, to: l.to, deco: Decoration.mark({ class: "wrot-blockquote-wrap" }) });
             }
           }
         }
@@ -429,7 +429,7 @@ function buildDecorations(
           }
           if (listInfo.kind === "check") {
             if (showRaw) {
-              const mark = listInfo.checked ? Decoration.mark({ class: "wr-check-checked" }) : Decoration.mark({ class: "wr-check-unchecked" });
+              const mark = listInfo.checked ? Decoration.mark({ class: "wrot-check-checked" }) : Decoration.mark({ class: "wrot-check-unchecked" });
               entries.push({ from: markerFrom, to: markerTo, deco: mark });
             } else {
               entries.push({
@@ -439,11 +439,11 @@ function buildDecorations(
               });
             }
             if (listInfo.checked && plugin.settings.checkStrikethrough && l.to > markerTo) {
-              entries.push({ from: markerTo, to: l.to, deco: Decoration.mark({ class: "wr-check-done" }) });
+              entries.push({ from: markerTo, to: l.to, deco: Decoration.mark({ class: "wrot-check-done" }) });
             }
           } else if (listInfo.kind === "bullet") {
             if (showRaw) {
-              entries.push({ from: markerFrom, to: markerTo, deco: Decoration.mark({ class: "wr-list-highlight" }) });
+              entries.push({ from: markerFrom, to: markerTo, deco: Decoration.mark({ class: "wrot-list-highlight" }) });
             } else {
               entries.push({
                 from: markerFrom,
@@ -711,11 +711,11 @@ function buildDecorations(
         // A replace and a mark at the same position trip RangeSetBuilder's startSide
         // ordering and drop every decoration, so sort replaces first.
         const isReplace = (d: Decoration): boolean => (d as { point?: boolean }).point === true;
-        // wr-blockquote-wrap must sort last among same-range marks so it nests outside;
+        // wrot-blockquote-wrap must sort last among same-range marks so it nests outside;
         // as the inner span its muted color would cancel e.g. the URL accent color.
         const isBlockquoteWrap = (d: Decoration): boolean => {
           const spec = (d as { spec?: { class?: string } }).spec;
-          return !!spec && typeof spec.class === "string" && spec.class.includes("wr-blockquote-wrap");
+          return !!spec && typeof spec.class === "string" && spec.class.includes("wrot-blockquote-wrap");
         };
         entries.sort((a, b) => {
           if (a.from !== b.from) return a.from - b.from;
@@ -734,7 +734,7 @@ function buildDecorations(
       }
 
       const closeLine = doc.line(block.endLn);
-      builder.add(closeLine.from, closeLine.from, makeLineDeco([wrLine, memoRule, block.blockId ? `wr-block-id-${block.blockId}` : null]));
+      builder.add(closeLine.from, closeLine.from, makeLineDeco([wrLine, memoRule, block.blockId ? `wrot-block-id-${block.blockId}` : null]));
 
       const endLine = doc.line(block.endLn);
 
@@ -964,10 +964,10 @@ export function createWrEditorExtension(ogpCache: OGPCache, app: App, plugin: Wr
         click(this: { decorations: DecorationSet }, e: MouseEvent) {
           const target = e.target;
           if (!(target instanceof HTMLElement)) return false;
-          const urlEl = target.closest(".wr-url-highlight");
+          const urlEl = target.closest(".wrot-url-highlight");
           if (!urlEl) return false;
           // Only URLs inside a wr fence block, to avoid false triggers.
-          if (!urlEl.closest(".wr-codeblock-line, .HyperMD-codeblock")) return false;
+          if (!urlEl.closest(".wrot-codeblock-line, .HyperMD-codeblock")) return false;
           const url = urlEl.textContent?.trim();
           if (!url) return false;
           if (!isSafeUrl(url)) return false;

@@ -137,16 +137,16 @@ const armedField = StateField.define<{ pos: number; marker: string } | null>({
 
 const hide = Decoration.replace({});
 // Hidden by CSS, not replaced: CodeMirror rebuilds a replaced range's empty element on each nearby delete, which ends a held Backspace on iOS.
-const conceal = Decoration.mark({ class: "wr-cv-hidden" });
-const checkDone = Decoration.mark({ class: "wr-check-done" });
-const linkMark = Decoration.mark({ class: "wr-cv-link" });
+const conceal = Decoration.mark({ class: "wrot-cv-hidden" });
+const checkDone = Decoration.mark({ class: "wrot-check-done" });
+const linkMark = Decoration.mark({ class: "wrot-cv-link" });
 const URL_TOKEN_RE = /^(?:https?|obsidian):\/\//i;
 const tintedHighlights = new Map<string, Decoration>();
 // 1.14's coloured highlight (==🔴…==): the emoji is part of the hidden opener.
 function tintedHighlight(color: string): Decoration {
   let mark = tintedHighlights.get(color);
   if (!mark) {
-    mark = Decoration.mark({ tagName: "mark", class: "wr-highlight", attributes: { "data-highlight": color } });
+    mark = Decoration.mark({ tagName: "mark", class: "wrot-highlight", attributes: { "data-highlight": color } });
     tintedHighlights.set(color, mark);
   }
   return mark;
@@ -156,9 +156,9 @@ const INLINE_MARKS: ReadonlyArray<{ delim: string; mark: Decoration }> = [
   // Longest delimiters first, so ** is not read as two *.
   { delim: "**", mark: Decoration.mark({ tagName: "strong" }) },
   { delim: "~~", mark: Decoration.mark({ tagName: "del" }) },
-  { delim: "==", mark: Decoration.mark({ tagName: "mark", class: "wr-highlight" }) },
+  { delim: "==", mark: Decoration.mark({ tagName: "mark", class: "wrot-highlight" }) },
   { delim: "*", mark: Decoration.mark({ tagName: "em" }) },
-  { delim: "`", mark: Decoration.mark({ tagName: "code", class: "wr-inline-code" }) },
+  { delim: "`", mark: Decoration.mark({ tagName: "code", class: "wrot-inline-code" }) },
 ];
 
 // The armed styles open inclusively: a plain mark starting where a replacement starts is
@@ -184,10 +184,10 @@ class ListMarkerWidget extends WidgetType {
   }
 
   toDOM(view: EditorView): HTMLElement {
-    const slot = createSpan({ cls: "wr-cv-mark" });
+    const slot = createSpan({ cls: "wrot-cv-mark" });
     if (this.kind === "check") {
       const box = slot.createEl("input", {
-        cls: "task-list-item-checkbox wr-cv-check",
+        cls: "task-list-item-checkbox wrot-cv-check",
         attr: { type: "checkbox" },
       });
       box.checked = this.checked;
@@ -204,9 +204,9 @@ class ListMarkerWidget extends WidgetType {
         });
       });
     } else if (this.kind === "ol") {
-      slot.createSpan({ cls: "wr-cv-ol", text: this.label });
+      slot.createSpan({ cls: "wrot-cv-ol", text: this.label });
     } else {
-      slot.createSpan({ cls: "wr-cv-bullet" });
+      slot.createSpan({ cls: "wrot-cv-bullet" });
     }
     return slot;
   }
@@ -223,7 +223,7 @@ class ArmedOpenerWidget extends WidgetType {
   }
 
   toDOM(): HTMLElement {
-    return createSpan({ cls: "wr-cv-armed" });
+    return createSpan({ cls: "wrot-cv-armed" });
   }
 }
 
@@ -237,7 +237,7 @@ class MathWidget extends WidgetType {
   }
 
   toDOM(): HTMLElement {
-    const wrap = createSpan({ cls: "wr-cv-math" });
+    const wrap = createSpan({ cls: "wrot-cv-math" });
     try {
       wrap.appendChild(renderMath(this.tex, false));
       void finishRenderMath();
@@ -288,7 +288,7 @@ function analyze(state: EditorState, rawOverride?: Span[]): Analysis {
       if (!overlaps(raw, span.from, span.to)) {
         hideSpan(span.from, span.to);
         revealable.push(span);
-        decos.push(Decoration.line({ class: `wr-cv-quote wr-cv-quote-${Math.min(depth, 5)}` }).range(line.from));
+        decos.push(Decoration.line({ class: `wrot-cv-quote wrot-cv-quote-${Math.min(depth, 5)}` }).range(line.from));
       }
       offset = quote[0].length;
     }
@@ -678,7 +678,7 @@ function moveComposed(view: EditorView): void {
  * just that text with the line's own colour, without touching the DOM. (Weight and style can't
  * be set by a highlight; bold text composed at its end shows bold until committed.)
  */
-const COMPOSING_HIGHLIGHT = "wr-composing";
+const COMPOSING_HIGHLIGHT = "wrot-composing";
 function paintComposing(view: EditorView): void {
   const registry = typeof CSS !== "undefined" ? CSS.highlights : undefined;
   if (!registry) return;
@@ -690,7 +690,7 @@ function paintComposing(view: EditorView): void {
   const start = view.domAtPos(span.from, 1);
   const end = view.domAtPos(span.to, -1);
   const line = (start.node.instanceOf(Element) ? start.node : start.node.parentElement)?.closest(".cm-line");
-  if (line) view.dom.style.setProperty("--wr-composing-color", getComputedStyle(line).color);
+  if (line) view.dom.style.setProperty("--wrot-composing-color", getComputedStyle(line).color);
   const range = view.dom.ownerDocument.createRange();
   range.setStart(start.node, start.offset);
   range.setEnd(end.node, end.offset);

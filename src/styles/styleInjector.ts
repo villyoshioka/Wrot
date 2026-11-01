@@ -14,13 +14,13 @@
  * last; comments are stripped first since they break selector detection.
  *
  * The ids go in one `:not()` as a single compound rather than one `:not()` each. A `:not()`
- * takes the specificity of its most specific argument, so `#wr-b1#wr-b2` is worth two ids just
+ * takes the specificity of its most specific argument, so `#wrot-b1#wrot-b2` is worth two ids just
  * as two separate `:not()`s are, and no element can carry two ids so it still never matches --
  * at well under half the bytes, which matters because this runs over every generated selector.
  */
 export function boostSelectors(css: string, idLevels: number): string {
   let ids = "";
-  for (let i = 1; i <= idLevels; i++) ids += `#wr-b${i}`;
+  for (let i = 1; i <= idLevels; i++) ids += `#wrot-b${i}`;
   const boost = `:not(${ids})`;
   const noComments = css.replace(/\/\*[\s\S]*?\*\//g, "");
   return noComments.replace(/([^{}]+)\{/g, (_m, sels: string) => {

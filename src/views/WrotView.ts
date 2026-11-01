@@ -1,7 +1,7 @@
 import { ItemView, WorkspaceLeaf, Notice, TFile, EventRef, setIcon, Menu, MenuItem, Platform, Scope, MarkdownRenderer, renderMath, finishRenderMath } from "obsidian";
 import { VIEW_TYPE_WROT } from "../constants";
 import { parseMemos, Memo } from "../utils/memoParser";
-import { appendMemo, deleteMemo, toggleCheckbox, updateMemo } from "../utils/memoWriter";
+import { appendMemo, deleteMemo, setMemoCheckbox, updateMemo } from "../utils/memoWriter";
 import { getOrCreateDailyNote, getDailyNoteFile, dailyNotePathFor, dailyNoteTemplateFile } from "../utils/dailyNote";
 import { headingLocator, waitForTemplater } from "../utils/postHeading";
 import { segmentBlocks, toTildeFences } from "../utils/blockSegmenter";
@@ -297,24 +297,24 @@ export class WrotView extends ItemView {
   async onOpen(): Promise<void> {
     const container = this.contentEl;
     container.empty();
-    container.addClass("wr-container");
+    container.addClass("wrot-container");
 
     // currentColor can't carry a gradient; userSpaceOnUse because a per-path bbox is empty on vertical strokes.
     const gradient = container
-      .createSvg("svg", { cls: "wr-gradient-defs", attr: { "aria-hidden": "true" } })
+      .createSvg("svg", { cls: "wrot-gradient-defs", attr: { "aria-hidden": "true" } })
       .createSvg("defs")
       .createSvg("linearGradient", {
-        attr: { id: "wr-accent-gradient", gradientUnits: "userSpaceOnUse", x1: "0", y1: "0", x2: "24", y2: "0" },
+        attr: { id: "wrot-accent-gradient", gradientUnits: "userSpaceOnUse", x1: "0", y1: "0", x2: "24", y2: "0" },
       });
     for (let band = 0; band < 4; band++) {
       for (const offset of [band / 4, (band + 1) / 4]) {
-        gradient.createSvg("stop", { cls: `wr-grad-band-${band}`, attr: { offset: String(offset) } });
+        gradient.createSvg("stop", { cls: `wrot-grad-band-${band}`, attr: { offset: String(offset) } });
       }
     }
 
     this.buildDateNav(container);
     this.buildInputArea(container);
-    this.listContainer = container.createDiv({ cls: "wr-list" });
+    this.listContainer = container.createDiv({ cls: "wrot-list" });
 
     this.scope!.register(["Mod"], "Enter", (evt) => {
       if (this.composer?.hasFocus) {
@@ -622,10 +622,10 @@ export class WrotView extends ItemView {
   }
 
   private buildDateNav(container: HTMLElement): void {
-    const nav = container.createDiv({ cls: "wr-date-nav" });
+    const nav = container.createDiv({ cls: "wrot-date-nav" });
     this.dateNavEl = nav;
 
-    const prevBtn = nav.createEl("button", { cls: "wr-nav-btn" });
+    const prevBtn = nav.createEl("button", { cls: "wrot-nav-btn" });
     setIcon(prevBtn, "chevron-left");
     prevBtn.addEventListener("click", () => {
       this.currentDate = this.currentDate.clone().subtract(1, "day");
@@ -634,17 +634,17 @@ export class WrotView extends ItemView {
       this.refresh();
     });
 
-    this.dateLabel = nav.createSpan({ cls: "wr-date-label" });
+    this.dateLabel = nav.createSpan({ cls: "wrot-date-label" });
     // eslint-disable-next-line @typescript-eslint/no-misused-promises -- async handler intentionally used as a callback
     this.dateLabel.addEventListener("click", async () => {
-      this.dateLabel.classList.add("wr-date-label-active");
-      window.setTimeout(() => this.dateLabel.classList.remove("wr-date-label-active"), 300);
+      this.dateLabel.classList.add("wrot-date-label-active");
+      window.setTimeout(() => this.dateLabel.classList.remove("wrot-date-label-active"), 300);
       const file = getDailyNoteFile(this.app, this.currentDate)
         ?? await getOrCreateDailyNote(this.app, this.currentDate);
       await this.openOrFocusFile(file);
     });
 
-    const nextBtn = nav.createEl("button", { cls: "wr-nav-btn" });
+    const nextBtn = nav.createEl("button", { cls: "wrot-nav-btn" });
     setIcon(nextBtn, "chevron-right");
     nextBtn.addEventListener("click", () => {
       this.currentDate = this.currentDate.clone().add(1, "day");
@@ -653,10 +653,12 @@ export class WrotView extends ItemView {
       this.refresh();
     });
 
-    const todayBtn = nav.createEl("button", { cls: "wr-today-btn", text: t("view.dateNav.today") });
+    const todayBtn = nav.createEl("button", { cls: "wrot-today-btn", text: t("view.dateNav.today") });
     todayBtn.addEventListener("click", () => {
       this.currentDate = moment();
       this.anchoredToToday = true;
+      // Synchronously inside the click: iOS raises the keyboard only within the user gesture.
+      this.focusInput();
       // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
       this.refresh();
     });
@@ -675,7 +677,7 @@ export class WrotView extends ItemView {
       return;
     }
     if (this.calendarBtnEl) return;
-    const calendarBtn = this.dateNavEl.createEl("button", { cls: "wr-nav-btn wr-calendar-btn" });
+    const calendarBtn = this.dateNavEl.createEl("button", { cls: "wrot-nav-btn wrot-calendar-btn" });
     setIcon(calendarBtn, "calendar-1");
     calendarBtn.setAttr("aria-label", t("view.dateNav.today"));
     calendarBtn.addEventListener("click", () => {
@@ -683,7 +685,7 @@ export class WrotView extends ItemView {
         this.closeCalendarPopover();
         return;
       }
-      calendarBtn.toggleClass("wr-toolbar-active", true);
+      calendarBtn.toggleClass("wrot-toolbar-active", true);
       this.calendarPopover = openCalendarPopover({
         anchor: calendarBtn,
         container: this.contentEl,
@@ -696,7 +698,7 @@ export class WrotView extends ItemView {
         },
         onClose: () => {
           this.calendarPopover = null;
-          calendarBtn.toggleClass("wr-toolbar-active", false);
+          calendarBtn.toggleClass("wrot-toolbar-active", false);
         },
       });
     });
@@ -724,8 +726,8 @@ export class WrotView extends ItemView {
       ? updateLabel || (icon ? "" : t("defaults.updateLabel"))
       : submitLabel || (icon ? "" : t("defaults.submitLabel"));
     this.submitLabelEl.textContent = label ? `${label} ` : "";
-    this.submitBtnEl.toggleClass("wr-submit-icon-only", !label);
-    this.submitBtnEl.toggleClass("wr-submit-editing", editing);
+    this.submitBtnEl.toggleClass("wrot-submit-icon-only", !label);
+    this.submitBtnEl.toggleClass("wrot-submit-editing", editing);
     if (label) {
       this.submitBtnEl.removeAttribute("aria-label");
     } else {
@@ -745,21 +747,21 @@ export class WrotView extends ItemView {
   }
 
   private buildInputArea(container: HTMLElement): void {
-    const inputArea = container.createDiv({ cls: "wr-input-area" });
+    const inputArea = container.createDiv({ cls: "wrot-input-area" });
 
-    const header = inputArea.createDiv({ cls: "wr-input-header" });
+    const header = inputArea.createDiv({ cls: "wrot-input-header" });
     // Third way out of edit mode, next to Escape and the card menu's cancel item:
     // both of those can be out of reach on mobile or with the card scrolled away.
-    const cancelBtn = header.createEl("button", { cls: "wr-toolbar-btn wr-cancel-btn" });
+    const cancelBtn = header.createEl("button", { cls: "wrot-toolbar-btn wrot-cancel-btn" });
     setIcon(cancelBtn, "x");
     cancelBtn.setAttr("aria-label", t("view.postMenu.cancelEdit"));
     this.cancelBtnEl = cancelBtn;
     cancelBtn.addEventListener("click", () => this.exitEditMode());
     const submitBtn = header.createEl("button", {
-      cls: "wr-submit-btn",
+      cls: "wrot-submit-btn",
     });
     this.submitLabelEl = submitBtn.createSpan();
-    this.submitIconEl = submitBtn.createSpan({ cls: "wr-submit-icon" });
+    this.submitIconEl = submitBtn.createSpan({ cls: "wrot-submit-icon" });
     this.submitBtnEl = submitBtn;
     this.refreshSubmitButton();
     // eslint-disable-next-line @typescript-eslint/no-misused-promises -- async handler intentionally used as a callback
@@ -820,9 +822,9 @@ export class WrotView extends ItemView {
       }
     });
 
-    this.thumbnailContainer = inputArea.createDiv({ cls: "wr-thumbnail-container" });
+    this.thumbnailContainer = inputArea.createDiv({ cls: "wrot-thumbnail-container" });
     this.thumbnailContainer.setCssStyles({ display: "none" });
-    this.quoteContainer = inputArea.createDiv({ cls: "wr-pending-quote-container" });
+    this.quoteContainer = inputArea.createDiv({ cls: "wrot-pending-quote-container" });
     this.quoteContainer.setCssStyles({ display: "none" });
 
     this.composer.addEventListener("paste", (e: ClipboardEvent) => {
@@ -851,7 +853,7 @@ export class WrotView extends ItemView {
       this.setPendingImage(file);
     });
 
-    const toolbar = inputArea.createDiv({ cls: "wr-input-toolbar" });
+    const toolbar = inputArea.createDiv({ cls: "wrot-input-toolbar" });
     this.toolbarEl = toolbar;
     this.toolbarBtns.clear();
 
@@ -862,10 +864,10 @@ export class WrotView extends ItemView {
     // Buttons are born detached: applyToolbarLayout is the only thing that puts one on
     // the bar, so an action that lives in the overflow menu simply never gets appended.
     for (const spec of TOOLBAR_ACTION_SPECS) {
-      const btn = createEl("button", { cls: "wr-toolbar-btn" });
+      const btn = createEl("button", { cls: "wrot-toolbar-btn" });
       setIcon(btn, spec.icon);
       btn.setAttr("aria-label", t(spec.labelKey));
-      btn.setAttr("data-wr-action", spec.id);
+      btn.setAttr("data-wrot-action", spec.id);
       btn.addEventListener("mousedown", (e) => e.preventDefault());
       // Rewriting mid-composition kills the iOS caret: force-commit, then replay. Must register first to stop the action; image skips it since its picker needs the original tap.
       if (spec.id !== "image" && spec.id !== "schedule") {
@@ -948,13 +950,13 @@ export class WrotView extends ItemView {
       const insideItalic = isInsideMarker(this.composer, "*");
       const boldActive = this.activeFormatMode === "bold" || insideBold;
       const italicActive = this.activeFormatMode === "italic" || insideItalic;
-      boldBtn.toggleClass("wr-toolbar-active", boldActive);
-      italicBtn.toggleClass("wr-toolbar-active", italicActive);
-      boldBtn.toggleClass("wr-toolbar-disabled", this.activeFormatMode === "italic" || this.effectBlockedFor("bold"));
-      italicBtn.toggleClass("wr-toolbar-disabled", this.activeFormatMode === "bold" || this.effectBlockedFor("italic"));
+      boldBtn.toggleClass("wrot-toolbar-active", boldActive);
+      italicBtn.toggleClass("wrot-toolbar-active", italicActive);
+      boldBtn.toggleClass("wrot-toolbar-disabled", this.activeFormatMode === "italic" || this.effectBlockedFor("bold"));
+      italicBtn.toggleClass("wrot-toolbar-disabled", this.activeFormatMode === "bold" || this.effectBlockedFor("italic"));
       // Mute only the active button during IME composition to prevent accidental presses.
-      boldBtn.toggleClass("wr-toolbar-ime-muted", this.imeLocked && boldActive);
-      italicBtn.toggleClass("wr-toolbar-ime-muted", this.imeLocked && italicActive);
+      boldBtn.toggleClass("wrot-toolbar-ime-muted", this.imeLocked && boldActive);
+      italicBtn.toggleClass("wrot-toolbar-ime-muted", this.imeLocked && italicActive);
       if (this.activeFormatMode === null && this.armedShown) {
         this.armedShown = false;
         this.composer.setArmedFormat(null);
@@ -1152,14 +1154,14 @@ export class WrotView extends ItemView {
     }
 
     const toolbarDoneBtn = createEl("button", {
-      cls: "wr-toolbar-btn wr-toolbar-commit-btn",
+      cls: "wrot-toolbar-btn wrot-toolbar-commit-btn",
     });
     setIcon(toolbarDoneBtn, "check");
     toolbarDoneBtn.setAttr("aria-label", t("view.toolbarEdit.done"));
     toolbarDoneBtn.addEventListener("mousedown", (e) => e.preventDefault());
     this.toolbarDoneBtnEl = toolbarDoneBtn;
 
-    const formatBtn = toolbar.createEl("button", { cls: "wr-toolbar-btn wr-format-btn" });
+    const formatBtn = toolbar.createEl("button", { cls: "wrot-toolbar-btn wrot-format-btn" });
     setIcon(formatBtn, "ellipsis");
     formatBtn.setAttr("aria-label", t("view.toolbarAction.more"));
     this.formatBtnEl = formatBtn;
@@ -1320,18 +1322,18 @@ export class WrotView extends ItemView {
     // Wrap detection via offsetTop, which padding changes don't affect, so the
     // ResizeObserver cannot loop.
     const updateToolbarWrapped = () => {
-      const buttons = toolbar.querySelectorAll<HTMLElement>(".wr-toolbar-btn");
+      const buttons = toolbar.querySelectorAll<HTMLElement>(".wrot-toolbar-btn");
       if (buttons.length < 2) return;
       const first = buttons[0];
       const last = buttons[buttons.length - 1];
       const wrapped = last.offsetTop > first.offsetTop;
-      toolbar.toggleClass("wr-toolbar-wrapped", wrapped);
+      toolbar.toggleClass("wrot-toolbar-wrapped", wrapped);
       // The overflow button carries a margin that sets it apart from the actions beside it.
       // Landing at the start of a wrapped row, that margin indents it past the column the
       // row above stands on. The class takes it back visually only: dropping the margin
       // itself would change the width that decided the wrap, and the two would oscillate.
       const prev = buttons[buttons.length - 2];
-      last.toggleClass("wr-toolbar-row-start", last.offsetTop > prev.offsetTop);
+      last.toggleClass("wrot-toolbar-row-start", last.offsetTop > prev.offsetTop);
     };
     window.requestAnimationFrame(updateToolbarWrapped);
     if (typeof ResizeObserver !== "undefined") {
@@ -1360,9 +1362,9 @@ export class WrotView extends ItemView {
     input.setCssStyles({ display: "none" });
     activeDocument.body.appendChild(input);
 
-    this.imageAddBtn?.toggleClass("wr-toolbar-active", true);
+    this.imageAddBtn?.toggleClass("wrot-toolbar-active", true);
     const deactivate = () => {
-      this.imageAddBtn?.toggleClass("wr-toolbar-active", false);
+      this.imageAddBtn?.toggleClass("wrot-toolbar-active", false);
       window.removeEventListener("focus", deactivate);
       window.removeEventListener("pointerdown", onUserTap, true);
     };
@@ -1427,10 +1429,10 @@ export class WrotView extends ItemView {
     if (!this.thumbnailContainer || !this.pendingImageUrl) return;
     this.thumbnailContainer.empty();
     this.thumbnailContainer.setCssStyles({ display: "" });
-    const wrap = this.thumbnailContainer.createDiv({ cls: "wr-thumbnail" });
-    const img = wrap.createEl("img", { cls: "wr-thumbnail-img" });
+    const wrap = this.thumbnailContainer.createDiv({ cls: "wrot-thumbnail" });
+    const img = wrap.createEl("img", { cls: "wrot-thumbnail-img" });
     img.src = this.pendingImageUrl;
-    const removeBtn = wrap.createEl("button", { cls: "wr-thumbnail-remove" });
+    const removeBtn = wrap.createEl("button", { cls: "wrot-thumbnail-remove" });
     setIcon(removeBtn, "x");
     removeBtn.setAttr("aria-label", t("view.image.removeAria"));
     removeBtn.addEventListener("mousedown", (e) => e.preventDefault());
@@ -1453,17 +1455,17 @@ export class WrotView extends ItemView {
       return;
     }
     container.setCssStyles({ display: "" });
-    const wrap = container.createDiv({ cls: "wr-pending-quote" });
-    const slot = wrap.createDiv({ cls: "wr-quote-card-slot" });
+    const wrap = container.createDiv({ cls: "wrot-pending-quote" });
+    const slot = wrap.createDiv({ cls: "wrot-quote-card-slot" });
     renderQuoteCard(slot, link[1], link[2], this.app, "", {
       timestampFormat: this.plugin.settings.timestampFormat,
       resolveRuleClass: (content) => this.plugin.getTagRuleClassForContent(content),
       checkStrikethrough: this.plugin.settings.checkStrikethrough,
     });
-    const card = slot.querySelector<HTMLElement>(".wr-quote-card");
+    const card = slot.querySelector<HTMLElement>(".wrot-quote-card");
     card?.removeAttribute("role");
     card?.removeAttribute("tabindex");
-    const removeBtn = wrap.createEl("button", { cls: "wr-thumbnail-remove" });
+    const removeBtn = wrap.createEl("button", { cls: "wrot-thumbnail-remove" });
     setIcon(removeBtn, "x");
     removeBtn.setAttr("aria-label", t("view.quote.removeAria"));
     removeBtn.addEventListener("mousedown", (e) => e.preventDefault());
@@ -1485,18 +1487,18 @@ export class WrotView extends ItemView {
    */
   private setBtnDisabled(btn: HTMLButtonElement, disabled: boolean): void {
     if (this.toolbarEditing) {
-      if (disabled) btn.setAttr("data-wr-was-disabled", "1");
-      else btn.removeAttribute("data-wr-was-disabled");
+      if (disabled) btn.setAttr("data-wrot-was-disabled", "1");
+      else btn.removeAttribute("data-wrot-was-disabled");
       return;
     }
-    btn.toggleClass("wr-toolbar-disabled", disabled);
+    btn.toggleClass("wrot-toolbar-disabled", disabled);
     btn.disabled = disabled;
   }
 
   private updateSubmitBtnState(): void {
     if (!this.submitBtnEl) return;
     const hasContent = this.hasTypedText() || this.pendingImage !== null || this.pendingQuote !== null;
-    this.submitBtnEl.toggleClass("wr-submit-active", hasContent);
+    this.submitBtnEl.toggleClass("wrot-submit-active", hasContent);
   }
 
   // Closes visual mode's pending opener where its style ends, the end of its line, so the
@@ -1594,12 +1596,12 @@ export class WrotView extends ItemView {
   private applyEditModeClasses(): void {
     const editing = this.editingMemo;
     const targetClass = editing
-      ? `wr-block-id-wr-${editing.time.replace(/[-:.TZ+]/g, "").slice(0, 17)}`
+      ? `wrot-block-id-wr-${editing.time.replace(/[-:.TZ+]/g, "").slice(0, 17)}`
       : null;
-    this.contentEl.querySelectorAll<HTMLElement>(".wr-card").forEach((card) => {
+    this.contentEl.querySelectorAll<HTMLElement>(".wrot-card").forEach((card) => {
       const isTarget = targetClass !== null && card.classList.contains(targetClass);
-      card.classList.toggle("wr-card-editing", isTarget);
-      card.classList.toggle("wr-card-menu-locked", editing !== null && !isTarget);
+      card.classList.toggle("wrot-card-editing", isTarget);
+      card.classList.toggle("wrot-card-menu-locked", editing !== null && !isTarget);
       this.setEditingAccentVars(card, isTarget);
     });
   }
@@ -1608,19 +1610,19 @@ export class WrotView extends ItemView {
   // accent carries it as inline CSS vars while highlighted; without them the
   // stylesheet defaults fall back to the theme accent.
   private setEditingAccentVars(card: HTMLElement, editing: boolean): void {
-    const ruleClass = Array.from(card.classList).find((c) => /^wr-tag-rule-\d+$/.test(c));
+    const ruleClass = Array.from(card.classList).find((c) => /^wrot-tag-rule-\d+$/.test(c));
     const accent = editing && ruleClass ? this.plugin.getRuleAccentColor(ruleClass) : null;
     if (accent) {
       const r = parseInt(accent.slice(1, 3), 16);
       const g = parseInt(accent.slice(3, 5), 16);
       const b = parseInt(accent.slice(5, 7), 16);
-      card.style.setProperty("--wr-editing-ring-color", `rgba(${r}, ${g}, ${b}, 0.45)`);
-      card.style.setProperty("--wr-editing-tint-color", `rgba(${r}, ${g}, ${b}, 0.07)`);
-      card.style.setProperty("--wr-editing-accent", accent);
+      card.style.setProperty("--wrot-editing-ring-color", `rgba(${r}, ${g}, ${b}, 0.45)`);
+      card.style.setProperty("--wrot-editing-tint-color", `rgba(${r}, ${g}, ${b}, 0.07)`);
+      card.style.setProperty("--wrot-editing-accent", accent);
     } else {
-      card.style.removeProperty("--wr-editing-ring-color");
-      card.style.removeProperty("--wr-editing-tint-color");
-      card.style.removeProperty("--wr-editing-accent");
+      card.style.removeProperty("--wrot-editing-ring-color");
+      card.style.removeProperty("--wrot-editing-tint-color");
+      card.style.removeProperty("--wrot-editing-accent");
     }
   }
 
@@ -1922,7 +1924,7 @@ export class WrotView extends ItemView {
 
   private renderEmptyState(): void {
     this.listContainer.createDiv({
-      cls: "wr-empty",
+      cls: "wrot-empty",
       text: t("view.empty.noMemos"),
     });
   }
@@ -1934,9 +1936,9 @@ export class WrotView extends ItemView {
 
   private ensurePinnedContainer(): HTMLElement {
     if (this.pinnedContainer) return this.pinnedContainer;
-    const container = createDiv({ cls: "wr-pinned-section" });
+    const container = createDiv({ cls: "wrot-pinned-section" });
     if (this.plugin.settings.pinFixed) {
-      container.addClass("wr-pinned-fixed");
+      container.addClass("wrot-pinned-fixed");
       this.listContainer.insertAdjacentElement("beforebegin", container);
     } else {
       this.listContainer.prepend(container);
@@ -2152,7 +2154,7 @@ export class WrotView extends ItemView {
       // The card menu is still closing as its item fires, and its own hide handler
       // puts the button's lit state out. Light it again once that has run: the
       // picker is still the same card's.
-      window.setTimeout(() => trigger.toggleClass("wr-toolbar-active", true), 0);
+      window.setTimeout(() => trigger.toggleClass("wrot-toolbar-active", true), 0);
       // The popover is placed once, against the button's position at the time, so the
       // list is held still while it is open — scrolling either way would slide the
       // card out from under it. Before locking, the list is sent down far enough for
@@ -2172,16 +2174,16 @@ export class WrotView extends ItemView {
           // calendar over the very post the day is being chosen for.
           // The floor's height is measured, so it is the one value that has to be
           // written as a property rather than carried by a class.
-          this.listContainer.setCssProps({ "--wr-list-floor": `${overflow}px` });
+          this.listContainer.setCssProps({ "--wrot-list-floor": `${overflow}px` });
           this.listContainer.scrollTop += overflow;
           popover.reposition();
         }
         // Held by refusing the scroll outright rather than by putting it back: undoing
         // each frame fights the momentum and the list shudders.
-        this.listContainer.addClass("wr-list-held");
+        this.listContainer.addClass("wrot-list-held");
       };
       this.schedulePickerAnchor = trigger;
-      const form = trigger.closest<HTMLElement>(".wr-input-area") ?? undefined;
+      const form = trigger.closest<HTMLElement>(".wrot-input-area") ?? undefined;
       this.schedulePopover = openCalendarPopover({
         anchor: trigger,
         alignTo: form,
@@ -2190,11 +2192,11 @@ export class WrotView extends ItemView {
         minDate: earliest,
         onSelect: (date) => onPick(date.format("YYYY-MM-DD")),
         onClose: () => {
-          this.listContainer.removeClass("wr-list-held");
-          this.listContainer.setCssProps({ "--wr-list-floor": "0px" });
+          this.listContainer.removeClass("wrot-list-held");
+          this.listContainer.setCssProps({ "--wrot-list-floor": "0px" });
           this.schedulePopover = null;
           this.schedulePickerAnchor = null;
-          trigger.toggleClass("wr-toolbar-active", false);
+          trigger.toggleClass("wrot-toolbar-active", false);
           afterClose();
         },
       });
@@ -2239,7 +2241,7 @@ export class WrotView extends ItemView {
           // The row is only a mounting point; its menu-item behaviour is dropped so
           // rolling a drum cannot dismiss the menu out from under the finger.
           itemDom.empty();
-          itemDom.className = "wr-menu-drum";
+          itemDom.className = "wrot-menu-drum";
           itemDom.addEventListener("click", (e) => e.stopPropagation());
           buildDateDrum(itemDom, {
             earliest,
@@ -2253,7 +2255,7 @@ export class WrotView extends ItemView {
 
         menu.addItem((item) => {
           confirmItem = item;
-          (item as { dom?: HTMLElement }).dom?.classList.add("wr-menu-schedule-confirm");
+          (item as { dom?: HTMLElement }).dom?.classList.add("wrot-menu-schedule-confirm");
           item.setIcon("clock-fading").onClick(() => {
             onPick(chosen.format("YYYY-MM-DD"));
           });
@@ -2266,7 +2268,7 @@ export class WrotView extends ItemView {
       // desktop, so it is the one shape that can be lined up with the form the way the
       // overflow menu is. A phone raises the menu from the bottom edge and has nothing to
       // line up; a card has no form around it either.
-      Platform.isTablet && trigger.closest(".wr-input-area") !== null
+      Platform.isTablet && trigger.closest(".wrot-input-area") !== null
     );
   }
 
@@ -2276,7 +2278,7 @@ export class WrotView extends ItemView {
   private setArmedSchedule(from: string | null): void {
     this.armedSchedule = from;
     if (!this.scheduleArmBtn) return;
-    this.scheduleArmBtn.toggleClass("wr-toolbar-active", from !== null);
+    this.scheduleArmBtn.toggleClass("wrot-toolbar-active", from !== null);
     // Out of reach while an edit is running — that rewrites a post which already
     // exists, and its day is set from its own card — and while the allowance is
     // full, since there would be nowhere for the armed day to land. A day already
@@ -2308,11 +2310,11 @@ export class WrotView extends ItemView {
   private applySchedulingClasses(): void {
     const time = this.schedulingTime;
     const targetClass = time
-      ? `wr-block-id-wr-${time.replace(/[-:.TZ+]/g, "").slice(0, 17)}`
+      ? `wrot-block-id-wr-${time.replace(/[-:.TZ+]/g, "").slice(0, 17)}`
       : null;
-    this.contentEl.querySelectorAll<HTMLElement>(".wr-card").forEach((card) => {
+    this.contentEl.querySelectorAll<HTMLElement>(".wrot-card").forEach((card) => {
       const isTarget = targetClass !== null && card.classList.contains(targetClass);
-      card.classList.toggle("wr-card-menu-locked", time !== null && !isTarget);
+      card.classList.toggle("wrot-card-menu-locked", time !== null && !isTarget);
     });
   }
 
@@ -2328,22 +2330,22 @@ export class WrotView extends ItemView {
     const host = options.pinned
       ? this.ensurePinnedContainer()
       : this.listContainer;
-    const card = host.createDiv({ cls: "wr-card" });
-    if (options.pinned) card.classList.add("wr-card-pinned");
+    const card = host.createDiv({ cls: "wrot-card" });
+    if (options.pinned) card.classList.add("wrot-card-pinned");
     const T = memo.time.replace(/[-:.TZ+]/g, "").slice(0, 17);
-    card.classList.add(`wr-block-id-wr-${T}`);
+    card.classList.add(`wrot-block-id-wr-${T}`);
     // State-driven so the classes survive any full re-render during an edit.
-    if (this.isEditingTarget(memo)) card.classList.add("wr-card-editing");
-    else if (this.editingMemo) card.classList.add("wr-card-menu-locked");
+    if (this.isEditingTarget(memo)) card.classList.add("wrot-card-editing");
+    else if (this.editingMemo) card.classList.add("wrot-card-menu-locked");
     const rule = this.plugin.findTagColorRule(memo.tags);
     if (rule) {
       const idx = this.plugin.settings.tagColorRules.indexOf(rule);
-      if (idx >= 0) card.classList.add(`wr-tag-rule-${idx}`);
+      if (idx >= 0) card.classList.add(`wrot-tag-rule-${idx}`);
     }
     // After the rule class: the accent vars are resolved from it.
     if (this.isEditingTarget(memo)) this.setEditingAccentVars(card, true);
 
-    const contentEl = card.createDiv({ cls: "wr-content" });
+    const contentEl = card.createDiv({ cls: "wrot-content" });
     const resolveImagePath = (fileName: string): string | null => {
       const file = this.app.metadataCache.getFirstLinkpathDest(fileName, "");
       return file ? this.app.vault.getResourcePath(file) : null;
@@ -2353,16 +2355,20 @@ export class WrotView extends ItemView {
     const urls = renderTextWithTagsAndUrls(contentEl, memo.content, {
       onTagClick: (tag) => this.plugin.openTagSearch(tag),
       // eslint-disable-next-line @typescript-eslint/no-misused-promises -- async handler intentionally used as a callback
-      onCheckToggle: async (lineIndex) => {
-        const file = getDailyNoteFile(this.app, this.currentDate);
+      onCheckToggle: async (lineIndex, checked) => {
+        // Pins live in other days' notes.
+        const file = this.app.vault.getFileByPath(options.filePath);
         if (!file) return;
-        const fileLine = memo.lineStart + 1 + lineIndex;
         // Suppress the burst of modify events so full re-renders don't flicker the cards.
         this.ignoreModifyUntil = Date.now() + 500;
-        await toggleCheckbox(this.app, file, fileLine);
+        const written = await setMemoCheckbox(this.app, file, memo.time, lineIndex, checked);
         // Re-arm after the write: a slow write can land modify past the first window and jank.
         // The strikethrough was already applied via class toggle, so no re-render is needed.
         this.ignoreModifyUntil = Date.now() + 500;
+        if (!written) {
+          this.ignoreModifyUntil = 0;
+          this.requestRefresh();
+        }
       },
       onInternalLinkClick: (linkName) => {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
@@ -2401,7 +2407,7 @@ export class WrotView extends ItemView {
           blockEl.appendChild(rendered);
           void finishRenderMath();
         } catch {
-          blockEl.classList.add("wr-math-fallback");
+          blockEl.classList.add("wrot-math-fallback");
           blockEl.textContent = tex;
           requestMathJax();
         }
@@ -2415,8 +2421,8 @@ export class WrotView extends ItemView {
     );
     if (previewUrls.length > 0) {
       const mediaEl = createDiv();
-      mediaEl.className = "wr-media-area";
-      const quoteSlot = contentEl.querySelector(".wr-quote-card-slot");
+      mediaEl.className = "wrot-media-area";
+      const quoteSlot = contentEl.querySelector(".wrot-quote-card-slot");
       if (quoteSlot && quoteSlot.parentNode) {
         quoteSlot.parentNode.insertBefore(mediaEl, quoteSlot);
       } else {
@@ -2427,13 +2433,13 @@ export class WrotView extends ItemView {
 
     // The pin indicator lives outside the footer so it can't shift the menu button's
     // position or hit area.
-    const footer = card.createDiv({ cls: "wr-card-footer" });
+    const footer = card.createDiv({ cls: "wrot-card-footer" });
 
     const fmt = this.plugin.settings.timestampFormat || "YYYY/MM/DD HH:mm:ss";
     const formatted = moment(memo.time).format(fmt);
-    footer.createSpan({ cls: "wr-timestamp", text: formatted });
+    footer.createSpan({ cls: "wrot-timestamp", text: formatted });
 
-    const menuBtn = footer.createSpan({ cls: "wr-menu-btn" });
+    const menuBtn = footer.createSpan({ cls: "wrot-menu-btn" });
     setIcon(menuBtn, "ellipsis");
     // Named so the delete confirm can re-open the menu on itself: with native
     // menus there is no row to rewrite in place, so the second state has to be a
@@ -2474,7 +2480,7 @@ export class WrotView extends ItemView {
               this.openMenu(menuBtn, (picker) => {
                 for (const text of blocks) {
                   const label = createFragment((f) =>
-                    f.createSpan({ cls: "wr-block-pick", text: text.split("\n").find((l) => l.trim() !== "")?.trim() })
+                    f.createSpan({ cls: "wrot-block-pick", text: text.split("\n").find((l) => l.trim() !== "")?.trim() })
                   );
                   picker.addItem((pick) =>
                     pick.setTitle(label).onClick(async () => {
@@ -2516,7 +2522,7 @@ export class WrotView extends ItemView {
           menu.addItem((item) => {
             item.setTitle(t("view.postMenu.pinLimitHint", { limit: pinLimit })).setDisabled(true);
             const itemDom = (item as { dom?: HTMLElement }).dom;
-            itemDom?.classList.add("wr-menu-hint", "is-label");
+            itemDom?.classList.add("wrot-menu-hint", "is-label");
           });
         };
         // Taking a pin down is worded the same whether it is already up or still
@@ -2587,7 +2593,7 @@ export class WrotView extends ItemView {
             // Marks the row for the mobile press-state reset: this is the one
             // menu item that outlives its own press, so the stuck touch state
             // has to be neutralised for good, not only while armed.
-            itemDom?.classList.add("wr-menu-delete");
+            itemDom?.classList.add("wrot-menu-delete");
 
             // Menus built from DOM close themselves on a click, so the first
             // press is swallowed here in the capture phase and the row is
@@ -2633,13 +2639,13 @@ export class WrotView extends ItemView {
     });
 
     if (options.pinned) {
-      const pinIndicator = card.createSpan({ cls: "wr-pin-indicator" });
+      const pinIndicator = card.createSpan({ cls: "wrot-pin-indicator" });
       // Solid pin = arrived from a schedule; the two kinds spend separate allowances.
-      if (options.fromSchedule) pinIndicator.addClass("wr-pin-indicator-filled");
+      if (options.fromSchedule) pinIndicator.addClass("wrot-pin-indicator-filled");
       setIcon(pinIndicator, "pin");
     } else if (options.waitingSchedule) {
       const scheduleIndicator = card.createSpan({
-        cls: "wr-pin-indicator wr-schedule-indicator",
+        cls: "wrot-pin-indicator wrot-schedule-indicator",
       });
       setIcon(scheduleIndicator, "clock-fading");
     }
@@ -2659,9 +2665,9 @@ export class WrotView extends ItemView {
 
   private updateToolbarActive(listBtn: HTMLElement, checkBtn: HTMLElement, olBtn: HTMLElement): void {
     const { isList, isCheck, isOl } = lineMarkerState(this.composer);
-    listBtn.toggleClass("wr-toolbar-active", isList);
-    checkBtn.toggleClass("wr-toolbar-active", isCheck);
-    olBtn.toggleClass("wr-toolbar-active", isOl);
+    listBtn.toggleClass("wrot-toolbar-active", isList);
+    checkBtn.toggleClass("wrot-toolbar-active", isCheck);
+    olBtn.toggleClass("wrot-toolbar-active", isOl);
   }
 
   /**
@@ -2696,15 +2702,15 @@ export class WrotView extends ItemView {
       if (!btn) continue;
       if (slot.state === "bar" || this.toolbarEditing) toolbar.appendChild(btn);
       else btn.detach();
-      btn.toggleClass("wr-toolbar-off", this.toolbarEditing && slot.state !== "bar");
-      btn.toggleClass("wr-toolbar-disabled-slot", this.toolbarEditing && slot.state === "off");
+      btn.toggleClass("wrot-toolbar-off", this.toolbarEditing && slot.state !== "bar");
+      btn.toggleClass("wrot-toolbar-disabled-slot", this.toolbarEditing && slot.state === "off");
     }
     if (this.toolbarDoneBtnEl) {
       if (this.toolbarEditing) toolbar.appendChild(this.toolbarDoneBtnEl);
       else this.toolbarDoneBtnEl.detach();
     }
     toolbar.appendChild(this.formatBtnEl);
-    toolbar.toggleClass("wr-toolbar-editing", this.toolbarEditing);
+    toolbar.toggleClass("wrot-toolbar-editing", this.toolbarEditing);
     this.updateSelectionBtns();
     this.dropPendingModeIfHidden();
   }
@@ -2721,8 +2727,8 @@ export class WrotView extends ItemView {
       if (!btn) continue;
       if (!btn.parentElement) {
         if (this.activeFormatMode === action.id) this.activeFormatMode = null;
-        btn.removeClass("wr-toolbar-active");
-        btn.removeClass("wr-toolbar-ime-muted");
+        btn.removeClass("wrot-toolbar-active");
+        btn.removeClass("wrot-toolbar-ime-muted");
       }
     }
   }
@@ -2755,16 +2761,16 @@ export class WrotView extends ItemView {
     // switched back on; the state is parked for the duration and handed straight back.
     for (const btn of this.toolbarBtns.values()) {
       if (on) {
-        if (btn.disabled) btn.setAttr("data-wr-was-disabled", "1");
+        if (btn.disabled) btn.setAttr("data-wrot-was-disabled", "1");
         btn.disabled = false;
-        btn.removeClass("wr-toolbar-disabled");
-      } else if (btn.getAttribute("data-wr-was-disabled")) {
-        btn.removeAttribute("data-wr-was-disabled");
+        btn.removeClass("wrot-toolbar-disabled");
+      } else if (btn.getAttribute("data-wrot-was-disabled")) {
+        btn.removeAttribute("data-wrot-was-disabled");
         btn.disabled = true;
-        btn.addClass("wr-toolbar-disabled");
+        btn.addClass("wrot-toolbar-disabled");
       }
     }
-    this.contentEl.toggleClass("wr-toolbar-arranging", on);
+    this.contentEl.toggleClass("wrot-toolbar-arranging", on);
     if (this.composer) this.composer.readOnly = on;
     if (this.formatBtnEl) {
       setIcon(this.formatBtnEl, on ? "x" : "ellipsis");
@@ -2806,10 +2812,10 @@ export class WrotView extends ItemView {
 
     const lift = (btn: HTMLElement) => {
       const box = btn.getBoundingClientRect();
-      gap = createDiv({ cls: "wr-toolbar-gap" });
+      gap = createDiv({ cls: "wrot-toolbar-gap" });
       gap.setCssStyles({ width: `${box.width}px`, height: `${box.height}px` });
       toolbar.insertBefore(gap, btn);
-      btn.addClass("wr-toolbar-dragging");
+      btn.addClass("wrot-toolbar-dragging");
       // Out of flow, so the row closes up and only the gap holds a place. Its own size has
       // to be restated: nothing is laying it out any more. Deaf to the pointer as well, or
       // it would be the thing found under the finger instead of what it is passing over.
@@ -2828,7 +2834,7 @@ export class WrotView extends ItemView {
     };
 
     const drop = (btn: HTMLElement) => {
-      btn.removeClass("wr-toolbar-dragging");
+      btn.removeClass("wrot-toolbar-dragging");
       btn.setCssStyles({
         position: "",
         left: "",
@@ -2846,7 +2852,7 @@ export class WrotView extends ItemView {
 
     this.registerDomEvent(toolbar, "pointerdown", (e: PointerEvent) => {
       if (!this.toolbarEditing) return;
-      const btn = (e.target as HTMLElement | null)?.closest<HTMLElement>(".wr-toolbar-btn");
+      const btn = (e.target as HTMLElement | null)?.closest<HTMLElement>(".wrot-toolbar-btn");
       // The two ways out of arranging are not part of what is being arranged.
       if (!btn || btn === this.formatBtnEl || btn === this.toolbarDoneBtnEl) return;
       held = btn;
@@ -2872,7 +2878,7 @@ export class WrotView extends ItemView {
       held.setCssStyles({ left: `${e.clientX - grabX}px`, top: `${e.clientY - grabY}px` });
       if (!gap) return;
       const under = activeDocument.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
-      const over = under?.closest<HTMLElement>(".wr-toolbar-btn");
+      const over = under?.closest<HTMLElement>(".wrot-toolbar-btn");
       if (!over || over === this.formatBtnEl || over === this.toolbarDoneBtnEl) return;
       if (over.parentElement !== toolbar) return;
       const gapPrecedes =
@@ -2889,7 +2895,7 @@ export class WrotView extends ItemView {
         drop(btn);
         this.readOrderFromBar();
       } else {
-        this.toggleToolbarSlot(btn.getAttribute("data-wr-action"));
+        this.toggleToolbarSlot(btn.getAttribute("data-wrot-action"));
       }
     };
     this.registerDomEvent(toolbar, "pointerup", release);
@@ -2914,7 +2920,7 @@ export class WrotView extends ItemView {
     const slotById = new Map(this.toolbarLayout.map((s) => [s.id, s]));
     const ordered: ToolbarSlot[] = [];
     for (const el of Array.from(toolbar.children)) {
-      const id = el.getAttribute("data-wr-action");
+      const id = el.getAttribute("data-wrot-action");
       const slot = id ? slotById.get(id) : undefined;
       if (!id || !slot) continue;
       ordered.push({ ...slot });
@@ -2943,14 +2949,14 @@ export class WrotView extends ItemView {
 
   private updateLinkBtn(linkBtn: HTMLButtonElement): void {
     const target = this.linkTarget();
-    linkBtn.toggleClass("wr-toolbar-active", !!target?.edit);
+    linkBtn.toggleClass("wrot-toolbar-active", !!target?.edit);
     this.setBtnDisabled(linkBtn, !target);
   }
 
   /** The link button: asks where the selected text (or the link at the caret) should point. */
   private openLinkEditor(): void {
     const target = this.linkTarget();
-    const anchor = this.toolbarEl?.closest<HTMLElement>(".wr-input-area");
+    const anchor = this.toolbarEl?.closest<HTMLElement>(".wrot-input-area");
     if (!target || !anchor) return;
     this.linkPopover?.close();
     const ta = this.composer;
@@ -3026,9 +3032,9 @@ export class WrotView extends ItemView {
     buildMenu(menu);
 
     const menuDom = (menu as { dom?: HTMLElement }).dom;
-    menuDom?.classList.add("wr-menu");
+    menuDom?.classList.add("wrot-menu");
 
-    trigger.toggleClass("wr-toolbar-active", true);
+    trigger.toggleClass("wrot-toolbar-active", true);
     this.currentMenu = menu;
 
     // Set while the menu tracks the form it hangs off, so closing stops the tracking.
@@ -3044,7 +3050,7 @@ export class WrotView extends ItemView {
       // one finishes closing well after. Only the menu still holding the trigger
       // puts its light out; an older one leaves it to whoever took over.
       if (this.currentMenu === menu) {
-        trigger.toggleClass("wr-toolbar-active", false);
+        trigger.toggleClass("wrot-toolbar-active", false);
         this.currentMenu = null;
         onHide?.();
       }
@@ -3078,7 +3084,7 @@ export class WrotView extends ItemView {
     }
 
     if (alignRight && menuDom) {
-      const host = trigger.closest(".wr-input-area") ?? trigger;
+      const host = trigger.closest(".wrot-input-area") ?? trigger;
       // How wide the menu is only becomes known once it is up, so the edges are matched
       // afterwards. Clamped at the window edge, which a wide menu on a narrow pane reaches.
       let lastLeft = Number.NaN;

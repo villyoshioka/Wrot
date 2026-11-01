@@ -99,8 +99,8 @@ function highlightAllWrBlocks(el: HTMLElement, plugin: WrotPlugin, parent: Compo
       applyTagRuleClass(parentBlock, codeEl, plugin);
     }
 
-    const hasProcessedInCode = code.querySelector(".wr-reading-tag, .wr-reading-url, .wr-internal-link, .wr-inline-code");
-    const hasProcessedInBlock = parentBlock?.querySelector(".wr-reading-list, .wr-blockquote, .wr-embed-img, .wr-plain-text, .wr-codeblock-display, .wr-math-display");
+    const hasProcessedInCode = code.querySelector(".wrot-reading-tag, .wrot-reading-url, .wrot-internal-link, .wrot-inline-code");
+    const hasProcessedInBlock = parentBlock?.querySelector(".wrot-reading-list, .wrot-blockquote, .wrot-embed-img, .wrot-plain-text, .wrot-codeblock-display, .wrot-math-display");
     if (hasProcessedInCode || hasProcessedInBlock) return;
 
     processCodeBlock(codeEl, plugin, parent);
@@ -235,7 +235,7 @@ async function applyBlockIdClasses(el: HTMLElement, plugin: WrotPlugin, sourcePa
 }
 
 function blockIdOf(memo: Memo): string {
-  return `wr-block-id-wr-${memo.time.replace(/[-:.TZ+]/g, "").slice(0, 17)}`;
+  return `wrot-block-id-wr-${memo.time.replace(/[-:.TZ+]/g, "").slice(0, 17)}`;
 }
 
 function applyBlockIdClass(block: HTMLElement, memo: Memo): void {
@@ -244,7 +244,7 @@ function applyBlockIdClass(block: HTMLElement, memo: Memo): void {
   // A previously assigned id may have come from a stale pairing; replace rather than keep,
   // otherwise a wrong id sticks for the lifetime of the element.
   for (const existing of Array.from(block.classList)) {
-    if (existing.startsWith("wr-block-id-wr-")) block.classList.remove(existing);
+    if (existing.startsWith("wrot-block-id-wr-")) block.classList.remove(existing);
   }
   block.classList.add(cls);
 }
@@ -264,18 +264,18 @@ function applyTagRuleClass(block: HTMLElement, code: HTMLElement, plugin: WrotPl
   for (const t of targets) {
     const existing = Array.from(t.classList);
     for (const cls of existing) {
-      if (/^wr-tag-rule-\d+$/.test(cls)) t.classList.remove(cls);
+      if (/^wrot-tag-rule-\d+$/.test(cls)) t.classList.remove(cls);
     }
   }
 
-  const rawText = code.getAttribute("data-wr-original") || code.textContent || "";
+  const rawText = code.getAttribute("data-wrot-original") || code.textContent || "";
   const blockTags = matchTags(rawText);
   const rule = plugin.findTagColorRule(blockTags);
   if (!rule) return;
   const idx = plugin.settings.tagColorRules.indexOf(rule);
   if (idx < 0) return;
 
-  const cls = `wr-tag-rule-${idx}`;
+  const cls = `wrot-tag-rule-${idx}`;
   for (const t of targets) t.classList.add(cls);
 }
 
@@ -285,10 +285,10 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin, parent: Compone
 
   const container = block.parentElement || block;
   container.querySelectorAll(".code-block-flair, .copy-code-button").forEach((el) => {
-    (el as HTMLElement).classList.add("wr-flair-bg");
+    (el as HTMLElement).classList.add("wrot-flair-bg");
   });
   block.querySelectorAll(".code-block-flair, .copy-code-button").forEach((el) => {
-    (el as HTMLElement).classList.add("wr-flair-bg");
+    (el as HTMLElement).classList.add("wrot-flair-bg");
   });
 
   const copyButtons = [
@@ -296,9 +296,9 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin, parent: Compone
     ...Array.from(block.querySelectorAll(".copy-code-button")),
   ];
   const resolveAccentForBlock = (): string => {
-    const ruleClass = Array.from(block.classList).find((c) => /^wr-tag-rule-\d+$/.test(c));
+    const ruleClass = Array.from(block.classList).find((c) => /^wrot-tag-rule-\d+$/.test(c));
     if (ruleClass) {
-      const idx = parseInt(ruleClass.slice("wr-tag-rule-".length), 10);
+      const idx = parseInt(ruleClass.slice("wrot-tag-rule-".length), 10);
       const rule = plugin.settings.tagColorRules?.[idx];
       if (rule?.accentColor && /^#[0-9a-fA-F]{6}$/.test(rule.accentColor)) {
         return rule.accentColor;
@@ -322,7 +322,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin, parent: Compone
     });
   }
 
-  block.querySelectorAll(".wr-media-area").forEach((el) => el.remove());
+  block.querySelectorAll(".wrot-media-area").forEach((el) => el.remove());
 
   const resolveImagePath = (fileName: string): string | null => {
     const file = plugin.app.metadataCache.getFirstLinkpathDest(fileName, "");
@@ -341,7 +341,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin, parent: Compone
   const tailEmbedImages: HTMLElement[] = [];
 
   const walkTargets: HTMLElement[] = [code];
-  block.querySelectorAll(".wr-reading-list, .wr-blockquote, .wr-plain-text").forEach((el) => {
+  block.querySelectorAll(".wrot-reading-list, .wrot-blockquote, .wrot-plain-text").forEach((el) => {
     walkTargets.push(el as HTMLElement);
   });
 
@@ -367,12 +367,12 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin, parent: Compone
       const codeMatch = part.match(/^`([^`]+)`$/);
       if (codeMatch) {
         const codeEl = createSpan();
-        codeEl.className = "wr-inline-code";
+        codeEl.className = "wrot-inline-code";
         const tickOpen = createSpan();
-        tickOpen.className = "wr-backtick";
+        tickOpen.className = "wrot-backtick";
         tickOpen.textContent = "`";
         const tickClose = createSpan();
-        tickClose.className = "wr-backtick";
+        tickClose.className = "wrot-backtick";
         tickClose.textContent = "`";
         codeEl.appendChild(tickOpen);
         codeEl.appendChild(activeDocument.createTextNode(codeMatch[1]));
@@ -395,13 +395,13 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin, parent: Compone
           const el = createEl(tag);
           // A colour emoji goes in with the hidden opener: kept for copying, not shown.
           const tint = tag === "mark" ? highlightColor(m[1]) : null;
-          if (tag === "mark") el.className = "wr-highlight";
+          if (tag === "mark") el.className = "wrot-highlight";
           if (tint) el.setAttr("data-highlight", tint.color);
           const mOpen = createSpan();
-          mOpen.className = "wr-backtick";
+          mOpen.className = "wrot-backtick";
           mOpen.textContent = tint ? marker + m[1].slice(0, tint.length) : marker;
           const mClose = createSpan();
-          mClose.className = "wr-backtick";
+          mClose.className = "wrot-backtick";
           mClose.textContent = marker;
           const innerNode = activeDocument.createTextNode(tint ? m[1].slice(tint.length) : m[1]);
           el.appendChild(mOpen);
@@ -423,7 +423,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin, parent: Compone
         const url = mdLinkMatch[2];
         if (isSafeUrl(url)) {
           const span = createSpan();
-          span.className = "wr-reading-url";
+          span.className = "wrot-reading-url";
           span.textContent = label;
           span.addEventListener("pointerup", (e) => {
             e.preventDefault();
@@ -448,7 +448,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin, parent: Compone
           const file = plugin.app.metadataCache.getFirstLinkpathDest(fileName, "");
           if (file) {
             const img = createEl("img");
-            img.className = hasQuoteMarker ? "wr-embed-img wr-rv-inline-img" : "wr-embed-img";
+            img.className = hasQuoteMarker ? "wrot-embed-img wrot-rv-inline-img" : "wrot-embed-img";
             img.src = plugin.app.vault.getResourcePath(file);
             img.alt = fileName;
             img.loading = "lazy";
@@ -461,7 +461,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin, parent: Compone
             continue;
           } else {
             const span = createSpan();
-            span.className = "wr-embed-missing";
+            span.className = "wrot-embed-missing";
             span.textContent = `![[${fileName}]]`;
             frag.appendChild(span);
           }
@@ -471,7 +471,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin, parent: Compone
           const { target, display } = splitLinkAlias(fileName);
           const a = createEl("a");
           const resolved = plugin.app.metadataCache.getFirstLinkpathDest(target, "") !== null;
-          a.className = resolved ? "wr-internal-link" : "wr-internal-link wr-internal-link-unresolved";
+          a.className = resolved ? "wrot-internal-link" : "wrot-internal-link wrot-internal-link-unresolved";
           a.textContent = display;
           a.addEventListener("click", (e) => {
             e.preventDefault();
@@ -487,7 +487,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin, parent: Compone
         const quoteMatch = linkName.match(QUOTE_LINK_RE);
         if (quoteMatch) {
           const slot = createSpan();
-          slot.className = "wr-quote-card-slot";
+          slot.className = "wrot-quote-card-slot";
           renderQuoteCard(slot, quoteMatch[1], quoteMatch[2], plugin.app, "", {
             timestampFormat: plugin.settings.timestampFormat,
             resolveRuleClass: (content) => plugin.getTagRuleClassForContent(content),
@@ -499,7 +499,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin, parent: Compone
           const { target, display } = splitLinkAlias(linkName);
           const a = createEl("a");
           const resolved = plugin.app.metadataCache.getFirstLinkpathDest(target, "") !== null;
-          a.className = resolved ? "wr-internal-link" : "wr-internal-link wr-internal-link-unresolved";
+          a.className = resolved ? "wrot-internal-link" : "wrot-internal-link wrot-internal-link-unresolved";
           a.textContent = display;
           a.addEventListener("click", (e) => {
             e.preventDefault();
@@ -512,7 +512,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin, parent: Compone
         hasMatch = true;
       } else if (TAG_TOKEN_RE.test(part)) {
         const span = createSpan();
-        span.className = "wr-reading-tag";
+        span.className = "wrot-reading-tag";
         span.textContent = part;
         // Click opens global tag search; stopPropagation avoids interfering with
         // checkboxes etc. inside the same pre.
@@ -520,9 +520,9 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin, parent: Compone
           e.preventDefault();
           e.stopPropagation();
           // Remove the class and force a reflow so the flash restarts on rapid clicks.
-          span.classList.remove("wr-tag-flash");
+          span.classList.remove("wrot-tag-flash");
           void span.offsetWidth;
-          span.classList.add("wr-tag-flash");
+          span.classList.add("wrot-tag-flash");
           plugin.openTagSearch(part);
         });
         frag.appendChild(span);
@@ -530,16 +530,16 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin, parent: Compone
       } else if (part.match(/^\$([^$]+)\$$/)) {
         const mathContent = part.slice(1, -1);
         const mathEl = createSpan();
-        mathEl.className = "wr-math";
+        mathEl.className = "wrot-math";
         try {
           // MathJax loads lazily (see utils/mathjax.ts). If not ready, fall through to the
-          // fallback; wr-math-fallback marks the element for in-place replacement once loaded.
+          // fallback; wrot-math-fallback marks the element for in-place replacement once loaded.
           if (!isMathJaxReady()) throw new Error("MathJax not loaded yet");
           const rendered = renderMath(mathContent, false);
           mathEl.appendChild(rendered);
           void finishRenderMath();
         } catch {
-          mathEl.classList.add("wr-math-fallback");
+          mathEl.classList.add("wrot-math-fallback");
           mathEl.textContent = part;
           requestMathJax();
         }
@@ -557,8 +557,8 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin, parent: Compone
         if (!isImageEmbed) {
           const link = createEl("a");
           link.className = unresolved
-            ? "wr-internal-link wr-internal-link-unresolved"
-            : "wr-internal-link";
+            ? "wrot-internal-link wrot-internal-link-unresolved"
+            : "wrot-internal-link";
           link.textContent = fileName || cleaned;
           link.addEventListener("click", (e) => {
             e.preventDefault();
@@ -577,7 +577,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin, parent: Compone
         const trailing = part.slice(cleaned.length);
 
         const span = createSpan();
-        span.className = "wr-reading-url";
+        span.className = "wrot-reading-url";
         span.textContent = cleaned;
         span.addEventListener("pointerup", (e) => {
           e.preventDefault();
@@ -611,7 +611,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin, parent: Compone
   const blockEl = code.closest(".block-language-wr") || code.closest("pre");
   if (blockEl) {
     const quoteSlot = hasQuoteMarker
-      ? blockEl.querySelector(".wr-quote-card-slot")
+      ? blockEl.querySelector(".wrot-quote-card-slot")
       : null;
     const insertMediaNode = (node: Node): void => {
       if (quoteSlot && quoteSlot.parentNode) {
@@ -629,9 +629,9 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin, parent: Compone
       const parsedUrls = extractUrls(tailUrls.join(" ")).filter(
         (pu) => pu.type === "image" || !pu.url.startsWith("obsidian://")
       );
-      if (parsedUrls.length > 0 && !blockEl.querySelector(".wr-media-area")) {
+      if (parsedUrls.length > 0 && !blockEl.querySelector(".wrot-media-area")) {
         const mediaEl = createDiv();
-        mediaEl.className = "wr-media-area";
+        mediaEl.className = "wrot-media-area";
         insertMediaNode(mediaEl);
         renderUrlPreviews(mediaEl, parsedUrls, plugin.ogpCache, resolveImagePath);
       }
@@ -640,10 +640,10 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin, parent: Compone
     // state class; styles.css tightens padding-bottom via this class.
     const lastChild = blockEl.lastElementChild;
     const hasRichTail =
-      !!blockEl.querySelector(".wr-quote-card-slot") ||
-      !!lastChild?.classList.contains("wr-embed-img") ||
-      !!lastChild?.classList.contains("wr-media-area");
-    blockEl.classList.toggle("wr-rv-rich-tail", hasRichTail);
+      !!blockEl.querySelector(".wrot-quote-card-slot") ||
+      !!lastChild?.classList.contains("wrot-embed-img") ||
+      !!lastChild?.classList.contains("wrot-media-area");
+    blockEl.classList.toggle("wrot-rv-rich-tail", hasRichTail);
   }
 }
 
@@ -653,7 +653,7 @@ function renderCodeBlockFragment(
   parent: Component
 ): HTMLElement {
   const blockEl = createDiv();
-  blockEl.className = "wr-codeblock-display";
+  blockEl.className = "wrot-codeblock-display";
   const fence = "~".repeat(Math.max(3, segment.fenceTildes));
   const source = (segment.lang ? `${fence}${segment.lang}\n` : `${fence}\n`) + segment.code + `\n${fence}`;
   // The parent must already be loaded: a freshly constructed Component never loads its
@@ -670,16 +670,16 @@ function renderCodeBlockFragment(
 
 function renderMathBlockFragment(segment: Extract<Segment, { kind: "mathblock" }>): HTMLElement {
   const blockEl = createDiv();
-  blockEl.className = "wr-math-display";
+  blockEl.className = "wrot-math-display";
   try {
     // MathJax loads lazily (see utils/mathjax.ts). If not ready, fall through to the
-    // fallback; wr-math-fallback marks the element for in-place replacement once loaded.
+    // fallback; wrot-math-fallback marks the element for in-place replacement once loaded.
     if (!isMathJaxReady()) throw new Error("MathJax not loaded yet");
     const rendered = renderMath(segment.tex, true);
     blockEl.appendChild(rendered);
     void finishRenderMath();
   } catch {
-    blockEl.classList.add("wr-math-fallback");
+    blockEl.classList.add("wrot-math-fallback");
     blockEl.textContent = segment.tex;
     requestMathJax();
   }
@@ -756,7 +756,7 @@ function convertListLines(
   const fragments: (string | HTMLElement)[] = [];
   const makeList = (tag: "ul" | "ol") => {
     const el = createEl(tag);
-    el.className = "wr-reading-list";
+    el.className = "wrot-reading-list";
     return el;
   };
   const makeItem = () => createEl("li");
@@ -792,7 +792,7 @@ function convertListLines(
   const buildListItem = (info: ListLine, lineIndex: number) => {
     const li = createEl("li");
     if (info.kind === "check") {
-      li.className = "wr-check-item";
+      li.className = "wrot-check-item";
       const cb = createEl("input");
       cb.type = "checkbox";
       if (info.checked) cb.checked = true;
@@ -803,7 +803,7 @@ function convertListLines(
       li.appendChild(cb);
       if (info.checked && plugin.settings.checkStrikethrough) {
         const span = createSpan();
-        span.className = "wr-check-done";
+        span.className = "wrot-check-done";
         span.appendChild(activeDocument.createTextNode(info.content));
         li.appendChild(span);
         return li;
@@ -844,7 +844,7 @@ function convertListLines(
       const continuingQuote = quoteStack.length > 0 && lastFrag instanceof HTMLElement && lastFrag === quoteStack[0];
       if (!continuingQuote) {
         const root = createEl("blockquote");
-        root.className = "wr-blockquote";
+        root.className = "wrot-blockquote";
         fragments.push(root);
         quoteStack = [root];
         resetQuoteList();
@@ -855,7 +855,7 @@ function convertListLines(
       while (quoteStack.length < depth) {
         const parent = quoteStack[quoteStack.length - 1];
         const bq = createEl("blockquote");
-        bq.className = "wr-blockquote";
+        bq.className = "wrot-blockquote";
         parent.appendChild(bq);
         quoteStack.push(bq);
       }
@@ -903,25 +903,25 @@ function convertListLines(
   flushPlain();
 
   // Preserve the original text for the copy button.
-  code.setAttribute("data-wr-original", fullText);
+  code.setAttribute("data-wrot-original", fullText);
 
   while (fragments.length > 0 && fragments[fragments.length - 1] === "") {
     fragments.pop();
   }
 
   // Keep code hidden rather than removed so the copy button still works.
-  code.classList.add("wr-code-hidden");
+  code.classList.add("wrot-code-hidden");
 
   let hasContent = false;
   for (const frag of fragments) {
     if (typeof frag === "string") {
       if (frag.trim() === "" && hasContent) {
         const spacer = createDiv();
-        spacer.className = "wr-spacer";
+        spacer.className = "wrot-spacer";
         block.appendChild(spacer);
       } else if (frag.trim() !== "") {
         const div = createDiv();
-        div.className = "wr-plain-text";
+        div.className = "wrot-plain-text";
         div.textContent = frag;
         block.appendChild(div);
         hasContent = true;

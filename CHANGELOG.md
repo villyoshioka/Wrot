@@ -1,5 +1,24 @@
 # Release Notes
 
+## 3.1.1 - 2026-11-01
+
+### Updates
+
+- Updated dependencies
+
+### Improvements
+
+- The post form now gets the cursor when you press the Today button
+- Adjusted the calendar size
+
+### Bug Fixes
+
+- Fixed the post form width breaking under certain conditions\
+  With this fix, class names now start with wrot- instead of wr-, so CSS snippets that restyle Wrot need updating
+- Fixed checkboxes toggled in the timeline sometimes reverting under certain conditions
+
+---
+
 ## 3.1.0 - 2026-10-21
 
 ### Updates
