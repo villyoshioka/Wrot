@@ -1,4 +1,4 @@
-import { blendColor, visibleHighlight, type CodeLightness } from "../utils/color";
+import { blendColor, diagramThemeFor, visibleDiagramColor, visibleHighlight, type CodeLightness, type DiagramTheme } from "../utils/color";
 
 /** Colors resolved from the settings for the active theme mode. */
 interface WrPalette {
@@ -11,6 +11,7 @@ interface WrPalette {
   codeLightness: CodeLightness;
   // The theme's highlight colours (--color-red and the rest) as hex.
   highlightTheme: Record<string, string>;
+  diagramTheme: DiagramTheme | null;
 }
 
 /** Highlight colour variables (--wrot-hl-red …) kept visible on the given background. */
@@ -20,12 +21,23 @@ export function highlightVars(theme: Record<string, string>, bg: string): string
     .join("\n        ");
 }
 
+/** Diagram color variables, kept off the given background. */
+export function diagramThemeVars(theme: DiagramTheme | null, bg: string): string {
+  if (!theme) return "";
+  const { series, accent, critical } = diagramThemeFor(theme, bg);
+  return [
+    `--mermaid-accent: ${accent};`,
+    `--mermaid-critical: ${critical};`,
+    ...series.map((color, i) => `--mermaid-color-${i + 1}: ${color};`),
+  ].join("\n        ");
+}
+
 /**
  * The base color stamp: card/input backgrounds, text, and every element that has to follow the
  * user's chosen palette. Sits at boost level 2 in the specificity ladder.
  */
 export function buildPaletteCss(palette: WrPalette): string {
-  const { bgColor, hoverColor, textColor, mutedColor, faintColor, unresolvedLinkColor, codeLightness, highlightTheme } = palette;
+  const { bgColor, hoverColor, textColor, mutedColor, faintColor, unresolvedLinkColor, codeLightness, highlightTheme, diagramTheme } = palette;
   // As far toward the background as faintColor (blendColor 0.6) takes the text.
   const quoteLink = `color-mix(in srgb, var(--text-accent) 40%, ${bgColor})`;
   return `/* @css */
@@ -34,9 +46,14 @@ export function buildPaletteCss(palette: WrPalette): string {
         ${highlightVars(highlightTheme, bgColor)}
         --wrot-bg-hover: ${hoverColor};
         --wrot-code-text: ${textColor};
+        --wrot-code-bg: ${bgColor};
+        --wrot-diagram-text: ${visibleDiagramColor(textColor, bgColor)};
         --wrot-code-l: ${codeLightness.base};
         --wrot-code-muted-l: ${codeLightness.muted};
         --wrot-code-faint-l: ${codeLightness.faint};
+      }
+      body .wrot-codeblock-display {
+        ${diagramThemeVars(diagramTheme, bgColor)}
       }
       body .wrot-input-area,
       body .wrot-card,

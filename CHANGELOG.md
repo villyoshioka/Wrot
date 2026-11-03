@@ -1,5 +1,19 @@
 # Release Notes
 
+## 3.2.0 - 2026-11-03
+
+### Updates
+
+- Updated dependencies
+
+### Improvements
+
+- Adapted to Pele, the new Mermaid rendering engine in Obsidian 1.15, so diagrams match the post's colors
+- Indenting a list in the post form now moves its nested items too
+- Tag autocomplete now ignores accents
+
+---
+
 ## 3.1.1 - 2026-11-01
 
 ### Updates

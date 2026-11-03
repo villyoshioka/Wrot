@@ -24,6 +24,7 @@ Here’s a quick walkthrough on how to use it, how it works behind the scenes, a
 ### How the Filtering Works
 
 - **Case-insensitive**: Upper and lower case don't matter. Typing "app" will match both "app" and "App".
+- **Accent-insensitive**: Accents on letters don't matter. Typing "cafe" will also match "café".
 - **Smart sorting**: Tags that start with what you typed show up first, followed by partial matches (up to 5 suggestions at a time).
 - **IME friendly**: If you're using Japanese input, it filters as you type before you even confirm your text conversion, saving you extra keypresses.
 

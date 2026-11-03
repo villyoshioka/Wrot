@@ -128,6 +128,28 @@ export function visibleHighlight(color: string, bg: string): string {
   return oklabToHex(bl >= 0.5 ? bl - need : bl + need, ha, hb);
 }
 
+// OKLab distance under which a diagram color counts as lost in the background, and the
+// lightness step it is moved by when it does.
+const DIAGRAM_NEAR_DIFF = 0.15;
+const DIAGRAM_PUSH_L = 0.45;
+
+function nearBackground(color: string, bg: string): boolean {
+  const [l, a, b] = oklab(color);
+  const [bl, ba, bb] = oklab(bg);
+  return Math.hypot(l - bl, a - ba, b - bb) < DIAGRAM_NEAR_DIFF;
+}
+
+/**
+ * A diagram color on a memo. Left as it is unless it nearly matches the background; then its
+ * lightness moves off the background, keeping its hue.
+ */
+export function visibleDiagramColor(color: string, bg: string): string {
+  if (!nearBackground(color, bg)) return color;
+  const [, a, b] = oklab(color);
+  const bl = oklabLightness(bg);
+  return oklabToHex(bl >= 0.5 ? bl - DIAGRAM_PUSH_L : bl + DIAGRAM_PUSH_L, a, b);
+}
+
 /** Obsidian's own highlight colours, for a theme whose values cannot be read. */
 const DEFAULT_HIGHLIGHT_THEME: Record<"light" | "dark", Record<string, string>> = {
   light: { red: "#e93147", orange: "#ec7500", yellow: "#e0ac00", green: "#08b94e", blue: "#086ddd", purple: "#7852ee" },
@@ -156,4 +178,61 @@ export function readThemeHighlightColors(doc: Document, dark: boolean): Record<s
     out[name] = hex;
   }
   return out;
+}
+
+/** The theme's diagram colors as hex. */
+export interface DiagramTheme {
+  series: string[];
+  accent: string;
+  critical: string;
+}
+
+/**
+ * The theme's diagram colors. Null where they cannot all be read (Obsidian before 1.15 has none),
+ * which leaves them to the engine.
+ */
+export function readDiagramTheme(doc: Document): DiagramTheme | null {
+  const style = doc.defaultView?.getComputedStyle(doc.body);
+  const ctx = createEl("canvas").getContext("2d");
+  if (!style || !ctx) return null;
+  const read = (name: string): string | null => {
+    const raw = style.getPropertyValue(name).trim();
+    // A value the canvas rejects leaves the previous color, so two starting colors expose it.
+    ctx.fillStyle = "#000000";
+    ctx.fillStyle = raw;
+    const parsed = String(ctx.fillStyle);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = raw;
+    return parsed === String(ctx.fillStyle) && HEX_COLOR_RE.test(parsed) ? parsed : null;
+  };
+  const series = [1, 2, 3, 4, 5, 6, 7, 8].map((i) => read(`--mermaid-color-${i}`));
+  const accent = read("--mermaid-accent");
+  const critical = read("--mermaid-critical");
+  if (!accent || !critical || series.some((color) => color === null)) return null;
+  return { series: series as string[], accent, critical };
+}
+
+/**
+ * The theme's series colors for a memo: any that nearly match its background move to the end, so
+ * a diagram reaches them last. The colors stay as they are, since items must stay distinct from
+ * one another.
+ */
+export function orderDiagramSeries(series: string[], bg: string): string[] {
+  return [
+    ...series.filter((color) => !nearBackground(color, bg)),
+    ...series.filter((color) => nearBackground(color, bg)),
+  ];
+}
+
+/**
+ * The theme's diagram colors ordered for a memo. An accent or critical color that nearly matches
+ * the background takes one of the series colors that does not.
+ */
+export function diagramThemeFor(theme: DiagramTheme, bg: string): DiagramTheme {
+  const series = orderDiagramSeries(theme.series, bg);
+  return {
+    series,
+    accent: nearBackground(theme.accent, bg) ? series[0] : theme.accent,
+    critical: nearBackground(theme.critical, bg) ? series[1] : theme.critical,
+  };
 }

@@ -121,7 +121,7 @@ Clicking bold or italics without selecting any text styles whatever you type nex
 | :----------------------------------- | :------------------------------------------------------------------------ |
 | `Enter`                              | Continues with a new item of the same kind (numbered lists count up)      |
 | `Enter` on an empty item             | Outdents the item by one level, or ends the list if already at the top    |
-| `Tab` / `Shift + Tab` (desktop)      | Indents / outdents the item by one level                                  |
+| `Tab` / `Shift + Tab` (desktop)      | Indents / outdents the item by one level, along with its nested items     |
 | `Backspace` at the start of an item  | Outdents the item, revealing the raw marker once at the top level         |
 | `Shift + Enter`                      | Starts a new line without adding another bullet or number                 |
 

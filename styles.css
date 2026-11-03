@@ -1646,6 +1646,29 @@ body {
 
 .wrot-codeblock-display {
   --code-normal: var(--wrot-code-text);
+  /* Mermaid diagrams (Obsidian 1.15+) read these through .mermaid, so they follow the memo.
+     The series colors and the text on them stay the engine's. */
+  --mermaid-background: var(--wrot-code-bg);
+  --mermaid-text-color: var(--wrot-diagram-text);
+  --mermaid-line-color: var(--wrot-diagram-text);
+  --mermaid-muted-color: color-mix(in srgb, var(--wrot-diagram-text) 65%, var(--wrot-code-bg));
+  --mermaid-surface: color-mix(in srgb, var(--wrot-diagram-text) 10%, var(--wrot-code-bg));
+  --mermaid-surface-alt: color-mix(in srgb, var(--wrot-diagram-text) 5%, var(--wrot-code-bg));
+  --mermaid-border-color: color-mix(in srgb, var(--wrot-diagram-text) 35%, var(--wrot-code-bg));
+}
+
+/* Grid and pie outlines, which the engine draws too close to the memo's background to show. */
+.wrot-codeblock-display .pele-grid,
+.wrot-codeblock-display .pele-graticule,
+.wrot-codeblock-display g.pele-slices {
+  stroke: color-mix(in srgb, var(--wrot-diagram-text) 22%, var(--wrot-code-bg));
+}
+
+/* The engine draws text on colored parts in its background color, which would be the memo's. */
+.wrot-codeblock-display g.pele-slice-labels[fill],
+.wrot-codeblock-display g.pele-leaves,
+.wrot-codeblock-display text[fill="var(--_bg)"] {
+  fill: var(--wrot-diagram-text);
 }
 
 @supports (color: oklch(from red l c h)) {

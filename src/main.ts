@@ -18,7 +18,7 @@ import { OGPCache } from "./utils/ogpCache";
 import { GraphTagInjector } from "./utils/graphTags";
 import { mergeRecentTags } from "./utils/tagSuggest";
 import { ATTACHMENT_EXT_RE, matchTags, tagPattern } from "./utils/patterns";
-import { blendColor, codeLightness, darkenColor, readThemeHighlightColors, validHex } from "./utils/color";
+import { blendColor, codeLightness, darkenColor, readDiagramTheme, readThemeHighlightColors, validHex } from "./utils/color";
 import { boostSelectors, WrStyleSheet } from "./styles/styleInjector";
 import { buildPaletteCss } from "./styles/paletteCss";
 import { buildTagRuleCss } from "./styles/tagRuleCss";
@@ -277,6 +277,7 @@ export default class WrotPlugin extends Plugin {
       unresolvedLinkColor: blendColor(textColor, bgColor, 0.3),
       codeLightness: codeLightness(textColor, bgColor),
       highlightTheme: readThemeHighlightColors(activeDocument, isDark),
+      diagramTheme: readDiagramTheme(activeDocument),
     });
     this.bgSheet.apply(boostSelectors(css, 2), this.styleDocs());
   }
@@ -376,7 +377,7 @@ export default class WrotPlugin extends Plugin {
     if (rules.length === 0) return;
 
     const isDark = activeDocument.body.classList.contains("theme-dark");
-    const css = buildTagRuleCss(rules, readThemeHighlightColors(activeDocument, isDark));
+    const css = buildTagRuleCss(rules, readThemeHighlightColors(activeDocument, isDark), readDiagramTheme(activeDocument));
     if (css.length === 0) return;
 
     this.tagRuleSheet.apply(boostSelectors(css, 4), this.styleDocs());

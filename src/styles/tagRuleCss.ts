@@ -1,6 +1,7 @@
 import type { SubColorScope, TagColorRule } from "../settings";
-import { blendColor, codeLightness, darkenColor } from "../utils/color";
-import { highlightVars } from "./paletteCss";
+import type { DiagramTheme } from "../utils/color";
+import { blendColor, codeLightness, darkenColor, visibleDiagramColor } from "../utils/color";
+import { diagramThemeVars, highlightVars } from "./paletteCss";
 import { HEX_COLOR_RE } from "../utils/patterns";
 
 /**
@@ -9,7 +10,7 @@ import { HEX_COLOR_RE } from "../utils/patterns";
  * One block of rules per configured tag, keyed by the wrot-tag-rule-<n> class the renderers apply.
  * Sits at boost level 4 so it wins over the base palette stamp.
  */
-export function buildTagRuleCss(rules: TagColorRule[], highlightTheme: Record<string, string>): string {
+export function buildTagRuleCss(rules: TagColorRule[], highlightTheme: Record<string, string>, diagramTheme: DiagramTheme | null): string {
     const hexRe = HEX_COLOR_RE;
     const parts: string[] = [];
     rules.forEach((rule, i) => {
@@ -81,10 +82,18 @@ export function buildTagRuleCss(rules: TagColorRule[], highlightTheme: Record<st
       body .wrot-lp-codeblock.${cls},
       body .cm-line.wrot-codeblock-line.${cls} {
         --wrot-code-text: ${fg};
+        --wrot-code-bg: ${bg};
+        --wrot-diagram-text: ${visibleDiagramColor(fg, bg)};
         --wrot-code-l: ${codeL.base};
         --wrot-code-muted-l: ${codeL.muted};
         --wrot-code-faint-l: ${codeL.faint};
         ${highlightVars(highlightTheme, bg)}
+      }
+      body .wrot-card.${cls} .wrot-codeblock-display,
+      body div.block-language-wr.${cls} .wrot-codeblock-display,
+      body pre.${cls} .wrot-codeblock-display,
+      body .wrot-lp-codeblock.wrot-codeblock-display.${cls} {
+        ${diagramThemeVars(diagramTheme, bg)}
       }
       body .cm-line.wrot-codeblock-line.${cls},
       body .cm-line.wrot-codeblock-line.${cls} *:not(.wrot-tag-highlight):not(.wrot-internal-link-highlight):not(.wrot-internal-link):not(.wrot-url-highlight):not(.wrot-lp-marker):not(.wrot-list-highlight):not(.wrot-ol-highlight):not(.wrot-quote-highlight):not(.wrot-blockquote-wrap):not(.wrot-check-unchecked):not(.wrot-check-checked):not(.wrot-check-done):not(.wrot-quote-card-slot):not(.wrot-embed-missing):not(input[type="checkbox"]):not(.wrot-tag-highlight *):not(.wrot-internal-link-highlight *):not(.wrot-url-highlight *):not(.wrot-blockquote-wrap *):not(.wrot-quote-card-slot *):not(.token) {

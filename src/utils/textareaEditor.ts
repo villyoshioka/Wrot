@@ -250,6 +250,7 @@ function childIndent(val: string, rowStart: number, depth: number, indentWidth: 
 
 /**
  * Moves the list items covered by the selection one level in or out, for Tab and Shift+Tab.
+ * Items nested under one that moves go with it, selected or not.
  *
  * Returns false when nothing in reach is a list item that can move, which leaves Tab to do
  * what it always did and keeps a way out of the textarea by keyboard.
@@ -260,39 +261,47 @@ export function shiftListIndent(ta: ComposerField, outdent: boolean): boolean {
   if (insideCodeBlock(val, selStart)) return false;
   const selEnd = ta.selectionEnd;
   const blockStart = selStart > 0 ? val.lastIndexOf("\n", selStart - 1) + 1 : 0;
-  const trailing = val.indexOf("\n", selEnd);
-  const blockEnd = trailing === -1 ? val.length : trailing;
 
-  const rebuilt: string[] = [];
+  const lines = val.slice(blockStart).split("\n");
   let lineStart = blockStart;
   let startShift = 0;
   let endShift = 0;
   let changed = false;
+  // The item that moved last, while the lines after it are still nested under it.
+  let moved: { depth: number; threshold: number; from: string; to: string } | null = null;
 
-  for (const line of val.slice(blockStart, blockEnd).split("\n")) {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
     const { quote, depth, rest, item } = splitQuoted(line);
+    const nested = !!moved && !!item && depth === moved.depth && item.indentWidth >= moved.threshold;
+    if (!nested) moved = null;
+    if (lineStart > selEnd && !nested) break;
     let next = line;
-    if (item) {
-      // Every line is measured against the text as it was, so one item moving does not
-      // drag the next one along with it.
-      const target = outdent
+    if (item && moved) {
+      const indent = rest.slice(0, item.indentLength);
+      const below = indent.startsWith(moved.from) ? indent.slice(moved.from.length) : INDENT_UNIT;
+      next = quote + moved.to + below + rest.slice(item.indentLength);
+    } else if (item) {
+      // Measured against the text as it was: the lines above are not rewritten until the end.
+      const target: string | null = outdent
         ? enclosingIndent(val, lineStart, depth, item.indentWidth)
         : childIndent(val, lineStart, depth, item.indentWidth);
       if (target !== null && target.length !== item.indentLength) {
         next = quote + target + rest.slice(item.indentLength);
         changed = true;
+        moved = { depth, threshold: nestThreshold(item), from: rest.slice(0, item.indentLength), to: target };
       }
     }
     const delta = next.length - line.length;
     if (lineStart <= selStart) startShift += delta;
     if (lineStart <= selEnd) endShift += delta;
-    rebuilt.push(next);
+    lines[i] = next;
     lineStart += line.length + 1;
   }
 
   if (!changed) return false;
 
-  ta.value = val.slice(0, blockStart) + rebuilt.join("\n") + val.slice(blockEnd);
+  ta.value = val.slice(0, blockStart) + lines.join("\n");
   ta.selectionStart = Math.max(blockStart, selStart + startShift);
   ta.selectionEnd = Math.max(blockStart, selEnd + endShift);
   normalizeRunAroundCaret(ta);

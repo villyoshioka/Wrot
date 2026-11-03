@@ -63,6 +63,18 @@ export function rebuildFocus(ta: ComposerField, container: HTMLElement): void {
 
 // Tag completion controller for the input area. Passive: WrotView calls refresh()
 // on input/selectionchange/compositionend and handleKeydown() first in keydown.
+/**
+ * The form tags are compared in. Accents come off Latin and Greek letters only, as in Obsidian's
+ * own search: elsewhere the mark makes another letter (й, が).
+ */
+export function matchKey(text: string): string {
+  return text
+    .normalize("NFD")
+    .replace(/([\p{Script=Latin}\p{Script=Greek}])[\u0300-\u036f]+/gu, "$1")
+    .normalize("NFC")
+    .toLowerCase();
+}
+
 export class TagSuggest {
   private opts: TagSuggestOptions;
   private popover: HTMLDivElement | null = null;
@@ -212,16 +224,16 @@ export class TagSuggest {
     };
   }
 
-  // Prefix matches first, then substring matches; case-insensitive.
+  // Prefix matches first, then substring matches; ignores case and accents.
   private filterCandidates(candidates: string[], query: string): string[] {
     if (query === "") return candidates.slice(0, MAX_VISIBLE_ITEMS);
-    const q = query.toLowerCase();
+    const q = matchKey(query);
     const prefix: string[] = [];
     const partial: string[] = [];
     for (const tag of candidates) {
-      const lower = tag.toLowerCase();
-      if (lower.startsWith(q)) prefix.push(tag);
-      else if (lower.includes(q)) partial.push(tag);
+      const key = matchKey(tag);
+      if (key.startsWith(q)) prefix.push(tag);
+      else if (key.includes(q)) partial.push(tag);
     }
     return [...prefix, ...partial].slice(0, MAX_VISIBLE_ITEMS);
   }
