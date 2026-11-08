@@ -10,6 +10,10 @@ Wrot is released under the MIT license, so you are free to do whatever you like 
 
 If you leave the ID unchanged, users cannot install both plugins in the same vault, and it gets tricky to tell which one is running. To make sure people can use both side by side, please make sure to give your fork a unique name and ID.
 
+## Class names and CSS variables
+
+If your class names, CSS variables, and the like are the same as the original's, unexpected bugs may occur when both are enabled. Rather than following the original, please give yours a prefix of your own.
+
 ## Version numbers
 
 Matching upstream version numbers or jumping ahead makes it confusing to tell which build is newer and which version a user is talking about. I would really appreciate it if you could use your own numbering scheme instead.  
