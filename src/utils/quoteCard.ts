@@ -844,8 +844,7 @@ export function renderQuoteCard(
 
   // Register the handler eagerly: a click before the memo loads would otherwise fall through to
   // default navigation, leaving stuck hover and a double-press bug. CARD_MEMO gates readiness.
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises -- async handler intentionally used as a callback
-  card.addEventListener("click", async (e) => {
+  card.addEventListener("click", (e) => void (async () => {
     e.preventDefault();
     e.stopPropagation();
     const memoReady = CARD_MEMO.get(card);
@@ -886,7 +885,7 @@ export function renderQuoteCard(
       }
     }
     flashJumpTarget(blockId, app, resolveRuleAccent, targetView, alreadyVisible);
-  });
+  })());
 
   const setupClick = (memo: Memo) => {
     fillCardBody(bodyEl, metaEl, memo, app, timestampFormat, checkStrikethrough);

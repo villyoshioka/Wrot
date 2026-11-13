@@ -95,7 +95,7 @@ function highlightAllWrBlocks(el: HTMLElement, plugin: WrotPlugin, parent: Compo
     if (!text.trim()) return;
 
     const parentBlock = code.closest(".block-language-wr") || code.closest("pre");
-    if (parentBlock instanceof HTMLElement) {
+    if (parentBlock?.instanceOf(HTMLElement)) {
       applyTagRuleClass(parentBlock, codeEl, plugin);
     }
 

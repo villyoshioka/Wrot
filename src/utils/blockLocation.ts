@@ -24,7 +24,7 @@ interface WrBlockLocation {
 /** The element Obsidian wraps a fenced block in; class names are applied here. */
 export function wrBlockContainer(code: HTMLElement): HTMLElement | null {
   const block = code.closest(".block-language-wr") || code.closest("pre");
-  return block instanceof HTMLElement ? block : null;
+  return block?.instanceOf(HTMLElement) ? block : null;
 }
 
 /**
@@ -33,7 +33,7 @@ export function wrBlockContainer(code: HTMLElement): HTMLElement | null {
  */
 export function wrScopeRoot(blockEl: HTMLElement): HTMLElement {
   const scope = blockEl.closest(SCOPE_ROOT_SELECTOR);
-  return scope instanceof HTMLElement ? scope : blockEl.ownerDocument.body;
+  return scope?.instanceOf(HTMLElement) ? scope : blockEl.ownerDocument.body;
 }
 
 /**

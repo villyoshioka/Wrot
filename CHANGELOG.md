@@ -1,5 +1,24 @@
 # Release Notes
 
+## 3.3.0 - 2026-11-13
+
+### Updates
+
+- Updated dependencies
+
+### New Features
+
+- Added inserting a time by typing `@` at the start of a line in the post form, picked from a list or the current time with `@now`
+- Added carrying on with a time on the next item when you press Enter on a list item that starts with a time
+
+### Improvements
+
+- Tag autocomplete now treats letters such as ø and ß like their plain counterparts
+- Adjusted the calendar size
+- Improved the internal structure
+
+---
+
 ## 3.2.0 - 2026-11-03
 
 ### Updates

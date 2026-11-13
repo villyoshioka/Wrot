@@ -12,7 +12,8 @@ import { isImageFile, saveImageToVault, buildEmbedLink, shrinkImage } from "../u
 import { openCalendarPopover, CalendarPopoverHandle } from "../utils/calendarPopover";
 import { openLinkPopover, LinkPopoverHandle } from "../utils/linkPopover";
 import { buildDateDrum } from "../utils/dateDrum";
-import { TagSuggest, extractTagsForHistory, rebuildFocus } from "../utils/tagSuggest";
+import { InlineSuggest, extractTagsForHistory, rebuildFocus, tagSource } from "../utils/tagSuggest";
+import { padLineTimes, timeSource } from "../editor/composerTime";
 import { ComposerField } from "../editor/composerField";
 import { findLinkAt, isLinkableText, linkMarkdown } from "../editor/composerLink";
 import { HIGHLIGHT_EMOJI, TAG_SOURCE } from "../utils/patterns";
@@ -203,7 +204,7 @@ export class WrotView extends ItemView {
   // Day armed on the post being written, applied the moment it is posted.
   private armedSchedule: string | null = null;
   private scheduleArmBtn: HTMLButtonElement | null = null;
-  private tagSuggest: TagSuggest | null = null;
+  private suggest: InlineSuggest | null = null;
   composer!: ComposerField;
   submitLabelEl!: HTMLElement;
   submitIconEl!: HTMLElement;
@@ -375,8 +376,8 @@ export class WrotView extends ItemView {
     this.draftTimer = null;
     // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
     this.persistDraft();
-    this.tagSuggest?.destroy();
-    this.tagSuggest = null;
+    this.suggest?.destroy();
+    this.suggest = null;
     // Before the composer goes: closing hands focus back to it otherwise.
     this.linkPopover?.close(true);
     this.composer?.destroy();
@@ -635,14 +636,13 @@ export class WrotView extends ItemView {
     });
 
     this.dateLabel = nav.createSpan({ cls: "wrot-date-label" });
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises -- async handler intentionally used as a callback
-    this.dateLabel.addEventListener("click", async () => {
+    this.dateLabel.addEventListener("click", () => void (async () => {
       this.dateLabel.classList.add("wrot-date-label-active");
       window.setTimeout(() => this.dateLabel.classList.remove("wrot-date-label-active"), 300);
       const file = getDailyNoteFile(this.app, this.currentDate)
         ?? await getOrCreateDailyNote(this.app, this.currentDate);
       await this.openOrFocusFile(file);
-    });
+    })());
 
     const nextBtn = nav.createEl("button", { cls: "wrot-nav-btn" });
     setIcon(nextBtn, "chevron-right");
@@ -764,8 +764,7 @@ export class WrotView extends ItemView {
     this.submitIconEl = submitBtn.createSpan({ cls: "wrot-submit-icon" });
     this.submitBtnEl = submitBtn;
     this.refreshSubmitButton();
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises -- async handler intentionally used as a callback
-    submitBtn.addEventListener("click", () => this.submitMemo());
+    submitBtn.addEventListener("click", () => void this.submitMemo());
 
     this.composer = new ComposerField(
       inputArea,
@@ -774,19 +773,20 @@ export class WrotView extends ItemView {
       () => this.obsidianConfig("autoPairBrackets") !== false
     );
 
-    // Enablement is read per call, so the settings toggle takes effect immediately.
-    this.tagSuggest = new TagSuggest({
+    this.suggest = new InlineSuggest({
       field: this.composer,
       container,
-      getCandidates: () => this.plugin.recentTags,
-      isEnabled: () => this.plugin.settings.tagSuggestEnabled,
+      sources: [
+        tagSource(() => this.plugin.recentTags, () => this.plugin.settings.tagSuggestEnabled),
+        timeSource,
+      ],
     });
 
     this.composer.addEventListener("keydown", (e: KeyboardEvent) => {
       if (e.isComposing) return;
       // Suggest dropdown handles navigation keys first; Mod+Enter only closes it
       // without being consumed, so it falls through to the submit handling below.
-      if (this.tagSuggest?.handleKeydown(e)) return;
+      if (this.suggest?.handleKeydown(e)) return;
       // Escape leaves edit mode from the keyboard: the cancel menu item can be out
       // of reach when the target card is scrolled away or on another date.
       if (e.key === "Escape" && this.editingMemo) {
@@ -801,6 +801,7 @@ export class WrotView extends ItemView {
         // Hand-typed syntax converts on the first Enter; the line breaks on the next.
         if (
           continueCodeIndentOnEnter(this.composer) ||
+          this.composer.expandNow() ||
           this.composer.commitTypedLine() ||
           continueListOnEnter(this.composer) ||
           continueQuoteOnEnter(this.composer)
@@ -823,9 +824,9 @@ export class WrotView extends ItemView {
     });
 
     this.thumbnailContainer = inputArea.createDiv({ cls: "wrot-thumbnail-container" });
-    this.thumbnailContainer.setCssStyles({ display: "none" });
+    this.thumbnailContainer.hide();
     this.quoteContainer = inputArea.createDiv({ cls: "wrot-pending-quote-container" });
-    this.quoteContainer.setCssStyles({ display: "none" });
+    this.quoteContainer.hide();
 
     this.composer.addEventListener("paste", (e: ClipboardEvent) => {
       const files = e.clipboardData?.files;
@@ -859,7 +860,7 @@ export class WrotView extends ItemView {
 
     // The suggest dropdown can overlap the toolbar; while it is shown (and during the
     // ghost-click window right after a tap-commit) toolbar buttons must not react.
-    const toolbarSuppressed = () => this.tagSuggest?.isSuppressingUi() ?? false;
+    const toolbarSuppressed = () => this.suggest?.isSuppressingUi() ?? false;
 
     // Buttons are born detached: applyToolbarLayout is the only thing that puts one on
     // the bar, so an action that lives in the overflow menu simply never gets appended.
@@ -1234,8 +1235,8 @@ export class WrotView extends ItemView {
     this.composer.onSelectionChange(() => {
       if (this.composer.hasFocus) {
         updateActive();
-        // Close or reposition the tag dropdown when the caret moves off the tag.
-        this.tagSuggest?.refresh();
+        // Close or reposition the suggest dropdown when the caret moves off its token.
+        this.suggest?.refresh();
       }
     });
     // selectionchange does not fire on focus gain, so sync explicitly.
@@ -1315,9 +1316,9 @@ export class WrotView extends ItemView {
 
     // Refresh on both input and compositionend so uncommitted IME text also filters candidates.
     this.composer.addEventListener("input", () => this.scheduleDraftSave());
-    this.composer.addEventListener("input", () => this.tagSuggest?.refresh());
-    this.composer.addEventListener("compositionend", () => this.tagSuggest?.refresh());
-    this.composer.addEventListener("blur", () => this.tagSuggest?.notifyBlur());
+    this.composer.addEventListener("input", () => this.suggest?.refresh());
+    this.composer.addEventListener("compositionend", () => this.suggest?.refresh());
+    this.composer.addEventListener("blur", () => this.suggest?.notifyBlur());
 
     // Wrap detection via offsetTop, which padding changes don't affect, so the
     // ResizeObserver cannot loop.
@@ -1359,7 +1360,7 @@ export class WrotView extends ItemView {
     input.type = "file";
     input.accept = "image/png, image/gif, image/jpeg";
     input.multiple = false;
-    input.setCssStyles({ display: "none" });
+    input.hide();
     activeDocument.body.appendChild(input);
 
     this.imageAddBtn?.toggleClass("wrot-toolbar-active", true);
@@ -1419,7 +1420,7 @@ export class WrotView extends ItemView {
     this.pendingShrink = null;
     if (this.thumbnailContainer) {
       this.thumbnailContainer.empty();
-      this.thumbnailContainer.setCssStyles({ display: "none" });
+      this.thumbnailContainer.hide();
     }
     this.updateImageAddBtnState();
     this.updateSubmitBtnState();
@@ -1428,7 +1429,7 @@ export class WrotView extends ItemView {
   private renderThumbnail(): void {
     if (!this.thumbnailContainer || !this.pendingImageUrl) return;
     this.thumbnailContainer.empty();
-    this.thumbnailContainer.setCssStyles({ display: "" });
+    this.thumbnailContainer.show();
     const wrap = this.thumbnailContainer.createDiv({ cls: "wrot-thumbnail" });
     const img = wrap.createEl("img", { cls: "wrot-thumbnail-img" });
     img.src = this.pendingImageUrl;
@@ -1451,10 +1452,10 @@ export class WrotView extends ItemView {
     container.empty();
     const link = this.pendingQuote?.slice(2, -2).match(QUOTE_LINK_RE);
     if (!link) {
-      container.setCssStyles({ display: "none" });
+      container.hide();
       return;
     }
-    container.setCssStyles({ display: "" });
+    container.show();
     const wrap = container.createDiv({ cls: "wrot-pending-quote" });
     const slot = wrap.createDiv({ cls: "wrot-quote-card-slot" });
     renderQuoteCard(slot, link[1], link[2], this.app, "", {
@@ -1697,7 +1698,7 @@ export class WrotView extends ItemView {
     // for the post rather than left open.
     const text = this.activeFormatMode ? this.closeArmedOpener(this.composer.value) : this.composer.value;
     this.activeFormatMode = null;
-    const rawText = typed ? toTildeFences(text.trim().replace(/＃/g, "#")) : "";
+    const rawText = typed ? padLineTimes(toTildeFences(text.trim().replace(/＃/g, "#"))) : "";
 
     if (this.editingMemo) {
       await this.applyEdit(rawText);
@@ -2354,7 +2355,6 @@ export class WrotView extends ItemView {
     const currentFilePath = currentFile?.path || "";
     const urls = renderTextWithTagsAndUrls(contentEl, memo.content, {
       onTagClick: (tag) => this.plugin.openTagSearch(tag),
-      // eslint-disable-next-line @typescript-eslint/no-misused-promises -- async handler intentionally used as a callback
       onCheckToggle: async (lineIndex, checked) => {
         // Pins live in other days' notes.
         const file = this.app.vault.getFileByPath(options.filePath);
@@ -2820,12 +2820,10 @@ export class WrotView extends ItemView {
       // to be restated: nothing is laying it out any more. Deaf to the pointer as well, or
       // it would be the thing found under the finger instead of what it is passing over.
       btn.setCssStyles({
-        position: "fixed",
         left: `${box.left}px`,
         top: `${box.top}px`,
         width: `${box.width}px`,
         height: `${box.height}px`,
-        pointerEvents: "none",
       });
       // Carried on the document rather than left in the bar: a transformed ancestor — which
       // mobile puts around panes — makes a fixed child measure from that ancestor instead of
@@ -2836,12 +2834,10 @@ export class WrotView extends ItemView {
     const drop = (btn: HTMLElement) => {
       btn.removeClass("wrot-toolbar-dragging");
       btn.setCssStyles({
-        position: "",
         left: "",
         top: "",
         width: "",
         height: "",
-        pointerEvents: "",
       });
       if (gap) {
         toolbar.insertBefore(btn, gap);

@@ -1,3 +1,4 @@
+import { Platform } from "obsidian";
 import { extractNonBlockText, findBlockRanges } from "./blockSegmenter";
 import { TAG_TOKEN_RE, inlineTokens } from "./patterns";
 import type { ComposerField } from "../editor/composerField";
@@ -8,6 +9,9 @@ const MAX_RECENT_TAGS = 200;
 
 // Max candidates shown at once (the list itself scrolls).
 const MAX_VISIBLE_ITEMS = 5;
+
+// How long a tap's delayed compatibility mouse events (ghost clicks) can trail it.
+const GHOST_CLICK_MS = 400;
 
 // Tags follow the shared inline token rules, decoration text included: # inside code, math, links or URLs is not a tag.
 
@@ -31,21 +35,32 @@ export function mergeRecentTags(existing: string[], used: string[]): string[] {
   return merged.slice(0, MAX_RECENT_TAGS);
 }
 
-interface TagSuggestOptions {
+interface InlineSuggestOptions {
   field: ComposerField;
   // Parent element hosting the popover (view body = wrot-container); positioned and
   // clamped in container coordinates, same as the calendar popover.
   container: HTMLElement;
-  // Candidates (no leading #, newest first); read on every call to reflect current settings.
-  getCandidates: () => string[];
-  isEnabled: () => boolean;
+  // Tried in order; the first one with a token at the caret and any items owns the list.
+  sources: SuggestSource[];
 }
 
-interface ActiveToken {
-  // Replacement range: start = position of # (incl. fullwidth ＃), end = caret.
+export interface ActiveToken {
+  // Replacement range: start = the trigger character (# or @, fullwidth too), end = caret.
   start: number;
   end: number;
   query: string;
+}
+
+export interface SuggestItem {
+  label: string;
+  insert: string;
+}
+
+export interface SuggestSource {
+  // Read on every refresh, so a settings toggle takes effect immediately.
+  isEnabled?: () => boolean;
+  detect(value: string, pos: number): ActiveToken | null;
+  items(query: string): SuggestItem[];
 }
 
 // After a forced commit, refocusing the textarea directly makes iOS reuse the stale
@@ -61,25 +76,77 @@ export function rebuildFocus(ta: ComposerField, container: HTMLElement): void {
   dummy.remove();
 }
 
-// Tag completion controller for the input area. Passive: WrotView calls refresh()
-// on input/selectionchange/compositionend and handleKeydown() first in keydown.
 /**
  * The form tags are compared in. Accents come off Latin and Greek letters only, as in Obsidian's
- * own search: elsewhere the mark makes another letter (й, が).
+ * own search: elsewhere the mark makes another letter (й, が). Letters with no accent to strip
+ * (ø, ß, ...) are spelled out the same way Obsidian's search does.
  */
+const FOLDED: Record<string, string> = {
+  ø: "o", ł: "l", đ: "d", ð: "d", ħ: "h", ı: "i", ß: "ss", æ: "ae", œ: "oe", þ: "th",
+};
+
 export function matchKey(text: string): string {
   return text
     .normalize("NFD")
     .replace(/([\p{Script=Latin}\p{Script=Greek}])[\u0300-\u036f]+/gu, "$1")
     .normalize("NFC")
-    .toLowerCase();
+    .toLowerCase()
+    .replace(/[øłđðħıßæœþ]/g, (c) => FOLDED[c]);
 }
 
-export class TagSuggest {
-  private opts: TagSuggestOptions;
+// Complete only when the whitespace-delimited word before the caret starts with #
+// (or ＃) — not on mid-word # like URL fragments. In `#a#b`, the last # starts the tag.
+function detectTagToken(value: string, pos: number): ActiveToken | null {
+  let wordStart = pos;
+  while (wordStart > 0 && !/\s/.test(value[wordStart - 1])) {
+    wordStart--;
+  }
+  const word = value.slice(wordStart, pos);
+  if (!word.startsWith("#") && !word.startsWith("＃")) return null;
+  // Inside a code block (an unclosed one runs to the end), # is code, not a tag.
+  const line = value.slice(0, pos).split("\n").length - 1;
+  const inCode = findBlockRanges(value.split("\n")).some(
+    (b) => b.kind === "codeblock" && line >= b.startLine && line <= b.endLine
+  );
+  if (inCode) return null;
+  const hashIdx = Math.max(word.lastIndexOf("#"), word.lastIndexOf("＃"));
+  return {
+    start: wordStart + hashIdx,
+    end: pos,
+    query: word.slice(hashIdx + 1),
+  };
+}
+
+// Prefix matches first, then substring matches; ignores case and accents.
+function filterTags(candidates: string[], query: string): string[] {
+  if (query === "") return candidates.slice(0, MAX_VISIBLE_ITEMS);
+  const q = matchKey(query);
+  const prefix: string[] = [];
+  const partial: string[] = [];
+  for (const tag of candidates) {
+    const key = matchKey(tag);
+    if (key.startsWith(q)) prefix.push(tag);
+    else if (key.includes(q)) partial.push(tag);
+  }
+  return [...prefix, ...partial].slice(0, MAX_VISIBLE_ITEMS);
+}
+
+// Candidates are tags without the leading #, newest first.
+export function tagSource(getCandidates: () => string[], isEnabled: () => boolean): SuggestSource {
+  return {
+    isEnabled,
+    detect: detectTagToken,
+    items: (query) => filterTags(getCandidates(), query).map((tag) => ({ label: `#${tag}`, insert: `#${tag} ` })),
+  };
+}
+
+// Completion list for the input area. Passive: WrotView calls refresh()
+// on input/selectionchange/compositionend and handleKeydown() first in keydown.
+export class InlineSuggest {
+  private opts: InlineSuggestOptions;
   private popover: HTMLDivElement | null = null;
   private itemEls: HTMLElement[] = [];
-  private itemTags: string[] = [];
+  private items: SuggestItem[] = [];
   // -1 = nothing selected: the list opens unselected, so Enter/Tab type as usual until an arrow key picks one.
   private selectedIndex = -1;
   private token: ActiveToken | null = null;
@@ -101,7 +168,7 @@ export class TagSuggest {
     this.composing = false;
   };
 
-  constructor(opts: TagSuggestOptions) {
+  constructor(opts: InlineSuggestOptions) {
     this.opts = opts;
     opts.field.addEventListener("compositionstart", this.onCompositionStart);
     opts.field.addEventListener("compositionend", this.onCompositionEnd);
@@ -120,31 +187,21 @@ export class TagSuggest {
   // Open/update/close the dropdown for the token at the caret. Safe during IME
   // composition: uncommitted text is in value, so filtering works before commit.
   refresh(): void {
-    const { field: ta, isEnabled, getCandidates } = this.opts;
-    if (!isEnabled()) {
-      this.close();
-      return;
+    const ta = this.opts.field;
+    if (ta.hasFocus && ta.selectionStart === ta.selectionEnd) {
+      for (const source of this.opts.sources) {
+        if (source.isEnabled && !source.isEnabled()) continue;
+        const token = source.detect(ta.value, ta.selectionStart);
+        if (!token) continue;
+        const items = source.items(token.query);
+        if (items.length === 0) continue;
+        this.token = token;
+        this.renderItems(items);
+        this.position();
+        return;
+      }
     }
-    if (!ta.hasFocus || ta.selectionStart !== ta.selectionEnd) {
-      this.close();
-      return;
-    }
-
-    const token = this.detectToken(ta.value, ta.selectionStart);
-    if (!token) {
-      this.close();
-      return;
-    }
-
-    const matches = this.filterCandidates(getCandidates(), token.query);
-    if (matches.length === 0) {
-      this.close();
-      return;
-    }
-
-    this.token = token;
-    this.renderItems(matches);
-    this.position();
+    this.close();
   }
 
   // Handle keys while the dropdown is open; returns true if consumed.
@@ -176,13 +233,23 @@ export class TagSuggest {
     return false;
   }
 
-  close(): void {
+  // linger: after a tap, iOS sends its delayed compatibility mouse events (seen on device about
+  // 40ms after touchend) to whatever sits under the finger. With the list gone they would reach
+  // what lies beneath it: the form's text, a toolbar button or a post. So the list stays a
+  // moment, invisible, to absorb them with its own mousedown/click guards.
+  close(linger = false): void {
     if (!this.popover) return;
     activeDocument.removeEventListener("pointerdown", this.onOutside, true);
-    this.popover.remove();
+    if (linger) {
+      const leaving = this.popover;
+      leaving.addClass("wrot-tag-suggest-leaving");
+      window.setTimeout(() => leaving.remove(), GHOST_CLICK_MS);
+    } else {
+      this.popover.remove();
+    }
     this.popover = null;
     this.itemEls = [];
-    this.itemTags = [];
+    this.items = [];
     this.selectedIndex = -1;
     this.token = null;
     this.tapStart = null;
@@ -201,44 +268,7 @@ export class TagSuggest {
     this.close();
   }
 
-  // Complete only when the whitespace-delimited word before the caret starts with #
-  // (or ＃) — not on mid-word # like URL fragments. In `#a#b`, the last # starts the tag.
-  private detectToken(value: string, pos: number): ActiveToken | null {
-    let wordStart = pos;
-    while (wordStart > 0 && !/\s/.test(value[wordStart - 1])) {
-      wordStart--;
-    }
-    const word = value.slice(wordStart, pos);
-    if (!word.startsWith("#") && !word.startsWith("＃")) return null;
-    // Inside a code block (an unclosed one runs to the end), # is code, not a tag.
-    const line = value.slice(0, pos).split("\n").length - 1;
-    const inCode = findBlockRanges(value.split("\n")).some(
-      (b) => b.kind === "codeblock" && line >= b.startLine && line <= b.endLine
-    );
-    if (inCode) return null;
-    const hashIdx = Math.max(word.lastIndexOf("#"), word.lastIndexOf("＃"));
-    return {
-      start: wordStart + hashIdx,
-      end: pos,
-      query: word.slice(hashIdx + 1),
-    };
-  }
-
-  // Prefix matches first, then substring matches; ignores case and accents.
-  private filterCandidates(candidates: string[], query: string): string[] {
-    if (query === "") return candidates.slice(0, MAX_VISIBLE_ITEMS);
-    const q = matchKey(query);
-    const prefix: string[] = [];
-    const partial: string[] = [];
-    for (const tag of candidates) {
-      const key = matchKey(tag);
-      if (key.startsWith(q)) prefix.push(tag);
-      else if (key.includes(q)) partial.push(tag);
-    }
-    return [...prefix, ...partial].slice(0, MAX_VISIBLE_ITEMS);
-  }
-
-  private renderItems(matches: string[]): void {
+  private renderItems(items: SuggestItem[]): void {
     if (!this.popover) {
       this.popover = this.opts.container.createDiv({ cls: "wrot-tag-suggest" });
       // Keep clicks inside the popover from bubbling out (same as the calendar popover).
@@ -252,13 +282,13 @@ export class TagSuggest {
     }
     this.popover.empty();
     this.itemEls = [];
-    this.itemTags = matches;
+    this.items = items;
     this.selectedIndex = -1;
 
-    matches.forEach((tag, index) => {
+    items.forEach(({ label }, index) => {
       const item = this.popover!.createDiv({
         cls: "wrot-tag-suggest-item",
-        text: `#${tag}`,
+        text: label,
       });
       // Confirm on pointerup, not click (iOS WebKit may not fire click, which would
       // break tap-confirm on mobile). Don't preventDefault pointerdown: on iOS that can
@@ -276,7 +306,7 @@ export class TagSuggest {
         if (!start || start.id !== e.pointerId) return;
         // Count as a tap only if the finger barely moved (distinguishes list scrolling).
         if (Math.abs(e.clientX - start.x) > 8 || Math.abs(e.clientY - start.y) > 8) return;
-        this.confirm(index);
+        this.confirm(index, true);
       });
       // Cleanup when the gesture ends without confirming (e.g. it became a scroll).
       item.addEventListener("pointercancel", () => {
@@ -304,15 +334,14 @@ export class TagSuggest {
     this.itemEls[this.selectedIndex]?.scrollIntoView({ block: "nearest" });
   }
 
-  // Replace the active token with the chosen tag; trailing space keeps typing flowing.
-  private confirm(index: number): void {
-    const tag = this.itemTags[index];
+  // Replace the active token with the chosen item; its trailing space keeps typing flowing.
+  private confirm(index: number, byPointer = false): void {
+    const insert = this.items[index]?.insert;
     const token = this.token;
-    if (tag === undefined || !token) return;
+    if (insert === undefined || !token) return;
     const ta = this.opts.field;
-    const insert = `#${tag} `;
-    this.suppressUiUntil = Date.now() + 400;
-    this.close();
+    this.suppressUiUntil = Date.now() + GHOST_CLICK_MS;
+    this.close(byPointer);
     // iOS kana input keeps a composition alive the whole time you type; rewriting the
     // value mid-composition leaves the IME with a ghost composition detached from the
     // real text, and later single Backspaces do nothing (confirmed on device). So while
@@ -332,17 +361,20 @@ export class TagSuggest {
       window.setTimeout(finish, 150);
       return;
     }
-    this.applyInsert(ta, token, insert);
+    // A tap on the list, even with the focus kept, leaves iOS no longer drawing the caret or
+    // delivering keys to the form (seen on device with the English keyboard), so a tap always
+    // rebuilds the input session.
+    this.applyInsert(ta, token, insert, byPointer && Platform.isIosApp);
   }
 
-
   // Replace the token and put the caret after the insert. Refocus only if focus was
-  // lost (blurred by the forced commit): stacking focus() on an already-focused
-  // textarea can make iOS lose the keyboard session.
-  private applyInsert(ta: ComposerField, token: ActiveToken, insert: string): void {
+  // lost (blurred by the forced commit) or a tap asked for it: stacking a plain focus() on an
+  // already-focused textarea can make iOS lose the keyboard session, so it goes through
+  // rebuildFocus.
+  private applyInsert(ta: ComposerField, token: ActiveToken, insert: string, rebuild = false): void {
     ta.value = ta.value.slice(0, token.start) + insert + ta.value.slice(token.end);
     const caret = token.start + insert.length;
-    if (!ta.hasFocus) {
+    if (rebuild || !ta.hasFocus) {
       rebuildFocus(ta, this.opts.container);
     }
     ta.setSelectionRange(caret, caret);
@@ -354,7 +386,7 @@ export class TagSuggest {
     if (target && (this.popover?.contains(target) || this.opts.field.contains(target))) {
       return;
     }
-    this.suppressUiUntil = Date.now() + 400;
+    this.suppressUiUntil = Date.now() + GHOST_CLICK_MS;
     this.close();
   };
 

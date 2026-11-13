@@ -134,7 +134,7 @@ export function openCalendarPopover(
 
   const renderMonth = () => {
     monthLabel.setText(viewMonth.format(t("calendar.monthYearFormat")));
-    weekdaysRow.setCssStyles({ display: "" });
+    weekdaysRow.show();
     grid.removeClass("wrot-calendar-grid-years");
     grid.empty();
 
@@ -177,7 +177,7 @@ export function openCalendarPopover(
     // Page start year such that viewMonth's year falls within the page.
     const start = cur - (((cur % YEARS_PER_PAGE) + YEARS_PER_PAGE) % YEARS_PER_PAGE);
     monthLabel.setText(`${start} – ${start + YEARS_PER_PAGE - 1}`);
-    weekdaysRow.setCssStyles({ display: "none" });
+    weekdaysRow.hide();
     grid.addClass("wrot-calendar-grid-years");
     grid.empty();
 

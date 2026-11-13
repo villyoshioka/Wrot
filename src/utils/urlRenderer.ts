@@ -104,7 +104,7 @@ export function extractUrls(text: string): ParsedUrl[] {
 
 interface RenderTextCallbacks {
   onTagClick?: (tag: string) => void;
-  onCheckToggle?: (lineIndex: number, checked: boolean) => void;
+  onCheckToggle?: (lineIndex: number, checked: boolean) => void | Promise<void>;
   onInternalLinkClick?: (linkName: string) => void;
   resolveImagePath?: (fileName: string) => string | null;
   resolveLinkTarget?: (linkName: string) => boolean;
@@ -218,7 +218,7 @@ function renderTextSegment(
     if (callbacks.onCheckToggle) {
       const cb = callbacks.onCheckToggle;
       checkbox.addEventListener("click", () => {
-        cb(lineIndex, checkbox.checked);
+        void cb(lineIndex, checkbox.checked);
         if (callbacks.checkStrikethrough) {
           textContainer.classList.toggle("wrot-check-done", checkbox.checked);
         }

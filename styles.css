@@ -304,9 +304,9 @@ body.wrot-font-follow .wrot-calendar-nav-btn .svg-icon {
   padding: 0;
   /* Obsidian gives every button a fixed height; with width: 100% + aspect-ratio the
      cell width was derived from that height, so two heavy digits overflowed. A definite
-     em width (30px at the 13px default) plus height: auto makes the font size decide
+     em width (29px at the 13px default) plus height: auto makes the font size decide
      and keeps the cell square. max-width lets narrow panes shrink it. */
-  width: 2.308em;
+  width: 2.231em;
   height: auto;
   max-width: 100%;
   min-width: 0;
@@ -391,6 +391,11 @@ body.wrot-font-follow .wrot-calendar-nav-btn .svg-icon {
 
 .is-mobile .workspace-leaf-content[data-type="wrot-view"] .wrot-tag-suggest-item {
   padding: 8px 12px;
+}
+
+/* Kept for a moment after a tap to catch the delayed ghost click, but no longer shown. */
+.workspace-leaf-content[data-type="wrot-view"] .wrot-tag-suggest.wrot-tag-suggest-leaving {
+  opacity: 0;
 }
 
 /* The link button's window, positioned by JS below the form. */
@@ -841,6 +846,8 @@ body .wrot-toolbar-btn.wrot-toolbar-commit-btn .svg-icon:not(#x#y#z) {
 }
 
 .wrot-toolbar-btn.wrot-toolbar-dragging:not(#x) {
+  position: fixed;
+  pointer-events: none;
   background: var(--wrot-bg-color, var(--background-primary));
   background-color: var(--wrot-bg-color, var(--background-primary));
   border-radius: var(--radius-s);
@@ -2675,7 +2682,7 @@ body.is-mobile .wrot-calendar-btn.wrot-toolbar-active:hover:not(#x#y#z) {
 
 /* Mobile: finger-sized day cells; wider cap, max-height lids the vertical size */
 body.is-mobile .wrot-calendar-day {
-  width: 2.769em;
+  width: 2.692em;
 }
 
 /* Mobile: on touch :hover sticks until the next tap, so after switching from

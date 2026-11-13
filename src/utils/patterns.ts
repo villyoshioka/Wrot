@@ -122,8 +122,10 @@ function decorationSource(mark: string, char: string, nested = ""): string {
 
 // Bold and italic at once: read as bold around an italic.
 const BOLD_ITALIC_SOURCE = decorationSource(/\*\*\*/.source, /\*/.source);
-// A lone asterisk inside bold is italic's delimiter; a pair inside italic is bold's.
-const BOLD_SOURCE = decorationSource(/\*\*/.source, /\*/.source, /(?<!\*)\*(?!\*)/.source);
+// A lone asterisk inside bold is italic's delimiter; a pair inside italic is bold's. The nested
+// star never follows another star (the body only lets one through when the next char is not a
+// star), so it needs no lookbehind — which iOS before 16.4 cannot parse in a regex literal.
+const BOLD_SOURCE = decorationSource(/\*\*/.source, /\*/.source, /\*(?!\*)/.source);
 const ITALIC_SOURCE = decorationSource(/\*/.source, /\*/.source, /\*\*/.source);
 const STRIKE_SOURCE = decorationSource("~~", "~");
 const HIGHLIGHT_SOURCE = decorationSource("==", "=");

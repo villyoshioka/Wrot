@@ -49,7 +49,7 @@ export function continueCodeIndentOnEnter(ta: ComposerField): boolean {
 const CODE_FENCE_CLOSE_RE = /^\s*~{3,}\s*$/;
 
 // Between a code block's fences; an unclosed block runs to the end.
-function insideCodeBlock(val: string, pos: number): boolean {
+export function insideCodeBlock(val: string, pos: number): boolean {
   const lines = val.split("\n");
   const line = val.slice(0, pos).split("\n").length - 1;
   return findBlockRanges(lines).some(
@@ -115,7 +115,7 @@ export function insertAtLineStart(ta: ComposerField, prefix: string): void {
  * A line's quote prefix, how deep that quote is, and the list item after it, if any. A list
  * inside a quote is the same list as long as the quote keeps its depth.
  */
-function splitQuoted(line: string): { quote: string; depth: number; rest: string; item: ListLine | null } {
+export function splitQuoted(line: string): { quote: string; depth: number; rest: string; item: ListLine | null } {
   const quote = QUOTE_PREFIX_RE.exec(line)?.[0] ?? "";
   const rest = line.slice(quote.length);
   return { quote, depth: (quote.match(/>/g) ?? []).length, rest, item: parseListLine(rest, true) };
@@ -309,6 +309,8 @@ export function shiftListIndent(ta: ComposerField, outdent: boolean): boolean {
   return true;
 }
 
+const TIMED_ITEM_RE = /^\d{1,2}:\d{2}(?:[ \t\u3000]|$)/;
+
 /**
  * Carries a list item onto the next line when Enter is pressed.
  *
@@ -335,7 +337,9 @@ export function continueListOnEnter(ta: ComposerField): boolean {
       info.kind === "check" ? "- [ ] "
         : info.kind === "bullet" ? "- "
           : `${parseInt(info.olMarker, 10) + 1}. `;
-    const insert = `\n${quote}${indent}${marker}`;
+    // An item opening with a time hands the next one an @, so the time list opens right away.
+    const timed = TIMED_ITEM_RE.test(info.content) ? "@" : "";
+    const insert = `\n${quote}${indent}${marker}${timed}`;
     ta.value = val.slice(0, pos) + insert + val.slice(pos);
     ta.selectionStart = ta.selectionEnd = pos + insert.length;
   } else if (indent === "") {

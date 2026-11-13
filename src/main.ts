@@ -414,7 +414,7 @@ export default class WrotPlugin extends Plugin {
     );
     codeBlocks.forEach((code) => {
       const block = code.closest(".block-language-wr") || code.closest("pre");
-      if (!(block instanceof HTMLElement)) return;
+      if (!block?.instanceOf(HTMLElement)) return;
 
       const targets: HTMLElement[] = [block];
       const container = block.parentElement;
@@ -618,7 +618,8 @@ export default class WrotPlugin extends Plugin {
    * nothing else will be brought forward. A leaf restored with the workspace is reused.
    */
   private openAfterStartup(): void {
-    const container = document.body.querySelector(".app-container");
+    // The main window's container, even if a restored popout window holds the focus.
+    const container = this.app.workspace.containerEl.closest(".app-container");
     if (!container || !container.classList.contains("mod-loading")) {
       void this.activateView();
       return;

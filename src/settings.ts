@@ -432,7 +432,8 @@ export class WrotSettingTab extends PluginSettingTab {
     if (HEX_COLOR_RE.test(raw)) return raw;
     // The theme may express the accent in any colour syntax; let the engine resolve it.
     const probe = createDiv();
-    probe.setCssStyles({ color: raw || "var(--text-accent)", display: "none" });
+    probe.setCssProps({ color: raw || "var(--text-accent)" });
+    probe.hide();
     activeDocument.body.appendChild(probe);
     const resolved = getComputedStyle(probe).color;
     activeDocument.body.removeChild(probe);
