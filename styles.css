@@ -358,6 +358,7 @@ body.wrot-font-follow .wrot-calendar-nav-btn .svg-icon {
 .workspace-leaf-content[data-type="wrot-view"] .wrot-tag-suggest {
   position: absolute;
   z-index: 50;
+  box-sizing: border-box;
   width: max-content;
   max-height: 240px;
   overflow-y: auto;

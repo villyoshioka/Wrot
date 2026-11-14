@@ -140,7 +140,7 @@ const baseBuildOptions = {
   bundle: true,
   external: externalDeps,
   format: "cjs",
-  target: "es2018",
+  target: "es2020",
   logLevel: "info",
   treeShaking: true,
 };

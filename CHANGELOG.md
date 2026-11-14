@@ -1,5 +1,20 @@
 # Release Notes
 
+## 3.3.1 - 2026-11-14
+
+### Updates
+
+- Updated dependencies
+
+### Improvements
+
+- Time input now works right after a space, not only at the start of a line
+- Typing `@n` now offers `@now` in the time suggestions
+- Time suggestions no longer grow too tall
+- Improved the internal structure
+
+---
+
 ## 3.3.0 - 2026-11-13
 
 ### Updates

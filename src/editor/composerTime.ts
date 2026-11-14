@@ -7,17 +7,23 @@ import type { ActiveToken, SuggestItem, SuggestSource } from "../utils/tagSugges
 const pad = (n: number): string => String(n).padStart(2, "0");
 
 /**
- * The text typed after an @ that opens a line, or after the line's quote and list markers.
+ * The text typed after the last @ before the caret, when that @ opens the line, follows the
+ * line's quote and list markers, or follows a space (so an address like a@b is left alone).
  * Compared in NFKC, so a fullwidth ＠, digits and letters from an IME read the same as ASCII.
  */
 function lineShortcut(value: string, pos: number): { start: number; text: string } | null {
   const lineStart = value.lastIndexOf("\n", pos - 1) + 1;
-  const { quote, rest, item } = splitQuoted(value.slice(lineStart, pos));
-  const lead = item ? item.indentLength + item.markerLength : rest.length - rest.trimStart().length;
-  const text = rest.slice(lead).normalize("NFKC");
+  const line = value.slice(lineStart, pos);
+  const at = Math.max(line.lastIndexOf("@"), line.lastIndexOf("＠"));
+  if (at < 0) return null;
+  const { quote, rest, item } = splitQuoted(line);
+  const lead = quote.length + (item ? item.indentLength + item.markerLength : rest.length - rest.trimStart().length);
+  if (at !== lead && line[at - 1] !== " " && line[at - 1] !== "　") return null;
+  // An odd number of backticks before the @ puts it in inline code, closed yet or still being typed.
+  if (line.slice(0, at).split("`").length % 2 === 0) return null;
   // Backtick fences stay as typed until posting; same length as tildes, so pos still holds.
-  if (!text.startsWith("@") || insideCodeBlock(toTildeFences(value), pos)) return null;
-  return { start: lineStart + quote.length + lead, text: text.slice(1) };
+  if (insideCodeBlock(toTildeFences(value), pos)) return null;
+  return { start: lineStart + at, text: line.slice(at + 1).normalize("NFKC") };
 }
 
 function clock(h: number, m: number): SuggestItem | null {
@@ -49,13 +55,23 @@ function timeItems(query: string): SuggestItem[] {
   return [...found.entries()].sort(([a], [b]) => a - b).map(([, item]) => item);
 }
 
+// Offered once @n is typed. The label stays the word, and the time is read when the item is
+// picked, so a list left open never shows or inserts a stale minute.
+const nowItem: SuggestItem = {
+  label: "@now",
+  get insert(): string {
+    const now = new Date();
+    return clock(now.getHours(), now.getMinutes())!.insert;
+  },
+};
+
 export const timeSource: SuggestSource = {
   detect(value: string, pos: number): ActiveToken | null {
     const shortcut = lineShortcut(value, pos);
-    const digits = shortcut && /^\d{0,4}$/.exec(shortcut.text);
-    return digits ? { start: shortcut.start, end: pos, query: digits[0] } : null;
+    const typed = shortcut && /^(?:\d{0,4}|n|no|now)$/i.exec(shortcut.text);
+    return typed ? { start: shortcut.start, end: pos, query: typed[0] } : null;
   },
-  items: timeItems,
+  items: (query) => (/^n/i.test(query) ? [nowItem] : timeItems(query)),
 };
 
 /**
@@ -88,8 +104,8 @@ export const nowOnSpace = EditorView.inputHandler.of((view, from, to, text) => {
 });
 
 /**
- * Pads a one-digit hour (9:30 → 09:30) where the @ shortcut would have put a time: at the
- * start of a line or after its quote and list markers. Code and math blocks are left as written.
+ * Pads a one-digit hour (9:30 → 09:30) at the start of a line or after its quote and list
+ * markers. Times later in the line, and code and math blocks, are left as written.
  */
 export function padLineTimes(text: string): string {
   const lines = text.split("\n");

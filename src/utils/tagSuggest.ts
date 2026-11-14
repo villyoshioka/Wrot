@@ -315,7 +315,23 @@ export class InlineSuggest {
       });
       this.itemEls.push(item);
     });
+    this.fitHeight();
     this.applySelection();
+  }
+
+  // Long lists (the time source has up to 96) stop at the height of MAX_VISIBLE_ITEMS rows
+  // and scroll inside; measured so it matches whatever row height the platform and font give.
+  private fitHeight(): void {
+    const popover = this.popover!;
+    const last = this.itemEls[MAX_VISIBLE_ITEMS - 1];
+    if (this.itemEls.length <= MAX_VISIBLE_ITEMS || !last) {
+      popover.style.removeProperty("max-height");
+      return;
+    }
+    popover.scrollTop = 0;
+    const cs = getComputedStyle(popover);
+    const bottom = last.getBoundingClientRect().bottom - popover.getBoundingClientRect().top;
+    popover.style.maxHeight = `${bottom + parseFloat(cs.paddingBottom) + parseFloat(cs.borderBottomWidth)}px`;
   }
 
   private moveSelection(delta: number): void {

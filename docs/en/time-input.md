@@ -1,6 +1,6 @@
 # Using Time Input
 
-In Wrot, you can quickly insert a time by simply typing `@` at the start of a line in the post box.
+In Wrot, you can quickly insert a time by simply typing `@` at the start of a line, or right after a space, in the post box.
 It is designed to help you log schedules and events fast, without worrying about typos.
 
 This guide walks you through the basics of inserting times, adding the current timestamp, and building timed lists.
@@ -9,7 +9,7 @@ This guide walks you through the basics of inserting times, adding the current t
 
 ## The Basics
 
-1. Type `@` at the beginning of a line (full-width `＠` works as well).
+1. Type `@` at the beginning of a line or right after a space, half-width or full-width (full-width `＠` works as well).
 2. A popup will appear showing times from `00:00` to `23:45` in 15-minute intervals.
 3. Keep typing numbers to narrow down the options.
 4. Pick a time, and the `@` will be replaced with it (e.g., `20:00`), followed by a space so you can keep writing without missing a beat.
@@ -32,9 +32,9 @@ This also works right after the marker in bullet points, checklists, numbered li
 
 ## Inserting the Current Time (@now)
 
-Type `@now` at the start of a line and hit the spacebar or `Enter` to replace it with the exact current time (e.g., `14:32`). It does not round to 15-minute intervals.
+Type `@now` at the start of a line or right after a space, and hit the spacebar or `Enter` to replace it with the exact current time (e.g., `14:32`). It does not round to 15-minute intervals.
 
-- `@now` won't show up in the dropdown menu. Just type it out and hit the spacebar or `Enter`.
+- Once you've typed `@n`, `@now` shows up in the dropdown menu. Pick it to insert the time at that very moment. You can also type it out in full and hit the spacebar or `Enter`.
 - If you actually want to keep the text `@now`, just hit Undo (`Ctrl + Z` / `Cmd + Z`) right after it converts to a timestamp.
 - Make sure to type `@now` in direct alphanumeric input, as an active Japanese IME will turn `now` into "のw".
 
@@ -59,10 +59,10 @@ When you post, any single-digit hour at the start of a line (or right after a li
 
 ### The suggestions aren't showing up
 
-- Make sure `@` is at the very beginning of the line or immediately follows a list/blockquote marker. It won't trigger mid-sentence (so email addresses won't pop up the menu).
-- Suggestions are disabled inside code blocks (areas fenced by `~~~`).
+- Make sure `@` is at the very beginning of the line, immediately follows a list/blockquote marker, or comes right after a space (half-width or full-width). It won't trigger when it's attached to the text before it (so email addresses won't pop up the menu).
+- Suggestions are disabled inside code blocks (areas fenced by `~~~`) and inside inline code wrapped in `` ` ``.
 
 ### @now doesn't convert to a time
 
-- Check that `@now` is at the beginning of the line or right after a list/blockquote marker.
+- Check that `@now` is at the beginning of the line, right after a list/blockquote marker, or right after a space.
 - Double-check that your Japanese IME wasn't active when typing.
