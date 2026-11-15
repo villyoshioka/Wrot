@@ -1,5 +1,7 @@
 import { App, TFile, Platform, MarkdownView, setIcon } from "obsidian";
-import { parseMemos, type Memo } from "./memoParser";
+import { blockTimeOf, parseMemos, type Memo } from "./memoParser";
+import { ruleClassOf, stripRuleClasses } from "./patterns";
+import { hexRgba } from "./color";
 import { renderTextWithTagsAndUrls } from "./urlRenderer";
 import { ListDepthTracker, parseListLine } from "./listParser";
 import { t } from "../i18n";
@@ -31,6 +33,20 @@ export function invalidateMemoCache(filePath: string): void {
 // Card DOM -> source memo, read by click handlers for the jump target. A WeakMap
 // (not a closure) lets in-place updates swap the memo without rebuilding the card.
 const CARD_MEMO = new WeakMap<HTMLElement, Memo>();
+
+// Live-preview quote widgets compare equal across a rule change and keep their old DOM,
+// so the source post's rule class is re-resolved on the cards already shown.
+export function reapplyQuoteCardRules(docs: Document[], resolveRuleClass: (content: string) => string | null): void {
+  for (const doc of docs) {
+    doc.querySelectorAll<HTMLElement>(".wrot-quote-card").forEach((card) => {
+      const memo = CARD_MEMO.get(card);
+      if (!memo) return;
+      stripRuleClasses(card);
+      const cls = resolveRuleClass(memo.content);
+      if (cls) card.classList.add(cls);
+    });
+  }
+}
 
 // Refresh quote cards referencing the changed file (data-quote-file holds a link path, matched by basename).
 // In-place update avoids the placeholder flicker of a rebuild; rebuild only on unexpected structure.
@@ -110,9 +126,7 @@ function updateQuoteCardInPlace(
     }
     card.classList.remove("wrot-quote-card-dead");
     fillCardBody(bodyEl, metaEl, found, app, opts.timestampFormat, opts.checkStrikethrough);
-    Array.from(card.classList)
-      .filter((c) => /^wrot-tag-rule-\d+$/.test(c))
-      .forEach((c) => card.classList.remove(c));
+    stripRuleClasses(card);
     if (opts.resolveRuleClass) {
       const cls = opts.resolveRuleClass(found.content);
       if (cls) card.classList.add(cls);
@@ -140,8 +154,7 @@ function updateQuoteCardInPlace(
 function memoMatchesBlockId(memo: Memo, blockId: string): boolean {
   if (!blockId.startsWith("wr-")) return false;
   const T = blockId.slice(3);
-  const memoT = memo.time.replace(/[-:.TZ+]/g, "").slice(0, 17);
-  return memoT === T;
+  return blockTimeOf(memo.time) === T;
 }
 
 const DEFAULT_TIMESTAMP_FORMAT = "YYYY/MM/DD HH:mm";
@@ -437,13 +450,10 @@ function flashJumpTargetReadingView(
       flashed.add(el);
       el.classList.remove("wrot-quote-jump-flash");
       void el.offsetWidth;
-      const ruleClass = Array.from(el.classList).find((c) => /^wrot-tag-rule-\d+$/.test(c));
+      const ruleClass = ruleClassOf(el);
       const accent = ruleClass && resolveRuleAccent ? resolveRuleAccent(ruleClass) : null;
       if (accent) {
-        const r = parseInt(accent.slice(1, 3), 16);
-        const g = parseInt(accent.slice(3, 5), 16);
-        const b = parseInt(accent.slice(5, 7), 16);
-        el.style.setProperty("--wrot-flash-color", `rgba(${r}, ${g}, ${b}, 0.22)`);
+        el.style.setProperty("--wrot-flash-color", hexRgba(accent, 0.22));
       } else {
         el.style.removeProperty("--wrot-flash-color");
       }
@@ -641,13 +651,10 @@ function flashJumpTarget(
       flashed.add(el);
       el.classList.remove("wrot-quote-jump-flash");
       void el.offsetWidth;
-      const ruleClass = Array.from(el.classList).find((c) => /^wrot-tag-rule-\d+$/.test(c));
+      const ruleClass = ruleClassOf(el);
       const accent = ruleClass && resolveRuleAccent ? resolveRuleAccent(ruleClass) : null;
       if (accent) {
-        const r = parseInt(accent.slice(1, 3), 16);
-        const g = parseInt(accent.slice(3, 5), 16);
-        const b = parseInt(accent.slice(5, 7), 16);
-        el.style.setProperty("--wrot-flash-color", `rgba(${r}, ${g}, ${b}, 0.22)`);
+        el.style.setProperty("--wrot-flash-color", hexRgba(accent, 0.22));
       } else {
         el.style.removeProperty("--wrot-flash-color");
       }
@@ -890,9 +897,7 @@ export function renderQuoteCard(
   const setupClick = (memo: Memo) => {
     fillCardBody(bodyEl, metaEl, memo, app, timestampFormat, checkStrikethrough);
     if (resolveRuleClass) {
-      Array.from(card.classList)
-        .filter((c) => /^wrot-tag-rule-\d+$/.test(c))
-        .forEach((c) => card.classList.remove(c));
+      stripRuleClasses(card);
       const cls = resolveRuleClass(memo.content);
       if (cls) card.classList.add(cls);
     }

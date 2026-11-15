@@ -42,6 +42,19 @@ export function requestMathJax(): void {
     });
 }
 
+// Until MathJax is ready, shows the fallback text and marks el for upgradeMathFallbacks.
+export function renderMathInto(el: HTMLElement, tex: string, display: boolean, fallback: string, ready = isMathJaxReady()): void {
+  try {
+    if (!ready) throw new Error("MathJax not loaded yet");
+    el.appendChild(renderMath(tex, display));
+    void finishRenderMath();
+  } catch {
+    el.classList.add("wrot-math-fallback");
+    el.textContent = fallback;
+    requestMathJax();
+  }
+}
+
 // Upgrades only .wrot-math-fallback elements in place; no full view re-render, so nothing else moves.
 export function upgradeMathFallbacks(): void {
   if (!isMathJaxReady()) return;

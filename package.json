@@ -1,6 +1,6 @@
 {
   "name": "wrot",
-  "version": "3.3.1",
+  "version": "3.4.0",
   "description": "Micro-journal your day in a timeline, one \"tweet\" at a time.",
   "type": "module",
   "scripts": {

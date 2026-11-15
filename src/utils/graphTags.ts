@@ -2,7 +2,7 @@ import { CachedMetadata, Debouncer, EmbedCache, LinkCache, TFile, TagCache, debo
 import { parseMemos } from "./memoParser";
 import { extractTagsForHistory } from "./tagSuggest";
 import { findBlockRanges } from "./blockSegmenter";
-import { inlineTokens, tagPattern } from "./patterns";
+import { inlineTokens, normalizeTag, tagPattern } from "./patterns";
 import { parseLinkToken } from "../editor/composerLink";
 import type WrotPlugin from "../main";
 
@@ -60,10 +60,6 @@ function isWrTag(t: TagCache): boolean {
 
 function isWrRef(r: LinkCache | EmbedCache): boolean {
   return (r as WrRefCache).wrGraph === true;
-}
-
-function normalizeTag(tag: string): string {
-  return tag.replace(/^#/, "").toLowerCase().trim();
 }
 
 // One tag occurrence: tag keeps its # and is pre-exclusion; position is the real file

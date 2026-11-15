@@ -9,6 +9,10 @@ const ja = {
   "settings.option.viewPlacement.left": "左サイドバー",
   "settings.option.viewPlacement.right": "右サイドバー",
   "settings.option.viewPlacement.main": "メインエリア",
+  "command.openLeft": "左サイドバーで開く",
+  "command.openRight": "右サイドバーで開く",
+  "command.openMain": "メインエリアで開く",
+  "command.openSettings": "設定を開く",
   "settings.item.openOnStartup.name": "起動時に開く",
   "settings.item.openOnStartup.desc": "Obsidianの起動時に、Wrotを手前に表示します。",
 

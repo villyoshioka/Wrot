@@ -2,15 +2,13 @@ import {
   TFile,
   MarkdownRenderer,
   MarkdownRenderChild,
-  renderMath,
-  finishRenderMath,
   Component,
 } from "obsidian";
 import { extractUrls, renderUrlPreviews, isSafeUrl, cleanUrl, extractObsidianFile, isOtherVault, QUOTE_LINK_RE } from "./utils/urlRenderer";
 import { renderQuoteCard, invalidateMemoCache, refreshQuoteCardsForFile } from "./utils/quoteCard";
 import { toggleCheckbox } from "./utils/memoWriter";
 import { segmentBlocks, type Segment } from "./utils/blockSegmenter";
-import { isMathJaxReady, requestMathJax } from "./utils/mathjax";
+import { renderMathInto } from "./utils/mathjax";
 import {
   WR_CODE_SELECTOR,
   fileForLocation,
@@ -22,9 +20,9 @@ import {
   wrBlockContainer,
   wrScopeRoot,
 } from "./utils/blockLocation";
-import { parseMemos, type Memo } from "./utils/memoParser";
+import { blockTimeOf, parseMemos, type Memo } from "./utils/memoParser";
 import type WrotPlugin from "./main";
-import { IMAGE_EXT_RE, QUOTE_MARKER_RE, TAG_TOKEN_RE, highlightColor, inlineTokenPattern, matchTags, splitLinkAlias } from "./utils/patterns";
+import { IMAGE_EXT_RE, QUOTE_MARKER_RE, TAG_TOKEN_RE, highlightColor, inlineTokenPattern, matchTags, ruleClassOf, splitLinkAlias, stripRuleClasses } from "./utils/patterns";
 import { ListDepthTracker, NestedListStack, parseListLine, tagFor, type ListLine } from "./utils/listParser";
 
 // Lets Obsidian finish its own render before we re-derive from the DOM.
@@ -235,7 +233,7 @@ async function applyBlockIdClasses(el: HTMLElement, plugin: WrotPlugin, sourcePa
 }
 
 function blockIdOf(memo: Memo): string {
-  return `wrot-block-id-wr-${memo.time.replace(/[-:.TZ+]/g, "").slice(0, 17)}`;
+  return `wrot-block-id-wr-${blockTimeOf(memo.time)}`;
 }
 
 function applyBlockIdClass(block: HTMLElement, memo: Memo): void {
@@ -261,21 +259,12 @@ function applyTagRuleClass(block: HTMLElement, code: HTMLElement, plugin: WrotPl
     if (el.instanceOf(HTMLElement)) targets.push(el);
   });
 
-  for (const t of targets) {
-    const existing = Array.from(t.classList);
-    for (const cls of existing) {
-      if (/^wrot-tag-rule-\d+$/.test(cls)) t.classList.remove(cls);
-    }
-  }
+  targets.forEach(stripRuleClasses);
 
   const rawText = code.getAttribute("data-wrot-original") || code.textContent || "";
   const blockTags = matchTags(rawText);
-  const rule = plugin.findTagColorRule(blockTags);
-  if (!rule) return;
-  const idx = plugin.settings.tagColorRules.indexOf(rule);
-  if (idx < 0) return;
-
-  const cls = `wrot-tag-rule-${idx}`;
+  const cls = plugin.ruleClassFor(blockTags);
+  if (!cls) return;
   for (const t of targets) t.classList.add(cls);
 }
 
@@ -296,7 +285,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin, parent: Compone
     ...Array.from(block.querySelectorAll(".copy-code-button")),
   ];
   const resolveAccentForBlock = (): string => {
-    const ruleClass = Array.from(block.classList).find((c) => /^wrot-tag-rule-\d+$/.test(c));
+    const ruleClass = ruleClassOf(block);
     if (ruleClass) {
       const idx = parseInt(ruleClass.slice("wrot-tag-rule-".length), 10);
       const rule = plugin.settings.tagColorRules?.[idx];
@@ -531,18 +520,7 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin, parent: Compone
         const mathContent = part.slice(1, -1);
         const mathEl = createSpan();
         mathEl.className = "wrot-math";
-        try {
-          // MathJax loads lazily (see utils/mathjax.ts). If not ready, fall through to the
-          // fallback; wrot-math-fallback marks the element for in-place replacement once loaded.
-          if (!isMathJaxReady()) throw new Error("MathJax not loaded yet");
-          const rendered = renderMath(mathContent, false);
-          mathEl.appendChild(rendered);
-          void finishRenderMath();
-        } catch {
-          mathEl.classList.add("wrot-math-fallback");
-          mathEl.textContent = part;
-          requestMathJax();
-        }
+        renderMathInto(mathEl, mathContent, false, part);
         frag.appendChild(mathEl);
         hasMatch = true;
       } else if (part.match(/^obsidian:\/\//)) {
@@ -671,18 +649,7 @@ function renderCodeBlockFragment(
 function renderMathBlockFragment(segment: Extract<Segment, { kind: "mathblock" }>): HTMLElement {
   const blockEl = createDiv();
   blockEl.className = "wrot-math-display";
-  try {
-    // MathJax loads lazily (see utils/mathjax.ts). If not ready, fall through to the
-    // fallback; wrot-math-fallback marks the element for in-place replacement once loaded.
-    if (!isMathJaxReady()) throw new Error("MathJax not loaded yet");
-    const rendered = renderMath(segment.tex, true);
-    blockEl.appendChild(rendered);
-    void finishRenderMath();
-  } catch {
-    blockEl.classList.add("wrot-math-fallback");
-    blockEl.textContent = segment.tex;
-    requestMathJax();
-  }
+  renderMathInto(blockEl, segment.tex, true, segment.tex);
   return blockEl;
 }
 

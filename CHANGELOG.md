@@ -1,5 +1,26 @@
 # Release Notes
 
+## 3.4.0 - 2026-11-15
+
+### Important Changes
+
+- Replaced the "Open" command with commands that choose where to open Wrot. If you had a hotkey assigned to it, please reassign it.
+
+### New Features
+
+- Added commands to open Wrot in the left sidebar, right sidebar, or main area, and to open its settings
+
+### Improvements
+
+- Made the plugin lighter
+
+### Bug Fixes
+
+- Fixed quote cards in Live Preview sometimes not showing the colors of the quoted post's tag rule
+- Fixed URLs and quote links sometimes not being colored correctly while editing a post in Live Preview
+
+---
+
 ## 3.3.1 - 2026-11-14
 
 ### Updates

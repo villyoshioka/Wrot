@@ -11,6 +11,10 @@ const de = {
   "settings.option.viewPlacement.left": "Linke Seitenleiste",
   "settings.option.viewPlacement.right": "Rechte Seitenleiste",
   "settings.option.viewPlacement.main": "Hauptbereich",
+  "command.openLeft": "In linker Seitenleiste öffnen",
+  "command.openRight": "In rechter Seitenleiste öffnen",
+  "command.openMain": "Im Hauptbereich öffnen",
+  "command.openSettings": "Einstellungen öffnen",
   "settings.item.openOnStartup.name": "Beim Start öffnen",
   "settings.item.openOnStartup.desc": "Öffnet Wrot beim Start von Obsidian automatisch im Vordergrund.",
 

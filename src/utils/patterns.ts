@@ -63,6 +63,22 @@ export function highlightColor(inner: string): { color: string; length: number }
 /** A six-digit hex color, the only form the settings accept. */
 export const HEX_COLOR_RE = /^#[0-9a-fA-F]{6}$/;
 
+/** The per-rule color class (wrot-tag-rule-<n>); settings-UI classes lack the numeric suffix. */
+const RULE_CLASS_RE = /^wrot-tag-rule-\d+$/;
+
+export function ruleClassOf(el: Element): string | undefined {
+  return Array.from(el.classList).find((c) => RULE_CLASS_RE.test(c));
+}
+
+export function stripRuleClasses(el: Element): void {
+  for (const c of Array.from(el.classList)) if (RULE_CLASS_RE.test(c)) el.classList.remove(c);
+}
+
+/** A tag as rules compare it: no leading #, lower case. */
+export function normalizeTag(tag: string): string {
+  return tag.replace(/^#/, "").toLowerCase().trim();
+}
+
 // No String.raw: any tagged template stops V8 caching the plugin's eval, slowing startup.
 
 /** Body of a quote-card marker: a link to a memo's block id. */

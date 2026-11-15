@@ -11,6 +11,10 @@ const ko = {
   "settings.option.viewPlacement.left": "왼쪽 사이드바",
   "settings.option.viewPlacement.right": "오른쪽 사이드바",
   "settings.option.viewPlacement.main": "메인 영역",
+  "command.openLeft": "왼쪽 사이드바에서 열기",
+  "command.openRight": "오른쪽 사이드바에서 열기",
+  "command.openMain": "메인 영역에서 열기",
+  "command.openSettings": "설정 열기",
   "settings.item.openOnStartup.name": "시작 시 열기",
   "settings.item.openOnStartup.desc": "활성화하면 Obsidian을 시작할 때 Wrot을 전면에 표시합니다.",
 

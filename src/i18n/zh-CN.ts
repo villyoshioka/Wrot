@@ -11,6 +11,10 @@ const zhCN = {
   "settings.option.viewPlacement.left": "左侧边栏",
   "settings.option.viewPlacement.right": "右侧边栏",
   "settings.option.viewPlacement.main": "主工作区",
+  "command.openLeft": "在左侧边栏中打开",
+  "command.openRight": "在右侧边栏中打开",
+  "command.openMain": "在主工作区中打开",
+  "command.openSettings": "打开设置",
   "settings.item.openOnStartup.name": "启动时打开",
   "settings.item.openOnStartup.desc": "开启后，启动 Obsidian 时将 Wrot 默认显示在最前。",
 

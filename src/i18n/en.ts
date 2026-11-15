@@ -11,6 +11,10 @@ const en = {
   "settings.option.viewPlacement.left": "Left sidebar",
   "settings.option.viewPlacement.right": "Right sidebar",
   "settings.option.viewPlacement.main": "Main area",
+  "command.openLeft": "Open in left sidebar",
+  "command.openRight": "Open in right sidebar",
+  "command.openMain": "Open in main area",
+  "command.openSettings": "Open settings",
   "settings.item.openOnStartup.name": "Open on startup",
   "settings.item.openOnStartup.desc": "Automatically open Wrot when Obsidian launches.",
 

@@ -11,6 +11,10 @@ const ru = {
   "settings.option.viewPlacement.left": "Левая боковая панель",
   "settings.option.viewPlacement.right": "Правая боковая панель",
   "settings.option.viewPlacement.main": "Основная область",
+  "command.openLeft": "Открыть в левой боковой панели",
+  "command.openRight": "Открыть в правой боковой панели",
+  "command.openMain": "Открыть в основной области",
+  "command.openSettings": "Открыть настройки",
   "settings.item.openOnStartup.name": "Открывать при запуске",
   "settings.item.openOnStartup.desc": "Открывать Wrot на переднем плане при запуске Obsidian.",
 

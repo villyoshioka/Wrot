@@ -11,6 +11,10 @@ const zhTW = {
   "settings.option.viewPlacement.left": "左側側邊欄",
   "settings.option.viewPlacement.right": "右側側邊欄",
   "settings.option.viewPlacement.main": "主要區域",
+  "command.openLeft": "在左側側邊欄開啟",
+  "command.openRight": "在右側側邊欄開啟",
+  "command.openMain": "在主要區域開啟",
+  "command.openSettings": "開啟設定",
   "settings.item.openOnStartup.name": "啟動時開啟",
   "settings.item.openOnStartup.desc": "開啟後，啟動 Obsidian 時將 Wrot 顯示在最上層。",
 

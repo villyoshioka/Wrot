@@ -10,6 +10,11 @@ export interface Memo {
   lineEnd: number;
 }
 
+/** The 17-digit T of a memo's block id (^wr-T), from its timestamp. */
+export function blockTimeOf(time: string): string {
+  return time.replace(/[-:.TZ+]/g, "").slice(0, 17);
+}
+
 const OPENING_REGEX = /^```wr\s+(.+)$/;
 
 export function parseMemos(fileContent: string): Memo[] {

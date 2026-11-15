@@ -11,6 +11,10 @@ const pt = {
   "settings.option.viewPlacement.left": "Barra lateral esquerda",
   "settings.option.viewPlacement.right": "Barra lateral direita",
   "settings.option.viewPlacement.main": "Área principal",
+  "command.openLeft": "Abrir na barra lateral esquerda",
+  "command.openRight": "Abrir na barra lateral direita",
+  "command.openMain": "Abrir na área principal",
+  "command.openSettings": "Abrir configurações",
   "settings.item.openOnStartup.name": "Abrir ao iniciar",
   "settings.item.openOnStartup.desc": "Se ativado, o Wrot será trazido para o primeiro plano ao iniciar o Obsidian.",
 

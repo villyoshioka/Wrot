@@ -6,7 +6,7 @@ import {
   ViewUpdate,
 } from "@codemirror/view";
 import { RangeSetBuilder, StateEffect, StateField } from "@codemirror/state";
-import { editorLivePreviewField, type App } from "obsidian";
+import { editorLivePreviewField, getLinkpath, type App } from "obsidian";
 import type WrotPlugin from "./main";
 import { findBlockRanges, type BlockRange } from "./utils/blockSegmenter";
 import {
@@ -178,14 +178,7 @@ function findWrBlocks(view: EditorView, plugin: WrotPlugin | null): WrBlock[] {
       if (tagMatches) tags.push(...tagMatches);
     }
 
-    let ruleClass: string | null = null;
-    if (plugin) {
-      const rule = plugin.findTagColorRule(tags);
-      if (rule) {
-        const idx = plugin.settings.tagColorRules.indexOf(rule);
-        if (idx >= 0) ruleClass = `wrot-tag-rule-${idx}`;
-      }
-    }
+    const ruleClass = plugin ? plugin.ruleClassFor(tags) : null;
 
     // Block ID (^wr-T) from the opening fence, used to target the flash highlight.
     const fenceLine = doc.line(startLn).text;
@@ -467,8 +460,12 @@ function buildDecorations(
 
         let match;
 
+        // A # inside [[...]] is the link's subpath (#heading, #^block), not a tag.
+        const wikiRanges = Array.from(l.text.matchAll(/!?\[\[[^\]]+\]\]/g), (m) => [m.index, m.index + m[0].length]);
         const tagRegex = tagPattern();
         while ((match = tagRegex.exec(l.text)) !== null) {
+          const at = match.index;
+          if (wikiRanges.some(([f, t]) => at >= f && at < t)) continue;
           entries.push({
             from: l.from + match.index,
             to: l.from + match.index + match[0].length,
@@ -535,7 +532,7 @@ function buildDecorations(
           const isEmbed = match[0].startsWith("!");
           const innerName = isEmbed ? match[0].slice(3, -2) : match[0].slice(2, -2);
           const { target, display } = splitLinkAlias(innerName);
-          const resolved = app.metadataCache.getFirstLinkpathDest(target, "") !== null;
+          const resolved = app.metadataCache.getFirstLinkpathDest(getLinkpath(target), "") !== null;
           if (!showRaw) {
             if (isEmbed && IMAGE_EXT_RE.test(innerName)) {
               const file = app.metadataCache.getFirstLinkpathDest(innerName, "");

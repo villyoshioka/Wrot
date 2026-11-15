@@ -29,6 +29,10 @@ export function darkenColor(hex: string, amount: number): string {
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
 
+export function hexRgba(hex: string, alpha: number): string {
+  return `rgba(${parseInt(hex.slice(1, 3), 16)}, ${parseInt(hex.slice(3, 5), 16)}, ${parseInt(hex.slice(5, 7), 16)}, ${alpha})`;
+}
+
 /** Returns the color if it is a well-formed hex value, otherwise the fallback. */
 export function validHex(hex: string, fallback: string): string {
   return HEX_COLOR_RE.test(hex) ? hex : fallback;
@@ -148,6 +152,17 @@ export function visibleDiagramColor(color: string, bg: string): string {
   const [, a, b] = oklab(color);
   const bl = oklabLightness(bg);
   return oklabToHex(bl >= 0.5 ? bl - DIAGRAM_PUSH_L : bl + DIAGRAM_PUSH_L, a, b);
+}
+
+// OKLab lightness gap text needs from what is behind it to stay readable.
+const READABLE_L_GAP = 0.4;
+
+/** `color` with its lightness moved off `bg` (hue kept) when the two are too close to read. */
+export function readableOn(color: string, bg: string): string {
+  const [l, a, b] = oklab(color);
+  const bl = oklabLightness(bg);
+  if (Math.abs(l - bl) >= READABLE_L_GAP) return color;
+  return oklabToHex(bl >= 0.5 ? bl - READABLE_L_GAP : bl + READABLE_L_GAP, a, b);
 }
 
 /** Obsidian's own highlight colours, for a theme whose values cannot be read. */

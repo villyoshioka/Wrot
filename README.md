@@ -91,7 +91,7 @@ Wrot supports **11 languages across 12 locales**. It automatically follows your 
 ## Quick Start
 
 1. **Install Wrot** through the Community Plugins tab or manually.
-2. **Open your timeline** by clicking the ribbon icon or triggering the "Open" command from the Command Palette.
+2. **Open your timeline** by clicking the ribbon icon, or from the Command Palette with "Open in left sidebar", "Open in right sidebar", or "Open in main area".
 3. **Start logging** by typing a note and pressing the post button or hitting `Ctrl / Cmd + Enter`.
 
 ### Installation

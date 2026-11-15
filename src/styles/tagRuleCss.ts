@@ -1,6 +1,6 @@
 import type { SubColorScope, TagColorRule } from "../settings";
 import type { DiagramTheme } from "../utils/color";
-import { blendColor, codeLightness, darkenColor, visibleDiagramColor } from "../utils/color";
+import { blendColor, codeLightness, darkenColor, readableOn, visibleDiagramColor } from "../utils/color";
 import { diagramThemeVars, highlightVars } from "./paletteCss";
 import { HEX_COLOR_RE } from "../utils/patterns";
 
@@ -39,6 +39,11 @@ export function buildTagRuleCss(rules: TagColorRule[], highlightTheme: Record<st
       const quoteLink = `color-mix(in srgb, ${accent ?? "var(--text-accent)"} 40%, ${bg})`;
       const cls = `wrot-tag-rule-${i}`;
       const codeL = codeLightness(fg, bg);
+      // Obsidian's search-jump flash lays rgba(255, 225, 0, 0.5) over the text until the cursor moves.
+      // ponytail: assumes the default flash colour; read --highlight-background if a theme changes it.
+      const flashLaid = blendColor(bg, "#ffe100", 0.5);
+      // Where the text would vanish, the flash itself is shifted (hue kept) until the text reads.
+      const flashBg = readableOn(flashLaid, fg);
 
       parts.push(`/* @css */
       body .wrot-card.${cls},
@@ -335,6 +340,12 @@ export function buildTagRuleCss(rules: TagColorRule[], highlightTheme: Record<st
         color: ${accent ?? "var(--text-accent)"};
         stroke: ${accent ?? "var(--text-accent)"};
       }
+      /* Obsidian paints .is-flashing with var(--highlight-background) !important, so swap the
+         variable; its darken/lighten blend would tint the rule's text toward the memo background */
+      body .cm-line.wrot-codeblock-line.${cls} .is-flashing:not(#x#y#z) {
+        --highlight-background: ${flashBg};
+        --highlight-mix-blend-mode: normal;
+      }
       ${accent ? `
       body .wrot-card.${cls} .wrot-tag:not(.wrot-quote-card-slot *),
       body .wrot-card.${cls} .wrot-internal-link:not(.wrot-quote-card-slot *),
@@ -353,6 +364,12 @@ export function buildTagRuleCss(rules: TagColorRule[], highlightTheme: Record<st
       body .cm-line.wrot-codeblock-line.${cls} .wrot-internal-link:not(.wrot-quote-card-slot *),
       body .cm-line.wrot-codeblock-line.${cls} .wrot-url:not(.wrot-quote-card-slot *) {
         color: ${accent};
+      }
+      /* styles.css also paints the LP URL's fill with the theme accent, and the fill wins over color */
+      body .cm-line.wrot-codeblock-line.${cls} .wrot-url-highlight:not(.wrot-quote-card-slot *),
+      body .cm-line.wrot-codeblock-line.${cls} .wrot-url-highlight *:not(.wrot-quote-card-slot *) {
+        color: ${accent};
+        -webkit-text-fill-color: ${accent};
       }
       ` : ""}
 

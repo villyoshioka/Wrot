@@ -1,7 +1,6 @@
-import { renderMath, finishRenderMath } from "obsidian";
 import type { OGPData, OGPCache } from "./ogpCache";
 import { segmentBlocks } from "./blockSegmenter";
-import { isMathJaxReady, requestMathJax } from "./mathjax";
+import { renderMathInto } from "./mathjax";
 import { IMAGE_EXT_RE, TAG_TOKEN_RE, highlightColor, inlineTokenPattern, splitLinkAlias } from "./patterns";
 import {
   ListDepthTracker,
@@ -112,7 +111,6 @@ interface RenderTextCallbacks {
   vaultName?: string;
   checkStrikethrough?: boolean;
   renderCodeBlock?: (code: string, lang: string, container: HTMLElement, fenceTildes: number) => void;
-  renderMathBlock?: (tex: string, container: HTMLElement) => void;
   // Called when a quote-card marker [[fileName#^wr-T]] is found; the caller renders the card into slot.
   renderQuoteCard?: (slot: HTMLElement, fileName: string, blockId: string) => void;
 }
@@ -143,22 +141,7 @@ export function renderTextWithTagsAndUrls(
 
     if (segment.kind === "mathblock") {
       const blockEl = container.createDiv({ cls: "wrot-math-display" });
-      if (callbacks.renderMathBlock) {
-        callbacks.renderMathBlock(segment.tex, blockEl);
-      } else {
-        try {
-          // MathJax loads lazily. If not ready, fall through to the fallback;
-          // wrot-math-fallback marks the element for re-render once onMathJaxReady fires.
-          if (!isMathJaxReady()) throw new Error("MathJax not loaded yet");
-          const rendered = renderMath(segment.tex, true);
-          blockEl.appendChild(rendered);
-          void finishRenderMath();
-        } catch {
-          blockEl.classList.add("wrot-math-fallback");
-          blockEl.textContent = segment.tex;
-          requestMathJax();
-        }
-      }
+      renderMathInto(blockEl, segment.tex, true, segment.tex);
       continue;
     }
 
@@ -435,18 +418,7 @@ function renderInlineTokens(
     } else if (part.match(/^\$([^$]+)\$$/)) {
       const mathContent = part.slice(1, -1);
       const mathEl = container.createSpan({ cls: "wrot-math" });
-      try {
-        // MathJax loads lazily. If not ready, fall through to the fallback;
-        // wrot-math-fallback marks the element for re-render once onMathJaxReady fires.
-        if (!isMathJaxReady()) throw new Error("MathJax not loaded yet");
-        const rendered = renderMath(mathContent, false);
-        mathEl.appendChild(rendered);
-        void finishRenderMath();
-      } catch {
-        mathEl.classList.add("wrot-math-fallback");
-        mathEl.textContent = part;
-        requestMathJax();
-      }
+      renderMathInto(mathEl, mathContent, false, part);
     } else if (part.match(/^obsidian:\/\//)) {
       const url = cleanUrl(part);
       const trailing = part.slice(url.length);

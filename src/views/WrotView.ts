@@ -1,6 +1,6 @@
-import { ItemView, WorkspaceLeaf, Notice, TFile, EventRef, setIcon, Menu, MenuItem, Platform, Scope, MarkdownRenderer, renderMath, finishRenderMath } from "obsidian";
+import { ItemView, WorkspaceLeaf, Notice, TFile, EventRef, debounce, setIcon, Menu, MenuItem, Platform, Scope, MarkdownRenderer } from "obsidian";
 import { VIEW_TYPE_WROT } from "../constants";
-import { parseMemos, Memo } from "../utils/memoParser";
+import { blockTimeOf, parseMemos, Memo } from "../utils/memoParser";
 import { appendMemo, deleteMemo, setMemoCheckbox, updateMemo } from "../utils/memoWriter";
 import { getOrCreateDailyNote, getDailyNoteFile, dailyNotePathFor, dailyNoteTemplateFile } from "../utils/dailyNote";
 import { headingLocator, waitForTemplater } from "../utils/postHeading";
@@ -16,8 +16,8 @@ import { InlineSuggest, extractTagsForHistory, rebuildFocus, tagSource } from ".
 import { padLineTimes, timeSource } from "../editor/composerTime";
 import { ComposerField } from "../editor/composerField";
 import { findLinkAt, isLinkableText, linkMarkdown } from "../editor/composerLink";
-import { HIGHLIGHT_EMOJI, TAG_SOURCE } from "../utils/patterns";
-import { isMathJaxReady, requestMathJax } from "../utils/mathjax";
+import { HIGHLIGHT_EMOJI, TAG_SOURCE, ruleClassOf } from "../utils/patterns";
+import { hexRgba } from "../utils/color";
 import {
   closeInlineMarker,
   effectBlocked,
@@ -208,11 +208,8 @@ export class WrotView extends ItemView {
   composer!: ComposerField;
   submitLabelEl!: HTMLElement;
   submitIconEl!: HTMLElement;
-  private fileChangeRef: EventRef | null = null;
-  private fileDeleteRef: EventRef | null = null;
-  private fileCreateRef: EventRef | null = null;
-  private fileRawRef: EventRef | null = null;
-  private refreshTimer: number | null = null;
+  // One sync can raise several change signals in a row; they redraw once.
+  private requestRefresh = debounce(() => void this.refresh(), REFRESH_COALESCE_MS, true);
   private ignoreNextModify = false;
   private ownWriteAt = 0;
   private ignoreModifyUntil = 0;
@@ -233,7 +230,7 @@ export class WrotView extends ItemView {
   // A change that arrived while a render was in flight; replayed once the render finishes.
   private refreshQueued = false;
   private toolbarResizeObserver: ResizeObserver | null = null;
-  private draftTimer: number | null = null;
+  private scheduleDraftSave = debounce(() => void this.persistDraft(), DRAFT_IDLE_MS, true);
   private currentMenu: Menu | null = null;
   private pendingImage: File | null = null;
   private pendingImageUrl: string | null = null;
@@ -372,8 +369,7 @@ export class WrotView extends ItemView {
   }
 
   onClose(): Promise<void> {
-    if (this.draftTimer !== null) window.clearTimeout(this.draftTimer);
-    this.draftTimer = null;
+    this.scheduleDraftSave.cancel();
     // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
     this.persistDraft();
     this.suggest?.destroy();
@@ -382,7 +378,7 @@ export class WrotView extends ItemView {
     this.linkPopover?.close(true);
     this.composer?.destroy();
     this.closeCalendarPopover();
-    this.unregisterFileWatcher();
+    this.requestRefresh.cancel();
     if (this.toolbarResizeObserver) {
       this.toolbarResizeObserver.disconnect();
       this.toolbarResizeObserver = null;
@@ -395,8 +391,7 @@ export class WrotView extends ItemView {
   }
 
   private registerFileWatcher(): void {
-    this.unregisterFileWatcher();
-    this.fileChangeRef = this.app.vault.on("modify", (file) => {
+    this.registerEvent(this.app.vault.on("modify", (file) => {
       if (this.ignoreNextModify) {
         this.ignoreNextModify = false;
         return;
@@ -412,31 +407,31 @@ export class WrotView extends ItemView {
       if ((currentFile && file.path === currentFile.path) || this.holdsPinnedMemo(file.path)) {
         this.requestRefresh();
       }
-    });
+    }));
     // vault "delete" fires before metadataCache updates, so watch metadataCache "deleted" instead.
-    this.fileDeleteRef = this.app.metadataCache.on("deleted", (file) => {
+    this.registerEvent(this.app.metadataCache.on("deleted", (file) => {
       if (!(file instanceof TFile)) return;
       if (!this.affectsCurrentView(file)) return;
       this.requestRefresh();
-    });
-    this.fileCreateRef = this.app.vault.on("create", (file) => {
+    }));
+    this.registerEvent(this.app.vault.on("create", (file) => {
       if (!(file instanceof TFile)) return;
       if (!this.affectsCurrentView(file)) return;
       this.requestRefresh();
-    });
+    }));
     // On mobile, a note rewritten by sync does not always raise "modify"; the undocumented
     // "raw" signal still fires. Desktop gets "modify" reliably and would refresh twice.
     if (Platform.isMobile) {
       const vault = this.app.vault as unknown as {
         on(name: "raw", cb: (path: string) => void): EventRef;
       };
-      this.fileRawRef = vault.on("raw", (path) => {
+      this.registerEvent(vault.on("raw", (path) => {
         // "modify" may have consumed the flag already; the time window covers the rest.
         if (this.ignoreNextModify || Date.now() < this.ignoreModifyUntil) return;
         if (Date.now() - this.ownWriteAt < OWN_WRITE_WINDOW_MS) return;
         if (path !== dailyNotePathFor(this.currentDate) && !this.holdsPinnedMemo(path)) return;
         this.requestRefresh();
-      });
+      }));
     }
   }
 
@@ -468,43 +463,12 @@ export class WrotView extends ItemView {
   /** Both pin lists as one, for the checks that treat a pin as a pin. */
   private allPinEntries(): PinEntry[] {
     const { pins, scheduledPins } = this.plugin.settings;
-    return [...(pins ?? []), ...(scheduledPins ?? [])];
+    return [...pins, ...scheduledPins];
   }
 
   private markOwnWrite(): void {
     this.ignoreNextModify = true;
     this.ownWriteAt = Date.now();
-  }
-
-  // One sync can raise several change signals in a row; they redraw once.
-  private requestRefresh(): void {
-    if (this.refreshTimer !== null) window.clearTimeout(this.refreshTimer);
-    this.refreshTimer = window.setTimeout(() => {
-      this.refreshTimer = null;
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
-      this.refresh();
-    }, REFRESH_COALESCE_MS);
-  }
-
-  private unregisterFileWatcher(): void {
-    if (this.refreshTimer !== null) window.clearTimeout(this.refreshTimer);
-    this.refreshTimer = null;
-    if (this.fileChangeRef) {
-      this.app.vault.offref(this.fileChangeRef);
-      this.fileChangeRef = null;
-    }
-    if (this.fileDeleteRef) {
-      this.app.vault.offref(this.fileDeleteRef);
-      this.fileDeleteRef = null;
-    }
-    if (this.fileCreateRef) {
-      this.app.vault.offref(this.fileCreateRef);
-      this.fileCreateRef = null;
-    }
-    if (this.fileRawRef) {
-      this.app.vault.offref(this.fileRawRef);
-      this.fileRawRef = null;
-    }
   }
 
   /**
@@ -531,15 +495,6 @@ export class WrotView extends ItemView {
 
   focusInput(): void {
     this.composer?.focus();
-  }
-
-  private scheduleDraftSave(): void {
-    if (this.draftTimer !== null) window.clearTimeout(this.draftTimer);
-    this.draftTimer = window.setTimeout(() => {
-      this.draftTimer = null;
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
-      this.persistDraft();
-    }, DRAFT_IDLE_MS);
   }
 
   // While editing, the composer holds the post and the real draft sits in savedDraft.
@@ -1194,13 +1149,7 @@ export class WrotView extends ItemView {
           });
         }
         menu.addItem((item) => {
-          item.setTitle(t("view.formatMenu.settings")).setIcon("settings").onClick(() => {
-            const settingApi = (this.app as { setting?: { open?: () => void; openTabById?: (id: string) => void } }).setting;
-            if (settingApi?.open && settingApi?.openTabById) {
-              settingApi.open();
-              settingApi.openTabById("wrot");
-            }
-          });
+          item.setTitle(t("view.formatMenu.settings")).setIcon("settings").onClick(() => this.plugin.openSettings());
         });
       }, -4, true);
     });
@@ -1597,7 +1546,7 @@ export class WrotView extends ItemView {
   private applyEditModeClasses(): void {
     const editing = this.editingMemo;
     const targetClass = editing
-      ? `wrot-block-id-wr-${editing.time.replace(/[-:.TZ+]/g, "").slice(0, 17)}`
+      ? `wrot-block-id-wr-${blockTimeOf(editing.time)}`
       : null;
     this.contentEl.querySelectorAll<HTMLElement>(".wrot-card").forEach((card) => {
       const isTarget = targetClass !== null && card.classList.contains(targetClass);
@@ -1611,14 +1560,11 @@ export class WrotView extends ItemView {
   // accent carries it as inline CSS vars while highlighted; without them the
   // stylesheet defaults fall back to the theme accent.
   private setEditingAccentVars(card: HTMLElement, editing: boolean): void {
-    const ruleClass = Array.from(card.classList).find((c) => /^wrot-tag-rule-\d+$/.test(c));
+    const ruleClass = ruleClassOf(card);
     const accent = editing && ruleClass ? this.plugin.getRuleAccentColor(ruleClass) : null;
     if (accent) {
-      const r = parseInt(accent.slice(1, 3), 16);
-      const g = parseInt(accent.slice(3, 5), 16);
-      const b = parseInt(accent.slice(5, 7), 16);
-      card.style.setProperty("--wrot-editing-ring-color", `rgba(${r}, ${g}, ${b}, 0.45)`);
-      card.style.setProperty("--wrot-editing-tint-color", `rgba(${r}, ${g}, ${b}, 0.07)`);
+      card.style.setProperty("--wrot-editing-ring-color", hexRgba(accent, 0.45));
+      card.style.setProperty("--wrot-editing-tint-color", hexRgba(accent, 0.07));
       card.style.setProperty("--wrot-editing-accent", accent);
     } else {
       card.style.removeProperty("--wrot-editing-ring-color");
@@ -1760,7 +1706,7 @@ export class WrotView extends ItemView {
       if (this.armedSchedule) {
         settings.scheduledPins = [
           { timestamp: postedTime, file: file.path, from: this.armedSchedule },
-          ...(settings.scheduledPins ?? []),
+          ...settings.scheduledPins,
         ];
         await this.plugin.savePins();
         this.setArmedSchedule(null);
@@ -1812,7 +1758,7 @@ export class WrotView extends ItemView {
       const { pins, scheduledPins } = this.plugin.settings;
       const arrived: ScheduledPinEntry[] = [];
       const notYet: ScheduledPinEntry[] = [];
-      for (const entry of scheduledPins ?? []) {
+      for (const entry of scheduledPins) {
         if (this.isScheduleDue(entry)) arrived.push(entry);
         else notYet.push(entry);
       }
@@ -1832,7 +1778,7 @@ export class WrotView extends ItemView {
       if (stale.size > 0) {
         const settings = this.plugin.settings;
         settings.pins = settings.pins.filter((p) => !stale.has(p));
-        settings.scheduledPins = (settings.scheduledPins ?? []).filter((p) => !stale.has(p));
+        settings.scheduledPins = settings.scheduledPins.filter((p) => !stale.has(p));
         await this.plugin.savePins();
         this.setArmedSchedule(this.armedSchedule);
       }
@@ -1989,7 +1935,7 @@ export class WrotView extends ItemView {
 
   /** The scheduled pin on this memo, whether its day has come or not. */
   private findScheduledPin(memo: Memo, filePath: string): ScheduledPinEntry | undefined {
-    return (this.plugin.settings.scheduledPins ?? []).find((p) => matchesPin(p, memo, filePath));
+    return this.plugin.settings.scheduledPins.find((p) => matchesPin(p, memo, filePath));
   }
 
   /**
@@ -1998,7 +1944,7 @@ export class WrotView extends ItemView {
    * post it was armed for cannot find the allowance gone by the time it is written.
    */
   private scheduledClaimCount(): number {
-    return (this.plugin.settings.scheduledPins?.length ?? 0) + (this.armedSchedule ? 1 : 0);
+    return this.plugin.settings.scheduledPins.length + (this.armedSchedule ? 1 : 0);
   }
 
   /** Whether a scheduled pin's day has arrived. Compared by day, never by clock time. */
@@ -2015,7 +1961,7 @@ export class WrotView extends ItemView {
     ]);
     if (stale.size === 0) return false;
     settings.pins = settings.pins.filter((p) => !stale.has(p));
-    settings.scheduledPins = (settings.scheduledPins ?? []).filter((p) => !stale.has(p));
+    settings.scheduledPins = settings.scheduledPins.filter((p) => !stale.has(p));
     await this.plugin.savePins();
     return true;
   }
@@ -2040,7 +1986,7 @@ export class WrotView extends ItemView {
     if (this.isPinned(memo, filePath) || this.findScheduledPin(memo, filePath)) return;
     settings.scheduledPins = [
       { timestamp: memo.time, file: filePath, from },
-      ...(settings.scheduledPins ?? []),
+      ...settings.scheduledPins,
     ];
     await this.plugin.savePins();
     await this.refresh();
@@ -2050,9 +1996,9 @@ export class WrotView extends ItemView {
   // pin, and taking it down is the same gesture as unpinning one placed by hand.
   private async removePin(memo: Memo, filePath: string): Promise<void> {
     const settings = this.plugin.settings;
-    const before = settings.pins.length + (settings.scheduledPins?.length ?? 0);
+    const before = settings.pins.length + settings.scheduledPins.length;
     settings.pins = settings.pins.filter((p) => !matchesPin(p, memo, filePath));
-    settings.scheduledPins = (settings.scheduledPins ?? []).filter(
+    settings.scheduledPins = settings.scheduledPins.filter(
       (p) => !matchesPin(p, memo, filePath)
     );
     if (settings.pins.length + settings.scheduledPins.length !== before) {
@@ -2101,9 +2047,9 @@ export class WrotView extends ItemView {
           // cannot repaint a quote of the memo we just removed.
           invalidateMemoCache(file.path);
           const settings = this.plugin.settings;
-          const before = settings.pins.length + (settings.scheduledPins?.length ?? 0);
+          const before = settings.pins.length + settings.scheduledPins.length;
           settings.pins = settings.pins.filter((p) => !matchesPin(p, memo, file.path));
-          settings.scheduledPins = (settings.scheduledPins ?? []).filter(
+          settings.scheduledPins = settings.scheduledPins.filter(
             (p) => !matchesPin(p, memo, file.path)
           );
           if (settings.pins.length + settings.scheduledPins.length !== before) {
@@ -2311,7 +2257,7 @@ export class WrotView extends ItemView {
   private applySchedulingClasses(): void {
     const time = this.schedulingTime;
     const targetClass = time
-      ? `wrot-block-id-wr-${time.replace(/[-:.TZ+]/g, "").slice(0, 17)}`
+      ? `wrot-block-id-wr-${blockTimeOf(time)}`
       : null;
     this.contentEl.querySelectorAll<HTMLElement>(".wrot-card").forEach((card) => {
       const isTarget = targetClass !== null && card.classList.contains(targetClass);
@@ -2333,16 +2279,12 @@ export class WrotView extends ItemView {
       : this.listContainer;
     const card = host.createDiv({ cls: "wrot-card" });
     if (options.pinned) card.classList.add("wrot-card-pinned");
-    const T = memo.time.replace(/[-:.TZ+]/g, "").slice(0, 17);
-    card.classList.add(`wrot-block-id-wr-${T}`);
+    card.classList.add(`wrot-block-id-wr-${blockTimeOf(memo.time)}`);
     // State-driven so the classes survive any full re-render during an edit.
     if (this.isEditingTarget(memo)) card.classList.add("wrot-card-editing");
     else if (this.editingMemo) card.classList.add("wrot-card-menu-locked");
-    const rule = this.plugin.findTagColorRule(memo.tags);
-    if (rule) {
-      const idx = this.plugin.settings.tagColorRules.indexOf(rule);
-      if (idx >= 0) card.classList.add(`wrot-tag-rule-${idx}`);
-    }
+    const ruleClass = this.plugin.ruleClassFor(memo.tags);
+    if (ruleClass) card.classList.add(ruleClass);
     // After the rule class: the accent vars are resolved from it.
     if (this.isEditingTarget(memo)) this.setEditingAccentVars(card, true);
 
@@ -2397,20 +2339,6 @@ export class WrotView extends ItemView {
           if (lang) codeEl.addClass(`language-${lang}`);
           codeEl.textContent = code;
         });
-      },
-      renderMathBlock: (tex, blockEl) => {
-        try {
-          // MathJax loads lazily (see utils/mathjax.ts): fall back until loaded, then
-          // only the fallback elements get swapped in place.
-          if (!isMathJaxReady()) throw new Error("MathJax not loaded yet");
-          const rendered = renderMath(tex, true);
-          blockEl.appendChild(rendered);
-          void finishRenderMath();
-        } catch {
-          blockEl.classList.add("wrot-math-fallback");
-          blockEl.textContent = tex;
-          requestMathJax();
-        }
       },
     });
 
@@ -2652,8 +2580,7 @@ export class WrotView extends ItemView {
   }
 
   private async insertQuoteToForm(memo: Memo, srcFilePath: string): Promise<void> {
-    const T = memo.time.replace(/[-:.TZ+]/g, "").slice(0, 17);
-    const blockId = `wr-${T}`;
+    const blockId = `wr-${blockTimeOf(memo.time)}`;
     const srcFile = this.app.vault.getAbstractFileByPath(srcFilePath);
     if (!(srcFile instanceof TFile)) return;
     this.markOwnWrite();

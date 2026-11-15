@@ -1,8 +1,8 @@
 import { EditorView, WidgetType } from "@codemirror/view";
 import type { App } from "obsidian";
-import { MarkdownView, editorInfoField, loadPrism, renderMath, finishRenderMath } from "obsidian";
+import { MarkdownView, editorInfoField, loadPrism } from "obsidian";
 import type WrotPlugin from "../main";
-import { isMathJaxReady, requestMathJax } from "../utils/mathjax";
+import { isMathJaxReady, renderMathInto } from "../utils/mathjax";
 import {
   renderImagePreview,
   renderOGPCard,
@@ -237,17 +237,7 @@ export class MathWidget extends WidgetType {
   toDOM(): HTMLElement {
     const span = createSpan();
     span.className = "wrot-math";
-    try {
-      // Branch explicitly instead of relying on renderMath's behavior when MathJax is missing.
-      if (!this.hadMathJax) throw new Error("MathJax not loaded yet");
-      const rendered = renderMath(this.tex, false);
-      span.appendChild(rendered);
-      void finishRenderMath();
-    } catch {
-      span.classList.add("wrot-math-fallback");
-      span.textContent = `$${this.tex}$`;
-      requestMathJax();
-    }
+    renderMathInto(span, this.tex, false, `$${this.tex}$`, this.hadMathJax);
     return span;
   }
   eq(other: MathWidget): boolean { return this.tex === other.tex && this.hadMathJax === other.hadMathJax; }
@@ -293,17 +283,7 @@ export class MathBlockWidget extends WidgetType {
     const container = createDiv();
     container.className = "wrot-math-display wrot-lp-mathblock wrot-codeblock-line";
     if (this.ruleClass) container.classList.add(this.ruleClass);
-    try {
-      // Branch explicitly instead of relying on renderMath's behavior when MathJax is missing.
-      if (!this.hadMathJax) throw new Error("MathJax not loaded yet");
-      const rendered = renderMath(this.tex, true);
-      container.appendChild(rendered);
-      void finishRenderMath();
-    } catch {
-      container.classList.add("wrot-math-fallback");
-      container.textContent = this.tex;
-      requestMathJax();
-    }
+    renderMathInto(container, this.tex, true, this.tex, this.hadMathJax);
     return container;
   }
   eq(other: MathBlockWidget): boolean {

@@ -16,8 +16,9 @@ import { registerWrotPostProcessor } from "./postProcessor";
 import { createWrEditorExtension, tagRulesChanged, vaultFilesChanged } from "./editorExtension";
 import { OGPCache } from "./utils/ogpCache";
 import { GraphTagInjector } from "./utils/graphTags";
+import { reapplyQuoteCardRules } from "./utils/quoteCard";
 import { mergeRecentTags } from "./utils/tagSuggest";
-import { ATTACHMENT_EXT_RE, matchTags, tagPattern } from "./utils/patterns";
+import { ATTACHMENT_EXT_RE, matchTags, normalizeTag, stripRuleClasses, tagPattern } from "./utils/patterns";
 import { blendColor, codeLightness, darkenColor, readDiagramTheme, readThemeHighlightColors, validHex } from "./utils/color";
 import { boostSelectors, WrStyleSheet } from "./styles/styleInjector";
 import { buildPaletteCss } from "./styles/paletteCss";
@@ -83,11 +84,15 @@ export default class WrotPlugin extends Plugin {
       this.activateView();
     });
 
-    this.addCommand({
-      id: "open",
-      name: "Open",
-      callback: () => this.activateView(),
-    });
+    const placements = [
+      ["left", "open-left-sidebar", "command.openLeft"],
+      ["right", "open-right-sidebar", "command.openRight"],
+      ["main", "open-main-area", "command.openMain"],
+    ] as const;
+    for (const [placement, id, key] of placements) {
+      this.addCommand({ id, name: t(key), callback: () => this.openAt(placement) });
+    }
+    this.addCommand({ id: "open-settings", name: t("command.openSettings"), callback: () => this.openSettings() });
 
     registerWrotPostProcessor(this);
 
@@ -287,10 +292,10 @@ export default class WrotPlugin extends Plugin {
     const rules = this.settings.tagColorRules;
     if (!rules || rules.length === 0 || !memoTags || memoTags.length === 0) return null;
     for (const raw of memoTags) {
-      const tag = raw.replace(/^#/, "").toLowerCase().trim();
+      const tag = normalizeTag(raw);
       if (!tag) continue;
       for (const rule of rules) {
-        const ruleTag = rule.tag.replace(/^#/, "").toLowerCase().trim();
+        const ruleTag = normalizeTag(rule.tag);
         if (!ruleTag) continue;
         if (ruleTag === tag) return rule;
       }
@@ -311,26 +316,26 @@ export default class WrotPlugin extends Plugin {
     const flagged = new Set<string>();
     for (const rule of rules) {
       if (!hasFlag(rule)) continue;
-      const ruleTag = rule.tag.replace(/^#/, "").toLowerCase().trim();
+      const ruleTag = normalizeTag(rule.tag);
       if (ruleTag) flagged.add(ruleTag);
     }
     if (flagged.size === 0) return false;
 
     return memoTags.some((raw) => {
-      const tag = raw.replace(/^#/, "").toLowerCase().trim();
+      const tag = normalizeTag(raw);
       return tag !== "" && flagged.has(tag);
     });
   }
 
-  getTagRuleClassForContent(content: string): string | null {
-    if (!this.settings.tagColorRulesEnabled) return null;
-    const tags = content.match(tagPattern());
-    if (!tags) return null;
+  /** The wrot-tag-rule-<n> class for the first rule these tags match, if any. */
+  ruleClassFor(tags: string[]): string | null {
     const rule = this.findTagColorRule(tags);
-    if (!rule) return null;
-    const idx = this.settings.tagColorRules.indexOf(rule);
-    if (idx < 0) return null;
-    return `wrot-tag-rule-${idx}`;
+    const idx = rule ? this.settings.tagColorRules.indexOf(rule) : -1;
+    return idx < 0 ? null : `wrot-tag-rule-${idx}`;
+  }
+
+  getTagRuleClassForContent(content: string): string | null {
+    return this.ruleClassFor(content.match(tagPattern()) ?? []);
   }
 
   getRuleAccentColor(ruleClass: string): string | null {
@@ -397,12 +402,7 @@ export default class WrotPlugin extends Plugin {
     // window would otherwise never reach the notes the user is looking at.
     const docs = this.styleDocs();
     for (const doc of docs) {
-      doc.querySelectorAll<HTMLElement>(sweepSelector).forEach((el) => {
-        const existing = Array.from(el.classList);
-        for (const cls of existing) {
-          if (/^wrot-tag-rule-\d+$/.test(cls)) el.classList.remove(cls);
-        }
-      });
+      doc.querySelectorAll<HTMLElement>(sweepSelector).forEach(stripRuleClasses);
     }
 
     if (!this.settings.tagColorRulesEnabled) return;
@@ -429,12 +429,8 @@ export default class WrotPlugin extends Plugin {
 
       const rawText = code.getAttribute("data-wrot-original") || code.textContent || "";
       const blockTags = matchTags(rawText);
-      const rule = this.findTagColorRule(blockTags);
-      if (!rule) return;
-      const idx = this.settings.tagColorRules.indexOf(rule);
-      if (idx < 0) return;
-
-      const cls = `wrot-tag-rule-${idx}`;
+      const cls = this.ruleClassFor(blockTags);
+      if (!cls) return;
       for (const t of targets) t.classList.add(cls);
     });
   }
@@ -442,6 +438,7 @@ export default class WrotPlugin extends Plugin {
   refreshAllWrDecorations(): void {
     this.refreshViews();
     this.refreshReadingViews();
+    reapplyQuoteCardRules(this.styleDocs(), (content) => this.getTagRuleClassForContent(content));
     this.app.workspace.iterateAllLeaves((leaf) => {
       const view = leaf.view;
       if (!(view instanceof MarkdownView)) return;
@@ -493,6 +490,25 @@ export default class WrotPlugin extends Plugin {
       doc.body.classList.remove("wrot-font-follow", "wrot-submit-gradient");
       doc.body.removeAttribute("data-wrot-gradient");
     }
+  }
+
+  /** Opens Obsidian's settings on Wrot's tab. `app.setting` is internal, so it is probed first. */
+  openSettings(): void {
+    const settingApi = (this.app as { setting?: { open?: () => void; openTabById?: (id: string) => void } }).setting;
+    if (settingApi?.open && settingApi?.openTabById) {
+      settingApi.open();
+      settingApi.openTabById(this.manifest.id);
+    }
+  }
+
+  /** Opens the timeline at `placement`, which also becomes the placement setting. */
+  private async openAt(placement: WrotSettings["viewPlacement"]): Promise<void> {
+    if (this.settings.viewPlacement !== placement) {
+      this.settings.viewPlacement = placement;
+      await this.saveSettings();
+      await this.relocateView();
+    }
+    await this.activateView();
   }
 
   async activateView(): Promise<void> {
