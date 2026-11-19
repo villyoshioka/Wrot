@@ -11,7 +11,7 @@ import {
 } from "obsidian";
 import type WrotPlugin from "./main";
 import { t, defaultTimestampFormat, defaultHeaderDateFormat } from "./i18n";
-import { blendColor, toHex } from "./utils/color";
+import { blendColor, readThemeColor } from "./utils/color";
 import { HEX_COLOR_RE } from "./utils/patterns";
 import { dailyNoteTemplateFile } from "./utils/dailyNote";
 import { listTemplateHeadings } from "./utils/postHeading";
@@ -177,17 +177,28 @@ export interface WrotSettings {
   // Locale at last save, used to detect an Obsidian language change on startup.
   // When absent (pre-existing users), loadSettings adopts the current locale without resetting.
   lastLocale?: string;
+  paletteFollowsTheme?: boolean;
 }
+
+export type PaletteKey = "bgColorLight" | "textColorLight" | "bgColorDark" | "textColorDark";
+
+export const FIXED_PALETTE: Record<PaletteKey, string> = {
+  bgColorLight: "#efefef",
+  bgColorDark: "#303030",
+  textColorLight: "#454545",
+  textColorDark: "#dcddde",
+};
 
 export const DEFAULT_SETTINGS: WrotSettings = {
   viewPlacement: "right",
   openOnStartup: false,
   headerDateFormat: "YYYY年MM月DD日",
   timestampFormat: "YYYY/MM/DD HH:mm:ss",
-  bgColorLight: "#efefef",
-  bgColorDark: "#303030",
-  textColorLight: "#454545",
-  textColorDark: "#dcddde",
+  // Empty follows the theme (see WrotPlugin.paletteColor).
+  bgColorLight: "",
+  bgColorDark: "",
+  textColorLight: "",
+  textColorDark: "",
   submitLabel: "投稿",
   submitIcon: "send",
   updateLabel: "更新",
@@ -402,46 +413,31 @@ export class WrotSettingTab extends PluginSettingTab {
   }
 
   private defaultRuleBg(): string {
-    return this.isDarkTheme() ? this.plugin.settings.bgColorDark : this.plugin.settings.bgColorLight;
+    return this.plugin.paletteColor(this.isDarkTheme() ? "bgColorDark" : "bgColorLight");
   }
 
   private defaultRuleText(): string {
-    return this.isDarkTheme()
-      ? this.plugin.settings.textColorDark
-      : this.plugin.settings.textColorLight;
+    return this.plugin.paletteColor(this.isDarkTheme() ? "textColorDark" : "textColorLight");
   }
 
   // A rule still carrying the light-theme default under a dark theme is treated as unset,
   // so a fresh rule starts from the colour the user actually sees.
   private resolveRuleBg(value: string): string {
-    const isLightDefault = value === DEFAULT_SETTINGS.bgColorLight;
+    const isLightDefault = value === FIXED_PALETTE.bgColorLight;
     return HEX_COLOR_RE.test(value) && !(this.isDarkTheme() && isLightDefault)
       ? value
       : this.defaultRuleBg();
   }
 
   private resolveRuleText(value: string): string {
-    const isLightDefault = value === DEFAULT_SETTINGS.textColorLight;
+    const isLightDefault = value === FIXED_PALETTE.textColorLight;
     return HEX_COLOR_RE.test(value) && !(this.isDarkTheme() && isLightDefault)
       ? value
       : this.defaultRuleText();
   }
 
   private defaultAccent(): string {
-    const raw = getComputedStyle(activeDocument.body).getPropertyValue("--text-accent").trim();
-    if (HEX_COLOR_RE.test(raw)) return raw;
-    // The theme may express the accent in any colour syntax; let the engine resolve it.
-    const probe = createDiv();
-    probe.setCssProps({ color: raw || "var(--text-accent)" });
-    probe.hide();
-    activeDocument.body.appendChild(probe);
-    const resolved = getComputedStyle(probe).color;
-    activeDocument.body.removeChild(probe);
-    const m = resolved.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/);
-    if (m) {
-      return `#${toHex(+m[1])}${toHex(+m[2])}${toHex(+m[3])}`;
-    }
-    return this.defaultRuleText();
+    return readThemeColor(activeDocument, "--text-accent") ?? this.defaultRuleText();
   }
 
   private defaultSub(rule: TagColorRule): string {
@@ -521,7 +517,7 @@ export class WrotSettingTab extends PluginSettingTab {
             btn.setIcon("reset").onClick(async () => {
               if (options.onReset) await options.onReset();
               else await options.write(options.resetValue());
-              picker.setValue(options.resetValue());
+              picker.setValue(options.read());
             })
           );
       },
@@ -593,20 +589,18 @@ export class WrotSettingTab extends PluginSettingTab {
   }
 
   // The four theme colours behave identically apart from which setting they write to.
-  private themeColorRow(
-    key: "bgColorLight" | "textColorLight" | "bgColorDark" | "textColorDark"
-  ): SettingDefinition {
+  private themeColorRow(key: PaletteKey): SettingDefinition {
     const settings = this.plugin.settings;
     return this.colorWithReset({
       name: t(`settings.item.${key}.name`),
       desc: t(`settings.item.${key}.desc`),
-      read: () => settings[key],
+      read: () => this.plugin.paletteColor(key),
       write: async (value) => {
         settings[key] = value;
         await this.plugin.saveSettings();
         this.plugin.applyBgColor();
       },
-      resetValue: () => DEFAULT_SETTINGS[key],
+      resetValue: () => "",
     });
   }
 
@@ -996,8 +990,8 @@ export class WrotSettingTab extends PluginSettingTab {
     const newIndex = this.plugin.settings.tagColorRules.length;
     this.plugin.settings.tagColorRules.push({
       tag: "",
-      bgColor: DEFAULT_SETTINGS.bgColorLight,
-      textColor: DEFAULT_SETTINGS.textColorLight,
+      bgColor: this.defaultRuleBg(),
+      textColor: this.defaultRuleText(),
     });
     // Only the new rule is left editable, so the settled ones stay protected.
     this.unlockedRules.clear();

@@ -3,6 +3,8 @@ import { VIEW_TYPE_WROT } from "./constants";
 import {
   WrotSettings,
   DEFAULT_SETTINGS,
+  FIXED_PALETTE,
+  PaletteKey,
   WrotSettingTab,
   TagColorRule,
   PinEntry,
@@ -19,7 +21,7 @@ import { GraphTagInjector } from "./utils/graphTags";
 import { reapplyQuoteCardRules } from "./utils/quoteCard";
 import { mergeRecentTags } from "./utils/tagSuggest";
 import { ATTACHMENT_EXT_RE, matchTags, normalizeTag, stripRuleClasses, tagPattern } from "./utils/patterns";
-import { blendColor, codeLightness, darkenColor, readDiagramTheme, readThemeHighlightColors, validHex } from "./utils/color";
+import { blendColor, codeLightness, darkenColor, readDiagramTheme, readThemeColor, readThemeHighlightColors, validHex } from "./utils/color";
 import { boostSelectors, WrStyleSheet } from "./styles/styleInjector";
 import { buildPaletteCss } from "./styles/paletteCss";
 import { buildTagRuleCss } from "./styles/tagRuleCss";
@@ -263,16 +265,26 @@ export default class WrotPlugin extends Plugin {
     }
   }
 
+  // Only the active mode's theme values are readable; the other mode falls back to FIXED_PALETTE.
+  paletteColor(key: PaletteKey): string {
+    const picked = validHex(this.settings[key], "");
+    if (picked) return picked;
+    const isDark = activeDocument.body.classList.contains("theme-dark");
+    const text = key.endsWith("Dark") === isDark ? readThemeColor(activeDocument, "--text-normal") : null;
+    if (!text) return FIXED_PALETTE[key];
+    if (key.startsWith("text")) return text;
+    // The card sits a step off the pane it is placed in, toward the text, so it never melts into it.
+    const pane = readThemeColor(
+      activeDocument,
+      this.settings.viewPlacement === "main" ? "--background-primary" : "--background-secondary"
+    );
+    return pane ? blendColor(pane, text, 0.07) : FIXED_PALETTE[key];
+  }
+
   applyBgColor(): void {
     const isDark = activeDocument.body.classList.contains("theme-dark");
-    const bgColor = validHex(
-      isDark ? this.settings.bgColorDark : this.settings.bgColorLight,
-      isDark ? DEFAULT_SETTINGS.bgColorDark : DEFAULT_SETTINGS.bgColorLight
-    );
-    const textColor = validHex(
-      isDark ? this.settings.textColorDark : this.settings.textColorLight,
-      isDark ? DEFAULT_SETTINGS.textColorDark : DEFAULT_SETTINGS.textColorLight
-    );
+    const bgColor = this.paletteColor(isDark ? "bgColorDark" : "bgColorLight");
+    const textColor = this.paletteColor(isDark ? "textColorDark" : "textColorLight");
     const css = buildPaletteCss({
       bgColor,
       hoverColor: darkenColor(bgColor, 10),
@@ -549,6 +561,7 @@ export default class WrotPlugin extends Plugin {
    * new leaf is opened and made active without focus first, and only then the old ones go.
    */
   async relocateView(): Promise<void> {
+    this.applyBgColor();
     const { workspace } = this.app;
     const old = workspace.getLeavesOfType(VIEW_TYPE_WROT);
     if (old.length === 0) return;
@@ -693,6 +706,15 @@ export default class WrotPlugin extends Plugin {
     // Presence of viewPlacement (a day-one settings key) tells the two apart.
     if (!("calendarDayShape" in raw)) {
       this.settings.calendarDayShape = ("viewPlacement" in raw) ? "circle" : "rounded";
+      dirty = true;
+    }
+
+    // Once only, so a later deliberate pick of an old default colour survives.
+    if (!("paletteFollowsTheme" in raw)) {
+      for (const key of Object.keys(FIXED_PALETTE) as PaletteKey[]) {
+        if (this.settings[key].toLowerCase() === FIXED_PALETTE[key]) this.settings[key] = "";
+      }
+      this.settings.paletteFollowsTheme = true;
       dirty = true;
     }
 

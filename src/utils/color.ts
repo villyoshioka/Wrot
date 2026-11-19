@@ -171,26 +171,31 @@ const DEFAULT_HIGHLIGHT_THEME: Record<"light" | "dark", Record<string, string>> 
   dark: { red: "#fb464c", orange: "#e9973f", yellow: "#e0de71", green: "#44cf6e", blue: "#027aff", purple: "#a882ff" },
 };
 
+let parseCtx: CanvasRenderingContext2D | null | undefined;
+
+/** A body CSS variable as opaque hex, or null where it does not resolve to one. */
+export function readThemeColor(doc: Document, name: string): string | null {
+  const raw = doc.defaultView?.getComputedStyle(doc.body).getPropertyValue(name).trim();
+  parseCtx ??= createEl("canvas").getContext("2d");
+  if (!raw || !parseCtx) return null;
+  // A value the canvas rejects leaves the previous color, so two starting colors expose it.
+  parseCtx.fillStyle = "#000000";
+  parseCtx.fillStyle = raw;
+  const parsed = String(parseCtx.fillStyle);
+  parseCtx.fillStyle = "#ffffff";
+  parseCtx.fillStyle = raw;
+  return parsed === String(parseCtx.fillStyle) && HEX_COLOR_RE.test(parsed) ? parsed : null;
+}
+
 /**
  * The theme's colour variables (--color-red and the rest) as hex, falling back to Obsidian's
- * defaults for any that do not resolve to an opaque sRGB colour. A canvas turns whatever form
- * the theme wrote them in into hex without touching the document.
+ * defaults for any that do not resolve to an opaque sRGB colour.
  */
 export function readThemeHighlightColors(doc: Document, dark: boolean): Record<string, string> {
   const defaults = DEFAULT_HIGHLIGHT_THEME[dark ? "dark" : "light"];
-  const style = doc.defaultView?.getComputedStyle(doc.body);
-  const ctx = createEl("canvas").getContext("2d");
   const out: Record<string, string> = {};
   for (const [name, fallback] of Object.entries(defaults)) {
-    const raw = style?.getPropertyValue(`--color-${name}`).trim() ?? "";
-    let hex = fallback;
-    if (raw && ctx) {
-      ctx.fillStyle = fallback;
-      ctx.fillStyle = raw;
-      const parsed = String(ctx.fillStyle);
-      if (HEX_COLOR_RE.test(parsed)) hex = parsed;
-    }
-    out[name] = hex;
+    out[name] = readThemeColor(doc, `--color-${name}`) ?? fallback;
   }
   return out;
 }
@@ -207,19 +212,7 @@ export interface DiagramTheme {
  * which leaves them to the engine.
  */
 export function readDiagramTheme(doc: Document): DiagramTheme | null {
-  const style = doc.defaultView?.getComputedStyle(doc.body);
-  const ctx = createEl("canvas").getContext("2d");
-  if (!style || !ctx) return null;
-  const read = (name: string): string | null => {
-    const raw = style.getPropertyValue(name).trim();
-    // A value the canvas rejects leaves the previous color, so two starting colors expose it.
-    ctx.fillStyle = "#000000";
-    ctx.fillStyle = raw;
-    const parsed = String(ctx.fillStyle);
-    ctx.fillStyle = "#ffffff";
-    ctx.fillStyle = raw;
-    return parsed === String(ctx.fillStyle) && HEX_COLOR_RE.test(parsed) ? parsed : null;
-  };
+  const read = (name: string): string | null => readThemeColor(doc, name);
   const series = [1, 2, 3, 4, 5, 6, 7, 8].map((i) => read(`--mermaid-color-${i}`));
   const accent = read("--mermaid-accent");
   const critical = read("--mermaid-critical");

@@ -54,7 +54,7 @@ You can attach screenshots and photos directly into your post.
 
 ### A Few Things to Note
 
-- **Attachment limit**: You can attach up to **1 image** per note.
+- **Attachment limit**: You can attach up to **1 image** per post.
 - **Supported file types**:
   - Image Button: `PNG`, `JPEG`, and `GIF`
   - Paste / Drag-and-Drop: `PNG`, `JPEG`, `GIF`, as well as `WebP`, `SVG`, and `BMP`

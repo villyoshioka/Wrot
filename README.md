@@ -17,7 +17,7 @@ Write + Jot = **Wrot**. It brings effortless micro-journaling to Obsidian, combi
 
 Think of it as your own private social feed. You get the quick, low-friction feel of posting online, but with zero algorithm, zero audience, and zero pressure. Dump random thoughts, quick updates, or fleeting ideas as they happen.
 
-Because every post drops straight into your daily notes, Wrot works hand-in-hand with Obsidian’s native search, backlinks, and review workflows without breaking a sweat.
+Because every post drops straight into your daily notes, Wrot works hand-in-hand with Obsidian’s native search and backlinks without breaking a sweat.
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/villyoshioka/Wrot/main/docs/images/posting-mobile.gif" alt="Posting from the Wrot timeline on iPhone" width="280">
@@ -29,9 +29,9 @@ Because every post drops straight into your daily notes, Wrot works hand-in-hand
 ## What you can do
 
 - **A social-style timeline paired with a rich editor**  
-  Browse your entries in a clean, chronological feed. The editor hides Markdown syntax so bold text and lists look finished as you write ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/posting-form-v3.md)). A customizable toolbar puts formatting, lists, quotes, and links within easy reach ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/toolbar.md)).
-- **Keep important notes pinned**  
-  Keep key notes or active tasks stuck to the top of your feed. You can even schedule a note to pin itself automatically on a future date ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/pinning.md)).
+  The editor hides Markdown syntax so bold text and lists look finished as you write ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/posting-form-v3.md)). A customizable toolbar puts formatting, lists, quotes, and links within easy reach ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/toolbar.md)).
+- **Keep important posts pinned**  
+  Keep key posts or active tasks stuck to the top of your feed. You can even schedule a post to pin itself automatically on a future date ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/pinning.md)).
 - **Built right into Obsidian's tag system**  
   Tags in your posts act just like standard tags across your vault. They pop up in Graph View, show up in search, and open in Obsidian's global search with a click ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/tag-integration.md)).
 - **Tag autocomplete**  
@@ -45,7 +45,7 @@ Because every post drops straight into your daily notes, Wrot works hand-in-hand
 - **Hassle-free image attachments**  
   Paste images straight from your clipboard, drop them onto the screen, or pick files using the attachment button. Check thumbnail previews before hitting post.
 - **Customizable look and feel**  
-  Tweak the UI to fit your aesthetic with separate light/dark mode color schemes, custom post button labels, and custom icons.
+  Colors follow Obsidian's own look unless you pick your own, with separate light/dark mode color schemes, custom post button labels, and custom icons.
 
 ---
 
@@ -92,7 +92,7 @@ Wrot supports **11 languages across 12 locales**. It automatically follows your 
 
 1. **Install Wrot** through the Community Plugins tab or manually.
 2. **Open your timeline** by clicking the ribbon icon, or from the Command Palette with "Open in left sidebar", "Open in right sidebar", or "Open in main area".
-3. **Start logging** by typing a note and pressing the post button or hitting `Ctrl / Cmd + Enter`.
+3. **Start logging** by writing a post and pressing the post button or hitting `Ctrl / Cmd + Enter`.
 
 ### Installation
 
@@ -119,7 +119,7 @@ Wrot gives you fine-grained control over how your feed looks and behaves.
 - **Panel location**: Dock your timeline in the left sidebar, right sidebar, or main editor area.
 - **Color themes**: Customize light and dark mode colors independently.
 - **Tag rules**: Color-code specific tags for quick visual filtering.
-- **Pinning**: Limit pinned items (1, 3, or 5 notes) and keep pinned notes sticky at the top when scrolling.
+- **Pinning**: Limit pinned items (1, 3, or 5 posts) and keep pinned posts sticky at the top when scrolling.
 - **Button setup**: Customize post and update labels/icons, or hide the delete button from the post menu.
 - **Timestamp format**: Adjust how dates and times display (e.g., `YYYY/MM/DD HH:mm:ss`).
 - **Link previews**: Turn OGP link preview cards on or off.

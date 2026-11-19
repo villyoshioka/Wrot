@@ -14,7 +14,7 @@ const ja = {
   "command.openMain": "メインエリアで開く",
   "command.openSettings": "設定を開く",
   "settings.item.openOnStartup.name": "起動時に開く",
-  "settings.item.openOnStartup.desc": "Obsidianの起動時に、Wrotを手前に表示します。",
+  "settings.item.openOnStartup.desc": "Obsidianの起動時にWrotを手前に表示します。",
 
   "settings.item.followFontSize.name": "Obsidianのフォントサイズに追従",
   "settings.item.followFontSize.desc":
@@ -27,21 +27,21 @@ const ja = {
   "settings.item.timestampFormat.desc": "YYYY, MM, DD, HH, mm, ss が使用できます。",
 
   "settings.item.bgColorLight.name": "背景色（ライトモード）",
-  "settings.item.bgColorLight.desc": "投稿と投稿フォームの背景に使用されます。",
+  "settings.item.bgColorLight.desc": "投稿と投稿フォームの背景に使います。",
   "settings.item.textColorLight.name": "文字色（ライトモード）",
-  "settings.item.textColorLight.desc": "テキストとアイコンに使用されます。",
+  "settings.item.textColorLight.desc": "テキストとアイコンに使います。",
   "settings.item.bgColorDark.name": "背景色（ダークモード）",
-  "settings.item.bgColorDark.desc": "投稿と投稿フォームの背景に使用されます。",
+  "settings.item.bgColorDark.desc": "投稿と投稿フォームの背景に使います。",
   "settings.item.textColorDark.name": "文字色（ダークモード）",
-  "settings.item.textColorDark.desc": "テキストとアイコンに使用されます。",
+  "settings.item.textColorDark.desc": "テキストとアイコンに使います。",
 
   "settings.item.submitLabel.name": "投稿ボタンのテキスト",
-  "settings.item.submitLabel.desc": "アイコンを設定している場合は、空欄にするとアイコンだけが表示されます。",
+  "settings.item.submitLabel.desc": "アイコンを設定している場合、空欄にするとアイコンだけになります。",
   "settings.item.submitIcon.name": "投稿ボタンのアイコン",
   // {linkOpen}/{linkClose} placeholders mark the part wrapped in an anchor element.
   "settings.item.submitIcon.desc": "アイコン名は {linkOpen}こちら{linkClose} からコピーできます。\n空欄にすると非表示になります。",
   "settings.item.updateLabel.name": "更新ボタンのテキスト",
-  "settings.item.updateLabel.desc": "投稿の編集時に表示されます。\nアイコンを設定している場合は、空欄にするとアイコンだけが表示されます。",
+  "settings.item.updateLabel.desc": "投稿の編集時に表示されます。\nアイコンを設定している場合、空欄にするとアイコンだけになります。",
   "settings.item.updateIcon.name": "更新ボタンのアイコン",
   "settings.item.updateIcon.desc": "アイコン名は {linkOpen}こちら{linkClose} からコピーできます。\n空欄にすると投稿ボタンと同じアイコンになります。",
   "settings.item.submitGradient.name": "投稿フォームのグラデーション",
@@ -56,10 +56,10 @@ const ja = {
 
   "settings.item.tagSuggest.name": "タグ入力補完",
   "settings.item.tagSuggest.desc":
-    "# に続けて入力した際に候補を表示します。\nオフにすると、これまでに記録した候補もリセットされます。",
+    "# に続けて入力すると候補を表示します。\nオフにすると、これまでに記録した候補もリセットされます。",
 
   "settings.item.pinLimit.name": "ピン留めの上限",
-  "settings.item.pinLimit.desc": "「ピン留め」と「あとでピン留め」の上限は個別に設定されます。\n上限を下げた場合、超過した分のピン留めは解除されます。",
+  "settings.item.pinLimit.desc": "「ピン留め」と「あとでピン留め」のそれぞれに適用されます。\n上限を下げると、超えた分のピン留めは解除されます。",
   "settings.option.pinLimit.1": "1 件",
   "settings.option.pinLimit.3": "3 件",
   "settings.option.pinLimit.5": "5 件",
@@ -70,24 +70,24 @@ const ja = {
   "settings.item.ogp.desc": "URLからプレビュー情報を取得して表示します。\nオフにすると、外部と通信しません。",
 
   "settings.item.checkStrikethrough.name": "チェック済みの取り消し線",
-  "settings.item.checkStrikethrough.desc": "オフにすると、チェック後も文字に取り消し線が引かれません。",
+  "settings.item.checkStrikethrough.desc": "オフにすると、チェックしても取り消し線を引きません。",
 
   "settings.item.calendarDayShape.name": "日付ボタンの形",
-  "settings.item.calendarDayShape.desc": "カレンダーに表示される日付の形状を指定します。",
+  "settings.item.calendarDayShape.desc": "カレンダーの日付の形を指定します。",
   "settings.option.calendarDayShape.circle": "円形",
   "settings.option.calendarDayShape.rounded": "角丸",
   "settings.option.calendarDayShape.square": "正方形",
 
   "settings.item.showCalendarButton.name":"カレンダーボタンを表示",
   "settings.item.showCalendarButton.desc":
-    "オンにすると、日付ナビゲーションから任意の日付にジャンプできるようになります。",
+    "オンにすると、日付ナビゲーションから任意の日付にジャンプできます。",
 
   "settings.item.showPostDelete.name": "削除ボタンを表示",
   "settings.item.showPostDelete.desc":
     "オンにすると、投稿メニューに削除ボタンを追加します。\n削除した投稿は復元できません。添付画像は削除されません。",
 
   "settings.item.useCustomAttachmentFolder.name": "画像の保存先を指定",
-  "settings.item.useCustomAttachmentFolder.desc": "Wrotから追加した画像のみが対象になります。",
+  "settings.item.useCustomAttachmentFolder.desc": "Wrotから追加した画像だけが対象です。",
 
   "settings.item.attachmentFolder.name": "保存先フォルダ",
   "settings.item.attachmentFolder.desc": "指定したフォルダが存在しない場合は、Obsidianの標準設定に従います。",
@@ -100,28 +100,28 @@ const ja = {
 
   "settings.item.tagColorRules.name": "タグ別ルールを使う",
   "settings.item.tagColorRules.desc":
-    "タグごとに投稿の色や本体統合の扱いなどを変更できます。\n色は本文中で先に登場したタグのものが優先されます。",
+    "タグごとに投稿の色や本体統合の扱いなどを変更できます。\n色は本文で先に出てきたタグのルールを使います。",
 
   "settings.tagRule.label": "ルール {n}",
   "settings.tagRule.tag.name": "タグ",
   "settings.tagRule.tag.desc": "# は省略できます。",
   "settings.tagRule.tag.placeholder": "タグ名",
   "settings.tagRule.bg.name": "背景色",
-  "settings.tagRule.bg.desc": "投稿の背景色に適用されます。",
+  "settings.tagRule.bg.desc": "投稿の背景に使います。",
   "settings.tagRule.fg.name": "文字色",
-  "settings.tagRule.fg.desc": "タグ、リンク、URLにはアクセントカラーの設定が適用されます。",
+  "settings.tagRule.fg.desc": "タグ、リンク、URLにはアクセントカラーを使います。",
   "settings.tagRule.accent.name": "アクセントカラー",
-  "settings.tagRule.accent.desc": "未設定の場合はテーマのアクセントカラーが適用されます。",
+  "settings.tagRule.accent.desc": "未設定の場合はテーマのアクセントカラーを使います。",
   "settings.tagRule.sub.name": "サブカラー",
-  "settings.tagRule.sub.desc": "タイムスタンプやリストマーカーなどの色を指定します。\n未設定の場合は自動で算出されます。",
+  "settings.tagRule.sub.desc": "タイムスタンプやリストマーカーなどの色を指定します。\n未設定の場合は自動で設定します。",
   "settings.tagRule.scope.buttons.name": "タイムスタンプ・メニュー・ピンにサブカラーを適用",
-  "settings.tagRule.scope.buttons.desc": "オフにすると、自動で設定された色が適用されます。",
+  "settings.tagRule.scope.buttons.desc": "オフにすると、自動で設定した色になります。",
   "settings.tagRule.scope.quote.name": "引用にサブカラーを適用",
-  "settings.tagRule.scope.quote.desc": "オフにすると、自動で設定された色が適用されます。",
+  "settings.tagRule.scope.quote.desc": "オフにすると、自動で設定した色になります。",
   "settings.tagRule.scope.list.name": "リスト・チェックボックスにサブカラーを適用",
-  "settings.tagRule.scope.list.desc": "オフにすると、自動で設定された色が適用されます。",
+  "settings.tagRule.scope.list.desc": "オフにすると、自動で設定した色になります。",
   "settings.tagRule.scope.ogp.name": "OGPカードにサブカラーを適用",
-  "settings.tagRule.scope.ogp.desc": "オフにすると、自動で設定された色が適用されます。",
+  "settings.tagRule.scope.ogp.desc": "オフにすると、自動で設定した色になります。",
   "settings.item.graphTags.name": "タグの本体統合",
   "settings.item.graphTags.desc": "グラフビューやタグ検索（tag:）の対象に含めます。\nオフにすると、Wrot内でのみ有効なタグになります。",
   "settings.tagRule.noIntegration.name": "本体統合から除外",
@@ -131,7 +131,7 @@ const ja = {
     "オンにすると、このタグを含む投稿がタイムラインに表示されなくなります。\nデイリーノートには保存されます。",
   "settings.tagRule.protectDelete.name": "削除ボタンを無効にする",
   "settings.tagRule.protectDelete.desc":
-    "オンにすると、このタグを含む投稿の削除を禁止します。",
+    "オンにすると、このタグを含む投稿は削除できなくなります。",
   "settings.tagRule.button.add": "ルールを追加",
   "settings.item.toolbarEdit.name": "ツールバーの編集ボタンを表示",
   "settings.item.toolbarEdit.desc": "オンにすると、ツールバーのメニューに編集ボタンを追加します。",

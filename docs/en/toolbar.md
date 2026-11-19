@@ -48,8 +48,8 @@ Action buttons will appear at the end of the toolbar while you're editing.
 > **Good to Know While Editing**
 >
 > - **Don't forget to save**: Your changes won't take effect until you click **✓**.
-> - **Form locking**: While editing the toolbar, typing, posting, and managing past notes are temporarily paused (you can still switch between dates).
-> - **Finish note edits first**: You can't edit the toolbar while actively editing a note inline. Wrap up or cancel your note edit first.
+> - **Form locking**: While editing the toolbar, typing, posting, and managing past posts are temporarily paused (you can still switch between dates).
+> - **Finish post edits first**: You can't edit the toolbar while actively editing a post inline. Wrap up or cancel your post edit first.
 
 ---
 
@@ -66,7 +66,7 @@ Almost everything works the exact same way as it does on the toolbar, with just 
 - **Bold and Italic**:
   On the toolbar, you can press these without selecting text and style as you type. Inside the menu, they **only work when you have text selected** and stay greyed out otherwise.
 - **Pin later**:
-  If a note is pinned for a specific date, a checkmark appears next to this item (just like the button lighting up on the toolbar).
+  If a post is pinned for a specific date, a checkmark appears next to this item (just like the button lighting up on the toolbar).
 
 ---
 
@@ -88,7 +88,7 @@ To prevent accidental clicks, the first click asks for confirmation, and the sec
 ### I can't see "Edit toolbar" in the menu
 
 - Double-check that **"Show toolbar edit button"** is turned on under "Advanced".
-- Make sure you aren't currently editing an existing note.
+- Make sure you aren't currently editing an existing post.
 
 ### Buttons aren't moving when I try to drag them
 

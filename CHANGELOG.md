@@ -1,5 +1,22 @@
 # Release Notes
 
+## 3.5.0 - 2026-11-19
+
+### Important Changes
+
+- If you were using the default background and text colors, they now follow Obsidian's own colors. To keep a fixed color, pick one in the settings.
+
+### Updates
+
+- Updated dependencies
+
+### Improvements
+
+- Background and text colors that are not set now follow Obsidian's own colors
+- Improved translations
+
+---
+
 ## 3.4.0 - 2026-11-15
 
 ### Important Changes

@@ -1,8 +1,8 @@
 # How Tag Integration Works
 
-Since Obsidian treats Wrot memos as code blocks, any tags you write inside them won't show up in core features like the graph view or tag search.
+Since Obsidian treats Wrot posts as code blocks, any tags you write inside them won't show up in core features like the graph view or tag search.
 
-**Tag Integration** fixes this. It makes tags inside your Wrot memos act just like normal tags in your notes, so they show up in the graph view and turn up in tag searches without a hitch.
+**Tag Integration** fixes this. It makes tags inside your Wrot posts act just like normal tags in your notes, so they show up in the graph view and turn up in tag searches without a hitch.
 
 Here is a quick overview of what this feature does, how it works, and how to exclude certain tags if you want to keep things clean.
 
@@ -12,17 +12,17 @@ Here is a quick overview of what this feature does, how it works, and how to exc
 
 ### 1. Spot tags in the Graph View
 
-Tags in your memos appear as nodes in the graph view, connected by lines to the daily notes where you wrote them.
+Tags in your posts appear as nodes in the graph view, connected by lines to the daily notes where you wrote them.
 
 - They blend seamlessly into the same node as matching tags from your regular notes or properties.
 - Note that you'll need to turn on **Tags** in your graph view display settings, as Obsidian keeps this toggled off by default.
 
-### 2. Find memos with Tag Search
+### 2. Find posts with Tag Search
 
-Searching for `tag:#tag-name` brings up any notes that contain memos with that tag.
+Searching for `tag:#tag-name` brings up any notes that contain posts with that tag.
 
-- Search results highlight exactly where the tag sits inside your memo.
-- Clicking a tag node in the graph view pulls up your memos the exact same way.
+- Search results highlight exactly where the tag sits inside your post.
+- Clicking a tag node in the graph view pulls up your posts the exact same way.
 - Tapping or clicking a tag on your timeline or inside a note instantly opens this tag search.
 
 ### 3. See tags in the Tag List and Search Autocomplete
@@ -58,7 +58,7 @@ If you have quick scratchpad tags that you'd rather not clutter your main graph 
 
 Excluding a tag only hides the copies written inside Wrot from your graph and search results. Tags with the same name in your regular notes or properties won't be touched at all.
 
-Unlike color rules, tag order doesn't matter here. Any tag set to be excluded will be left out individually across the board.
+Unlike how colors are chosen, tag order doesn't matter here. Any tag set to be excluded will be left out individually across the board.
 
 ---
 
@@ -77,7 +77,7 @@ When you run this feature for the first time, Wrot generates a small helper file
 - **Check exclusion rules:** Double-check whether that tag has been set to Exclude from tag integration.
 - **Just started up?** If you just launched Obsidian or enabled the plugin, give it a moment to finish setting things up.
 
-### Memos aren't showing up in Tag Search
+### Posts aren't showing up in Tag Search
 
 - **Check your search format:** Make sure you're using the `tag:#tag-name` search syntax. Standard text search works differently.
 - **Check exclusion rules:** Tags excluded in your tag rules won't show up in search results either.

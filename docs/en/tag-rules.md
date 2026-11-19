@@ -1,9 +1,9 @@
 # How to Use Tag Rules
 
-Wrot lets you automatically change the color of your notes based on their tags.
+Wrot lets you automatically change the color of your posts based on their tags.
 By giving each tag a distinct look—like a muted tone for `#journal` or a vibrant shade for `#work`—you can organize and scan your timeline at a glance.
 
-You can also use tags to keep specific notes off your timeline altogether.
+You can also use tags to keep specific posts off your timeline altogether.
 This guide walks you through setting up tag rules and explains how each option works under the hood.
 
 ---
@@ -13,7 +13,7 @@ This guide walks you through setting up tag rules and explains how each option w
 To get started, head to your settings and toggle on **"Use tag rules"** under the "Tag Rules" section.
 
 - Enabling this creates a default rule that is unlocked and ready to customize right away.
-- Disabling it reverts your notes to your standard Obsidian theme colors, though your saved rules will remain intact.
+- Disabling it reverts your posts to your standard Obsidian theme colors, though your saved rules will remain intact.
 
 ---
 
@@ -25,11 +25,11 @@ Every rule pairs a **target tag** with a **custom color scheme**.
 
 Enter the name of the tag you want to style. You can type it with or without the leading `#`.
 
-- For example, entering `journal` will target any note containing `#journal`.
+- For example, entering `journal` will target any post containing `#journal`.
 
 ### Set Your Base Colors (Background and Text)
 
-Pick a **background color** for the note card and a **text color** for the body text.
+Pick a **background color** for the post card and a **text color** for the body text.
 Since these form the foundation of your rule, both are required.
 
 ---
@@ -51,7 +51,7 @@ This highlights elements like tags, internal links, and external URLs.
 This styles secondary elements around your text, such as timestamps, list markers, and blockquotes.
 
 - **When left blank**: Automatically generates a middle-ground shade between your background and text colors.
-- **When set**: Applies your color to specific elements. You can toggle individual parts on or off using the checkboxes below; unchecked items fall back to the auto-generated color.
+- **When set**: Applies your color to specific elements. You can turn individual parts on or off using the toggles below; parts turned off fall back to the auto-generated color.
 
 | Application Scope    | Target Elements                       |
 | :------------------- | :------------------------------------ |
@@ -62,14 +62,14 @@ This styles secondary elements around your text, such as timestamps, list marker
 
 ---
 
-## 4. Hide Notes from the Timeline
+## 4. Hide Posts from the Timeline
 
-Toggle on **"Hide from timeline"** within a rule to keep matching notes off your main Wrot timeline.
+Toggle on **"Hide from timeline"** within a rule to keep matching posts off your main Wrot timeline.
 
 - **Your data stays intact**: The underlying daily note files are untouched, so you can still read them anytime by opening the file directly.
-- **Live Preview and Reading View**: Notes display normally when opened. They are only hidden from the Wrot timeline view.
-- **Pinned notes stay put**: Pinned notes are an exception and will remain anchored to the top of your timeline even if they have a hidden tag.
-- **How multiple tags work**: Colors follow the first tag in the note text, but **the hide rule checks every tag**. If a note includes even one hidden tag, it stays off your timeline.
+- **Live Preview and Reading View**: Posts display normally when you open the note. They are only hidden from the Wrot timeline view.
+- **Pinned posts stay put**: Pinned posts are an exception and will remain anchored to the top of your timeline even if they have a hidden tag.
+- **How multiple tags work**: Colors follow the first tag in the post text, but **the hide rule checks every tag**. If a post includes even one hidden tag, it stays off your timeline.
 
 ---
 
@@ -92,10 +92,10 @@ Click "Add rule" or hit the `+` icon in the header to create extra rules.
 
 ### Tag Priority and Overlaps
 
-When a note has multiple tags matching different rules, **the tag that appears first in the note text takes priority**.
+When a post has multiple tags matching different rules, **the tag that appears first in the post text takes priority**.
 
-- Example: If a note contains `#work #important` in that order and both have rules, Wrot applies the `#work` rule.
-- Only one color scheme applies per note, so subsequent tags are ignored for styling.
+- Example: If a post contains `#work #important` in that order and both have rules, Wrot applies the `#work` rule.
+- Only one color scheme applies per post, so subsequent tags are ignored for styling.
 
 ---
 
@@ -107,7 +107,7 @@ Your tag rules apply across all note views in Obsidian:
 - **Live Preview** (Edit mode)
 - **Reading View** (Read mode)
 
-Your notes maintain a consistent look no matter which view mode you use.
+Your posts maintain a consistent look no matter which view mode you use.
 
 ---
 
@@ -116,13 +116,13 @@ Your notes maintain a consistent look no matter which view mode you use.
 ### Colors Aren't Updating
 
 - Make sure "Use tag rules" is toggled on.
-- Double-check that the tag name in your rule matches the tag in your note.
-- If your note has multiple tags, check whether a rule is assigned to the tag that appears first.
+- Double-check that the tag name in your rule matches the tag in your post.
+- If your post has multiple tags, check whether a rule is assigned to the tag that appears first.
 
-### A Note Disappeared from the Timeline
+### A Post Disappeared from the Timeline
 
-- Check if "Hide from timeline" is enabled on any tag attached to the missing note.
-- Don't worry, the note itself isn't deleted. You can find it by opening the daily note file directly.
+- Check if "Hide from timeline" is enabled on any tag attached to the missing post.
+- Don't worry, the post itself isn't deleted. You can find it by opening the daily note file directly.
 
 ### Can't Edit Rule Settings
 
@@ -130,4 +130,4 @@ Your notes maintain a consistent look no matter which view mode you use.
 
 ### Secondary Color Isn't Applying to Some Parts
 
-- Head to the "Application Scope" section under sub-color and make sure the checkboxes for those elements are selected.
+- Head to the "Application Scope" section under sub-color and make sure the toggles for those elements are turned on.

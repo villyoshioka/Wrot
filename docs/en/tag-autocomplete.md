@@ -32,7 +32,7 @@ Here’s a quick walkthrough on how to use it, how it works behind the scenes, a
 
 ## How Wrot Remembers Your Tags
 
-- **What gets saved**: Only tags from notes you've posted through the Wrot timeline.
+- **What gets saved**: Only tags from posts you've made through the Wrot timeline.
 - **When it updates**: Every time you share a post, any tags in it are automatically saved to your history (duplicates are skipped).
 - **History limit**: Wrot keeps up to 200 of your most recently used tags. Once you cross that limit, older ones make way for the new ones.
 - **Where it’s stored**: Saved safely in a file called `tags.json` inside your plugin folder, totally separate from your settings.
