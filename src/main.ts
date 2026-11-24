@@ -272,7 +272,7 @@ export default class WrotPlugin extends Plugin {
     const isDark = activeDocument.body.classList.contains("theme-dark");
     const text = key.endsWith("Dark") === isDark ? readThemeColor(activeDocument, "--text-normal") : null;
     if (!text) return FIXED_PALETTE[key];
-    if (key.startsWith("text")) return text;
+    if (key.startsWith("text")) return darkenColor(text, 12);
     // The card sits a step off the pane it is placed in, toward the text, so it never melts into it.
     const pane = readThemeColor(
       activeDocument,

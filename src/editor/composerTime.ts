@@ -65,42 +65,71 @@ const nowItem: SuggestItem = {
   },
 };
 
-export const timeSource: SuggestSource = {
-  detect(value: string, pos: number): ActiveToken | null {
-    const shortcut = lineShortcut(value, pos);
-    const typed = shortcut && /^(?:\d{0,4}|n|no|now)$/i.exec(shortcut.text);
-    return typed ? { start: shortcut.start, end: pos, query: typed[0] } : null;
-  },
-  items: (query) => (/^n/i.test(query) ? [nowItem] : timeItems(query)),
-};
+export interface DateShortcuts {
+  pick: (from: number, to: number) => void;
+  today: () => string;
+}
 
-/**
- * Replaces an @now opening the caret's line with the time at this moment. `typed` is the
- * space that triggered it, written first in a step of its own, so one undo brings back
- * "@now " as typed rather than the time.
- */
-export function expandNow(view: EditorView, typed = ""): boolean {
-  const sel = view.state.selection.main;
-  if (!sel.empty || view.composing) return false;
-  const shortcut = lineShortcut(view.state.doc.toString(), sel.head);
-  if (!shortcut || shortcut.text.toLowerCase() !== "now") return false;
-  if (typed) {
-    view.dispatch({ changes: { from: sel.head, insert: typed }, selection: { anchor: sel.head + typed.length }, userEvent: "input.type" });
-  }
-  const now = new Date();
-  const { insert } = clock(now.getHours(), now.getMinutes())!;
+// Not through expandShortcut: iOS can still report a composition right after the list's insert.
+export function timeSource(dates: DateShortcuts): SuggestSource {
+  const dateItem: SuggestItem = { label: "@date", insert: "@date ", after: dates.pick };
+  const todayItem: SuggestItem = {
+    label: "@today",
+    get insert(): string {
+      return `${dates.today()} `;
+    },
+  };
+  return {
+    detect(value: string, pos: number): ActiveToken | null {
+      const shortcut = lineShortcut(value, pos);
+      const typed = shortcut && /^(?:\d{0,4}|n|no|now|d|da|dat|date|t|to|tod|toda|today)$/i.exec(shortcut.text);
+      return typed ? { start: shortcut.start, end: pos, query: typed[0] } : null;
+    },
+    items: (query) =>
+      /^n/i.test(query) ? [nowItem]
+      : /^d/i.test(query) ? [dateItem]
+      : /^t/i.test(query) ? [todayItem]
+      : timeItems(query),
+  };
+}
+
+export function completeShortcut(view: EditorView, from: number, to: number, insert: string): void {
   view.dispatch({
-    changes: { from: shortcut.start, to: sel.head + typed.length, insert },
-    selection: { anchor: shortcut.start + insert.length },
+    changes: { from, to, insert },
+    selection: { anchor: from + insert.length },
     userEvent: "input.complete",
     annotations: isolateHistory.of("full"),
   });
+}
+
+/**
+ * Replaces an @now or @today opening the caret's line with the time or date at this moment,
+ * or hands an @date to `dates.pick`. `typed` is the space that triggered it, written first in
+ * a step of its own, so one undo brings back "@now " as typed rather than the time.
+ */
+export function expandShortcut(view: EditorView, dates: DateShortcuts, typed = ""): boolean {
+  const sel = view.state.selection.main;
+  if (!sel.empty || view.composing) return false;
+  const shortcut = lineShortcut(view.state.doc.toString(), sel.head);
+  const word = shortcut?.text.toLowerCase();
+  if (!shortcut || (word !== "now" && word !== "date" && word !== "today")) return false;
+  if (typed) {
+    view.dispatch({ changes: { from: sel.head, insert: typed }, selection: { anchor: sel.head + typed.length }, userEvent: "input.type" });
+  }
+  const to = sel.head + typed.length;
+  if (word === "date") {
+    dates.pick(shortcut.start, to);
+    return true;
+  }
+  const now = new Date();
+  const insert = word === "today" ? `${dates.today()} ` : clock(now.getHours(), now.getMinutes())!.insert;
+  completeShortcut(view, shortcut.start, to, insert);
   return true;
 }
 
-export const nowOnSpace = EditorView.inputHandler.of((view, from, to, text) => {
+export const shortcutOnSpace = (dates: DateShortcuts) => EditorView.inputHandler.of((view, from, to, text) => {
   if ((text !== " " && text !== "　") || from !== to || from !== view.state.selection.main.head) return false;
-  return expandNow(view, text);
+  return expandShortcut(view, dates, text);
 });
 
 /**

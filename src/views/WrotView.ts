@@ -196,6 +196,9 @@ export class WrotView extends ItemView {
   private calendarPopover: CalendarPopoverHandle | null = null;
   // Separate handle from the date-nav calendar: this one hangs off a card's menu.
   private schedulePopover: CalendarPopoverHandle | null = null;
+  private datePopover: CalendarPopoverHandle | null = null;
+  // False once the @date the open calendar is for has been edited or the caret has left it.
+  private dateTargetHeld: (() => boolean) | null = null;
   private linkPopover: LinkPopoverHandle | null = null;
   // The button the open schedule picker belongs to, so that button can close it again.
   private schedulePickerAnchor: HTMLElement | null = null;
@@ -378,6 +381,7 @@ export class WrotView extends ItemView {
     this.linkPopover?.close(true);
     this.composer?.destroy();
     this.closeCalendarPopover();
+    this.datePopover?.close();
     this.requestRefresh.cancel();
     if (this.toolbarResizeObserver) {
       this.toolbarResizeObserver.disconnect();
@@ -665,6 +669,42 @@ export class WrotView extends ItemView {
     this.calendarPopover = null;
   }
 
+  // Touch rolls drums from a menu, a pointer clicks a calendar, as with the schedule picker.
+  private openDatePicker(from: number, to: number): void {
+    this.datePopover?.close();
+    const typed = this.composer.value.slice(from, to);
+    const pick = (date: ReturnType<typeof moment>) => {
+      if (this.composer.value.slice(from, to) !== typed) return;
+      rebuildFocus(this.composer, this.contentEl);
+      this.composer.completeShortcut(from, to, `${date.format(this.plugin.settings.headerDateFormat)} `);
+    };
+    if (Platform.isMobile) {
+      const trigger = this.contentEl.querySelector<HTMLElement>(".wrot-input-area");
+      if (!trigger) return;
+      this.openDrumMenu(trigger, {
+        earliest: moment("1900-01-01", "YYYY-MM-DD"),
+        start: moment().startOf("day"),
+        icon: "calendar",
+        onPick: pick,
+      });
+      return;
+    }
+    this.dateTargetHeld = () =>
+      this.composer.value.slice(from, to) === typed &&
+      this.composer.selectionStart === to &&
+      this.composer.selectionEnd === to;
+    this.datePopover = openCalendarPopover({
+      anchor: () => this.composer.coordsAt(from, 1) ?? { left: 0, bottom: 0 },
+      container: this.contentEl,
+      initialDate: moment(),
+      onSelect: pick,
+      onClose: () => {
+        this.datePopover = null;
+        this.dateTargetHeld = null;
+      },
+    });
+  }
+
   // Recomputes the submit button's label/icon/aria-label together so the two settings
   // never combine into a fully blank button: an empty label only renders as icon-only
   // when an icon is actually set, otherwise it falls back to the default label text.
@@ -721,11 +761,16 @@ export class WrotView extends ItemView {
     this.refreshSubmitButton();
     submitBtn.addEventListener("click", () => void this.submitMemo());
 
+    const dates = {
+      pick: (from: number, to: number) => this.openDatePicker(from, to),
+      today: () => moment().format(this.plugin.settings.headerDateFormat),
+    };
     this.composer = new ComposerField(
       inputArea,
       this.plugin.settings.inputPlaceholder,
       this.plugin.settings.checkStrikethrough,
-      () => this.obsidianConfig("autoPairBrackets") !== false
+      () => this.obsidianConfig("autoPairBrackets") !== false,
+      dates
     );
 
     this.suggest = new InlineSuggest({
@@ -733,7 +778,7 @@ export class WrotView extends ItemView {
       container,
       sources: [
         tagSource(() => this.plugin.recentTags, () => this.plugin.settings.tagSuggestEnabled),
-        timeSource,
+        timeSource(dates),
       ],
     });
 
@@ -756,7 +801,7 @@ export class WrotView extends ItemView {
         // Hand-typed syntax converts on the first Enter; the line breaks on the next.
         if (
           continueCodeIndentOnEnter(this.composer) ||
-          this.composer.expandNow() ||
+          this.composer.expandShortcut() ||
           this.composer.commitTypedLine() ||
           continueListOnEnter(this.composer) ||
           continueQuoteOnEnter(this.composer)
@@ -1183,6 +1228,7 @@ export class WrotView extends ItemView {
     // Every caret/selection move, Shift+Arrow included. Runs only while the field is focused.
     this.composer.onSelectionChange(() => {
       if (this.composer.hasFocus) {
+        if (this.dateTargetHeld && !this.dateTargetHeld()) this.datePopover?.close();
         updateActive();
         // Close or reposition the suggest dropdown when the caret moves off its token.
         this.suggest?.refresh();
@@ -2173,10 +2219,28 @@ export class WrotView extends ItemView {
       }
       return;
     }
+    this.openDrumMenu(trigger, {
+      earliest,
+      icon: "clock-fading",
+      onPick: (date) => onPick(date.format("YYYY-MM-DD")),
+      afterClose,
+    });
+  }
+
+  private openDrumMenu(
+    trigger: HTMLElement,
+    opts: {
+      earliest: ReturnType<typeof moment>;
+      start?: ReturnType<typeof moment>;
+      icon: string;
+      onPick: (date: ReturnType<typeof moment>) => void;
+      afterClose?: () => void;
+    }
+  ): void {
     this.openMenu(
       trigger,
       (menu) => {
-        let chosen = earliest.clone();
+        let chosen = (opts.start ?? opts.earliest).clone();
         let confirmItem: MenuItem | null = null;
         const renderChosen = () => {
           confirmItem?.setTitle(chosen.format(this.plugin.settings.headerDateFormat));
@@ -2189,9 +2253,11 @@ export class WrotView extends ItemView {
           // rolling a drum cannot dismiss the menu out from under the finger.
           itemDom.empty();
           itemDom.className = "wrot-menu-drum";
-          itemDom.addEventListener("click", (e) => e.stopPropagation());
+          // Capture: the item's own click listener sits on this same element, past a bubbling stop.
+          itemDom.addEventListener("click", (e) => e.stopPropagation(), { capture: true });
           buildDateDrum(itemDom, {
-            earliest,
+            earliest: opts.earliest,
+            start: opts.start,
             lastYear: WrotView.SCHEDULE_LAST_YEAR,
             onChange: (date) => {
               chosen = date;
@@ -2203,14 +2269,12 @@ export class WrotView extends ItemView {
         menu.addItem((item) => {
           confirmItem = item;
           (item as { dom?: HTMLElement }).dom?.classList.add("wrot-menu-schedule-confirm");
-          item.setIcon("clock-fading").onClick(() => {
-            onPick(chosen.format("YYYY-MM-DD"));
-          });
+          item.setIcon(opts.icon).onClick(() => opts.onPick(chosen));
           renderChosen();
         });
       },
       0,
-      afterClose,
+      opts.afterClose,
       // A tablet rolls the drums like a phone but hangs the menu beside the button like a
       // desktop, so it is the one shape that can be lined up with the form the way the
       // overflow menu is. A phone raises the menu from the bottom edge and has nothing to

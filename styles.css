@@ -153,6 +153,8 @@ body.wrot-font-follow .wrot-nav-btn .svg-icon {
   border-radius: 10px;
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.14);
   user-select: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-header {

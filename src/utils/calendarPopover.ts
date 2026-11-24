@@ -6,8 +6,10 @@ declare const moment: typeof import("moment");
 type Moment = ReturnType<typeof moment>;
 
 interface CalendarPopoverOptions {
-  // Element the popover aligns to (the calendar button).
-  anchor: HTMLElement;
+  // Element the popover's right edge aligns to (the calendar button), or the caret's spot,
+  // which its left edge meets as the suggest list's does, scrolling inside when the room
+  // below cannot hold it.
+  anchor: HTMLElement | (() => { left: number; bottom: number });
   // Element whose right edge the popover's right edge meets, when that is not the anchor's.
   // A button sitting wherever a row of others happens to end is not where the eye expects a
   // panel of this width to stop; the form around it is.
@@ -53,15 +55,19 @@ export function openCalendarPopover(
   const GAP = 4;
   const EDGE = 8; // min margin from container edges
   const positionPopover = () => {
-    const a = anchor.getBoundingClientRect();
+    const a = anchor instanceof HTMLElement ? anchor.getBoundingClientRect() : anchor();
     const c = container.getBoundingClientRect();
     // If wider than the container, shrink the popover itself; cells stretch via CSS grid.
     popover.style.maxWidth = `${c.width - EDGE * 2}px`;
     const w = popover.offsetWidth;
     const top = a.bottom - c.top + GAP;
+    if (!(anchor instanceof HTMLElement)) {
+      popover.style.maxHeight = `${c.bottom - EDGE - a.bottom - GAP}px`;
+    }
     const maxLeft = c.width - w - EDGE;
-    const rightEdge = alignTo ? alignTo.getBoundingClientRect().right : a.right;
-    let left = rightEdge - c.left - w;
+    let left = "right" in a
+      ? (alignTo ? alignTo.getBoundingClientRect().right : a.right) - c.left - w
+      : a.left - c.left;
     if (left > maxLeft) left = maxLeft;
     if (left < EDGE) left = EDGE;
     popover.style.top = `${top}px`;
@@ -103,7 +109,7 @@ export function openCalendarPopover(
   // closing before a day cell's click lands.
   const onOutside = (e: PointerEvent) => {
     const target = e.target as Node | null;
-    if (target && (popover.contains(target) || anchor.contains(target))) {
+    if (target && (popover.contains(target) || (anchor instanceof HTMLElement && anchor.contains(target)))) {
       return;
     }
     close();

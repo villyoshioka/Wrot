@@ -2,7 +2,7 @@ import { Compartment, EditorState, StateEffect, StateField } from "@codemirror/s
 import { Decoration, DecorationSet, EditorView, keymap } from "@codemirror/view";
 import { history, historyKeymap, insertNewline, standardKeymap } from "@codemirror/commands";
 import { autoPairs } from "./composerPairs";
-import { expandNow, nowOnSpace } from "./composerTime";
+import { completeShortcut, expandShortcut, shortcutOnSpace, type DateShortcuts } from "./composerTime";
 import { armEffectOf, armedOpener, checkStrikethrough, commitTypedLine, drawnListMarkerAt, redrawEffect, visualMode } from "./composerVisual";
 
 type Listener = (e: Event) => void;
@@ -51,14 +51,20 @@ export class ComposerField {
   private strikeConf = new Compartment();
   private holder: object | null = null;
 
-  constructor(parent: HTMLElement, placeholderText: string, strikeDone: boolean, autoPair: () => boolean) {
+  constructor(
+    parent: HTMLElement,
+    placeholderText: string,
+    strikeDone: boolean,
+    autoPair: () => boolean,
+    private dates: DateShortcuts
+  ) {
     this.view = new EditorView({
       parent,
       state: EditorState.create({
         extensions: [
           history(),
           autoPairs(autoPair),
-          nowOnSpace,
+          shortcutOnSpace(dates),
           // Plain newline first: the standard binding copies the line's indentation,
           // which a textarea never did. Lists get their marker from the view's handler.
           keymap.of([
@@ -197,9 +203,13 @@ export class ComposerField {
     return commitTypedLine(this.view);
   }
 
-  /** Turns an @now opening the caret's line into the current time; true if there was one. */
-  expandNow(): boolean {
-    return expandNow(this.view);
+  /** Expands an @now, @date or @today opening the caret's line; true if there was one. */
+  expandShortcut(typed = ""): boolean {
+    return expandShortcut(this.view, this.dates, typed);
+  }
+
+  completeShortcut(from: number, to: number, insert: string): void {
+    completeShortcut(this.view, from, to, insert);
   }
 
   /** Rebuilds what visual mode draws, for when something outside the text changed. */

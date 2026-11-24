@@ -3,8 +3,10 @@ declare const moment: typeof import("moment");
 type Moment = ReturnType<typeof moment>;
 
 interface DateDrumOptions {
-  // Earliest day the drums may come to rest on, and the day they start on.
+  // Earliest day the drums may come to rest on.
   earliest: Moment;
+  // Day they start on; earliest when left out.
+  start?: Moment;
   // Last year the year drum reaches.
   lastYear: number;
   // Called with the day at 00:00 whenever the drums come to rest somewhere new.
@@ -29,14 +31,15 @@ const SETTLE_MS = 90;
  */
 export function buildDateDrum(host: HTMLElement, opts: DateDrumOptions): void {
   const { earliest, lastYear, onChange } = opts;
+  const start = opts.start ?? earliest;
 
   const yearValues: number[] = [];
-  for (let y = moment().year(); y <= lastYear; y++) yearValues.push(y);
+  for (let y = Math.min(moment().year(), earliest.year()); y <= lastYear; y++) yearValues.push(y);
   const monthValues = Array.from({ length: 12 }, (_, i) => i);
 
-  let year = earliest.year();
-  let month = earliest.month();
-  let day = earliest.date();
+  let year = start.year();
+  let month = start.month();
+  let day = start.date();
 
   const drums = host.createDiv({ cls: "wrot-drum-row" });
   const yearCol = drums.createDiv({ cls: "wrot-drum-col wrot-drum-col-year" });

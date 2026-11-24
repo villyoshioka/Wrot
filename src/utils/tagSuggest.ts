@@ -54,6 +54,7 @@ export interface ActiveToken {
 export interface SuggestItem {
   label: string;
   insert: string;
+  after?: (from: number, to: number) => void;
 }
 
 export interface SuggestSource {
@@ -352,9 +353,9 @@ export class InlineSuggest {
 
   // Replace the active token with the chosen item; its trailing space keeps typing flowing.
   private confirm(index: number, byPointer = false): void {
-    const insert = this.items[index]?.insert;
+    const item = this.items[index];
     const token = this.token;
-    if (insert === undefined || !token) return;
+    if (!item || !token) return;
     const ta = this.opts.field;
     this.suppressUiUntil = Date.now() + GHOST_CLICK_MS;
     this.close(byPointer);
@@ -369,7 +370,7 @@ export class InlineSuggest {
         if (done) return;
         done = true;
         ta.removeEventListener("compositionend", finish);
-        this.applyInsert(ta, token, insert);
+        this.applyInsert(ta, token, item);
       };
       ta.addEventListener("compositionend", finish);
       ta.blur();
@@ -380,14 +381,15 @@ export class InlineSuggest {
     // A tap on the list, even with the focus kept, leaves iOS no longer drawing the caret or
     // delivering keys to the form (seen on device with the English keyboard), so a tap always
     // rebuilds the input session.
-    this.applyInsert(ta, token, insert, byPointer && Platform.isIosApp);
+    this.applyInsert(ta, token, item, byPointer && Platform.isIosApp);
   }
 
   // Replace the token and put the caret after the insert. Refocus only if focus was
   // lost (blurred by the forced commit) or a tap asked for it: stacking a plain focus() on an
   // already-focused textarea can make iOS lose the keyboard session, so it goes through
   // rebuildFocus.
-  private applyInsert(ta: ComposerField, token: ActiveToken, insert: string, rebuild = false): void {
+  private applyInsert(ta: ComposerField, token: ActiveToken, item: SuggestItem, rebuild = false): void {
+    const insert = item.insert;
     ta.value = ta.value.slice(0, token.start) + insert + ta.value.slice(token.end);
     const caret = token.start + insert.length;
     if (rebuild || !ta.hasFocus) {
@@ -395,6 +397,7 @@ export class InlineSuggest {
     }
     ta.setSelectionRange(caret, caret);
     ta.dispatchEvent(new Event("input"));
+    item.after?.(token.start, caret);
   }
 
   private onOutside = (e: PointerEvent): void => {
@@ -408,7 +411,7 @@ export class InlineSuggest {
 
   // Place the dropdown right under the token's #: left from the # itself, top from the
   // bottom of the token's end, which may sit on a later line if the token wrapped.
-  private position(): void {
+  private position(retry = true): void {
     const { field: ta, container } = this.opts;
     const popover = this.popover;
     const token = this.token;
@@ -416,7 +419,11 @@ export class InlineSuggest {
 
     const startCoords = ta.coordsAt(token.start, 1);
     const endCoords = ta.coordsAt(token.end, -1) ?? startCoords;
-    if (!startCoords || !endCoords) return;
+    // iOS mid-composition can have no coordinates yet; left unplaced, the list sits at the top.
+    if (!startCoords || !endCoords) {
+      if (retry) window.requestAnimationFrame(() => this.position(false));
+      return;
+    }
     const caretLeft = startCoords.left;
     const caretBottom = endCoords.bottom;
 

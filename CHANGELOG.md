@@ -1,5 +1,23 @@
 # Release Notes
 
+## 3.6.0 - 2026-11-24
+
+### Updates
+
+- Updated dependencies
+
+### New Features
+
+- Added picking a date to insert by typing `@date` in the post form
+- Added inserting today's date by typing `@today` in the post form
+
+### Improvements
+
+- Adjusted the default text color
+- Tapping the drums to choose a date for "Pin later" on phones and tablets no longer closes the menu
+
+---
+
 ## 3.5.0 - 2026-11-19
 
 ### Important Changes
