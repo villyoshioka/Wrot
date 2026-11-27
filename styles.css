@@ -21,9 +21,7 @@
   position: relative;
 }
 
-/* Cap width and center when placed in the main area (tab). Only margin-inline
-   is set: vertical margins stay with the parent flex, or mobile main-area
-   content drifts upward. */
+/* Only margin-inline: vertical margins stay with the parent flex, or mobile main-area content drifts upward. */
 .workspace-split.mod-root .workspace-leaf-content[data-type="wrot-view"] .wrot-container {
   max-width: 760px;
   margin-inline: auto;
@@ -142,7 +140,7 @@ body.wrot-font-follow .wrot-nav-btn .svg-icon {
   background: rgba(var(--mono-rgb-100), 0.05);
 }
 
-/* Custom calendar popover. Positioned by JS inside wrot-container so it never overflows the sidebar edge; custom-drawn for cross-platform consistency, colors follow the configured bg/text. */
+/* Positioned by JS inside wrot-container so it never overflows the sidebar edge. */
 .workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-popover {
   position: absolute;
   z-index: 50;
@@ -182,7 +180,6 @@ body.wrot-font-follow .wrot-nav-btn .svg-icon {
   min-height: 0;
 }
 
-/* Match .wrot-date-label: no hover box, only lower opacity while pressed */
 .workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-month-label:hover,
 .workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-month-label:focus,
 .workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-month-label:focus-visible {
@@ -215,7 +212,6 @@ body.wrot-font-follow .wrot-nav-btn .svg-icon {
   background: none;
 }
 
-/* Same hover/pressed convention as the main prev/next day buttons */
 .workspace-leaf-content[data-type="wrot-view"] .wrot-calendar-nav-btn:hover {
   background: rgba(var(--mono-rgb-100), 0.05);
 }
@@ -304,10 +300,7 @@ body.wrot-font-follow .wrot-calendar-nav-btn .svg-icon {
   line-height: 1;
   min-height: 0;
   padding: 0;
-  /* Obsidian gives every button a fixed height; with width: 100% + aspect-ratio the
-     cell width was derived from that height, so two heavy digits overflowed. A definite
-     em width (29px at the 13px default) plus height: auto makes the font size decide
-     and keeps the cell square. max-width lets narrow panes shrink it. */
+  /* Obsidian fixes button height, which aspect-ratio would size the cell from; a definite em width (29px at 13px) with height: auto keeps it square. */
   width: 2.231em;
   height: auto;
   max-width: 100%;
@@ -504,10 +497,7 @@ body .wrot-link-popover-item-folder {
   font-size: var(--wrot-font-text);
 }
 
-/* Invisible focusable input used to rebuild the iOS input session after a
-   forced IME commit (the caret fails to render when refocusing the textarea
-   directly). Must stay editable-looking to the OS so the keyboard stays open;
-   it is created, focused and removed within a single confirm() run. */
+/* Rebuilds the iOS input session after a forced IME commit (refocusing the textarea loses the caret); must look editable or the keyboard closes. */
 .workspace-leaf-content[data-type="wrot-view"] .wrot-focus-bounce {
   position: fixed;
   bottom: 0;
@@ -558,8 +548,7 @@ body .wrot-textarea .cm-scroller {
   overflow: visible;
 }
 
-/* caret-color: CodeMirror's base theme hardcodes black/white; Obsidian's own fields use
-   its caret variable (the accent on mobile), which the textarea used to pick up. */
+/* CodeMirror's base theme hardcodes black/white caret-color; use Obsidian's caret variable like its own fields. */
 body .wrot-textarea .cm-content {
   position: relative;
   padding: 0;
@@ -592,7 +581,6 @@ body .wrot-textarea.wrot-composer-empty .cm-content::before {
   pointer-events: none;
 }
 
-/* Min-width so a wide number grows the slot. */
 body .wrot-textarea .wrot-cv-mark {
   display: inline-block;
   min-width: max(22px, calc(1em + 8px));
@@ -729,10 +717,7 @@ body .wrot-toolbar-btn:not(#x) {
   background: none;
 }
 
-/* Width metrics pinned at ID level in BOTH wrap modes: wrap detection compares
-   button offsetTop, so the modes must agree on widths. If a theme overrides
-   only normal mode, the ResizeObserver re-toggles the class every frame — the
-   "twitching form" seen with Primary / Mado 11 / Kakano. */
+/* Width metrics pinned at ID level in both wrap modes: wrap detection compares offsetTop, so mismatched widths make the ResizeObserver toggle every frame. */
 body .wrot-toolbar-btn:not(#x#y#z) {
   border: none;
   padding: 2px;
@@ -754,9 +739,7 @@ body .wrot-input-toolbar.wrot-toolbar-wrapped .wrot-toolbar-btn:not(#x#y#z) {
   color: var(--text-accent);
 }
 
-/* Press feedback rides on opacity, not colour: the palette stamp sits above the
-   colour rules right here, so a colour swap alone never lands. Hover is skipped
-   on mobile, where it sticks to the last-tapped button after the touch ends. */
+/* Opacity, not colour: the palette stamp outranks colour here; no hover on mobile, where it sticks after a tap. */
 body:not(.is-mobile) .wrot-toolbar-btn:hover {
   opacity: 0.8;
 }
@@ -917,7 +900,6 @@ body .wrot-thumbnail-remove {
   justify-content: center;
 }
 
-/* Only the × responds: the card is a preview and must not navigate. */
 .wrot-pending-quote-container {
   margin: 6px 0 4px;
 }
@@ -954,17 +936,13 @@ body .wrot-submit-btn {
   color: var(--text-muted);
 }
 
-/* Pushed to the left edge by the auto margin against the header's flex-end, and
-   flush with the textarea's edge. Declared at the same ID-level specificity as
-   the shared toolbar metrics, which otherwise zero the margin out. */
+/* Same ID level as the shared toolbar metrics, which would otherwise zero this auto margin. */
 body .wrot-cancel-btn:not(#x#y#z) {
   margin-right: auto;
   padding-left: 0;
   padding-right: 6px;
 }
 
-/* Same size as the toolbar glyphs; only the stroke is nudged, since a bare ×
-   carries fewer strokes and reads thinner at the shared weight. */
 body .wrot-cancel-btn .svg-icon {
   stroke-width: 2.2;
 }
@@ -1088,15 +1066,11 @@ body .wrot-submit-btn.wrot-submit-active {
   flex: 1;
   overflow-y: auto;
   min-height: 0;
-  /* The floor is empty space the schedule picker adds under the last card when it
-     needs somewhere to open into. Zero at rest; its height is measured, so only the
-     value comes from script. */
+  /* Room for the schedule picker under the last card; zero at rest, height set from JS. */
   padding-bottom: calc(4px + var(--wrot-list-floor, 0px));
 }
 
-/* Held still while the schedule picker is open: it is placed against the card's
-   position at the time, so scrolling either way would slide the card out from
-   under it. */
+/* The open schedule picker is placed against the card, so scrolling would slide the card from under it. */
 .wrot-list.wrot-list-held {
   overflow-y: hidden;
 }
@@ -1135,9 +1109,7 @@ body .wrot-card.wrot-card-editing .wrot-menu-btn .svg-icon:not(#x) {
   pointer-events: none;
   background-color: var(--wrot-editing-tint-color, hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.07));
   border-radius: inherit;
-  /* Above the card's own content, but below overlapping siblings like the tag
-     suggest dropdown (z-index: 50) — the card has no z-index of its own, so
-     this pseudo-element stacks against them directly. */
+  /* The card has no z-index, so this stacks directly against siblings; keep it below the tag suggest (z-index: 50). */
   z-index: 1;
 }
 
@@ -1313,7 +1285,6 @@ body ul.wrot-reading-list:not(#x)>li:not(.wrot-check-item)::before {
   vertical-align: 0.28em;
 }
 
-/* Centred in a checkbox-wide box; a wider number spills out both sides of it. */
 body ol.wrot-reading-list:not(#x)>li::before {
   position: static;
   display: inline-flex;
@@ -1341,10 +1312,7 @@ body .wrot-reading-list:not(#x) .wrot-check-item.wrot-has-sublist>input[type="ch
   margin: 1px 0;
 }
 
-/* Nested lists (reading view and timeline).
-   A child list sits inside its parent item, which already carries the 22px marker slot, so
-   each level steps in by that much on its own. Only the gap above and below needs dropping:
-   a nested list is part of the item, not a new block. */
+/* A child list sits inside its parent's 22px marker slot, so each level steps in on its own; only the vertical gap is dropped. */
 li>.wrot-bullet-list,
 li>.wrot-ordered-list,
 li>.wrot-reading-list {
@@ -1356,10 +1324,7 @@ li>.wrot-reading-list {
   list-style: none;
 }
 
-/* Native checkbox metrics. Surveyed themes (Minimal / Things / AnuPpuccin /
-   Catppuccin) only use the priority flag for checkbox colors/borders, never
-   metrics, and their metric rules target task-list classes Wrot's bare
-   inputs don't carry — so the :not(#x) specificity boost is enough here. */
+/* Themes use the priority flag only for checkbox colours, not metrics, so :not(#x) is enough here. */
 /* Obsidian sizes the checked mark (::after) from --checkbox-size. */
 .wrot-bullet-list .wrot-check-item input[type="checkbox"]:not(#x),
 .wrot-reading-list .wrot-check-item input[type="checkbox"]:not(#x) {
@@ -1380,6 +1345,16 @@ li>.wrot-reading-list {
 .wrot-lp-check input[type="checkbox"]:not(#x):not(:checked),
 body .wrot-textarea .wrot-cv-check:not(#x):not(:checked) {
   border-color: color-mix(in srgb, var(--checkbox-border-color) 55%, transparent);
+}
+
+/* A recurring post's checks outside today's pin are locked; the body text color instead of the accent says so.
+   Not inherited: a checked line's text is muted, and in LP the widget sits inside the muted marker span.
+   Five ids: above the palette stamp (2) and tag-rule CSS (4), which both set the checkbox colour. */
+.wrot-checks-locked .wrot-check-item input[type="checkbox"]:not(#x#y#z#w#v),
+.wrot-lp-check-locked input[type="checkbox"]:not(#x#y#z#w#v) {
+  --checkbox-color: var(--wrot-text-color, var(--text-normal));
+  --checkbox-color-hover: var(--wrot-text-color, var(--text-normal));
+  accent-color: var(--wrot-text-color, var(--text-normal));
 }
 
 /* The mark's layer must cover exactly the inside of the border, or it rounds to device pixels apart from the box and drifts. */
@@ -1445,17 +1420,13 @@ body .wrot-internal-link-highlight:not(#x) {
   display: block;
 }
 
-/* RV: tail images of a normal post. Extra bottom margin balances the space
-   the copy button creates above. RV appends the image directly under
-   pre.language-wr (not .block-language-wr), hence both parent selectors. */
+/* RV appends the image directly under pre.language-wr (not .block-language-wr), hence both parents. */
 pre.language-wr>.wrot-embed-img,
 .block-language-wr>.wrot-embed-img {
   margin-bottom: 24px;
 }
 
-/* Quote-marker posts with an inline image: the wrapper's padding-right shrinks
-   the image's available width so its right edge aligns with the wr block's
-   right padding; the left side keeps the natural cm-line padding. */
+/* padding-right narrows the image so its right edge meets the wr block's right padding. */
 .wrot-lp-inline-img-wrapper {
   display: block;
   box-sizing: border-box;
@@ -1518,17 +1489,13 @@ body code.language-wr span.wrot-inline-code:not(#x) {
   font-size: 1em;
 }
 
-/* LV inline code: CodeMirror emits 1 span (cursor outside) or 3 spans (cursor
-   inside: backtick / content / backtick). Seams in the 3-span case cannot be
-   erased in CSS (semi-transparent backgrounds + subpixel boundaries), so no
-   rounded corners — always a flat square band. */
+/* CodeMirror splits LV inline code into 1 or 3 spans; the seams of translucent spans cannot be hidden, so no rounded corners. */
 body .wrot-inline-code-highlight {
   background: rgba(var(--mono-rgb-100), 0.08);
   border-radius: 0;
   /* Middle span carries the horizontal padding so spans meet padding-to-padding;
      negative-margin overlap would stack translucent backgrounds and darken seams. */
   padding: 1px 4px;
-  /* Align the vertical position and height of the three spans. */
   vertical-align: baseline;
   line-height: inherit;
   box-sizing: border-box;
@@ -1539,9 +1506,7 @@ body .wrot-inline-code-highlight:not(#x) {
   font-family: var(--font-monospace);
 }
 
-/* Cursor-inside state: the end backtick spans are direct children of
-   .cm-hmd-codeblock; zero their inner padding to avoid doubling against the
-   middle span. */
+/* With the cursor inside, backtick spans are direct children of .cm-hmd-codeblock; zero their padding so it does not double. */
 .cm-hmd-codeblock>.wrot-inline-code-highlight:first-child {
   padding-right: 0;
 }
@@ -1626,9 +1591,7 @@ body .wrot-math-highlight:not(#x) {
   text-align: center;
 }
 
-/* Hide raw TeX until MathJax lazy-load swaps in the rendered math. visibility
-   (not display) keeps approximate layout and avoids a double reflow. MathJax
-   is a local app resource, so permanent load failure is not a real case. */
+/* visibility, not display, until MathJax swaps in: keeps layout and avoids a double reflow (MathJax is local, so no failure fallback). */
 .wrot-math-fallback {
   visibility: hidden;
 }
@@ -1638,13 +1601,7 @@ body .wrot-math-highlight:not(#x) {
   margin: 0.5em 0;
 }
 
-/* Token colors take the theme's code color for their hue, at a lightness worked out from the
-   memo's text and background (--wrot-code-l and its muted/faint steps for punctuation and
-   comments, set by the palette or a tag rule), so code stays clear on whatever background
-   Wrot is given. The theme's colors are captured on body: the
-   block below points the code variables back at them, which would otherwise loop. Where
-   relative colors are unsupported the theme's colors apply unchanged, since a failed one
-   would drop to transparent. */
+/* Theme code colours are captured on body because the block below repoints the code variables at them; without relative-colour support they apply unchanged. */
 body {
   --wrot-code-theme-keyword: var(--code-keyword);
   --wrot-code-theme-function: var(--code-function);
@@ -1695,10 +1652,7 @@ body {
   }
 }
 
-/* Code shown raw in the editor (source mode, or live preview with the cursor in the memo):
-   Wrot marks Prism's tokens itself. In live preview they take the same colors as rendered
-   code; source mode drops the memo's colors, so there the theme's code colors apply as they
-   are. One ID so the editor's own code span colors do not win. */
+/* Wrot-marked Prism tokens in raw editor code; one ID so the editor's own code span colours do not win. */
 body .HyperMD-codeblock .token:is(.comment, .prolog, .doctype, .cdata):not(#x) { color: var(--code-comment); }
 body .HyperMD-codeblock .token.punctuation:not(#x) { color: var(--code-punctuation); }
 body .HyperMD-codeblock .token:is(.property, .tag, .boolean, .number, .constant, .symbol, .deleted):not(#x) { color: var(--code-tag); }
@@ -1708,9 +1662,7 @@ body .HyperMD-codeblock .token:is(.atrule, .attr-value, .keyword):not(#x) { colo
 body .HyperMD-codeblock .token:is(.function, .class-name):not(#x) { color: var(--code-function); }
 body .HyperMD-codeblock .token:is(.regex, .important, .variable):not(#x) { color: var(--code-value); }
 
-/* Inherit outer memo background only (so tag-color rules flow through).
-   Text color / token color should follow Obsidian's Prism theme, so we do NOT
-   set `color` on pre/code here. */
+/* Background only, so tag-rule colours flow through; do not set color here, tokens follow the theme's code colours. */
 body .wrot-codeblock-display pre:not(#x),
 body .wrot-codeblock-display pre code:not(#x) {
   background: inherit;
@@ -1804,9 +1756,7 @@ body pre>.wrot-blockquote:not(#x) {
   font-family: var(--font-monospace);
 }
 
-/* Blockquote inside the quote-card body preview: outside .wrot-content /
-   .block-language-wr the padding-left collapses to 0 and LV/RV bar-to-text
-   gaps diverge, so state it explicitly. */
+/* Outside .wrot-content / .block-language-wr padding-left collapses to 0, so it is stated explicitly. */
 body .wrot-quote-card-body .wrot-blockquote {
   padding-left: 10px;
 }
@@ -1824,16 +1774,12 @@ body .block-language-wr .copy-code-button:not(#x#y#z) {
   z-index: 100;
 }
 
-/* RV: transparent button over card content. 3 ID levels — above the injected
-   bg stamps (2) and core's ".markdown-rendered button.copy-code-button:hover",
-   below tag-rule CSS (4) so rule-colored cards still tint the button. */
+/* 3 IDs: above the bg stamps (2) and core's copy-button hover, below tag-rule CSS (4) so rule colours still tint it. */
 body pre.language-wr .copy-code-button:not(#x#y#z) {
   background: transparent;
 }
 
-/* With a tag rule active the card color can land on the button's inner SVG and
-   blot out the icon; keep the SVG transparent. 3 ID levels: above the bg
-   stamps (2), below tag-rule CSS (4). */
+/* Tag-rule card colour can land on the inner SVG and hide the icon; 3 IDs sit between the stamps (2) and tag-rule CSS (4). */
 pre.language-wr .copy-code-button svg:not(#x#y#z),
 pre.language-wr .copy-code-button svg :not(#x#y#z),
 .block-language-wr .copy-code-button svg:not(#x#y#z),
@@ -1845,29 +1791,21 @@ pre.language-wr .copy-code-button svg :not(#x#y#z),
   height: 1em;
 }
 
-/* Separator gap before the format menu button. Same ID level as the toolbar
-   metric rules (one class stronger than their margin: 0) so it survives them
-   in both wrap modes; a mode-independent margin cannot re-trigger the wrap
-   oscillation. */
+/* One class above the toolbar metrics' margin: 0 in both wrap modes, so it cannot re-trigger wrap oscillation. */
 body .wrot-toolbar-btn.wrot-format-btn:not(#x#y#z) {
   margin-left: 8px;
 }
 
-/* That margin sets the overflow button apart from the actions beside it. With every action
-   put away there is nothing to be set apart from, and it would only indent the bar. */
 body .wrot-toolbar-btn.wrot-format-btn:first-child:not(#x#y#z) {
   margin-left: 0;
 }
 
-/* Alone at the start of a wrapped row it lines up with the row above instead of sitting
-   a margin's width inside it. Shifted rather than unmargined, so the width the wrap was
-   measured from does not change under it. */
+/* Shifted rather than unmargined, so the width the wrap was measured from does not change. */
 .wrot-input-toolbar:not(.wrot-toolbar-editing) .wrot-format-btn.wrot-toolbar-row-start {
   transform: translateX(-8px);
 }
 
-/* Nor while arranging: there it stands next to the confirm rather than apart from the
-   actions, and the pair reads as one. Applied in both wrap modes, so widths still agree. */
+/* Applied in both wrap modes so widths still agree. */
 body .wrot-input-toolbar.wrot-toolbar-editing .wrot-toolbar-btn.wrot-format-btn:not(#x#y#z) {
   margin-left: 0;
 }
@@ -1909,10 +1847,7 @@ body .wrot-blockquote-line:not(#x) {
 body .cm-line.wrot-blockquote-line:not(#x) {
   position: relative;
   padding-inline-start: calc(var(--size-4-4) + 18px);
-  /* When a quote starts with a URL, on iOS WebKit the wrapped whitespace left
-     over from the ">" marker CodeMirror hid can act as the line-box ascender
-     and create a full blank line. Avoid this by switching break-spaces to
-     pre-wrap, combined with word-break: break-all so URLs still wrap. */
+  /* iOS WebKit: the hidden ">" whitespace under break-spaces can add a blank line before a leading URL; pre-wrap + break-all avoids it. */
   white-space: pre-wrap;
   word-break: break-all;
 }
@@ -2023,9 +1958,7 @@ body .wrot-lp-marker:not(#x) {
   margin-inline-start: calc(max(22px, calc(1em + 8px)) * 4);
 }
 
-/* Native checkbox metrics — same survey-based reasoning as the timeline
-   checkbox block above (size and checked mark included); :not(#x) outranks themes'
-   non-priority rules. */
+/* Native checkbox metrics; :not(#x) suffices, as in the timeline checkbox block. */
 .wrot-lp-check input[type="checkbox"]:not(#x) {
   --checkbox-size: 1em;
   font-size: inherit;
@@ -2100,9 +2033,7 @@ body .wrot-copy-btn.wrot-copy-done .svg-icon {
   color: var(--text-normal);
 }
 
-/* Same press feedback as the toolbar icons: opacity, since the palette stamp
-   sits above the colour rule above. Hover is skipped on mobile, where it sticks
-   to the last-tapped button after the touch ends. */
+/* Opacity press feedback and no mobile hover, as in the toolbar icons. */
 body:not(.is-mobile) .wrot-menu-btn:hover {
   opacity: 0.8;
 }
@@ -2130,8 +2061,6 @@ body .wrot-menu-btn.wrot-toolbar-active .svg-icon:not(#x) {
   stroke: var(--text-accent);
 }
 
-/* Pin indicator: absolute-positioned at the card's bottom-right on the footer
-   row; rendered only when pinned, so no slot is reserved otherwise. */
 .wrot-pin-indicator {
   position: absolute;
   right: 14px;
@@ -2155,13 +2084,10 @@ body.wrot-font-follow .wrot-pin-indicator .svg-icon {
   height: max(14px, var(--wrot-font-text));
 }
 
-/* Arrived from an "pin later": the same pin, filled in. Lucide draws its icons as
-   outlines, so filling the path is all it takes to tell the two apart. */
 .wrot-pin-indicator-filled .svg-icon {
   fill: currentColor;
 }
 
-/* Date drums inside the schedule menu: the row drops its item look and hosts the columns. */
 .wrot-menu .wrot-menu-drum {
   padding: 2px 6px 6px;
 }
@@ -2172,7 +2098,6 @@ body.wrot-font-follow .wrot-pin-indicator .svg-icon {
   position: relative;
 }
 
-/* The band the rows come to rest in, drawn once behind all three columns. */
 .wrot-drum-row::before {
   content: "";
   position: absolute;
@@ -2251,16 +2176,12 @@ body:not(.is-phone) .wrot-menu .menu-scroll {
   overflow-y: auto;
 }
 
-/* Obsidian keeps the phone sheet's safe-area padding inside .menu-scroll, at the end of the
-   scrolled content: once scaled rows overflow 60vh it is out of sight. Moved to the sheet itself
-   so the band shows whether or not the list scrolls, and is not doubled when it does not. */
+/* Obsidian puts the phone sheet's safe-area padding at the end of .menu-scroll, hidden once rows overflow; moved to the sheet. */
 body.wrot-font-follow.is-phone .wrot-menu {
   --menu-padding: var(--size-4-2) var(--size-4-4) 0;
   padding-bottom: calc(var(--safe-area-inset-bottom) + var(--wrot-font-text) * 0.5);
 }
 
-/* Menu hint line used when the pin-limit is reached. Renders as an
-   inert sub-label under the disabled "Pin" item. */
 .wrot-menu .menu-item.wrot-menu-hint {
   font-size: var(--wrot-font-ui-smaller);
   opacity: 0.75;
@@ -2268,7 +2189,6 @@ body.wrot-font-follow.is-phone .wrot-menu {
   padding-top: 0;
 }
 
-/* First line of a block in the "Copy code" / "Copy math" picker, cut short to fit the menu. */
 .wrot-menu .wrot-block-pick {
   display: block;
   max-width: 16em;
@@ -2277,17 +2197,13 @@ body.wrot-font-follow.is-phone .wrot-menu {
   white-space: nowrap;
 }
 
-/* The confirm wording is far longer than the label it replaces, and the menu is
-   already sized and placed by the time it swaps in. Let this one row wrap rather
-   than run past the menu edge; growing taller is fine, being cut off is not. */
+/* The confirm text swaps in after the menu is sized, so this row wraps instead of running past the edge. */
 .wrot-menu .menu-item.wrot-menu-delete .menu-item-title {
   white-space: normal;
   overflow-wrap: anywhere;
 }
 
-/* Mobile: Unlike other items, Delete stays open on tap, leaving hover/select active.
-Disabled these globally on the row; scoping highlights to the armed state ensures
-they clear on disarm. :active is kept for tap feedback. */
+/* Mobile: Delete stays open on tap, so hover/select would linger; highlights are scoped to the armed state, :active kept. */
 body.is-mobile .wrot-menu .menu-item.wrot-menu-delete:not(:active):not(#x#y#z),
 body.is-mobile .wrot-menu .menu-item.wrot-menu-delete:hover:not(:active):not(#x#y#z),
 body.is-mobile .wrot-menu .menu-item.wrot-menu-delete:focus:not(:active):not(#x#y#z),
@@ -2297,9 +2213,7 @@ body.is-mobile .wrot-menu .menu-item.wrot-menu-delete.is-focused:not(:active):no
   background: transparent;
 }
 
-/* Mobile: Obsidian's Menu adds is-disabled, but tap-highlight and :active
-   backgrounds arrive via other paths; kill every state explicitly, with the
-   body prefix to beat the default menu-item rules. */
+/* Mobile: tap-highlight and :active bypass is-disabled; kill every state, body prefix beats the default menu-item rules. */
 body .wrot-menu .menu-item.is-disabled:not(#x),
 body .wrot-menu .menu-item.is-disabled:hover:not(#x),
 body .wrot-menu .menu-item.is-disabled:active:not(#x),
@@ -2326,9 +2240,7 @@ body .wrot-codeblock-line {
   background-color: var(--wrot-bg-color, #f8f8f8);
 }
 
-/* Reserve right padding on body lines only (so text avoids the ~28px-wide
-   flair). The end line carries the media-area widget, so keep its previous
-   state (no right margin) to preserve the balance of images / OGP cards. */
+/* Body lines clear the ~28px flair; the end line holds the media widget and gets no right padding. */
 body .wrot-codeblock-line:not(.HyperMD-codeblock-end):not(#x) {
   padding-right: 32px;
 }
@@ -2356,7 +2268,6 @@ body .wrot-codeblock-line .code-block-flair:not(#x) {
   background: transparent;
 }
 
-/* Exclude elements that carry their own background color */
 body div.block-language-wr .wrot-inline-code {
   background: rgba(var(--mono-rgb-100), 0.08);
 }
@@ -2370,9 +2281,7 @@ body .block-language-wr pre:not(#x) {
   margin: 0;
 }
 
-/* RV: copy button (32px tall, top:0 right:0) overlaps first content line at
-   default padding-top:12px. Push content below the button.
-   Left/right padding are kept equal so content and images sit balanced. */
+/* RV: padding-top clears the 32px copy button pinned at top:0 right:0. */
 body pre.language-wr:not(#x) {
   padding-top: 32px;
   padding-bottom: 32px;
@@ -2388,9 +2297,7 @@ body pre.language-wr .copy-code-button:not(#x) {
   padding-right: 6px;
 }
 
-/* RV: quotes/images/URL cards bring their own spacing; revert to the default
-   bottom padding. wrot-rv-rich-tail is set in postProcessor (a :has() selector
-   here triggered the performance warning). */
+/* wrot-rv-rich-tail is set in postProcessor; a :has() selector here triggered the performance warning. */
 body pre.language-wr.wrot-rv-rich-tail:not(#x) {
   padding-bottom: 12px;
 }
@@ -2416,9 +2323,7 @@ body pre.language-wr.wrot-rv-rich-tail:not(#x) {
   text-decoration: underline;
 }
 
-/* CodeMirror can invert the nesting of wrot-url-highlight / wrot-blockquote-wrap
-   on posts after the first, letting the muted quote color override the URL
-   accent by inheritance; force accent on everything under wrot-url-highlight. */
+/* CodeMirror can nest blockquote-wrap inside url-highlight, letting the quote colour inherit over the accent; force it on all descendants. */
 body .wrot-url-highlight:not(#x),
 body .wrot-url-highlight *:not(#x) {
   color: var(--text-accent);
@@ -2447,9 +2352,7 @@ body .wrot-media-area:empty:not(#x) {
   height: 0;
 }
 
-/* LV: an empty media widget on the closing fence line adds height (line break
-   + widgetBuffer). The line must stay visible for the fence characters, so
-   only the empty widget is pulled out of layout. */
+/* An empty media widget adds height on the closing fence line, which must stay visible; pull only the widget out. */
 .cm-line.wrot-codeblock-line.HyperMD-codeblock-end>.wrot-media-area:empty:not(#x) {
   position: absolute;
   width: 0;
@@ -2459,9 +2362,7 @@ body .block-language-wr>.wrot-media-area {
   padding: 0 16px 12px;
 }
 
-/* RV image-URL posts get the same bottom spacing as normal images so the
-   "image post" experience matches; wrot-media-area may sit directly under
-   pre.language-wr, so target both parents. */
+/* wrot-media-area may sit directly under pre.language-wr, so both parents are targeted. */
 body pre.language-wr>.wrot-media-area.wrot-has-link,
 body .block-language-wr>.wrot-media-area.wrot-has-link {
   padding-bottom: 28px;
@@ -2504,9 +2405,7 @@ body .wrot-ogp-card {
 }
 
 /* Reset link defaults (color, spacing, display), beating the theme's rules for a elements */
-/* min-height rather than height: how many lines the text takes depends on the column width,
-   so a narrow pane needs more of them for the same card. A fixed height squeezes the body's
-   children below their own content height and clips them mid-line. */
+/* min-height, not height: narrow panes wrap the text further, and a fixed height clips the body mid-line. */
 body .wrot-ogp-card:not(#x) {
   display: flex;
   flex-direction: row;
@@ -2582,8 +2481,6 @@ body .wrot-ogp-desc:not(#x) {
   display: -webkit-box;
 }
 
-/* Held to one line like the title and description above it. A site name long enough to wrap
-   ("坂ノ途中 | 100年先もつづく、農業を。") would otherwise take a second line on its own. */
 body .wrot-ogp-site {
   font-size: calc(var(--wrot-font-ui-smaller) - 1px);
   color: var(--text-faint);
@@ -2619,9 +2516,7 @@ body .wrot-lp-media:not(#x) {
   font-size: var(--wrot-font-text);
 }
 
-/* Images get thicker padding-bottom to balance the ~25px gap the widgetBuffer
-   spans create above them on the closing fence line. Normal images and image
-   URLs read the same to the user, so both get it; URL-card-only areas do not */
+/* Offsets the ~25px widgetBuffer gap above images on the closing fence line; URL-card-only areas excluded. */
 body .wrot-lp-media.wrot-has-img,
 body .wrot-lp-media.wrot-has-link {
   padding-bottom: 24px;
@@ -2645,9 +2540,7 @@ body.is-mobile .wrot-today-btn {
   padding: 2px 8px;
 }
 
-/* Mobile: kill lingering :hover/:focus backgrounds, keep :active feedback.
-   Obsidian mobile sometimes applies these; win with 3 ID levels. If the app
-   ever uses the priority flag here, losing is the accepted trade-off. */
+/* Obsidian mobile leaves :hover/:focus backgrounds after a tap; 3 IDs override them, :active kept. */
 body.is-mobile .wrot-nav-btn:focus:not(.wrot-toolbar-active):not(#x#y#z),
 body.is-mobile .wrot-nav-btn:focus-visible:not(.wrot-toolbar-active):not(#x#y#z),
 body.is-mobile .wrot-today-btn:focus:not(#x#y#z),
@@ -2667,9 +2560,7 @@ body.is-mobile .wrot-today-btn:active:not(#x#y#z) {
   background: rgba(var(--mono-rgb-100), 0.08);
 }
 
-/* While the calendar is open, pin the faint glow: the mobile :active rule
-   above would flicker on arrow taps; the extra class + same ID boost holds
-   the light tint. */
+/* Extra class + same ID boost keep the faint tint, so mobile :active cannot flicker on arrow taps. */
 body.is-mobile .wrot-calendar-btn.wrot-toolbar-active:not(#x#y#z),
 body.is-mobile .wrot-calendar-btn.wrot-toolbar-active:active:not(#x#y#z),
 body.is-mobile .wrot-calendar-btn.wrot-toolbar-active:hover:not(#x#y#z) {
@@ -2683,28 +2574,21 @@ body.is-mobile .wrot-calendar-btn.wrot-toolbar-active:hover:not(#x#y#z) {
   white-space: nowrap;
 }
 
-/* Mobile: finger-sized day cells; wider cap, max-height lids the vertical size */
 body.is-mobile .wrot-calendar-day {
   width: 2.692em;
 }
 
-/* Mobile: on touch :hover sticks until the next tap, so after switching from
-   year to month mode the cell under the tap point would keep a faint
-   background; kill it (selected highlight preserved separately). */
+/* Mobile: :hover sticks until the next tap and would tint the cell under it after a mode switch. */
 body.is-mobile .wrot-calendar-day:hover:not(.wrot-calendar-day-selected),
 body.is-mobile .wrot-calendar-year:hover {
   background: none;
 }
 
-/* Mobile: still show press feedback at tap time (same convention as the arrow
-   buttons); the selected highlight keeps its priority. */
 body.is-mobile .wrot-calendar-day:active:not(.wrot-calendar-day-selected),
 body.is-mobile .wrot-calendar-year:active {
   background: rgba(var(--mono-rgb-100), 0.08);
 }
 
-/* Mobile: arrow buttons — kill lingering :hover/:focus, keep :active only;
-   same ID-level boost as above. */
 body.is-mobile .wrot-calendar-nav-btn:focus:not(#x#y#z),
 body.is-mobile .wrot-calendar-nav-btn:focus-visible:not(#x#y#z),
 body.is-mobile .wrot-calendar-nav-btn:hover:not(#x#y#z) {
@@ -2861,9 +2745,7 @@ body.is-mobile .wrot-ogp-card:active {
   border-color: rgba(0, 0, 0, 0.2);
 }
 
-/* Settings color picker: Obsidian mobile styles input[type="color"] with
-   normal-priority rules only, so load order + specificity wins without the
-   priority flag. */
+/* Obsidian mobile styles input[type=color] without the priority flag, so specificity and load order win. */
 body.is-mobile .wrot-settings input[type="color"] {
   --swatch-width: 48px;
   --swatch-height: 48px;
@@ -2916,17 +2798,13 @@ body.is-mobile .wrot-settings input[type="color"]::-webkit-color-swatch {
 
 /* The tag rules block builds its own rows, so the layout rules below are scoped to it;
    every other settings row is laid out by Obsidian. */
-/* Rows inside the rules list inherit the list's compact style, which reads as cramped next
-   to the rest of the settings. Restore the spacing the other rows use. */
+/* Rows inside the rules list inherit its compact spacing; restore the regular row spacing. */
 .wrot-settings .wrot-tag-rule-group .setting-item {
   padding: 20px 16px;
   gap: 12px;
 }
 
-/* Same reason: inside a list, toggles switch to the small size variables. Put the rules
-   back on the regular ones — track, thumb, and the thumb's travel when switched on.
-   Desktop only: the small size is not applied on mobile. The :not() raises specificity
-   above the list rule without the priority flag. */
+/* Desktop lists switch toggles to the small size variables; :not() outranks that rule to restore the regular ones. */
 body:not(.is-mobile) .wrot-settings .wrot-tag-rule-group .checkbox-container:not(#x) {
   width: var(--toggle-width);
   height: calc(var(--toggle-thumb-height) + var(--toggle-border-width) * 2);
@@ -2957,8 +2835,6 @@ body.is-mobile .wrot-settings .wrot-tag-rule-group {
   scroll-margin-top: 64px;
 }
 
-/* Locked tag rule: gray out editable fields only; the label row holding the
-   lock toggle stays full-opacity so the unlock affordance is clear. */
 .wrot-settings .wrot-tag-rule-group.wrot-tag-rule-locked .setting-item:not(.wrot-tag-rule-label-setting) {
   opacity: 0.55;
 }
@@ -2998,9 +2874,7 @@ body:not(.is-mobile) .wrot-settings .setting-item.mod-add-item:hover .setting-it
   opacity: 0.7;
 }
 
-/* Mobile stacks the label above the control, which splits the swatch and its reset button
-   off onto their own line. Colour rows are short enough to stay on one line, so they keep
-   the single-row layout; every other row is left to Obsidian. */
+/* Mobile stacking would split the swatch and reset button onto their own line; colour rows keep one row. */
 body.is-mobile .wrot-settings .setting-item.wrot-reverse-controls:not(#x) {
   display: flex;
   flex-wrap: nowrap;
@@ -3034,12 +2908,7 @@ body.is-mobile .wrot-settings .setting-item.wrot-reverse-controls>.setting-item-
   order: 1;
 }
 
-/* Narrow settings pane (tablet portrait, split panes): rows keep label and control on one
-   line, which squeezes text fields down to a sliver. Stack those rows instead — only the
-   text-input ones cramp; everything else is left to Obsidian. Text-input rows are tagged
-   wrot-text-input-row at render time (all of them are hand-rendered), so no :has() is needed.
-   Measured against the pane itself rather than the viewport, since the pane is often far
-   narrower than the window. */
+/* Text-input rows stack in narrow panes; tagged wrot-text-input-row at render (no :has()), measured against the pane, not the viewport. */
 .wrot-settings {
   container-type: inline-size;
 }
@@ -3072,15 +2941,11 @@ body.is-mobile .wrot-settings .setting-item.wrot-reverse-controls>.setting-item-
   }
 }
 
-/* Authored description breaks ("\n" in locale strings) are desktop-only; mobile
-   columns are narrow enough that natural wrapping suffices. */
 body.is-mobile .wrot-settings .wrot-pc-break {
   display: none;
 }
 
-/* Links inside a setting description inherit the muted description color, which reads as
-   plain text; :not(#x) lifts specificity above that inherited rule, and the fill color is
-   set alongside it because inherited -webkit-text-fill-color wins over color alone. */
+/* :not(#x) beats the inherited muted description colour; fill colour set too, since inherited -webkit-text-fill-color beats color. */
 body .wrot-settings-link:not(#x) {
   color: var(--text-accent);
   -webkit-text-fill-color: var(--text-accent);
@@ -3134,9 +2999,7 @@ body .wrot-settings-link:not(#x):hover {
 .wrot-quote-card-body {
   font-size: 0.9em;
   color: var(--text-muted);
-  /* Line limiting happens in JS on logical lines (PREVIEW_MAX_LINES = 3).
-     -webkit-line-clamp would cut on visual lines — 1-2 logical lines on narrow
-     mobile — and its "..." becomes a native expansion trigger, so no CSS clip. */
+  /* Clipped in JS on logical lines (PREVIEW_MAX_LINES); line-clamp cuts visual lines and its "..." becomes a native expand trigger. */
   line-height: 1.5;
   margin-bottom: 4px;
   letter-spacing: normal;
@@ -3144,9 +3007,7 @@ body .wrot-settings-link:not(#x):hover {
   font-family: var(--font-text, var(--default-font));
 }
 
-/* main.ts stamps textColor on everything in the wr block via
-   "body .cm-line.wrot-codeblock-line *" (0,0,2,1); including wrot-quote-card-slot
-   lifts these to 0,0,3,1 so the muted color wins */
+/* wrot-quote-card-slot lifts these to 0,0,3,1 over the palette's ".cm-line.wrot-codeblock-line *" textColor stamp (0,0,2,1). */
 body .wrot-quote-card-slot .wrot-quote-card .wrot-quote-card-body,
 body .wrot-quote-card-slot .wrot-quote-card .wrot-quote-card-body *:not(.wrot-tag):not(.wrot-url):not(.wrot-internal-link):not(.wrot-nested-quote-marker):not(.wrot-tag *):not(.wrot-url *):not(.wrot-internal-link *):not(.wrot-quote-image-marker):not(.wrot-quote-math-marker):not(.wrot-quote-code-marker):not(.wrot-quote-image-marker *):not(.wrot-quote-math-marker *):not(.wrot-quote-code-marker *),
 body .wrot-quote-card-slot .wrot-quote-card .wrot-quote-card-meta {
@@ -3208,8 +3069,6 @@ body .wrot-quote-card-slot .wrot-quote-card .wrot-quote-card-body .wrot-internal
   font-variant-numeric: tabular-nums;
 }
 
-/* Apple Reminders-style circular check marker. A 1em circle; when checked,
-   a checkmark is drawn inside (built from CSS borders) */
 .wrot-quote-card-check {
   display: inline-block;
   width: 0.95em;
@@ -3253,13 +3112,10 @@ body .wrot-quote-card-slot .wrot-quote-card .wrot-quote-card-body .wrot-internal
   margin: -16px 0 0 0;
 }
 
-/* Gap between the URL preview (incl. image URLs) and the quote card. Matches the look of quotes following a normal ![[]] image */
 .wrot-quote-block>.wrot-media-area {
   margin-bottom: 28px;
 }
 
-/* RV / timeline: when an image URL .wrot-media-link sits right before the
-   quote card, pad it up to match the spacing after a normal (![[]]) image */
 .wrot-media-area.wrot-has-link+.wrot-quote-card-slot {
   margin-top: 25px;
 }
@@ -3319,10 +3175,7 @@ body .wrot-quote-card-slot .wrot-quote-card .wrot-quote-card-body .wrot-internal
   border-color: var(--text-muted);
 }
 
-/* Quote-card jump flash. JS sets --wrot-flash-color for tag-rule accents; theme
-   accent otherwise. Painted only on an ::after overlay so the block's own
-   background stays intact — never animate background-color directly: animations
-   beat normal declarations regardless of specificity and blank the card. */
+/* Flash painted on ::after (JS sets --wrot-flash-color); never animate background-color: animations beat normal declarations and blank the card. */
 .cm-line.wrot-codeblock-line.wrot-quote-jump-flash,
 .block-language-wr.wrot-quote-jump-flash,
 pre.wrot-quote-jump-flash,
@@ -3341,10 +3194,7 @@ pre.wrot-quote-jump-flash::after,
   background-color: var(--wrot-flash-color, hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.22));
   animation: wrot-quote-jump-flash-overlay 1.4s ease-out 1 forwards;
   border-radius: inherit;
-  /* Above the RV copy button (z-index: 100): tag-rule cards paint the button
-     with an opaque card color, and without this the un-tinted button box
-     visibly floats while the rest of the card glows. pointer-events: none
-     keeps the button clickable underneath. */
+  /* Above the RV copy button (z-index 100), whose opaque rule-tinted box would otherwise not glow; pointer-events: none keeps it clickable. */
   z-index: 150;
 }
 

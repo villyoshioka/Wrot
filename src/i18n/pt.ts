@@ -178,6 +178,7 @@ const pt = {
   "view.postMenu.pin": "Fixar",
   "view.postMenu.pinLimitHint": "O limite é de {limit} postagens fixadas.",
   "view.postMenu.schedulePin": "Fixar mais tarde",
+  "view.postMenu.repeatPin": "Fixar como recorrente",
   "view.postMenu.delete": "Excluir",
   // Shown on the same row after the first press, in place of the label above.
   "view.postMenu.deleteConfirm": "Pressione novamente para confirmar",

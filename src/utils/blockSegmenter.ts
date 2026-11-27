@@ -220,7 +220,6 @@ export function findBlockRanges(lines: string[]): BlockRange[] {
   });
 }
 
-// Text outside code/math blocks only, so #tags inside them are excluded.
 export function extractNonBlockText(text: string): string {
   const segments = segmentBlocks(text);
   return segments

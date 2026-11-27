@@ -9,8 +9,6 @@ type Listener = (e: Event) => void;
 
 const placeholderAttr = (text: string) => EditorView.contentAttributes.of({ "aria-placeholder": text });
 
-// The range a popover is working on (the link window), painted as selected while the
-// popover's own field holds the focus and the editor's real selection is not drawn.
 const heldRangeEffect = StateEffect.define<{ from: number; to: number } | null>();
 const heldMark = Decoration.mark({ class: "wrot-held-range" });
 const heldRangeField = StateField.define<DecorationSet>({

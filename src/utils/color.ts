@@ -100,7 +100,6 @@ export function codeLightness(text: string, bg: string): CodeLightness {
   const dir = bgL < 0.5 ? 1 : -1;
   const step = Math.min(0.88, Math.max(0.25, bgL + 0.45 * dir));
   const textGap = Math.abs(textL - bgL);
-  // At least `minGap` from the background, on its roomier side.
   const off = (l: number, minGap: number): number => {
     const gapped = dir > 0 ? Math.max(l, bgL + minGap) : Math.min(l, bgL - minGap);
     return Math.round(Math.min(1, Math.max(0, gapped)) * 1000) / 1000;

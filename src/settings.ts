@@ -30,20 +30,21 @@ export interface TagColorRule {
   accentColor?: string;
   subColor?: string;
   subColorScope?: SubColorScope;
-  // Excludes this tag from core integration (graph view / native tag search);
-  // all memo tags are integrated by default.
   noIntegration?: boolean;
-  // Keeps memos carrying this tag out of the timeline view. The daily note itself
-  // is untouched: reading view and live preview still render them as before.
   hideFromTimeline?: boolean;
-  // Greys out the delete item on memos carrying this tag, so a whole category of
-  // memos can be put out of reach of a mistaken tap.
   protectFromDelete?: boolean;
 }
 
 export interface PinEntry {
   timestamp: string;
   file: string;
+  // Repeating pins have their checks cleared once a day; resetOn is the last day (YYYY-MM-DD) that ran.
+  repeat?: boolean;
+  resetOn?: string;
+  // Set by the first daily clear; until then the card shows the post's own time, after it resetOn's 00:00.
+  renewed?: boolean;
+  // Past the post's own day the note stays as written, and the day's checks (content line indices) live here.
+  checks?: number[];
 }
 
 /**
@@ -140,8 +141,7 @@ export interface WrotSettings {
   // Submit-button icon while editing a post. Empty shares submitIcon.
   updateIcon: string;
   inputPlaceholder: string;
-  // Saves attached images into attachmentFolder instead of following Obsidian's own
-  // attachment setting. The folder is never created here: a missing one falls back.
+  // The folder is never created here; a missing one falls back to Obsidian's attachment setting.
   useCustomAttachmentFolder: boolean;
   attachmentFolder: string;
   shrinkImages: boolean;
@@ -158,12 +158,8 @@ export interface WrotSettings {
   submitGradientMode: "auto" | "light" | "dark";
   // A heading line from the daily note template, as written; "" files posts at the end.
   postHeading: string;
-  // Whether the "heading not found" notice has been shown for the current postHeading.
   postHeadingNoticed: boolean;
-  // Deletion is irreversible and the plugin has no undo, so the menu item stays
-  // out of sight until it is asked for.
   showPostDelete: boolean;
-  // On by default so the arrange affordance is discoverable; can be switched off.
   toolbarEditEnabled: boolean;
   // Lives in layout.json; empty only until loadDeferredState has read or created that file.
   toolbarLayout: ToolbarSlot[];
@@ -242,9 +238,7 @@ function setDisabled(el: HTMLElement | null, disabled: boolean): void {
   }
 }
 
-// Locale strings carry authored line breaks as "\n". They are desktop-only formatting:
-// mobile columns are narrow enough that natural wrapping reads better, so the CSS hides
-// these breaks there.
+// Authored "\n" breaks become .wrot-pc-break, which styles.css hides on mobile.
 function appendWithBreaks(target: DocumentFragment | HTMLElement, text: string): void {
   text.split("\n").forEach((part, i) => {
     if (i > 0) target.createEl("br", { cls: "wrot-pc-break" });
@@ -257,7 +251,6 @@ function desc(text: string): string | DocumentFragment {
   return createFragment((frag) => appendWithBreaks(frag, text));
 }
 
-// The colour picker's own input element, which the lock state needs to disable.
 function pickerInputEl(picker: ColorComponent): HTMLInputElement {
   return (picker as unknown as { colorPickerEl: HTMLInputElement }).colorPickerEl;
 }
@@ -284,7 +277,6 @@ interface RuleGroupOptions {
 
 export class WrotSettingTab extends PluginSettingTab {
   plugin: WrotPlugin;
-  // In-memory only: all rules relock whenever the settings tab is reopened.
   private unlockedRules: Set<number> = new Set();
   private quickAddBtnEl: HTMLElement | null = null;
 
@@ -344,15 +336,12 @@ export class WrotSettingTab extends PluginSettingTab {
         if (settings.pins.length > settings.pinLimit) {
           settings.pins = settings.pins.slice(0, settings.pinLimit);
         }
-        // Scheduled pins hold their own allowance of the same size, trimmed the same way.
         if (settings.scheduledPins.length > settings.pinLimit) {
           settings.scheduledPins = settings.scheduledPins.slice(0, settings.pinLimit);
         }
         this.plugin.refreshViews();
       },
 
-      // Switching off is also how the remembered candidates are discarded: an unused
-      // dictionary is dead weight, and posting rebuilds it once suggestions are back on.
       tagSuggestEnabled: async () => {
         if (settings.tagSuggestEnabled) return;
         this.plugin.recentTags = [];
@@ -391,7 +380,6 @@ export class WrotSettingTab extends PluginSettingTab {
         this.plugin.refreshAllWrDecorations();
         // Toggling rules also changes whether the "no integration" exclusion applies.
         this.plugin.graphTags.rebuild();
-        // When switching on with nothing meaningful saved, leave the first rule editable.
         const rules = settings.tagColorRules;
         const noMeaningfulRule =
           rules.length === 0 || (rules.length === 1 && rules[0].tag.trim() === "");
@@ -487,7 +475,6 @@ export class WrotSettingTab extends PluginSettingTab {
     };
   }
 
-  // A colour row with a reset button, same reasoning as textWithReset.
   private colorWithReset(options: {
     name: string;
     desc: string;
@@ -588,7 +575,6 @@ export class WrotSettingTab extends PluginSettingTab {
     };
   }
 
-  // The four theme colours behave identically apart from which setting they write to.
   private themeColorRow(key: PaletteKey): SettingDefinition {
     const settings = this.plugin.settings;
     return this.colorWithReset({
@@ -807,14 +793,10 @@ export class WrotSettingTab extends PluginSettingTab {
     };
   }
 
-  // Puts the toolbar back to the shipped arrangement. Nothing written can be lost this
-  // way, so it asks for a second press rather than a dialog — the same shape the post
-  // delete uses, minus the weight.
   private resetToolbarRow(): SettingDefinition {
     return {
       name: t("settings.item.resetToolbar.name"),
       desc: desc(t("settings.item.resetToolbar.desc")),
-      // Nothing to put back while the toolbar cannot be arranged in the first place.
       visible: () => this.plugin.settings.toolbarEditEnabled,
       render: (setting: Setting) => {
         let armTimer: number | null = null;
@@ -833,7 +815,6 @@ export class WrotSettingTab extends PluginSettingTab {
               if (armTimer === null) {
                 btn.setButtonText(t("settings.item.resetToolbar.confirm"));
                 btn.buttonEl.addClass("mod-warning");
-                // Expires on its own so an abandoned confirm never lingers.
                 armTimer = window.setTimeout(disarm, 3000);
                 return;
               }
@@ -848,7 +829,6 @@ export class WrotSettingTab extends PluginSettingTab {
   }
 
   // The description carries a link to the icon gallery, so the row is built by hand.
-  // Shared by the post-button and update-button icon settings.
   private iconRow(key: "submitIcon" | "updateIcon"): SettingDefinition {
     const settings = this.plugin.settings;
     const template = t(`settings.item.${key}.desc`);
@@ -863,8 +843,6 @@ export class WrotSettingTab extends PluginSettingTab {
         }
         appendWithBreaks(frag, template.slice(0, linkOpenIdx));
         const link = frag.createEl("a", {
-          // Without a class of our own the anchor inherits the muted description color and
-          // stops reading as a link.
           cls: "wrot-settings-link",
           text: template.slice(linkOpenIdx + "{linkOpen}".length, linkCloseIdx),
           href: t("settings.item.submitIcon.lucideUrl"),
@@ -908,10 +886,7 @@ export class WrotSettingTab extends PluginSettingTab {
     };
   }
 
-  // Per-tag overrides. The framework's list supplies the frame — the rule entries and the
-  // add affordance — while each entry draws a whole rule in place: the lock, the colours,
-  // and the scope rows that only appear once a sub colour is set are not expressible as
-  // setting definitions.
+  // The list supplies the frame; each entry draws its rule by hand, since the lock, colours and conditional scope rows are not expressible as setting definitions.
   private tagRuleItems(): SettingDefinitionItem[] {
     return [
       {
@@ -993,7 +968,6 @@ export class WrotSettingTab extends PluginSettingTab {
       bgColor: this.defaultRuleBg(),
       textColor: this.defaultRuleText(),
     });
-    // Only the new rule is left editable, so the settled ones stay protected.
     this.unlockedRules.clear();
     this.unlockedRules.add(newIndex);
     await this.plugin.saveTagRules();
@@ -1398,7 +1372,6 @@ export class WrotSettingTab extends PluginSettingTab {
         });
     }
 
-    // Rendered last: changes what the timeline shows, not how it looks.
     let hideToggleEl: HTMLElement | null = null;
     new Setting(groupEl)
       .setName(t("settings.tagRule.hideTimeline.name"))
@@ -1410,8 +1383,6 @@ export class WrotSettingTab extends PluginSettingTab {
         });
       });
 
-    // Only offered while the delete button exists at all; with no button to
-    // disable, the row would be a rule about nothing.
     let protectToggleEl: HTMLElement | null = null;
     if (this.plugin.settings.showPostDelete) {
       new Setting(groupEl)
@@ -1425,9 +1396,7 @@ export class WrotSettingTab extends PluginSettingTab {
         });
     }
 
-    // While the sub colour is left at its default it is derived from the rule's text and
-    // background, so editing either of those has to re-derive what the picker shows. A
-    // customised sub colour is the user's own value and stays put.
+    // A default sub colour is derived from the rule's text and background, so it must be re-derived whenever either changes.
     const syncSubDefault = (): void => {
       if (this.isSubCustomized(initial)) return;
       suppressSubChange = true;

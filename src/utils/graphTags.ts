@@ -11,12 +11,8 @@ import type WrotPlugin from "../main";
 // injection (verified in app).
 // Injected positions must be the tag's real file coordinates: zero-width dummies match
 // in search but are discarded when results render, showing no hits (verified in app).
-// The cache shape (CachedMetadata.tags / Events.trigger) is public API, but graph/search
-// picking up injected entries is unofficial behavior — keep the failure mode limited to
-// "tags just don't show / aren't searchable".
-// Perf: never scan the whole vault (no Thino-style proportional cost). A note→tags index
-// persisted in integration.json is injected at startup without file reads; only
-// mtime-changed notes are re-read to reconcile.
+// Graph/search picking up injected entries is unofficial: failure must stay "tags just don't show".
+// Perf: never scan the whole vault; inject from integration.json, re-read only mtime-changed notes.
 //
 // Memo note links ride the same index into cache.links/embeds and are re-resolved, so the graph, backlinks and rename updates count them.
 
@@ -42,14 +38,10 @@ function yieldToEventLoop(): Promise<void> {
   return new Promise<void>((resolve) => window.setTimeout(resolve, 0));
 }
 
-// Key holding the last completed-scan timestamp in the persisted index. Obsidian forbids "#" in
-// note names, so this can never collide with a real path. Readers that predate it unpack the
-// number, get null and drop it; the value simply reads as "never scanned" when absent.
+// "#" is forbidden in note names, so this key never collides with a real path.
 const SCANNED_AT_KEY = "#scannedAt";
 
-// Index format. 2 added links; an index without it lacks the links of notes that held no tags,
-// and its scan mark would skip those notes for good, so it is dropped and rebuilt once.
-// 3 packs links per token; 2 still reads.
+// Index format version: indexes before 2 lack links and are dropped and rebuilt once.
 const VERSION_KEY = "#v";
 const INDEX_VERSION = 3;
 const READABLE_VERSIONS = new Set([2, 3]);
@@ -87,9 +79,7 @@ interface GraphTagIndexEntry {
   mtime: number;
 }
 
-// Persisted format: occurrences are packed per tag name to keep the file small
-// (per-occurrence records could reach MBs long-term). Runtime uses TagOccurrence[];
-// the conversion lives only in loadIndex / saveIndex.
+// Packed per tag to keep the file small; converted only in loadIndex/saveIndex.
 interface PersistedEntry {
   m: number; // mtime
   t: Record<string, [number, number, number][]>; // "#tag" → [line, col, offset][]
@@ -116,8 +106,6 @@ function packEntry(entry: GraphTagIndexEntry): PersistedEntry {
   return packed;
 }
 
-// Malformed entries (incl. old formats) return null and are dropped; reconcile
-// re-reads those notes and rebuilds them, so this is non-fatal.
 function unpackEntry(v: unknown): GraphTagIndexEntry | null {
   if (typeof v !== "object" || v === null) return null;
   const e = v as { m?: unknown; t?: unknown; l?: unknown };
@@ -168,11 +156,8 @@ function toRefCache(o: LinkOccurrence): WrRefCache | null {
 export class GraphTagInjector {
   // Note path → tag entry (persisted).
   private index = new Map<string, GraphTagIndexEntry>();
-  // Paths with injected entries; the cleanup targets on unload.
   private trackedPaths = new Set<string>();
-  // When the last reconcile that ran to completion started. A note with no index entry either
-  // carries no memo tags or has never been looked at; this timestamp tells the two apart, so
-  // notes untouched since that scan need no re-read. 0 means "never scanned".
+  // Start of the last complete reconcile; tells a tagless note from an unscanned one. 0 = never scanned.
   private scannedAt = 0;
   private requestRefresh: Debouncer<[], void>;
   private requestIndexSave: Debouncer<[], void>;
@@ -184,14 +169,11 @@ export class GraphTagInjector {
     this.requestIndexSave = debounce(() => void this.saveIndex(), 2000, true);
   }
 
-  // Single switch for graph display and tag: search — one cache injection covers both.
   get enabled(): boolean {
     return this.plugin.settings.graphTagsEnabled;
   }
 
-  // Startup: inject from the persisted index without any file reads, then reconcile
-  // in the background (only mtime-changed notes get re-read). Runs whatever the tag switch
-  // says: links are always integrated.
+  // Runs regardless of the tag switch: links are always integrated.
   async start(): Promise<void> {
     this.stopped = false;
     await this.loadIndex();
@@ -240,7 +222,6 @@ export class GraphTagInjector {
     }
   }
 
-  // Notes whose mtime matches the index are skipped; an unchanged startup reads zero files.
   private async reconcile(): Promise<void> {
     const { vault, metadataCache } = this.plugin.app;
     const excluded = this.excludedTagSet();
@@ -254,9 +235,7 @@ export class GraphTagInjector {
       if (this.stopped) return;
       const entry = this.index.get(file.path);
       if (entry && entry.mtime === file.stat.mtime) continue;
-      // No entry means an earlier scan found no memo tags here — worth re-reading only if the
-      // note has been touched since. Without this, notes holding any code fence but no memo are
-      // re-read on every single startup, because a tagless note leaves no entry behind.
+      // A tagless note leaves no entry; skip it unless touched since the last scan, or it is re-read every startup.
       if (!entry && file.stat.mtime <= this.scannedAt) continue;
       const cache = metadataCache.getFileCache(file);
       if (!cache) continue;
@@ -283,9 +262,7 @@ export class GraphTagInjector {
         await yieldToEventLoop();
       }
     }
-    // Only a pass that walked every note may move the mark; an interrupted one would otherwise
-    // let the notes it never reached be skipped forever. The write is left to the debouncer so
-    // a startup that changed nothing still keeps its file I/O off the critical path.
+    // Only a full pass may move the mark, or notes an interrupted one never reached are skipped forever.
     this.scannedAt = scanStartedAt;
     this.requestIndexSave();
     if (tagsChanged) this.requestRefresh();
@@ -323,8 +300,6 @@ export class GraphTagInjector {
     }
   }
 
-  // Called when "exclude from integration" rules change. The index holds raw tags,
-  // so re-inject without re-reading files. Links are left as is.
   rebuild(): void {
     const { vault, metadataCache } = this.plugin.app;
     const excluded = this.excludedTagSet();
@@ -338,7 +313,6 @@ export class GraphTagInjector {
     this.requestRefresh();
   }
 
-  // Unload: strip all injected entries (the index file stays for next startup).
   removeAll(): void {
     const { vault, metadataCache } = this.plugin.app;
     for (const path of this.trackedPaths) {
@@ -357,11 +331,7 @@ export class GraphTagInjector {
     this.refresh();
   }
 
-  // Apply injected entries to one note's cache (idempotent: previous injections are
-  // stripped first). Exclusion rules apply here. When disabled, injects nothing so
-  // only leftover removal takes effect.
-  // `excludedTags` lets callers that loop over notes build the exclusion set once instead of
-  // rebuilding it from settings for every note.
+  // Idempotent: previous injections are stripped first; exclusion rules apply here.
   private applyToCache(
     path: string,
     cache: CachedMetadata,
@@ -416,7 +386,6 @@ export class GraphTagInjector {
     return (cache.links?.some(isWrRef) ?? false) || (cache.embeds?.some(isWrRef) ?? false);
   }
 
-  // Removes injected links from a cache; true if there were any.
   private stripRefs(cache: CachedMetadata): boolean {
     if (!this.hasWrRefs(cache)) return false;
     const links = (cache.links ?? []).filter((r) => !isWrRef(r));
@@ -487,11 +456,7 @@ export class GraphTagInjector {
     return out;
   }
 
-  // Collect every tag occurrence with positions (raw, pre-exclusion). What counts as a
-  // tag follows the display token rules (extractTagsForHistory): # inside quote cards,
-  // links, inline code, URLs, etc. is not a tag on screen, so not in graph/search either.
-  // Positions come from a line scan; only # at line start or after whitespace counts,
-  // avoiding URL fragments and in-link anchors.
+  // Tags follow display token rules; only # at line start or after whitespace counts (skips URL fragments, anchors).
   private collectTagEntries(content: string): TagOccurrence[] {
     if (!content.includes("```wr")) return [];
     const lines = content.split("\n");
@@ -566,14 +531,11 @@ export class GraphTagInjector {
     this.plugin.app.metadataCache.trigger("resolved");
   }
 
-  // Search query for tag clicks. Injected tags are matched by native tag search, so a
-  // plain tag: query hits native tags (incl. properties) and Wrot memos alike, and
-  // looks native in the search bar. Timeline tag clicks (WrotView.openSearch) route here.
+  // Injected tags are matched by native tag search, so a plain tag: query covers them.
   buildTagSearchQuery(tag: string): string {
     return `tag:#${tag.replace(/^#/, "")}`;
   }
 
-  // Index persistence: same conventions as tags.json (plugin dir, failures ignored).
   private indexPath(name = "integration.json"): string | null {
     const dir = this.plugin.manifest.dir;
     return dir ? normalizePath(`${dir}/${name}`) : null;
@@ -584,7 +546,6 @@ export class GraphTagInjector {
     if (!path) return;
     const { adapter } = this.plugin.app.vault;
     try {
-      // Earlier name.
       const legacy = this.indexPath("tag-integration.json");
       if (legacy && !(await adapter.exists(path)) && (await adapter.exists(legacy))) {
         await adapter.rename(legacy, path);
@@ -603,7 +564,6 @@ export class GraphTagInjector {
         if (entry) this.index.set(notePath, entry);
       }
     } catch {
-      // Unreadable index: restart empty; reconcile re-reads and rebuilds it.
       this.index.clear();
       this.scannedAt = 0;
     }

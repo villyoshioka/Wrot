@@ -1,6 +1,4 @@
-// Minifies styles.css in place; run by the release workflow just before asset upload.
-// The repo copy stays unminified, so running this locally would rewrite the source file.
-// It refuses to run outside CI for that reason; pass --force if that is really the intent.
+// Run by the release workflow before asset upload; refuses outside CI because the repo copy is the editable source.
 import fs from "fs";
 import process from "process";
 import { minifyCss } from "./css-minify.mjs";

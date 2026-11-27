@@ -146,8 +146,6 @@ const baseBuildOptions = {
 };
 
 if (prod) {
-  // Full minified build (tracked in repo, doubles as the release asset):
-  // JS plus dynamic `/* @css */` templates.
   await esbuild.build({
     ...baseBuildOptions,
     outfile: "main.js",

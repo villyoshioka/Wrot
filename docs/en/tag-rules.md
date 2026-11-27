@@ -1,133 +1,142 @@
 # How to Use Tag Rules
 
-Wrot lets you automatically change the color of your posts based on their tags.
-By giving each tag a distinct look—like a muted tone for `#journal` or a vibrant shade for `#work`—you can organize and scan your timeline at a glance.
+Wrot can change the color of posts automatically by tag, such as a calm color for `#journal` and a bright one for `#work`.
 
-You can also use tags to keep specific posts off your timeline altogether.
-This guide walks you through setting up tag rules and explains how each option works under the hood.
+Besides colors, you can also keep posts with certain tags off the timeline.
 
 ---
 
-## 1. Enable the Feature
+## 1. Turn the Feature On
 
-To get started, head to your settings and toggle on **"Use tag rules"** under the "Tag Rules" section.
+Turn on **"Use tag rules"** in the "Tag Rules" section of the settings.
 
-- Enabling this creates a default rule that is unlocked and ready to customize right away.
-- Disabling it reverts your posts to your standard Obsidian theme colors, though your saved rules will remain intact.
+- Turning it on adds one rule and opens it, ready to edit.
+- Turning it off returns posts to your normal Obsidian theme colors. Your saved rules aren't deleted.
 
 ---
 
 ## 2. Create a Rule
 
-Every rule pairs a **target tag** with a **custom color scheme**.
+Each rule is a pair of a **target tag** and the **colors to apply**.
 
-### Choose a Target Tag
+### Target Tag
 
-Enter the name of the tag you want to style. You can type it with or without the leading `#`.
+Enter the name of the tag whose color you want to change. The leading `#` is optional.
 
-- For example, entering `journal` will target any post containing `#journal`.
+- Example: If you enter `journal`, posts containing `#journal` are targeted.
 
-### Set Your Base Colors (Background and Text)
+### Base Colors (Background and Text)
 
-Pick a **background color** for the post card and a **text color** for the body text.
-Since these form the foundation of your rule, both are required.
+Set the **background color** of the post card and the **text color** of the body. Both are required.
 
 ---
 
-## 3. Fine-Tune Colors Further (Optional)
+## 3. Fine-Tuning Colors (Optional)
 
-The two base colors get the job done, but if you want to tweak the design, two extra color options are available.
-If you leave these blank, Wrot automatically calculates balanced shades based on your background and text choices.
+You can set two more colors.
 
 ### Accent Color
 
-This highlights elements like tags, internal links, and external URLs.
+The color used for emphasis, such as tags, internal links, and external URLs.
 
-- **When left blank**: Uses your Obsidian theme's default accent color.
-- **When set**: Styles tags and links in your chosen color. You can reset this at any time.
+- If you leave it blank, your Obsidian theme's accent color is used.
+- The reset button returns it to how it was before you set it.
 
-### Secondary Color and Application Scope
+### Secondary Color and Where It Applies
 
-This styles secondary elements around your text, such as timestamps, list markers, and blockquotes.
+The color used for parts around the body, such as timestamps, list markers, and quotes.
 
-- **When left blank**: Automatically generates a middle-ground shade between your background and text colors.
-- **When set**: Applies your color to specific elements. You can turn individual parts on or off using the toggles below; parts turned off fall back to the auto-generated color.
+- If you leave it blank, a color between the background and text colors is generated automatically.
+- Once set, you can choose whether to use it for each part below. Parts turned off use the generated color.
 
-| Application Scope    | Target Elements                       |
-| :------------------- | :------------------------------------ |
-| **Timestamps, etc.** | Timestamps, menu icons, and pin icons |
-| **Quotes**           | Blockquotes (`>`)                     |
-| **Lists**            | Bulleted lists and checkboxes         |
-| **Link previews**    | Link preview cards                    |
-
----
-
-## 4. Hide Posts from the Timeline
-
-Toggle on **"Hide from timeline"** within a rule to keep matching posts off your main Wrot timeline.
-
-- **Your data stays intact**: The underlying daily note files are untouched, so you can still read them anytime by opening the file directly.
-- **Live Preview and Reading View**: Posts display normally when you open the note. They are only hidden from the Wrot timeline view.
-- **Pinned posts stay put**: Pinned posts are an exception and will remain anchored to the top of your timeline even if they have a hidden tag.
-- **How multiple tags work**: Colors follow the first tag in the post text, but **the hide rule checks every tag**. If a post includes even one hidden tag, it stays off your timeline.
+| Where it applies     | Parts                                  |
+| :------------------- | :------------------------------------- |
+| **Timestamps, etc.** | Post time, menu icon, and pin icon     |
+| **Quotes**           | Quotes (`>`)                           |
+| **Lists**            | Bulleted lists and checkboxes          |
+| **Link previews**    | URL preview cards                      |
 
 ---
 
-## 5. Prevent Accidental Edits with Locks
+## 4. Hiding Posts from the Timeline
 
-Each rule header includes a **lock icon**.
+Turn on **"Hide from timeline"** in a rule to hide posts with that tag from the Wrot timeline.
 
-- Rules are **locked** by default to prevent accidental edits while you scroll.
-- Click the lock icon to **unlock** a rule whenever you need to update its tag or colors.
-- **How locks work**: Unlocking is temporary while the settings panel is open. Once you close settings, all rules automatically lock again, while your settings remain safely saved.
-
----
-
-## 6. Set Up Multiple Rules
-
-Click "Add rule" or hit the `+` icon in the header to create extra rules.
-
-- Adding a new rule automatically locks existing ones so you can focus on the new entry.
-- Rules are listed in order from top to bottom.
-
-### Tag Priority and Overlaps
-
-When a post has multiple tags matching different rules, **the tag that appears first in the post text takes priority**.
-
-- Example: If a post contains `#work #important` in that order and both have rules, Wrot applies the `#work` rule.
-- Only one color scheme applies per post, so subsequent tags are ignored for styling.
+- They aren't removed from your daily note. You can see them anytime by opening the note.
+- They're shown as usual in Live Preview and Reading view.
+- Pinned posts are an exception. They stay pinned at the top of the timeline even if they have a hidden tag.
+- Colors are decided by the rule for the tag written first in the post, but **hiding checks every tag**. If a post has even one hidden tag, it's hidden from the timeline.
 
 ---
 
-## Where Colors Take Effect
+## 5. Excluding from Tag Integration and Preventing Deletion
 
-Your tag rules apply across all note views in Obsidian:
+### Exclude from Tag Integration
 
-- **Timeline** (The Wrot list view)
-- **Live Preview** (Edit mode)
-- **Reading View** (Read mode)
+Turning on **"Exclude from tag integration"** in a rule makes that tag internal to Wrot, so it isn't shown in Graph view or tag search. For details, see [How Tag Integration Works](./tag-integration.md).
 
-Your posts maintain a consistent look no matter which view mode you use.
+### Disable Delete Button
+
+Turning on **"Disable delete button"** in a rule means posts with that tag can't be deleted from the post menu.
+
+- This option is shown only when the "Delete button" setting is on.
+- As with hiding, every tag on the post is checked. If a post has even one target tag, the delete button can't be pressed.
+
+---
+
+## 6. Locks Against Accidental Changes
+
+Each rule's header has a **lock icon**.
+
+- Rules are normally **locked (not editable)** so you don't change them by mistake.
+- Clicking the lock icon **unlocks** the rule so you can edit its tag and colors.
+- Locked and unlocked states last only while the settings screen is open. When you close it, every rule is locked again, but your colors and tags aren't lost.
+
+---
+
+## 7. Using More Than One Rule
+
+Add rules with the "Add rule" button or the `+` button in the header.
+
+- When you add a new rule, existing rules are locked automatically and only the new one is unlocked.
+- Rules are listed from top to bottom.
+
+### Priority When Tags Overlap
+
+If a post has more than one tag with a rule, **the rule for the tag written first in the post is used**.
+
+- Example: If a post has `#work #important` in that order and both have rules, the rule for `#work`, written first, is used.
+- Only one rule's colors are used. The colors for tags written later aren't applied.
+
+---
+
+## Where Colors Are Applied
+
+Tag rule colors are used everywhere posts are shown:
+
+- **Timeline** (Wrot's list view)
+- **Live Preview** (editing a note)
+- **Reading view** (reading a note)
 
 ---
 
 ## Troubleshooting
 
-### Colors Aren't Updating
+### Colors don't change
 
-- Make sure "Use tag rules" is toggled on.
-- Double-check that the tag name in your rule matches the tag in your post.
-- If your post has multiple tags, check whether a rule is assigned to the tag that appears first.
+- Check that "Use tag rules" is turned on.
+- Check that the tag name in the rule matches the tag in the post.
+- If the post has more than one tag, check whether the tag written first has a rule.
 
-### A Post Disappeared from the Timeline
+### A post disappeared from the timeline
 
-- Check if "Hide from timeline" is enabled on any tag attached to the missing post.
-- Don't worry, the post itself isn't deleted. You can find it by opening the daily note file directly.
+- Check whether "Hide from timeline" is on in the rule for one of its tags.
+- The post hasn't been deleted. You can find it by opening the daily note.
 
-### Can't Edit Rule Settings
+### I can't edit a rule
 
-- Click the lock icon in the rule header to unlock it for editing.
+- Click the lock icon in the rule's header to unlock it.
 
-### Secondary Color Isn't Applying to Some Parts
+### The secondary color isn't applied to some parts
 
-- Head to the "Application Scope" section under sub-color and make sure the toggles for those elements are turned on.
+- Check that the secondary color's toggle for that part is turned on.

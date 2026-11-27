@@ -13,6 +13,8 @@ import { findBlockRanges } from "./blockSegmenter";
 import { findLinkAt } from "../editor/composerLink";
 import { HIGHLIGHT_EMOJI, decorationInner, highlightColor, inlineTokens } from "./patterns";
 
+declare const moment: typeof import("moment");
+
 function commit(ta: ComposerField): void {
   ta.focus();
   ta.dispatchEvent(new Event("input"));
@@ -48,7 +50,6 @@ export function continueCodeIndentOnEnter(ta: ComposerField): boolean {
 
 const CODE_FENCE_CLOSE_RE = /^\s*~{3,}\s*$/;
 
-// Between a code block's fences; an unclosed block runs to the end.
 export function insideCodeBlock(val: string, pos: number): boolean {
   const lines = val.split("\n");
   const line = val.slice(0, pos).split("\n").length - 1;
@@ -71,7 +72,6 @@ function currentLineBounds(val: string, pos: number): { start: number; end: numb
  * Toggles a line-level marker ("- ", "- [ ] ", "1. ") at the caret's line.
  * Re-applying the same marker removes it; a different one replaces it.
  */
-// A quote's "> " stays in front of a list marker: the list goes inside the quote.
 const QUOTE_PREFIX_RE = /^(?:>[ \t]?)+/;
 
 export function insertAtLineStart(ta: ComposerField, prefix: string): void {
@@ -103,7 +103,6 @@ export function insertAtLineStart(ta: ComposerField, prefix: string): void {
     ta.value = val.slice(0, lineStart) + prefix + val.slice(lineStart + existingPrefix.length);
     ta.selectionStart = ta.selectionEnd = lineStart + prefix.length;
   } else {
-    // ">text" gets its space back, so the marker reads as a list inside the quote.
     const insert = lineStart > bounds.start && !/\s/.test(val[lineStart - 1]) ? " " + prefix : prefix;
     ta.value = val.slice(0, lineStart) + insert + val.slice(lineStart);
     ta.selectionStart = ta.selectionEnd = lineStart + insert.length;
@@ -162,7 +161,6 @@ export function syncListFormatting(ta: ComposerField): void {
   normalizeRunAroundCaret(ta);
 }
 
-// Only the run under the caret is touched; lists elsewhere in the post are left alone.
 function normalizeRunAroundCaret(ta: ComposerField): void {
   const lines = ta.value.split("\n");
   const lineOf = (pos: number) => {
@@ -180,7 +178,6 @@ function normalizeRunAroundCaret(ta: ComposerField): void {
   const endLine = lineOf(ta.selectionEnd);
   const { depth: quoteDepth, item: caretItem } = splitQuoted(lines[caretLine]);
   if (!caretItem) return;
-  // A "- " line in code is code: its indent stays as typed.
   if (insideCodeBlock(ta.value, ta.selectionStart)) return;
   const inRun = (i: number): boolean => {
     const l = splitQuoted(lines[i]);
@@ -201,9 +198,7 @@ function normalizeRunAroundCaret(ta: ComposerField): void {
     if (!item) continue;
     const { depth, ordinal } = tracker.place(item);
     const written = body.slice(0, item.indentLength);
-    // A part-typed indent on the caret's line is left alone: normalising it away would eat
-    // each space as it arrives, and the next level could never be reached by typing. Only
-    // spaces get that grace — a tab or an ideographic space is a whole step as it stands.
+    // A part-typed space indent on the caret's line is kept, or each typed space would be eaten.
     const midStep =
       i === caretLine && isPlainSpaces(written) && written.length > depth * INDENT_UNIT.length;
     const indent = midStep ? written : INDENT_UNIT.repeat(depth);
@@ -267,7 +262,6 @@ export function shiftListIndent(ta: ComposerField, outdent: boolean): boolean {
   let startShift = 0;
   let endShift = 0;
   let changed = false;
-  // The item that moved last, while the lines after it are still nested under it.
   let moved: { depth: number; threshold: number; from: string; to: string } | null = null;
 
   for (let i = 0; i < lines.length; i++) {
@@ -311,6 +305,17 @@ export function shiftListIndent(ta: ComposerField, outdent: boolean): boolean {
 
 const TIMED_ITEM_RE = /^\d{1,2}:\d{2}(?:[ \t\u3000]|$)/;
 
+// Whether the item opens with a time, or with a date in `dateFormat` (what @today writes),
+// which may itself hold spaces, so every prefix ending at a space is tried.
+function isTimedItem(content: string, dateFormat: string): boolean {
+  if (TIMED_ITEM_RE.test(content)) return true;
+  for (let i = 1; i <= content.length; i++) {
+    if (i < content.length && !/[ \t\u3000]/.test(content[i])) continue;
+    if (moment(content.slice(0, i), dateFormat, true).isValid()) return true;
+  }
+  return false;
+}
+
 /**
  * Carries a list item onto the next line when Enter is pressed.
  *
@@ -319,11 +324,10 @@ const TIMED_ITEM_RE = /^\d{1,2}:\d{2}(?:[ \t\u3000]|$)/;
  * repeated Enter walks back out of the list. Returns false when the caret is not on a list
  * item at all, leaving the plain newline to the textarea.
  */
-export function continueListOnEnter(ta: ComposerField): boolean {
+export function continueListOnEnter(ta: ComposerField, dateFormat: string): boolean {
   const pos = ta.selectionStart;
   const val = ta.value;
   const rowStart = pos > 0 ? val.lastIndexOf("\n", pos - 1) + 1 : 0;
-  // Inside a quote the list carries on inside it, "> " repeated before the marker.
   const quote = QUOTE_PREFIX_RE.exec(val.slice(rowStart, pos))?.[0] ?? "";
   const lineStart = rowStart + quote.length;
   const line = val.slice(lineStart, pos);
@@ -337,8 +341,7 @@ export function continueListOnEnter(ta: ComposerField): boolean {
       info.kind === "check" ? "- [ ] "
         : info.kind === "bullet" ? "- "
           : `${parseInt(info.olMarker, 10) + 1}. `;
-    // An item opening with a time hands the next one an @, so the time list opens right away.
-    const timed = TIMED_ITEM_RE.test(info.content) ? "@" : "";
+    const timed = isTimedItem(info.content, dateFormat) ? "@" : "";
     const insert = `\n${quote}${indent}${marker}${timed}`;
     ta.value = val.slice(0, pos) + insert + val.slice(pos);
     ta.selectionStart = ta.selectionEnd = pos + insert.length;
@@ -402,8 +405,6 @@ export function insertFenceBlock(ta: ComposerField, insert: string): void {
     after = "\n" + after;
   }
 
-  // No separator if the remainder is empty/whitespace; one newline before any
-  // following text or quote marker.
   const afterStripped = after.replace(/^\n+/, "");
   let separator = "";
   if (afterStripped.length > 0) {
@@ -553,14 +554,12 @@ export function wrapSelection(
   ta: ComposerField,
   open: string,
   close: string,
-  // Inline decorations are spaced off as closeInlineMarker does it.
   spaced = false
 ): void {
   if (ta.selectionStart === ta.selectionEnd) return;
   const val = ta.value;
   const linkSpan = outsideLink(val, ta.selectionStart, ta.selectionEnd);
   const inLinkText = linkSpan.start !== ta.selectionStart || linkSpan.end !== ta.selectionEnd;
-  // Code and math go inside the link's text, where nothing is spaced off either.
   const literal = open === "`" || open === "$";
   const { start, end } = literal ? { start: ta.selectionStart, end: ta.selectionEnd } : linkSpan;
   const selected = val.slice(start, end);
@@ -580,7 +579,6 @@ export function wrapSelection(
     return;
   }
 
-  // Or the marker sits just outside the selection, possibly beyond other markers.
   const pairs = pairsAround(val, start, end);
   const around = pairs.find((p) => (open === "==" ? p.marker.startsWith("==") : p.marker === open));
   if (around) {

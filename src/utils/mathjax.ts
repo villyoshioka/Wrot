@@ -1,8 +1,6 @@
 import { loadMathJax, renderMath, finishRenderMath } from "obsidian";
 
-// Fully lazy MathJax: eager loading costs tens of ms of main-thread script evaluation at
-// startup (measurement jitter, flicker). Nothing loads until a formula actually renders,
-// so math-free vaults never load MathJax at all.
+// Fully lazy: eager MathJax costs tens of ms at startup, so nothing loads until a formula renders.
 
 // Set once our own loadMathJax() has resolved: Obsidian's word that renderMath is usable,
 // whatever engine sits behind it.
@@ -15,7 +13,6 @@ export function isMathJaxReady(): boolean {
   return typeof mj?.tex2chtml === "function";
 }
 
-// Notified on load completion (time to re-render fallbacks); registered by the plugin.
 let readyHandler: (() => void) | null = null;
 let requested = false;
 
@@ -55,7 +52,6 @@ export function renderMathInto(el: HTMLElement, tex: string, display: boolean, f
   }
 }
 
-// Upgrades only .wrot-math-fallback elements in place; no full view re-render, so nothing else moves.
 export function upgradeMathFallbacks(): void {
   if (!isMathJaxReady()) return;
   const els = Array.from(activeDocument.querySelectorAll<HTMLElement>(".wrot-math-fallback"));

@@ -182,6 +182,7 @@ const zhCN = {
   "view.postMenu.pin": "置顶",
   "view.postMenu.pinLimitHint": "最多置顶 {limit} 条。",
   "view.postMenu.schedulePin": "稍后置顶",
+  "view.postMenu.repeatPin": "作为重复置顶",
   "view.postMenu.delete": "删除",
   "view.postMenu.deleteConfirm": "再次点击确认删除",
 

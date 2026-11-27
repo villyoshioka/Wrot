@@ -74,9 +74,7 @@ export function stampWrBlockLocations(el: HTMLElement, ctx: MarkdownPostProcesso
     if (!block) continue;
 
     let lineStart: number | null = sectionLineStart(ctx, block);
-    // A post processor is normally handed one section at a time, but when `el` wraps the whole
-    // render the container lookup misses. Falling back to `el` is only safe if it holds a single
-    // block -- otherwise every block would claim the same line.
+    // When `el` wraps the whole render the container lookup misses; falling back to `el` is only safe with a single block.
     if (lineStart === null && codeEls.length === 1) {
       lineStart = sectionLineStart(ctx, el);
     }

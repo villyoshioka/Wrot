@@ -1,193 +1,193 @@
-# New Posting Form in Ver3.0.0 and Up
+# Changes to the Post Form in v3.0.0 and Later
 
-With Ver3.0.0, the post editor now hides raw Markdown syntax so you can write in something much closer to your final layout. Things like bold styling, lists, and checkboxes render in real time, making the writing experience feel a lot like drafting a post on social media.
+Starting with v3.0.0, the post form hides Markdown syntax, so bold text, lists, checkboxes, and the like look finished as you type. Writing feels like posting to social media.
 
-Below is an overview of how typing, formatting, and deleting work in the updated editor, plus a few subtle behaviors worth knowing about. If you want a quick reference for the toolbar buttons, check out the [Formatting Guide](./formatting-guide.md).
+For the toolbar buttons, see the [Formatting Guide](./formatting-guide.md).
 
-> **Your underlying notes are untouched**
+> **What gets saved to your notes hasn't changed**
 >
-> Hiding syntax is purely visual within the editor. Everything still saves as standard Markdown under the hood, meaning older posts, your timeline, and your actual note files behave just as they always have.
+> Syntax is hidden only in the form. Notes are still saved as Markdown, so past posts, the timeline, and how your notes look in Obsidian are not affected.
 
 ---
 
-## 1. What Gets Formatted vs. What Stays as Plain Text
+## 1. What Gets Formatted and What Shows as Typed
 
-| Element                                      | Appearance in the Editor                                    |
-| :------------------------------------------- | :---------------------------------------------------------- |
-| **Bold, italics, strikethrough, highlights** | Hides the markers and shows the styled text                 |
-| **Inline code**                              | Hides the backticks and applies monospaced code styling     |
-| **Inline math** (`$…$`)                      | Hides the dollar signs and renders the formula              |
-| **Links**                                    | Hides the brackets and shows the label in your accent color |
-| **Tags**                                     | Shown in your accent color once you finish typing them      |
-| **Lists, task lists, numbered lists**        | Replaces markers with real bullets, checkboxes, or numbers  |
-| **Blockquotes**                              | Swaps out `>` for a left quote bar                          |
-| **Code blocks and math blocks**              | Kept as raw text, including fences and delimiters           |
-| **Manual image embeds** (`![[Image.png]]`)   | Kept as raw text, exactly as typed                          |
-| **Raw URLs**                                 | Kept as typed, shown in your accent color                   |
+| Element                                      | How it looks in the form                                        |
+| :------------------------------------------- | :-------------------------------------------------------------- |
+| **Bold, italic, strikethrough, highlight**   | The markers are hidden and the text is shown styled             |
+| **Inline code**                              | The backticks are hidden and the text is shown in code style    |
+| **Inline math** (`$…$`)                      | The dollar signs are hidden and the formula is shown rendered   |
+| **Links**                                    | The brackets and URL are hidden; only the text is shown, in the accent color |
+| **Tags**                                     | Shown in the accent color once you finish typing them           |
+| **Lists, checklists, numbered lists**        | The markers are hidden and bullets, checkboxes, or numbers are shown |
+| **Quotes**                                   | Shown with a quote line on the left instead of `>`              |
+| **Code blocks and math blocks**              | Shown exactly as typed, markers included                        |
+| **Manually typed image embeds** (`![[Image.png]]`) | Shown exactly as typed, markers included                  |
+| **Bare URLs**                                | Shown as typed, in the accent color                             |
 
-- You can check or uncheck tasks right in the editor simply by clicking or tapping them.
+Note: You can click (or tap) a checkbox in the form to check or uncheck it.
 
 ---
 
 ## 2. Typing Markdown Syntax by Hand
 
-Whenever you type out syntax like `**bold**` manually, the markers stay visible until you press `Enter` on that line. The editor does not jump ahead and convert things halfway through a word.
+When you type syntax like `**bold**` by hand, the markers stay visible until you press `Enter` on that line.
 
-- Pressing **`Enter` once** hides the syntax and renders the styled text without breaking into a new line.
-- Pressing **`Enter` again** takes you down to the next line.
-- Pressing **`Shift + Enter`** starts a new line right away without converting the syntax.
+- **Press `Enter` once**: The text is styled and the markers are hidden, without a line break.
+- **Press `Enter` twice**: Starts a new line.
+- **`Shift + Enter`**: Starts a new line and leaves the markers visible.
 
-- When you restore a draft or edit a previous post, all formatting opens up already rendered.
+Note: When you restore a draft or open a past post for editing, the markers are already hidden when it opens.
 
-### Brackets and Quotes
+### Auto-closing Brackets and Quotes
 
-Typing `(`, `[`, `{`, `"` or `'` adds the closing half automatically and puts the cursor between them.
+When you type `(`, `[`, `{`, `"`, or `'`, the closing half is added for you and the cursor is placed between them.
 
-- Typing the closing half moves the cursor past the one already there instead of adding another.
-- Typing one with text selected wraps the selection in it.
+- If you type the closing half yourself, it isn't doubled; the cursor moves past the one that's already there.
+- If you type one with text selected, the selected text is wrapped in it.
 - Pressing `Backspace` between an empty pair deletes both halves.
-- The closing half is not added when you type `'` or `"` right after a letter (as in "don't"), or when you type any of them right before a letter.
-- Nothing is added automatically when Obsidian's "Auto-pair brackets" setting is turned off.
+- When you type `'` or `"` right before or after a letter or number, as in don't, the closing half isn't added.
+- Nothing is added if Obsidian's "Auto-pair brackets" setting is turned off.
 
 ---
 
 ## 3. Deleting Text
 
-### Bold, Italics, Strikethrough, Highlights, and Links
+### Bold, Italic, Strikethrough, Highlight, and Links
 
-Text deletes normally, without leaving behind invisible or broken syntax. If you clear out all the words inside a formatted section, the markers go away with them.
+You delete one character at a time, the same as plain text. You never end up with leftover markers, or with only the hidden markers deleted. When you delete all the styled text, the markers go with it.
 
 ### Inline Code and Inline Math
 
-Pressing `Backspace` inside or right after code or math first reveals the original raw markers and puts your cursor right after the closing marker. You can then edit everything as regular text, and pressing `Enter` on that line hides the markers again.
+Pressing `Backspace` right after or inside inline code or math shows the hidden markers for the moment and moves the cursor past the closing marker. From there you can edit it as plain text, and pressing `Enter` on that line hides the markers again.
 
-### Lists, Task Lists, Numbered Lists, and Blockquotes
+### Lists, Checklists, Numbered Lists, and Quotes
 
-Pressing `Backspace` at the start of an item, whether just before or just after the marker, works like this:
+Pressing `Backspace` at the start of an item or quote line (before or after the marker) works in this order:
 
-1. Indented items step back one level.
-2. Items already at the top level revert to their raw Markdown marker, which you can then delete like any other text.
+1. An indented item moves up one level.
+2. At the top level, the marker is shown again. From there you can delete it as plain text.
 
 ---
 
-## 4. Typing Along Formatting Boundaries
+## 4. Typing at the Edge of Formatting
 
-Typing right at the beginning or very end of formatted text (bold, highlights, links, and so on) keeps your new characters outside the formatting. If you want your new words to inherit the styling, place your cursor somewhere inside the formatted phrase instead.
+If you put the cursor at the start or end of styled text and type, the new text goes outside the formatting. To add text inside it, put the cursor somewhere in the middle of the styled text.
 
-- **Japanese input (IME)**: Characters move outside the formatting once you confirm your input. While still unconfirmed, they may temporarily look styled as bold, italic, strikethrough, or highlighted, though links stay in the regular text color even during conversion.
-- **Retyping link text**: Clearing out an entire link label and typing again treats the new text as unlinked. If you just need to fix a link label, edit it while leaving some of the characters in place.
+- **IME input (Japanese, etc.)**: Text goes outside the formatting once you commit it. While it's uncommitted it may look styled, but links stay in the normal text color.
+- **Changing link text**: If you delete all of a link's text and type it again, it's treated as plain text outside the link. To change the wording of a link, edit it while leaving at least one character.
 
-- Arrow keys hop over hidden syntax, moving naturally from one visible character to the next.
+Note: The arrow keys skip over hidden markers and move the cursor one visible character at a time.
 
 ---
 
 ## 5. Toolbar Formatting Rules
 
-### Automatic Spacing Around Formatted Words
+### Automatic Spaces Before and After
 
-Applying bold, italics, strikethrough, highlights, inline code, math, or links through the toolbar automatically adds a half-width space before and after your selection. This keeps adjacent Markdown markers from running into each other and breaking the formatting.
+When you apply formatting from the toolbar (bold, italic, strikethrough, highlight, inline code, math, or link), a half-width space is added before and after it. This keeps markers from running together and breaking the display.
 
-- Spaces are skipped if there is already a space or a line break there, or if you are at the start of a line. They are also skipped right after list markers or a quote's `>`.
-- Nesting a style inside an existing formatted phrase does not add spaces either.
+- No space is added where there's already a space or line break, or at the start of a line. The same goes for right after a list marker or a quote's `>`.
+- No space is added when you layer formatting inside existing formatting, either.
 
-### Stacking Styles
+### Layering Formatting
 
-Selecting formatted text and clicking another style button applies the new formatting inside the existing one. This lets you combine things like bold with a highlight, or strikethrough with a colored highlight.
+If you select styled text and press another formatting button, the new formatting is added inside it, as in "bold + highlight" or "strikethrough + color highlight".
 
-- Clicking the button of a style that is already applied removes only that style, leaving any other layers alone.
-- Bold and italics can be combined on selected text. When pressed without selecting text, only one can be used at a time.
-- Applying a style to the text of a link wraps the formatting around the whole link.
+- Pressing the button for formatting that's already applied removes only that formatting and keeps the rest.
+- If you select text first, you can apply bold and italic together. If you press the buttons without selecting text, you get only one of the two.
+- If you select link text and apply formatting, it goes outside the link.
 
-### Code and Math Limitations
+### Limits on Layering with Code and Math
 
-- If your cursor or selection touches inline code or math, the other style buttons (bold, italics, strikethrough, highlight, link) are greyed out.
-- If your selection touches formatting or a link, the code and math buttons are greyed out.
-- Selecting the inside of a code snippet (or formula) and clicking its button removes the code (or math) formatting.
+- When the cursor or selection touches inline code or math, the other formatting buttons (bold, italic, strikethrough, highlight, link) turn gray and can't be pressed.
+- When the selection touches other formatting or a link, the code and math buttons can't be pressed.
+- Selecting text inside code or math and pressing the same button removes that formatting.
 
-### Pressing Bold or Italics Without Selecting Text
+### Pressing Bold or Italic Without Selecting Text
 
-Clicking bold or italics without selecting any text styles whatever you type next. Clicking the button again closes the formatting.
+If you press bold or italic without selecting text, that formatting is applied to what you type next. Press it again to turn it off.
 
-- Pressing `Backspace` before typing anything cancels it.
-- If you submit your post without closing it, the formatting is closed automatically at the end of that line.
+- Press `Backspace` before typing anything to cancel it.
+- If you post while it's still on, the formatting is closed at the end of the line before the post is saved.
 
 ---
 
-## 6. Managing Lists and Quotes
+## 6. Working with Lists and Quotes
 
 ### Lists
 
-| Shortcut                             | What Happens                                                              |
-| :----------------------------------- | :------------------------------------------------------------------------ |
-| `Enter`                              | Continues with a new item of the same kind (numbered lists count up)      |
-| `Enter` on an empty item             | Outdents the item by one level, or ends the list if already at the top    |
-| `Tab` / `Shift + Tab` (desktop)      | Indents / outdents the item by one level, along with its nested items     |
-| `Backspace` at the start of an item  | Outdents the item, revealing the raw marker once at the top level         |
-| `Shift + Enter`                      | Starts a new line without adding another bullet or number                 |
+| Key                                 | What it does                                                          |
+| :---------------------------------- | :-------------------------------------------------------------------- |
+| `Enter`                             | Continues the list on the next line (numbered lists are numbered automatically) |
+| `Enter` on an empty item            | Moves up one level; at the top level, ends the list                   |
+| `Tab` / `Shift + Tab` (desktop)     | Moves the item down / up one level, along with its child items        |
+| `Backspace` at the start of an item | Moves up one level; at the top level, shows the marker again          |
+| `Shift + Enter`                     | Starts a new line without continuing the list                         |
 
-- Numbered lists renumber automatically as you change indentation or add and remove items.
+Note: Numbered lists are renumbered automatically when you change levels or add or remove items.
 
-### Blockquotes
+### Quotes
 
-| Shortcut                        | What Happens                                                          |
-| :------------------------------ | :-------------------------------------------------------------------- |
-| `Enter`                         | Continues the quote on the next line at the same depth                |
-| `Enter` on an empty quote line  | Outdents the quote by one level, or ends it if already at the top     |
-| `Shift + Enter`                 | Starts a regular new line without continuing the quote               |
+| Key                            | What it does                                                  |
+| :----------------------------- | :------------------------------------------------------------ |
+| `Enter`                        | Continues the quote on the next line at the same depth        |
+| `Enter` on an empty quote line | Moves up one level; at the top level, ends the quote          |
+| `Shift + Enter`                | Starts a new line without continuing the quote                |
 
-### Lists inside Quotes
+### Lists Inside Quotes
 
-Clicking a list button on a quote line puts the list marker right after the `>`, creating a list inside the quote. Continuing with `Enter`, indenting, and renumbering all work just like a regular list.
-
----
-
-## 7. Inserting and Editing Links
-
-Links live under **Link** in the "⋯" menu on your toolbar.
-
-- **Creating a new link**: Select the words you want to link and click the button.
-- **Editing an existing link**: Select the link text, or place your cursor on the link, and click the button.
-
-A small pop-up field opens below the editor. Type a note name or a web address, then press `Enter` to confirm.
-
-- Typing a note name brings up suggestions you can pick with the arrow keys or a tap. Pressing `Enter` confirms exactly what you typed.
-- Anything starting with `https://`, `http://`, or `obsidian://` becomes an external link. Anything else links to a note in your Vault.
-- While editing an existing link, click **Remove link** on the right side of the field to unlink the text.
-
-#### How Links Are Stored
-
-| Link Type       | Output Format                                                                            |
-| :-------------- | :--------------------------------------------------------------------------------------- |
-| Note in Vault   | `![[Note Name\|Label Text]]` (or simply `![[Note Name]]` if the label matches the name) |
-| Web address     | `[Label Text](URL)`                                                                      |
-
-- For more on link syntax, head over to [Working with Images, Links, and Embeds](./links-and-embeds.md).
+Pressing a list button on a quote line puts the list marker right after the `>`, so you can build a list inside the quote. Continuing with `Enter`, indenting, and automatic numbering work the same as in a regular list.
 
 ---
 
-## 8. Quoting Posts with Cards
+## 7. Adding and Editing Links
 
-Selecting **Quote post** from a post's menu attaches that post as a card below the editor. You can write your thoughts above the card and post as usual.
+Links are handled with **Link** in the toolbar's "⋯" menu.
 
-- Click the **×** in the top-right corner of the card to detach it.
-- The quote syntax is added only when you send the post, so it never shows up in the text you are writing.
-- Drafts keep the attached quote card if you step away and come back later.
+- **To add a link**: Select the text you want to link and press the button.
+- **To edit a link**: Select the link text, or put the cursor inside the link, and press the button.
+
+An input field opens below the form. Type a **note name** or a **URL** and press `Enter` to confirm.
+
+- When you type a note name, a list of suggestions appears. Pick one with the arrow keys or a tap. Pressing `Enter` confirms what you've typed.
+- Input that starts with `https://`, `http://`, or `obsidian://` becomes an external link. Anything else becomes a link to a note in your vault.
+- While you're editing a link, the **Remove link** button on the right side of the field removes the link.
+
+#### How Links Are Saved
+
+| Link target      | Saved as                                                                                   |
+| :--------------- | :----------------------------------------------------------------------------------------- |
+| A note in your vault | `![[Note Name\|Display Text]]` (or `![[Note Name]]` if the display text matches the note name) |
+| An external URL  | `[Display Text](URL)`                                                                      |
+
+Note: For how internal links work, see [Working with Images, Links, and Embeds](./links-and-embeds.md).
 
 ---
 
-## Common Questions and Troubleshooting
+## 8. Quoting Past Posts (Quote Cards)
 
-### Why are my Markdown markers still showing?
+Choose **Quote post** from a post's menu and the post appears as a card below the form. Type your text in the form and it's posted together with the card.
 
-- Hand-typed syntax only converts after you press `Enter` on that line.
-- Code blocks, math blocks, manual image embeds, and raw URLs are intentionally left as plain text.
+- Press the **×** button at the top right of the card to remove the quote.
+- The quote markers are added when you post, so they don't appear in the text in the form.
+- Drafts save the quote card too.
 
-### Why is my text appearing outside the formatting instead of continuing inside it?
+---
 
-- Typing at the very beginning or end of styled text puts new characters outside the styling by design. To keep typing within that style, place your cursor between existing characters rather than at the edge.
+## Troubleshooting
 
-### Why are certain toolbar buttons greyed out?
+### The markers stay visible
 
-- Check whether your cursor or selection touches inline code, math, or existing formatting or links. Section 5 covers these rules in detail.
-- Strikethrough and highlights need selected text. Link needs selected text, or your cursor resting on a link.
-- You cannot turn on bold while italics is lit up from being pressed without selecting text, and vice versa.
+- Markdown syntax you type by hand isn't hidden until you press `Enter` on that line.
+- Code blocks, math blocks, manually typed image embeds, bare URLs, and the like are shown as typed.
+
+### Text typed next to formatting ends up outside it
+
+- Text typed at the start or end of formatting goes outside it. To add text inside, put the cursor somewhere in the middle and type.
+
+### A button is grayed out
+
+- Check whether the cursor or selection touches inline code, math, or other formatting or a link (see "5. Toolbar Formatting Rules").
+- Strikethrough and highlight work only when text is selected. Link works only when text is selected or the cursor is inside a link.
+- While bold or italic is turned on without selected text, you can't press the other one.

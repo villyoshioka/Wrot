@@ -100,7 +100,7 @@ const ja = {
 
   "settings.item.tagColorRules.name": "タグ別ルールを使う",
   "settings.item.tagColorRules.desc":
-    "タグごとに投稿の色や本体統合の扱いなどを変更できます。\n色は本文で先に出てきたタグのルールを使います。",
+    "タグごとに投稿の色や本体統合の扱いなどを変更できます。\n色は本文で先に書かれたタグのルールを使います。",
 
   "settings.tagRule.label": "ルール {n}",
   "settings.tagRule.tag.name": "タグ",
@@ -182,6 +182,7 @@ const ja = {
   "view.postMenu.pin": "ピン留め",
   "view.postMenu.pinLimitHint": "ピン留めできるのは{limit}件までです。",
   "view.postMenu.schedulePin": "あとでピン留め",
+  "view.postMenu.repeatPin": "繰り返しとしてピン留め",
   "view.postMenu.delete": "削除",
   // Shown on the same row after the first press, in place of the label above.
   "view.postMenu.deleteConfirm": "もう一度押すと削除",
@@ -216,7 +217,5 @@ const ja = {
   "defaults.inputPlaceholder": "あなたが書くのを待っています...",
 };
 
-// Type for other locale files: enforces the exact key set at build time
-// while leaving the values free-form.
 export type Translations = Record<keyof typeof ja, string>;
 export default ja;

@@ -1,10 +1,4 @@
-// Type-aware lint for src/. The rule set is the one the existing eslint-disable comments in the
-// source were written against (typescript-eslint's recommended type-checked rules), so those
-// comments now actually suppress something.
-//
-// Note: the Obsidian community submission review additionally runs eslint-plugin-obsidianmd.
-// That plugin is not a dependency here -- it pulls in a large advisory-laden tree -- so it stays
-// an ad-hoc, install-when-submitting step (see .claude/OBSIDIAN_DEVELOPMENT.md).
+// The submission review also runs eslint-plugin-obsidianmd, which is deliberately not a dependency (see eslint.submission.config.mjs).
 import js from "@eslint/js";
 import globals from "globals";
 import tseslint from "typescript-eslint";

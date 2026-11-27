@@ -182,6 +182,7 @@ const zhTW = {
   "view.postMenu.pin": "置頂",
   "view.postMenu.pinLimitHint": "最多可置頂 {limit} 則。",
   "view.postMenu.schedulePin": "稍後置頂",
+  "view.postMenu.repeatPin": "作為重複置頂",
   "view.postMenu.delete": "刪除",
   "view.postMenu.deleteConfirm": "再按一次以確定刪除",
 

@@ -1,6 +1,4 @@
-// Single definition of the CSS minification policy, shared by the esbuild build (which
-// minifies `/* @css */` template literals) and the release step (which minifies styles.css).
-// Keeping one copy avoids the release asset and dist/ drifting apart.
+// Shared by the esbuild build and the release step so the release asset and dist/ never drift.
 
 /**
  * Whitespace around + and - is preserved: collapsing it inside calc()

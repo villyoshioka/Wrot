@@ -2,7 +2,7 @@
 
 **English** ・ [日本語](https://github.com/villyoshioka/Wrot/blob/main/docs/ja/README.md)
 
-**Micro-journaling for Obsidian. Capture your day like you're tweeting to yourself.**
+**An Obsidian plugin for logging your day the way you'd post a tweet.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow)](https://opensource.org/licenses/MIT)
 [![release](https://img.shields.io/github/v/release/villyoshioka/Wrot)](https://github.com/villyoshioka/Wrot/releases/latest)
@@ -13,11 +13,11 @@
 
 ## What is Wrot?
 
-Write + Jot = **Wrot**. It brings effortless micro-journaling to Obsidian, combining the depth of writing with the speed of quick note-taking.
+Write + Jot = **Wrot**, a micro-journaling plugin for Obsidian.
 
-Think of it as your own private social feed. You get the quick, low-friction feel of posting online, but with zero algorithm, zero audience, and zero pressure. Dump random thoughts, quick updates, or fleeting ideas as they happen.
+You can jot things down as casually as on social media, but nobody else sees your posts and nothing reorders them. Ideas as they come and small thoughts about your day can go down without a second thought.
 
-Because every post drops straight into your daily notes, Wrot works hand-in-hand with Obsidian’s native search and backlinks without breaking a sweat.
+Posts are saved straight into your daily notes, so Obsidian's search, links, and Graph View work as usual.
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/villyoshioka/Wrot/main/docs/images/posting-mobile.gif" alt="Posting from the Wrot timeline on iPhone" width="280">
@@ -28,36 +28,36 @@ Because every post drops straight into your daily notes, Wrot works hand-in-hand
 
 ## What you can do
 
-- **A social-style timeline paired with a rich editor**  
-  The editor hides Markdown syntax so bold text and lists look finished as you write ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/posting-form-v3.md)). A customizable toolbar puts formatting, lists, quotes, and links within easy reach ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/toolbar.md)).
-- **Keep important posts pinned**  
-  Keep key posts or active tasks stuck to the top of your feed. You can even schedule a post to pin itself automatically on a future date ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/pinning.md)).
-- **Built right into Obsidian's tag system**  
-  Tags in your posts act just like standard tags across your vault. They pop up in Graph View, show up in search, and open in Obsidian's global search with a click ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/tag-integration.md)).
+- **A social-style timeline with a rich editor**  
+  The post form hides Markdown syntax, so bold text and lists look finished as you write ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/posting-form-v3.md)). The toolbar inserts formatting, lists, quotes, and links, and you can choose which buttons it shows and in what order ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/toolbar.md)).
+- **Pinning**  
+  Keep important posts or current tasks at the top of the timeline. You can also schedule a post to be pinned on a future date. Posts with checkboxes can be pinned as a daily checklist that unchecks itself each time the date changes ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/pinning.md)).
+- **Obsidian tag integration**  
+  Tags in your posts work like any other tag in your vault: they appear in Graph View and tag search, and clicking one opens Obsidian's search ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/tag-integration.md)).
 - **Tag autocomplete**  
-  Type `#` in the input box to instantly see your most-used tags, making tagging fast and painless ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/tag-autocomplete.md)).
-- **Tag rules with auto color-coding**  
-  Set custom background and text colors for specific tags to visually group your feed by project, mood, or urgency ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/tag-rules.md)).
-- **Internal links and rich link previews**  
-  Link to notes in your Vault or to web pages with the Link button, and paste URLs to generate rich OGP link cards, keeping your context clear at a glance ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/links-and-embeds.md)).
-- **Post under your template headings**  
-  Pick a heading from your daily note template and your posts land right under it instead of at the end of the note. Templater-powered templates work too ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/template-heading-selection.md)).
-- **Hassle-free image attachments**  
-  Paste images straight from your clipboard, drop them onto the screen, or pick files using the attachment button. Check thumbnail previews before hitting post.
-- **Customizable look and feel**  
-  Colors follow Obsidian's own look unless you pick your own, with separate light/dark mode color schemes, custom post button labels, and custom icons.
+  Type `#` in the post form to see tags you've used before ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/tag-autocomplete.md)).
+- **Tag rules (color-coding)**  
+  Set a background and text color for each tag to color-code the timeline by topic, mood, or priority ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/tag-rules.md)).
+- **Links and URL previews**  
+  Add links to notes in your vault or to web pages. Links to web pages are shown as cards with a title and thumbnail ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/links-and-embeds.md)).
+- **Post under a template heading**  
+  Pick a heading from your daily note template, and posts are added under it. Templates made with Templater work too ([learn more](https://github.com/villyoshioka/Wrot/blob/main/docs/en/template-heading-selection.md)).
+- **Image attachments**  
+  Paste from the clipboard, drag and drop, or pick a file with the attachment button. Before posting, you can check or remove attachments from their thumbnails.
+- **Appearance**  
+  Colors follow Obsidian's theme, and you can also set your own for light and dark mode. The post button's icon and label can be changed too.
 
 ---
 
-## How it works
+## Where posts are saved
 
-Wrot saves your entries as ` ```wr ` code blocks inside the file designated by Obsidian's Daily Notes plugin. No custom databases, no external servers, no vendor lock-in. Everything stays inside plain text files in your vault.
+Wrot saves each post as a ` ```wr ` code block in the note set by Obsidian's Daily Notes plugin. It uses no external database, so all data stays in files in your vault.
 
-You can post, edit, and clean up entries directly from the timeline, or open the raw Markdown file whenever you prefer.
+You can post, edit, and delete from the timeline, or open the note and edit it directly.
 
-If you format your daily notes by week (like `GGGG年WW週`) or month (like `YYYY年MM月`), Wrot seamlessly adapts into a weekly or monthly log instead.
+If your daily note format is weekly (like `GGGG年WW週`) or monthly (like `YYYY年MM月`), Wrot works as a weekly or monthly log.
 
-> **Note**: Wrot relies on Obsidian's core Daily Notes plugin, so make sure it is turned on.
+> **Note**: Wrot needs Obsidian's core Daily Notes plugin to be turned on.
 
 ---
 
@@ -75,7 +75,7 @@ If you format your daily notes by week (like `GGGG年WW週`) or month (like `YYY
 
 ## Languages
 
-Wrot supports **11 languages across 12 locales**. It automatically follows your Obsidian interface language and falls back to English if your language isn't supported yet.
+Wrot supports **11 languages across 12 locales**. It follows your Obsidian interface language and falls back to English for languages it doesn't support.
 
 | Language     | Locale  | Language            | Locale  |
 | :----------- | :------ | :------------------ | :------ |
@@ -90,23 +90,23 @@ Wrot supports **11 languages across 12 locales**. It automatically follows your 
 
 ## Quick Start
 
-1. **Install Wrot** through the Community Plugins tab or manually.
-2. **Open your timeline** by clicking the ribbon icon, or from the Command Palette with "Open in left sidebar", "Open in right sidebar", or "Open in main area".
-3. **Start logging** by writing a post and pressing the post button or hitting `Ctrl / Cmd + Enter`.
+1. Install Wrot from Community plugins or manually.
+2. Open the timeline with the ribbon icon, or run "Open in left sidebar", "Open in right sidebar", or "Open in main area" from the Command Palette.
+3. Write a post and press the post button or `Ctrl / Cmd + Enter`.
 
 ### Installation
 
 **Via Obsidian Community Plugins**
 
 1. Go to Settings > Community plugins > Browse.
-2. Search for `Wrot` and hit Install.
-3. Once downloaded, click Enable.
+2. Search for `Wrot` and click Install.
+3. When it finishes, click Enable.
 
 **Manual Install**
 
-1. Grab `main.js`, `manifest.json`, and `styles.css` from the latest [Release](https://github.com/villyoshioka/Wrot/releases).
+1. Download `main.js`, `manifest.json`, and `styles.css` from the latest [Release](https://github.com/villyoshioka/Wrot/releases).
 2. Move all three files into `.obsidian/plugins/wrot/` inside your vault (create the `wrot` folder if needed).
-3. Open Settings > Community plugins in Obsidian, hit Reload, and enable Wrot.
+3. Open Settings > Community plugins in Obsidian, click the reload icon, and enable Wrot.
 
 > **Tip**: The `.obsidian` folder is hidden by default. Press `Cmd + Shift + .` on macOS or turn on "Hidden items" under the View tab in Windows File Explorer to reveal it.
 
@@ -114,15 +114,15 @@ Wrot supports **11 languages across 12 locales**. It automatically follows your 
 
 ## Customization
 
-Wrot gives you fine-grained control over how your feed looks and behaves.
+The main settings are:
 
-- **Panel location**: Dock your timeline in the left sidebar, right sidebar, or main editor area.
-- **Color themes**: Customize light and dark mode colors independently.
-- **Tag rules**: Color-code specific tags for quick visual filtering.
-- **Pinning**: Limit pinned items (1, 3, or 5 posts) and keep pinned posts sticky at the top when scrolling.
-- **Button setup**: Customize post and update labels/icons, or hide the delete button from the post menu.
-- **Timestamp format**: Adjust how dates and times display (e.g., `YYYY/MM/DD HH:mm:ss`).
-- **Link previews**: Turn OGP link preview cards on or off.
+- **Panel location**: left sidebar, right sidebar, or main area
+- **Color theme**: separate colors for light and dark mode
+- **Tag rules**: background and text color for each tag
+- **Pinning**: maximum number of pinned posts (1, 3, or 5), and whether they stay at the top while scrolling
+- **Buttons**: labels and icons for the post and update buttons, and whether the post menu shows Delete
+- **Timestamp format**: how dates and times are shown (e.g., `YYYY/MM/DD HH:mm:ss`)
+- **Link previews**: OGP preview cards on or off
 
 ![Wrot timeline docked in the right sidebar](https://raw.githubusercontent.com/villyoshioka/Wrot/main/docs/images/sidebar-desktop-en.png)
 
@@ -130,9 +130,9 @@ Wrot gives you fine-grained control over how your feed looks and behaves.
 
 ## Privacy
 
-Wrot does not track you or collect any data. Everything runs 100% locally on your device.
+Wrot does not track you or collect any personal data. Everything is processed on your device.
 
-_Note: If link previews are enabled, Wrot sends a standard web request to the destination URL to retrieve preview metadata._
+_Note: If link previews are on, Wrot requests the linked page to fetch its preview data._
 
 ---
 
@@ -140,23 +140,23 @@ _Note: If link previews are enabled, Wrot sends a standard web request to the de
 
 [MIT License](https://github.com/villyoshioka/Wrot/blob/main/LICENSE)
 
-Thinking of forking Wrot? See [About Forks](https://github.com/villyoshioka/Wrot/blob/main/FORKING.md).
+Publishing a fork? See [About Forks](https://github.com/villyoshioka/Wrot/blob/main/FORKING.md).
 
 ---
 
 ## Credits
 
-Wrot was built standing on the shoulders of these incredible projects. Huge thanks to the creators:
+Wrot was inspired by these projects. Thanks to their authors for the great work that came before.
 
 - [Obsidian Memos](https://github.com/Quorafind/Obsidian-Memos) (now [Thino](https://github.com/Quorafind/Obsidian-Thino)) by [Quorafind](https://github.com/Quorafind)
 - [Mobile First Daily Interface (MFDI)](https://github.com/tadashi-aikawa/mobile-first-daily-interface) by [tadashi-aikawa](https://github.com/tadashi-aikawa)
 
-Translations are powered by [Nani](https://nani.now/ja). Special thanks to [catnose](https://x.com/catnose99) (Kioku LLC) for such a helpful tool.
+Translations are made with [Nani](https://nani.now/ja). Sincere thanks to [catnose](https://x.com/catnose99) (Kioku LLC) for making such a useful tool.
 
 ---
 
-## Behind the Scenes
+## Development
 
-The project author handles all design, architecture, and quality control, leveraging Anthropic's Claude as a development assistant. For more details, see our [AI Use Policy](https://github.com/villyoshioka/Wrot/blob/main/AI_POLICY.md).
+The author handles all design, architecture, and quality control, and uses Anthropic's Claude as a development assistant. For details, see the [AI Use Policy](https://github.com/villyoshioka/Wrot/blob/main/AI_POLICY.md).
 
 **Author**: Vill Yoshioka ([@villyoshioka](https://github.com/villyoshioka))

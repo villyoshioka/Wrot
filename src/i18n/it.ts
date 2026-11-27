@@ -185,6 +185,7 @@ const it = {
   "view.postMenu.pin": "Fissa in alto",
   "view.postMenu.pinLimitHint": "Il limite per i post fissati è di {limit}.",
   "view.postMenu.schedulePin": "Pianifica fissaggio",
+  "view.postMenu.repeatPin": "Fissa come ricorrente",
   "view.postMenu.delete": "Elimina",
   // Shown on the same row after the first press, in place of the label above.
   "view.postMenu.deleteConfirm": "Premi di nuovo per eliminare",

@@ -91,9 +91,7 @@ export function refreshQuoteCardsForFile(
   });
 }
 
-// Swaps only body/timestamp while keeping frame, handlers, and data attrs, so the rebuild
-// path's "…" placeholder flicker never shows. Returns false when the card structure cannot
-// be updated in place (caller rebuilds).
+// False when the card can't be updated in place; the caller rebuilds.
 function updateQuoteCardInPlace(
   card: HTMLElement,
   app: App,
@@ -292,7 +290,6 @@ function renderPreviewLines(
       : rawLine;
 
     const info = parseListLine(line);
-    // The card is a flat run of line divs, so nesting reads as a left offset per depth.
     let itemDepth = 0;
     let itemOrdinal = 1;
     if (info) {
@@ -325,7 +322,6 @@ function renderPreviewLines(
       renderTextWithTagsAndUrls(textSpan, info.content, inlineCallbacks);
     } else if (info?.kind === "ol") {
       const slot = lineEl.createSpan({ cls: "wrot-quote-card-marker-slot wrot-quote-card-marker-ol" });
-      // Numbered by position, matching the rendered views rather than what was typed.
       slot.textContent = `${itemOrdinal}.`;
       const textSpan = lineEl.createSpan({ cls: "wrot-quote-card-line-text" });
       renderTextWithTagsAndUrls(textSpan, info.content, inlineCallbacks);
@@ -362,7 +358,6 @@ function markDead(card: HTMLElement, bodyEl: HTMLElement, metaEl: HTMLElement): 
 function flashJumpTargetReadingView(
   blockId: string,
   resolveRuleAccent?: (ruleClass: string) => string | null,
-  // See flashJumpTarget: flash in place without moving the view.
   skipScroll?: boolean
 ): void {
   // Failsafe only, not a normal-path limit: stops observing forever if the target never appears.
@@ -465,7 +460,6 @@ function flashJumpTargetReadingView(
     }
   };
 
-  // Runs once the target appears: center, let late renders (OGP/MathJax) settle, then flash.
   const onTargetAppeared = (target: HTMLElement) => {
     if (canceled || centeredOnce) return;
     centeredOnce = true;
@@ -524,7 +518,6 @@ function flashJumpTargetReadingView(
       return foundRV && !foundLV;
     });
     if (visibleRV.length > 0) return visibleRV[0];
-    // No visible RV match: return null and keep observing rather than grab a hidden element.
     return null;
   };
 
@@ -571,18 +564,14 @@ function flashJumpTarget(
   // Resolved by the caller: deriving it from the active view misclassifies LV/RV
   // when the jump starts from the Wrot timeline or another note.
   targetView?: MarkdownView | null,
-  // Target was already fully on screen at click time: flash in place, never scroll.
   skipScroll?: boolean
 ): void {
-  // In RV, images/math/OGP inflate line heights and break the line-to-position mapping,
-  // so time-based polling misses; branch to the DOM-observation approach instead.
   const isReadingView = targetView?.getMode?.() === "preview";
   if (isReadingView) {
     flashJumpTargetReadingView(blockId, resolveRuleAccent, skipScroll);
     return;
   }
 
-  // LV path: poll for the target, center it, then flash; any user input cancels both.
   const searchAt = [80, 250, 500, 900, 1500, 2200];
   const scrollSettleDelay = 200;
   const flashDuration = 1600;
@@ -728,7 +717,6 @@ function flashJumpTarget(
   pendingTimeouts.add(cleanupId);
 }
 
-// Used to disambiguate targets when the same file is open in both LV and RV.
 function getActiveViewContainer(app: App): HTMLElement | null {
   const view = app.workspace.getActiveViewOfType(MarkdownView);
   return view?.containerEl ?? null;
@@ -783,7 +771,6 @@ function scrollElementIntoCenter(el: HTMLElement): void {
   window.requestAnimationFrame(apply);
 }
 
-// Collect block-id matches across LV/RV/timeline; on mobile, timeline cards in a transient drawer are excluded.
 function collectFlashTargets(blockId: string): HTMLElement[] {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- assertion needed for cross-version Obsidian typings
   const all = Array.from(
@@ -819,7 +806,6 @@ export function renderQuoteCard(
     timestampFormat?: string;
     // Colors the card by the source post's tag rule, independent of the quoting post's rule.
     resolveRuleClass?: (content: string) => string | null;
-    // Rule class -> accent hex; used for the post-jump flash color.
     resolveRuleAccent?: (ruleClass: string) => string | null;
     // Strike through checked items (pass the same value as the main list setting).
     checkStrikethrough?: boolean;

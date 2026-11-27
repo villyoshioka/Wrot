@@ -9,7 +9,6 @@ interface WrPalette {
   faintColor: string;
   unresolvedLinkColor: string;
   codeLightness: CodeLightness;
-  // The theme's highlight colours (--color-red and the rest) as hex.
   highlightTheme: Record<string, string>;
   diagramTheme: DiagramTheme | null;
 }
@@ -45,6 +44,7 @@ export function buildPaletteCss(palette: WrPalette): string {
         --wrot-bg-color: ${bgColor};
         ${highlightVars(highlightTheme, bgColor)}
         --wrot-bg-hover: ${hoverColor};
+        --wrot-text-color: ${textColor};
         --wrot-code-text: ${textColor};
         --wrot-code-bg: ${bgColor};
         --wrot-diagram-text: ${visibleDiagramColor(textColor, bgColor)};
@@ -78,7 +78,6 @@ export function buildPaletteCss(palette: WrPalette): string {
       body div.block-language-wr .wrot-highlight {
         background: var(--text-highlight-bg, var(--wrot-hl-yellow, color-mix(in oklch, var(--color-yellow) 30%, transparent)));
       }
-      /* LV: code-block-flair doubles as the copy button; its hit area covers the memo tail, so keep it transparent */
       body .wrot-codeblock-line .code-block-flair {
         background: transparent;
         background-color: transparent;
@@ -87,7 +86,6 @@ export function buildPaletteCss(palette: WrPalette): string {
         background: ${hoverColor};
         background-color: ${hoverColor};
       }
-      /* Mobile: neutralize the sticky post-tap :hover; show the PC hover color only while :active */
       body.is-mobile .wrot-ogp-card:hover {
         background: ${bgColor};
         background-color: ${bgColor};
@@ -123,8 +121,6 @@ export function buildPaletteCss(palette: WrPalette): string {
       body .wrot-calendar-day-outside {
         color: ${faintColor};
       }
-      /* Out of range for this picker. Declared after the today rule so a day that is
-         both today and out of reach reads as out of reach. */
       body .wrot-calendar-day-disabled,
       body .wrot-calendar-day-disabled.wrot-calendar-day-today,
       body .wrot-calendar-day-disabled.wrot-calendar-day-selected {
@@ -198,7 +194,6 @@ export function buildPaletteCss(palette: WrPalette): string {
       body .wrot-quote-card-slot .wrot-quote-card .wrot-nested-quote-marker {
         color: ${mutedColor};
       }
-      /* Block quotes (> lines) one step fainter than the other sub-colour text */
       body .cm-line.wrot-codeblock-line .wrot-quote-highlight,
       body .wrot-blockquote,
       body .wrot-blockquote *,
@@ -235,7 +230,6 @@ export function buildPaletteCss(palette: WrPalette): string {
       body .cm-line .wrot-blockquote-wrap:not(#x#y#z) *:not(.wrot-tag-highlight):not(.wrot-internal-link-highlight):not(.wrot-url-highlight):not(.wrot-math-highlight):not(.wrot-tag):not(.wrot-internal-link):not(.wrot-url):not(.wrot-reading-tag):not(.wrot-reading-url) {
         color: ${faintColor};
       }
-      /* Checkbox border uses the sub color; checked fill uses the theme accent */
       body .wrot-check-item input[type="checkbox"],
       body .wrot-bullet-list .wrot-check-item input[type="checkbox"],
       body .wrot-reading-list .wrot-check-item input[type="checkbox"],
@@ -274,8 +268,6 @@ export function buildPaletteCss(palette: WrPalette): string {
       body .wrot-blockquote-wrap {
         border-left-color: ${faintColor};
       }
-      /* LV quote bars (::before, nested via box-shadow) use the same colour as RV's
-         border-left so both views share one color source; tag-rule CSS (tier 4) still wins */
       body .cm-line.wrot-blockquote-line::before,
       body .wrot-textarea .cm-line.wrot-cv-quote::before {
         background-color: ${faintColor};
@@ -311,8 +303,6 @@ export function buildPaletteCss(palette: WrPalette): string {
       body ol.wrot-reading-list > li::before {
         color: ${mutedColor};
       }
-      /* Lists inside block quotes take the quote's colour throughout: text, markers and
-         checkbox borders (links and tags keep their own) */
       body .wrot-blockquote li,
       body .wrot-blockquote .wrot-check-done,
       body .wrot-blockquote .wrot-bullet-list > li:not(.wrot-check-item)::before,
@@ -344,8 +334,6 @@ export function buildPaletteCss(palette: WrPalette): string {
       body .cm-line.wrot-codeblock-line .wrot-url {
         color: var(--text-accent);
       }
-      /* Links inside block quotes: the accent faded toward the background as far as quote text
-         is (faintColor), so they still read as links without standing out of the quote */
       body .wrot-blockquote .wrot-internal-link:not(.wrot-internal-link-unresolved),
       body .wrot-blockquote .wrot-url,
       body .wrot-blockquote .wrot-reading-url,
@@ -363,10 +351,7 @@ export function buildPaletteCss(palette: WrPalette): string {
         color: ${quoteLink};
         -webkit-text-fill-color: ${quoteLink};
       }
-      /* A missing embed points at something that is not there, same as an unresolved link,
-         so both take the palette's faint colour. The tag-rule sheet groups them the same way;
-         without the embed selectors here they would fall back to the theme's muted colour,
-         which is unrelated to Wrot's own background. */
+      /* Without the embed selectors, missing embeds fall back to the theme's muted colour, unrelated to Wrot's background. */
       body .cm-line.wrot-codeblock-line .wrot-internal-link.wrot-internal-link-unresolved,
       body div.block-language-wr a.wrot-internal-link.wrot-internal-link-unresolved,
       body .wrot-internal-link.wrot-internal-link-unresolved,
@@ -397,8 +382,6 @@ export function buildPaletteCss(palette: WrPalette): string {
         color: ${mutedColor};
         stroke: ${mutedColor};
       }
-      /* The tick on a checked item says a state is live, so it keeps the accent instead
-         of the muted colour every other icon in the menu carries. */
       body .wrot-menu .menu-item .menu-item-icon.mod-checked .svg-icon {
         color: var(--text-accent);
         stroke: var(--text-accent);
@@ -411,9 +394,7 @@ export function buildPaletteCss(palette: WrPalette): string {
       body .wrot-menu .menu-item:not(.is-disabled):active {
         background-color: ${hoverColor};
       }
-      /* The chosen day below the drums: it reads as a label, so it takes no hover
-         fill like the rows above it — only the text answers the pointer. Declared
-         here to land after the shared hover rule. */
+      /* Same specificity as the shared hover rule above, so it must stay after it. */
       .is-mobile body .wrot-menu .menu-item.wrot-menu-schedule-confirm:hover,
       .is-mobile body .wrot-menu .menu-item.wrot-menu-schedule-confirm:active,
       body .wrot-menu .menu-item.wrot-menu-schedule-confirm:hover,

@@ -1,7 +1,7 @@
 import { ItemView, WorkspaceLeaf, Notice, TFile, EventRef, debounce, setIcon, Menu, MenuItem, Platform, Scope, MarkdownRenderer } from "obsidian";
 import { VIEW_TYPE_WROT } from "../constants";
 import { blockTimeOf, parseMemos, Memo } from "../utils/memoParser";
-import { appendMemo, deleteMemo, setMemoCheckbox, updateMemo } from "../utils/memoWriter";
+import { appendMemo, deleteMemo, hasCheckbox, setMemoCheckbox, updateMemo, withChecks } from "../utils/memoWriter";
 import { getOrCreateDailyNote, getDailyNoteFile, dailyNotePathFor, dailyNoteTemplateFile } from "../utils/dailyNote";
 import { headingLocator, waitForTemplater } from "../utils/postHeading";
 import { segmentBlocks, toTildeFences } from "../utils/blockSegmenter";
@@ -78,7 +78,6 @@ const TOOLBAR_ACTION_SPECS: ReadonlyArray<{
   { id: "schedule", icon: "clock-fading", labelKey: "view.postMenu.schedulePin" },
 ];
 
-// What each action would add to the text, for keeping code and math apart from other effects.
 const EFFECT_KIND: Record<string, "code" | "math" | "decoration"> = {
   bold: "decoration",
   italic: "decoration",
@@ -95,13 +94,9 @@ interface ToolbarAction {
   label: string;
   icon: string;
   run: () => void;
-  // Insertion has nothing to wrap without a selection, so the action is offered greyed out.
   needsSelection?: boolean;
-  // Actions that hold a state carry a tick in the menu, the way the toolbar button lights.
   checked?: () => boolean;
-  // Greyed out in the menu under the same terms as the toolbar button.
   disabled?: () => boolean;
-  // A label that follows what the action would do right now, where that varies.
   title?: () => string;
   /**
    * Opens a marker and writes inside it, with a lit button as the only sign that mode is
@@ -125,8 +120,6 @@ function matchesPin(pin: PinEntry, memo: Memo, filePath: string): boolean {
   return pin.timestamp === memo.time && pin.file === filePath;
 }
 
-// Inserts an image embed above a trailing quote-card marker or Markdown "> " block
-// (quotes always stay at the bottom of a post); otherwise appends at the end.
 function insertEmbedAboveBottomBlock(bodyText: string, embed: string): string {
   if (!bodyText) return embed;
 
@@ -162,8 +155,6 @@ function insertEmbedAboveBottomBlock(bodyText: string, embed: string): string {
   return `${bodyText}\n${embed}`;
 }
 
-// A quote-card marker alone on the last line: the post's quote, which the form shows as a
-// card instead of text. Markers elsewhere (mid-text, or a second one) stay text.
 const TRAILING_QUOTE_RE = /^(?:([\s\S]*?)\n)?[ \t]*(\[\[[^[\]\n]+#\^wr-\d{17}\]\])\s*$/;
 
 function splitTrailingQuote(text: string): { text: string; quote: string | null } {
@@ -172,7 +163,6 @@ function splitTrailingQuote(text: string): { text: string; quote: string | null 
   return { text: (m[1] ?? "").replace(/\s+$/, ""), quote: m[2] };
 }
 
-// 2.x wrote a blank line before the marker; both read back the same.
 function joinQuote(text: string, quote: string | null): string {
   if (!quote) return text;
   const body = text.replace(/\s+$/, "");
@@ -182,11 +172,7 @@ function joinQuote(text: string, quote: string | null): string {
 export class WrotView extends ItemView {
   plugin: WrotPlugin;
   private currentDate: ReturnType<typeof moment>;
-  // While true, the view auto-follows the date rollover to today.
   private anchoredToToday: boolean = true;
-  // Calendar day the list was last drawn on, as YYYY-MM-DD. A scheduled pin comes due by
-  // the day turning over rather than by anything happening, so this is what tells a
-  // catch-up whether there is anything to pick up.
   private lastRenderedDay: string | null = null;
   private listContainer!: HTMLElement;
   private pinnedContainer: HTMLElement | null = null;
@@ -194,24 +180,19 @@ export class WrotView extends ItemView {
   private dateNavEl!: HTMLElement;
   private calendarBtnEl: HTMLElement | null = null;
   private calendarPopover: CalendarPopoverHandle | null = null;
-  // Separate handle from the date-nav calendar: this one hangs off a card's menu.
   private schedulePopover: CalendarPopoverHandle | null = null;
   private datePopover: CalendarPopoverHandle | null = null;
-  // False once the @date the open calendar is for has been edited or the caret has left it.
   private dateTargetHeld: (() => boolean) | null = null;
   private linkPopover: LinkPopoverHandle | null = null;
-  // The button the open schedule picker belongs to, so that button can close it again.
   private schedulePickerAnchor: HTMLElement | null = null;
-  // Timestamp of the memo whose day is being chosen, if any.
   private schedulingTime: string | null = null;
-  // Day armed on the post being written, applied the moment it is posted.
   private armedSchedule: string | null = null;
+  private armedRepeat = false;
   private scheduleArmBtn: HTMLButtonElement | null = null;
   private suggest: InlineSuggest | null = null;
   composer!: ComposerField;
   submitLabelEl!: HTMLElement;
   submitIconEl!: HTMLElement;
-  // One sync can raise several change signals in a row; they redraw once.
   private requestRefresh = debounce(() => void this.refresh(), REFRESH_COALESCE_MS, true);
   private ignoreNextModify = false;
   private ownWriteAt = 0;
@@ -220,17 +201,13 @@ export class WrotView extends ItemView {
   // Calling focus() from a format-button click fires a focus event whose validation would
   // instantly clear the just-set pending format mode; skip exactly one focus validation.
   private skipNextFocusValidation = false;
-  // Dims bold/italic buttons during IME composition. On iOS WebKit, tapping outside mid-IME
-  // never delivers pointer/click to the buttons, so treat input right after blur as a forced
-  // commit and briefly suppress unlocking instead.
+  // iOS WebKit drops taps on the buttons mid-IME, so the lock is released from input/blur heuristics instead.
   private imeLocked = false;
   private imeComposing = false;
   private imeValueAtStart = "";
   private imeSuppressUntil = 0;
-  // Whether visual mode has been told about a pending bold/italic opener.
   private armedShown = false;
   private refreshing = false;
-  // A change that arrived while a render was in flight; replayed once the render finishes.
   private refreshQueued = false;
   private toolbarResizeObserver: ResizeObserver | null = null;
   private scheduleDraftSave = debounce(() => void this.persistDraft(), DRAFT_IDLE_MS, true);
@@ -239,35 +216,23 @@ export class WrotView extends ItemView {
   private pendingImageUrl: string | null = null;
   private pendingShrink: Promise<File> | null = null;
   private thumbnailContainer: HTMLElement | null = null;
-  // The post being quoted, as its marker: shown as a card under the form, written into the
-  // post on submit.
   private pendingQuote: string | null = null;
   private quoteContainer: HTMLElement | null = null;
   private imageAddBtn: HTMLButtonElement | null = null;
   private submitBtnEl: HTMLButtonElement | null = null;
-  // Sits at the left edge of the input header and only shows while editing.
   private cancelBtnEl: HTMLButtonElement | null = null;
-  // Takes the same place and shape while the toolbar itself is being arranged.
   private toolbarDoneBtnEl: HTMLButtonElement | null = null;
   private toolbarEl: HTMLElement | null = null;
   private formatBtnEl: HTMLButtonElement | null = null;
-  // Every action's button, built up front whether or not it is on the bar: the handlers
-  // stay bound to it, so hiding one is only a matter of taking it out of the DOM.
   private toolbarBtns: Map<string, HTMLButtonElement> = new Map();
   private toolbarActions: ToolbarAction[] = [];
-  // Working copy of the saved layout, mutated while arranging and written back on each change.
   private toolbarLayout: ToolbarSlot[] = [];
   private toolbarEditing = false;
-  // Edit mode: the memo whose body the form is rewriting. time is the unique key;
-  // filePath keeps the write target stable across date navigation and for pinned
-  // memos living in another file.
+  // filePath pins the write target across date navigation and for pinned memos living in another note.
   private editingMemo: { time: string; filePath: string } | null = null;
-  // Timestamp of the memo whose delete has taken its first press, if any.
   private deleteArmedTime: string | null = null;
   private deleteArmTimer: number | null = null;
-  // Draft stashed on entering edit mode, restored on update or cancel. The image
-  // is kept as a File reference: its object URL is revoked with the thumbnail,
-  // but setPendingImage regenerates one on restore.
+  // The image is kept as a File: its object URL is revoked with the thumbnail and regenerated on restore.
   private savedDraft: {
     text: string;
     image: File | null;
@@ -332,9 +297,6 @@ export class WrotView extends ItemView {
     // Register after the initial render to avoid refresh races.
     this.registerFileWatcher();
 
-    // The view has no clock of its own, so it catches up at the moments attention lands
-    // on it: the panel being reached for, and the window being come back to. Both are
-    // cheap when the day has not turned -- catchUpToToday compares a date and stops.
     this.registerEvent(
       this.app.workspace.on("active-leaf-change", (leaf) => {
         if (leaf !== this.leaf) return;
@@ -454,7 +416,6 @@ export class WrotView extends ItemView {
     // Matched by path rather than by looking the note up: a deleted file is no longer there
     // to be found, and the timeline would sit on the posts of a note that is gone.
     if (file.path === dailyNotePathFor(this.currentDate)) return true;
-    // Pins show above the day's posts whatever date is open, so their notes count too.
     return this.holdsPinnedMemo(file.path);
   }
 
@@ -507,8 +468,7 @@ export class WrotView extends ItemView {
     await this.plugin.saveDraft(this.draftText());
   }
 
-  // The draft file keeps the quote as text below the rest, as 2.x wrote it, so a device still
-  // on 2.x reads the same draft; loading moves it back into the card.
+  // Kept in 2.x's layout (quote as text at the end) so a device still on 2.x reads the same draft.
   private draftText(): string {
     return joinQuote(this.composer.value, this.pendingQuote);
   }
@@ -625,8 +585,6 @@ export class WrotView extends ItemView {
     this.updateCalendarButton();
   }
 
-  // Creates/removes the calendar button per showCalendarButton; kept standalone so the
-  // settings tab can call it right after the toggle changes.
   updateCalendarButton(): void {
     if (!this.dateNavEl) return;
     if (!this.plugin.settings.showCalendarButton) {
@@ -669,7 +627,6 @@ export class WrotView extends ItemView {
     this.calendarPopover = null;
   }
 
-  // Touch rolls drums from a menu, a pointer clicks a calendar, as with the schedule picker.
   private openDatePicker(from: number, to: number): void {
     this.datePopover?.close();
     const typed = this.composer.value.slice(from, to);
@@ -705,17 +662,11 @@ export class WrotView extends ItemView {
     });
   }
 
-  // Recomputes the submit button's label/icon/aria-label together so the two settings
-  // never combine into a fully blank button: an empty label only renders as icon-only
-  // when an icon is actually set, otherwise it falls back to the default label text.
+  // Label and icon are resolved together so empty settings never yield a blank button.
   refreshSubmitButton(): void {
     if (!this.submitBtnEl) return;
     const { submitLabel, submitIcon, updateLabel, updateIcon } = this.plugin.settings;
     const editing = this.editingMemo !== null;
-    // While editing, both the label and the icon swap to their update variants
-    // under the same rules as posting: an empty label goes icon-only when the
-    // effective icon is set, default text otherwise. An empty update icon
-    // shares the post button's icon.
     const icon = editing ? updateIcon || submitIcon : submitIcon;
     const label = editing
       ? updateLabel || (icon ? "" : t("defaults.updateLabel"))
@@ -739,14 +690,13 @@ export class WrotView extends ItemView {
     if (editing) this.setToolbarEditing(false);
     if (editing && this.armedSchedule) this.setArmedSchedule(null);
     else this.setArmedSchedule(this.armedSchedule);
+    if (editing) this.armedRepeat = false;
   }
 
   private buildInputArea(container: HTMLElement): void {
     const inputArea = container.createDiv({ cls: "wrot-input-area" });
 
     const header = inputArea.createDiv({ cls: "wrot-input-header" });
-    // Third way out of edit mode, next to Escape and the card menu's cancel item:
-    // both of those can be out of reach on mobile or with the card scrolled away.
     const cancelBtn = header.createEl("button", { cls: "wrot-toolbar-btn wrot-cancel-btn" });
     setIcon(cancelBtn, "x");
     cancelBtn.setAttr("aria-label", t("view.postMenu.cancelEdit"));
@@ -787,8 +737,6 @@ export class WrotView extends ItemView {
       // Suggest dropdown handles navigation keys first; Mod+Enter only closes it
       // without being consumed, so it falls through to the submit handling below.
       if (this.suggest?.handleKeydown(e)) return;
-      // Escape leaves edit mode from the keyboard: the cancel menu item can be out
-      // of reach when the target card is scrolled away or on another date.
       if (e.key === "Escape" && this.editingMemo) {
         e.preventDefault();
         this.exitEditMode();
@@ -798,17 +746,14 @@ export class WrotView extends ItemView {
         return;
       }
       if (e.key === "Enter" && !e.shiftKey) {
-        // Hand-typed syntax converts on the first Enter; the line breaks on the next.
         if (
           continueCodeIndentOnEnter(this.composer) ||
           this.composer.expandShortcut() ||
           this.composer.commitTypedLine() ||
-          continueListOnEnter(this.composer) ||
+          continueListOnEnter(this.composer, this.plugin.settings.headerDateFormat) ||
           continueQuoteOnEnter(this.composer)
         ) e.preventDefault();
       }
-      // Backspace on either side of a list marker steps a nested item out a level; at the top
-      // level it reveals the marker, as from after it.
       if (e.key === "Backspace" && !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey) {
         const markerEnd = this.composer.listMarkerAtCaret();
         if (markerEnd !== null) {
@@ -816,7 +761,6 @@ export class WrotView extends ItemView {
           else if (this.composer.selectionStart < markerEnd) this.composer.setSelectionRange(markerEnd, markerEnd);
         }
       }
-      // Tab indents inside a code block and moves list items; anywhere else it still leaves the field.
       if (e.key === "Tab") {
         if (!e.shiftKey && insertCodeIndent(this.composer, this.indentUnit())) e.preventDefault();
         else if (shiftListIndent(this.composer, e.shiftKey)) e.preventDefault();
@@ -928,7 +872,6 @@ export class WrotView extends ItemView {
         removeHighlight(ta, existing);
         return;
       }
-      // Off the bar it was picked from the overflow menu, so the colours hang off that.
       const anchor = highlightBtn.parentElement ? highlightBtn : this.formatBtnEl ?? highlightBtn;
       this.openComposerMenu(anchor, (menu) => {
         menu.addItem((item) =>
@@ -955,7 +898,6 @@ export class WrotView extends ItemView {
       italicBtn.toggleClass("wrot-toolbar-active", italicActive);
       boldBtn.toggleClass("wrot-toolbar-disabled", this.activeFormatMode === "italic" || this.effectBlockedFor("bold"));
       italicBtn.toggleClass("wrot-toolbar-disabled", this.activeFormatMode === "bold" || this.effectBlockedFor("italic"));
-      // Mute only the active button during IME composition to prevent accidental presses.
       boldBtn.toggleClass("wrot-toolbar-ime-muted", this.imeLocked && boldActive);
       italicBtn.toggleClass("wrot-toolbar-ime-muted", this.imeLocked && italicActive);
       if (this.activeFormatMode === null && this.armedShown) {
@@ -965,7 +907,6 @@ export class WrotView extends ItemView {
     };
     const validateActiveFormatMode = () => {
       if (this.activeFormatMode === null) return;
-      // The opener itself was deleted (Backspace with nothing typed after it).
       if (this.armedShown && this.composer.armedOpener() === null) {
         this.activeFormatMode = null;
         updateFormatBtns();
@@ -1073,15 +1014,10 @@ export class WrotView extends ItemView {
     this.scheduleArmBtn = scheduleBtn;
     scheduleBtn.addEventListener("click", () => {
       if (toolbarSuppressed()) return;
-      // Editing rewrites a post that already exists; its day is set from its own card.
       if (this.editingMemo) return;
-      // The picker hangs off whatever is on screen: the button itself while it is on the
-      // bar, the overflow button once it has been put away, since a picker cannot be
-      // placed against something that is not laid out.
+      // Off the bar the button is detached and has no box, so the picker anchors to the overflow button.
       const anchor = scheduleBtn.parentElement ? scheduleBtn : this.formatBtnEl ?? scheduleBtn;
-      // The picker this button opened closes on the same button, the way the date
-      // nav's calendar does. The popover ignores presses on its own anchor so a day
-      // cell's click can land, which leaves the press to fall through to here.
+      // The popover ignores presses on its own anchor, so a re-press to close it lands here.
       if (this.schedulePickerAnchor === anchor) {
         this.schedulePopover?.close();
         return;
@@ -1093,8 +1029,6 @@ export class WrotView extends ItemView {
       this.openSchedulePicker(anchor, null, (from) => this.setArmedSchedule(from));
     });
 
-    // The actions that ship inside the overflow menu. They own buttons of their own so
-    // that promoting one to the bar needs nothing beyond a change of layout.
     const runCode = () => {
       const ta = this.composer;
       if (ta.selectionStart !== ta.selectionEnd) wrapSelection(this.composer, "`", "`", true);
@@ -1105,8 +1039,6 @@ export class WrotView extends ItemView {
       if (ta.selectionStart !== ta.selectionEnd) wrapSelection(this.composer, "$", "$", true);
       else insertFenceBlock(this.composer, "$$\n\n$$");
     };
-    // Keyed by id: an action listed here gets its click handler from this table, and the
-    // rest already carry handlers of their own from further up.
     const menuBornRuns: Record<string, () => void> = {
       code: runCode,
       math: runMath,
@@ -1125,8 +1057,6 @@ export class WrotView extends ItemView {
       });
     }
 
-    // Pressing a button is the definition of what its action does, so every action runs by
-    // pressing its own button rather than keeping a second copy of the same logic.
     this.toolbarActions = TOOLBAR_ACTION_SPECS.map((spec) => ({
       id: spec.id,
       icon: spec.icon,
@@ -1144,7 +1074,6 @@ export class WrotView extends ItemView {
     }
     const linkAction = this.toolbarActions.find((a) => a.id === "link");
     if (linkAction) linkAction.disabled = () => !this.linkTarget();
-    // The armed day is the one state an action carries into the menu.
     const scheduleAction = this.toolbarActions.find((a) => a.id === "schedule");
     if (scheduleAction) {
       scheduleAction.checked = () => this.armedSchedule !== null;
@@ -1182,6 +1111,23 @@ export class WrotView extends ItemView {
             if ((wrapOnly && !hasSelection) || action.disabled?.()) item.setDisabled(true);
           });
         }
+        // Not a toolbar action: it only means something while the post holds a checkbox.
+        // Disabled rather than hidden when full or editing, like the schedule action beside it.
+        if (hasCheckbox(ta.value)) {
+          rendered++;
+          menu.addItem((item) => {
+            const blocked =
+              this.editingMemo !== null ||
+              (!this.armedRepeat && this.pinClaimCount() >= this.plugin.settings.pinLimit);
+            item.setTitle(t("view.postMenu.repeatPin")).setIcon("repeat").onClick(() => {
+              if (blocked) return;
+              this.armedRepeat = !this.armedRepeat;
+              if (this.armedRepeat) this.setArmedSchedule(null);
+            });
+            if (this.armedRepeat) item.setChecked(true);
+            if (blocked) item.setDisabled(true);
+          });
+        }
         if (rendered > 0) menu.addSeparator();
         if (this.plugin.settings.toolbarEditEnabled) {
           menu.addItem((item) => {
@@ -1199,9 +1145,7 @@ export class WrotView extends ItemView {
       }, -4, true);
     });
 
-    // Every press inside the bar belongs to arranging it while that is what is going on;
-    // catching them here leaves each action's own handler untouched. The corner is the
-    // one exception: it backs out of arranging, leaving the bar as it was found.
+    // Capture phase: while arranging, presses are swallowed before the actions' own handlers see them.
     toolbar.addEventListener(
       "click",
       (e) => {
@@ -1225,23 +1169,17 @@ export class WrotView extends ItemView {
       this.updateSelectionBtns();
       this.updateSubmitBtnState();
     };
-    // Every caret/selection move, Shift+Arrow included. Runs only while the field is focused.
     this.composer.onSelectionChange(() => {
       if (this.composer.hasFocus) {
         if (this.dateTargetHeld && !this.dateTargetHeld()) this.datePopover?.close();
         updateActive();
-        // Close or reposition the suggest dropdown when the caret moves off its token.
         this.suggest?.refresh();
       }
     });
     // selectionchange does not fire on focus gain, so sync explicitly.
     this.composer.addEventListener("focus", () => {
-      // Reaching for the form is reaching for the view; if the day turned while it sat
-      // there, this is a good moment to notice.
       // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
       this.catchUpToToday();
-      // The focus() triggered by a format-button click must skip validation: the marker
-      // is not before the caret yet and validation would clear the pending mode.
       if (this.skipNextFocusValidation) {
         this.skipNextFocusValidation = false;
         this.updateToolbarActive(listBtn, checkBtn, olBtn);
@@ -1283,27 +1221,23 @@ export class WrotView extends ItemView {
     });
     this.composer.addEventListener("input", () => {
       if (!this.imeLocked) return;
-      // Inputs caused by a forced commit are not grounds for unlocking.
       if (Date.now() < this.imeSuppressUntil) return;
       const len = this.composer.value.length;
       const baseLen = this.imeValueAtStart.length;
       if (this.imeComposing) {
-        // Still composing: unlock if all uncommitted text was deleted (back to start length).
         if (len <= baseLen) {
           this.imeLocked = false;
           updateFormatBtns();
         }
         return;
       }
-      // After IME ended: unlock only if committed text was actually inserted.
       if (len > baseLen) {
         this.imeLocked = false;
         updateFormatBtns();
       }
     });
 
-    // Indenting an item by hand moves it to another level, so its number has to follow.
-    // Held back mid-composition: rewriting the value then would drop the IME's pending text.
+    // Skipped mid-composition: rewriting the value would drop the IME's pending text.
     this.composer.addEventListener("input", (e) => {
       if (e.isComposing) return;
       syncListFormatting(this.composer);
@@ -1324,10 +1258,7 @@ export class WrotView extends ItemView {
       const last = buttons[buttons.length - 1];
       const wrapped = last.offsetTop > first.offsetTop;
       toolbar.toggleClass("wrot-toolbar-wrapped", wrapped);
-      // The overflow button carries a margin that sets it apart from the actions beside it.
-      // Landing at the start of a wrapped row, that margin indents it past the column the
-      // row above stands on. The class takes it back visually only: dropping the margin
-      // itself would change the width that decided the wrap, and the two would oscillate.
+      // Visual-only offset: removing the margin itself would change the wrap it depends on and oscillate.
       const prev = buttons[buttons.length - 2];
       last.toggleClass("wrot-toolbar-row-start", last.offsetTop > prev.offsetTop);
     };
@@ -1497,8 +1428,6 @@ export class WrotView extends ItemView {
     this.submitBtnEl.toggleClass("wrot-submit-active", hasContent);
   }
 
-  // Closes visual mode's pending opener where its style ends, the end of its line, so the
-  // post reads as the form showed it. With nothing typed after it, the opener is dropped.
   private closeArmedOpener(text: string): string {
     const armed = this.composer.armedOpener();
     if (!armed) return text;
@@ -1530,8 +1459,6 @@ export class WrotView extends ItemView {
   }
 
   private enterEditMode(memo: Memo, filePath: string): void {
-    // Stash the draft before clearing the pending image: clearPendingImage only
-    // revokes the object URL, the File reference stays valid for the restore.
     this.savedDraft = {
       text: this.composer.value,
       image: this.pendingImage,
@@ -1584,11 +1511,11 @@ export class WrotView extends ItemView {
     this.composer.dispatchEvent(new Event("input"));
     this.refreshSubmitButton();
     this.applyEditModeClasses();
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; a missed clear is picked up on the next render
+    this.catchUpToToday();
   }
 
-  // Syncs the editing/locked card classes in place. Rendering also applies them
-  // (renderMemoCard reads the state), so this only covers mode changes that
-  // happen without a re-render, like entering or cancelling an edit.
+  // Mirrors renderMemoCard's classes for mode changes that happen without a re-render.
   private applyEditModeClasses(): void {
     const editing = this.editingMemo;
     const targetClass = editing
@@ -1602,9 +1529,7 @@ export class WrotView extends ItemView {
     });
   }
 
-  // Same convention as the quote-jump flash: a tag-rule card with a custom
-  // accent carries it as inline CSS vars while highlighted; without them the
-  // stylesheet defaults fall back to the theme accent.
+  // Inline vars override the stylesheet's theme-accent defaults; removing them restores the fallback.
   private setEditingAccentVars(card: HTMLElement, editing: boolean): void {
     const ruleClass = ruleClassOf(card);
     const accent = editing && ruleClass ? this.plugin.getRuleAccentColor(ruleClass) : null;
@@ -1619,14 +1544,11 @@ export class WrotView extends ItemView {
     }
   }
 
-  // The folder attached images go to, or undefined to leave the choice to Obsidian's
-  // own attachment setting.
   // Obsidian's own editor settings; getConfig is not in the public typings.
   private obsidianConfig(key: string): unknown {
     return (this.app.vault as unknown as { getConfig(key: string): unknown }).getConfig(key);
   }
 
-  // A tab, or that many spaces, as the note editor would indent.
   private indentUnit(): string {
     if (this.obsidianConfig("useTab") !== false) return "\t";
     const size = this.obsidianConfig("tabSize");
@@ -1638,16 +1560,12 @@ export class WrotView extends ItemView {
     return useCustomAttachmentFolder ? attachmentFolder : undefined;
   }
 
-  // Writes the edited body back into the original memo block. The opening fence
-  // line is untouched, so the timestamp and any block ID survive and quotes or
-  // pins referencing this memo keep resolving.
+  // The opening fence line is left untouched: quotes and pins resolve through its timestamp and block ID.
   private async applyEdit(rawText: string): Promise<void> {
     const target = this.editingMemo;
     if (!target) return;
     const file = this.app.vault.getAbstractFileByPath(target.filePath);
     if (!(file instanceof TFile)) {
-      // The target file is gone; nothing to write. Leaving edit mode restores
-      // the draft, and the edited text was theirs to begin with.
       this.exitEditMode();
       return;
     }
@@ -1686,8 +1604,6 @@ export class WrotView extends ItemView {
     if (this.toolbarEditing) return;
     const typed = this.hasTypedText();
     if (!typed && !this.pendingImage && !this.pendingQuote) return;
-    // The form never showed the pending opener, so the decoration it was drawing is closed
-    // for the post rather than left open.
     const text = this.activeFormatMode ? this.closeArmedOpener(this.composer.value) : this.composer.value;
     this.activeFormatMode = null;
     const rawText = typed ? padLineTimes(toTildeFences(text.trim().replace(/＃/g, "#"))) : "";
@@ -1747,8 +1663,7 @@ export class WrotView extends ItemView {
         await this.plugin.saveSettings();
       }
 
-      // The armed day lands on the post the moment it exists. Its place was taken
-      // when it was armed, so there is nothing left to check here.
+      // No limit check: the armed day already holds its place (scheduledClaimCount).
       if (this.armedSchedule) {
         settings.scheduledPins = [
           { timestamp: postedTime, file: file.path, from: this.armedSchedule },
@@ -1756,6 +1671,17 @@ export class WrotView extends ItemView {
         ];
         await this.plugin.savePins();
         this.setArmedSchedule(null);
+      }
+      // Dropped without pinning if the checkboxes were taken out before posting.
+      if (this.armedRepeat) {
+        this.armedRepeat = false;
+        if (hasCheckbox(bodyText)) {
+          settings.pins = [
+            { timestamp: postedTime, file: file.path, repeat: true, resetOn: moment().format("YYYY-MM-DD") },
+            ...settings.pins,
+          ];
+          await this.plugin.savePins();
+        }
       }
 
       // Record used tags only after a successful post. rawText already has fullwidth #
@@ -1797,10 +1723,7 @@ export class WrotView extends ItemView {
       const dateText = this.currentDate.format(this.plugin.settings.headerDateFormat);
       this.dateLabel.setText(isToday ? `${dateText}${t("view.dateNav.todaySuffix")}` : dateText);
 
-      // Resolve pins first; they render at the top independent of the current date.
-      // Scheduled pins whose day has come join them, below the ones pinned by hand:
-      // those arrive on their own, so keeping them out of the manual order means the
-      // top of the section stays as it was left.
+      await this.resetRepeatPins();
       const { pins, scheduledPins } = this.plugin.settings;
       const arrived: ScheduledPinEntry[] = [];
       const notYet: ScheduledPinEntry[] = [];
@@ -1812,8 +1735,12 @@ export class WrotView extends ItemView {
       const bySchedule = await this.resolvePinEntries(arrived);
       // Waiting pins are read only to learn whether their memo still exists.
       const byWait = await this.resolvePinEntries(notYet);
+      // A recurring pin is today's checklist, so other days leave it in its own slot.
+      const shownByHand = isToday
+        ? byHand.resolved
+        : byHand.resolved.filter((p) => !this.isRepeatPinned(p.memo, p.filePath));
       const pinnedResolved = [
-        ...byHand.resolved.map((p) => ({ ...p, fromSchedule: false })),
+        ...shownByHand.map((p) => ({ ...p, fromSchedule: false })),
         ...bySchedule.resolved.map((p) => ({ ...p, fromSchedule: true })),
       ];
       // Pins whose note is missing are not stale: the note may still be arriving through sync.
@@ -1871,8 +1798,6 @@ export class WrotView extends ItemView {
         rendered++;
       }
 
-      // Covers both "the note has no memos" and "every memo is hidden by a rule":
-      // the same message reads for either, and the list never ends up blank.
       if (pinnedResolved.length === 0 && rendered === 0) this.renderEmptyState();
     } finally {
       // Pins may have been added or taken down; the arm button's reach follows them.
@@ -1887,10 +1812,7 @@ export class WrotView extends ItemView {
     }
   }
 
-  // While editing, watch the target memo: if it vanished (deleted or rewritten
-  // externally), release the mode quietly but keep every character the user
-  // typed — the edit buffer stays in the composer, the stashed draft is
-  // appended after it.
+  // Never drops typed text: the edit buffer stays and the stashed draft is appended after it.
   private async releaseEditModeIfTargetGone(): Promise<void> {
     const target = this.editingMemo;
     if (!target) return;
@@ -1979,6 +1901,32 @@ export class WrotView extends ItemView {
     return this.plugin.settings.pins.some((p) => matchesPin(p, memo, filePath));
   }
 
+  private isRepeatPinned(memo: Memo, filePath: string): boolean {
+    return this.plugin.settings.pins.some((p) => p.repeat && matchesPin(p, memo, filePath));
+  }
+
+  /** Pins taken, counting the place a repeat armed on the post being written holds. */
+  private pinClaimCount(): number {
+    return this.plugin.settings.pins.length + (this.armedRepeat ? 1 : 0);
+  }
+
+  /** Starts each repeating pin's day afresh on the first render of that day. The note is not touched. */
+  private async resetRepeatPins(): Promise<void> {
+    const today = moment().format("YYYY-MM-DD");
+    const due = () => this.plugin.settings.pins.filter((p) => p.repeat && p.resetOn !== today);
+    if (due().length === 0) return;
+    // Another device may have cleared today already; its record, once synced, stops a second clear.
+    await this.plugin.reloadPins();
+    const pending = due();
+    if (pending.length === 0) return;
+    for (const pin of pending) {
+      pin.resetOn = today;
+      pin.renewed = true;
+      delete pin.checks;
+    }
+    await this.plugin.savePins();
+  }
+
   /** The scheduled pin on this memo, whether its day has come or not. */
   private findScheduledPin(memo: Memo, filePath: string): ScheduledPinEntry | undefined {
     return this.plugin.settings.scheduledPins.find((p) => matchesPin(p, memo, filePath));
@@ -2012,13 +1960,15 @@ export class WrotView extends ItemView {
     return true;
   }
 
-  private async addPin(memo: Memo, filePath: string): Promise<void> {
+  private async addPin(memo: Memo, filePath: string, repeat = false): Promise<void> {
     await this.cleanupOrphanPins();
     const limit = this.plugin.settings.pinLimit;
-    if (this.plugin.settings.pins.length >= limit) return;
+    if (this.pinClaimCount() >= limit) return;
     if (this.isPinned(memo, filePath) || this.findScheduledPin(memo, filePath)) return;
     this.plugin.settings.pins = [
-      { timestamp: memo.time, file: filePath },
+      repeat
+        ? { timestamp: memo.time, file: filePath, repeat, resetOn: moment().format("YYYY-MM-DD") }
+        : { timestamp: memo.time, file: filePath },
       ...this.plugin.settings.pins,
     ];
     await this.plugin.savePins();
@@ -2038,8 +1988,6 @@ export class WrotView extends ItemView {
     await this.refresh();
   }
 
-  // Clears the memo from both lists: once a scheduled pin has arrived it is just a
-  // pin, and taking it down is the same gesture as unpinning one placed by hand.
   private async removePin(memo: Memo, filePath: string): Promise<void> {
     const settings = this.plugin.settings;
     const before = settings.pins.length + settings.scheduledPins.length;
@@ -2054,9 +2002,7 @@ export class WrotView extends ItemView {
     await this.refresh();
   }
 
-  // The delete confirm outlives the menu it was armed in, so a native menu —
-  // which cannot be reworded in place — can carry the first press over into a
-  // second opening. Expires on its own so an abandoned confirm never lingers.
+  // Outlives its menu so a native menu can carry the first press into a reopening; expires on its own.
   private armDelete(memo: Memo, onExpire?: () => void): void {
     this.clearDeleteArm();
     this.deleteArmedTime = memo.time;
@@ -2079,9 +2025,6 @@ export class WrotView extends ItemView {
     return this.deleteArmedTime === memo.time;
   }
 
-  // Removes the memo's block from its note. Deliberately silent: the card
-  // disappearing is the success signal, and it staying put is the failure one,
-  // matching how editing reports itself.
   private async deletePost(memo: Memo, filePath: string): Promise<void> {
     const file = this.app.vault.getAbstractFileByPath(filePath);
     if (file instanceof TFile) {
@@ -2111,8 +2054,6 @@ export class WrotView extends ItemView {
     this.plugin.refreshViews();
   }
 
-  // Last year a memo can be sent to. Far enough that the drum never feels like it
-  // runs out under the finger.
   private static readonly SCHEDULE_LAST_YEAR = 2099;
 
   /**
@@ -2130,8 +2071,6 @@ export class WrotView extends ItemView {
     onPick: (from: string) => void
   ): void {
     const earliest = moment().add(1, "day").startOf("day");
-    // Only a card's picker locks the timeline behind it. Armed from the toolbar there
-    // is no card yet, so there is nothing for the other cards to be locked out of.
     if (memo) this.beginScheduling(memo);
     // Closing puts the trigger's light out, which for the toolbar button is the light
     // that says a day is armed. Restore it once the picker is gone.
@@ -2139,20 +2078,11 @@ export class WrotView extends ItemView {
       this.endScheduling();
       this.setArmedSchedule(this.armedSchedule);
     };
-    // Touch rolls; a pointer clicks. On desktop the month grid is quicker to aim at
-    // and there is room beside the button to hang it, so the drums are the mobile
-    // and tablet shape only.
     if (!Platform.isMobile) {
       this.schedulePopover?.close();
-      // The card menu is still closing as its item fires, and its own hide handler
-      // puts the button's lit state out. Light it again once that has run: the
-      // picker is still the same card's.
+      // Relit after a tick: the closing card menu's hide handler clears the lit state after this runs.
       window.setTimeout(() => trigger.toggleClass("wrot-toolbar-active", true), 0);
-      // The popover is placed once, against the button's position at the time, so the
-      // list is held still while it is open — scrolling either way would slide the
-      // card out from under it. Before locking, the list is sent down far enough for
-      // the whole calendar to clear the bottom edge, which a card near the end of the
-      // timeline never does on its own.
+      // The popover is positioned once, so the list is scrolled to fit it and then held still while it is open.
       const fitIntoView = () => {
         const popover = this.schedulePopover;
         if (!popover) return;
@@ -2161,12 +2091,7 @@ export class WrotView extends ItemView {
           this.contentEl.getBoundingClientRect().bottom +
           8;
         if (overflow > 0) {
-          // The last card in the timeline has no scroll left underneath it, so the
-          // room is made rather than found: the list grows a floor of empty space for
-          // as long as the calendar is open. Opening upward instead would put the
-          // calendar over the very post the day is being chosen for.
-          // The floor's height is measured, so it is the one value that has to be
-          // written as a property rather than carried by a class.
+          // The last card has no scroll room below, so a measured floor (--wrot-list-floor, set as a property) is added.
           this.listContainer.setCssProps({ "--wrot-list-floor": `${overflow}px` });
           this.listContainer.scrollTop += overflow;
           popover.reposition();
@@ -2196,10 +2121,6 @@ export class WrotView extends ItemView {
       // The handle has to exist before the fit can measure it, and the popover needs
       // a frame on screen before its box is worth measuring.
       window.requestAnimationFrame(fitIntoView);
-      // The pane can be dragged with the calendar still open, and one left behind reads as
-      // belonging to nothing. Checked per frame for the same reason the menu is: the pane
-      // divider moves the form without resizing anything the popover can observe. The loop
-      // ends when this popover does.
       if (form) {
         const handle = this.schedulePopover;
         let lastRight = Number.NaN;
@@ -2275,25 +2196,16 @@ export class WrotView extends ItemView {
       },
       0,
       opts.afterClose,
-      // A tablet rolls the drums like a phone but hangs the menu beside the button like a
-      // desktop, so it is the one shape that can be lined up with the form the way the
-      // overflow menu is. A phone raises the menu from the bottom edge and has nothing to
-      // line up; a card has no form around it either.
       Platform.isTablet && trigger.closest(".wrot-input-area") !== null
     );
   }
 
-  // The armed day lives on the toolbar button and nowhere else: lit means the post
-  // being written carries one. Its tooltip names the day, for anyone who wants to
-  // check without taking it off.
   private setArmedSchedule(from: string | null): void {
     this.armedSchedule = from;
+    if (from !== null) this.armedRepeat = false;
     if (!this.scheduleArmBtn) return;
     this.scheduleArmBtn.toggleClass("wrot-toolbar-active", from !== null);
-    // Out of reach while an edit is running — that rewrites a post which already
-    // exists, and its day is set from its own card — and while the allowance is
-    // full, since there would be nowhere for the armed day to land. A day already
-    // armed keeps the button live: taking it back off has to stay possible.
+    // An armed day keeps the button enabled even when full, so it can still be taken off.
     const full = this.scheduledClaimCount() >= this.plugin.settings.pinLimit;
     this.setBtnDisabled(
       this.scheduleArmBtn,
@@ -2359,9 +2271,24 @@ export class WrotView extends ItemView {
     };
     const currentFile = getDailyNoteFile(this.app, this.currentDate);
     const currentFilePath = currentFile?.path || "";
-    const urls = renderTextWithTagsAndUrls(contentEl, memo.content, {
+    const checksLocked = !options.pinned && this.plugin.isRepeatLocked(options.filePath, memo.time);
+    if (checksLocked) card.classList.add("wrot-checks-locked");
+    // Today's pinned card of a recurring post from another day keeps its checks in the pin.
+    const detachedPin = () =>
+      this.plugin.settings.pins.find((p) => p.repeat && matchesPin(p, memo, options.filePath));
+    const detached = !!options.pinned && this.plugin.isRepeatLocked(options.filePath, memo.time);
+    const shownContent = detached ? withChecks(memo.content, detachedPin()?.checks ?? []) : memo.content;
+    const urls = renderTextWithTagsAndUrls(contentEl, shownContent, {
       onTagClick: (tag) => this.plugin.openTagSearch(tag),
-      onCheckToggle: async (lineIndex, checked) => {
+      onCheckToggle: checksLocked ? undefined : async (lineIndex, checked) => {
+        if (detached) {
+          const pin = detachedPin();
+          if (!pin) return;
+          const rest = (pin.checks ?? []).filter((i) => i !== lineIndex);
+          pin.checks = checked ? [...rest, lineIndex] : rest;
+          await this.plugin.savePins();
+          return;
+        }
         // Pins live in other days' notes.
         const file = this.app.vault.getFileByPath(options.filePath);
         if (!file) return;
@@ -2427,31 +2354,27 @@ export class WrotView extends ItemView {
     // position or hit area.
     const footer = card.createDiv({ cls: "wrot-card-footer" });
 
+    // Once a recurring pin has been cleared, it stands for a new day's checklist: show that day's start.
+    const repeatPin = options.pinned
+      ? this.plugin.settings.pins.find((p) => p.repeat && p.renewed && matchesPin(p, memo, options.filePath))
+      : undefined;
+    const shownTime = repeatPin?.resetOn ? moment(repeatPin.resetOn, "YYYY-MM-DD") : moment(memo.time);
     const fmt = this.plugin.settings.timestampFormat || "YYYY/MM/DD HH:mm:ss";
-    const formatted = moment(memo.time).format(fmt);
-    footer.createSpan({ cls: "wrot-timestamp", text: formatted });
+    footer.createSpan({ cls: "wrot-timestamp", text: shownTime.format(fmt) });
 
     const menuBtn = footer.createSpan({ cls: "wrot-menu-btn" });
     setIcon(menuBtn, "ellipsis");
-    // Named so the delete confirm can re-open the menu on itself: with native
-    // menus there is no row to rewrite in place, so the second state has to be a
-    // second opening.
     const openPostMenu = async (e: MouseEvent): Promise<void> => {
-      // While editing, every other card's menu is locked; only the card being
-      // edited keeps its menu (it carries the cancel action).
       if (this.editingMemo && !this.isEditingTarget(memo)) return;
-      // Same while a day is being chosen: the picker belongs to one card, and the
-      // menu behind it stays that card's.
       if (this.schedulingTime && this.schedulingTime !== memo.time) return;
       // Drop orphaned pins before evaluating the pin limit.
       await this.cleanupOrphanPins();
       const pinned = this.isPinned(memo, options.filePath);
       const scheduled = this.findScheduledPin(memo, options.filePath);
-      // An arrived schedule is a pin in every way the menu cares about.
       const onBoard = pinned || (scheduled !== undefined && this.isScheduleDue(scheduled));
       const pinLimit = this.plugin.settings.pinLimit;
       const claimed = pinned || scheduled !== undefined;
-      const limitReached = !claimed && this.plugin.settings.pins.length >= pinLimit;
+      const limitReached = !claimed && this.pinClaimCount() >= pinLimit;
       const scheduleLimitReached = !claimed && this.scheduledClaimCount() >= pinLimit;
       this.openMenu(menuBtn, (menu) => {
         menu.addItem((item) =>
@@ -2459,7 +2382,6 @@ export class WrotView extends ItemView {
             await navigator.clipboard.writeText(memo.content);
           })
         );
-        // Copies one block's inside; with several, a second menu off the same button names each by its first line.
         const addBlockCopy = (title: string, icon: string, texts: string[]): void => {
           const blocks = texts.filter((s) => s.trim() !== "");
           if (blocks.length === 0) return;
@@ -2508,7 +2430,6 @@ export class WrotView extends ItemView {
             })
           );
         }
-        // Menu groups: text actions, placement, then delete.
         menu.addSeparator();
         const addLimitHint = () => {
           menu.addItem((item) => {
@@ -2517,13 +2438,6 @@ export class WrotView extends ItemView {
             itemDom?.classList.add("wrot-menu-hint", "is-label");
           });
         };
-        // Taking a pin down is worded the same whether it is already up or still
-        // waiting for its day: one gesture, one name. A memo still waiting is offered
-        // nothing else — changing the day means taking it down and setting it again,
-        // which keeps this menu the same height as every other card's.
-        // An edit in progress puts the whole group out of reach: an edit and a day
-        // being chosen both take over the card, and holding one while starting the
-        // other only muddles which of them the card is currently in.
         const editingThis = this.isEditingTarget(memo);
         if (onBoard || scheduled) {
           menu.addItem((item) => {
@@ -2556,19 +2470,18 @@ export class WrotView extends ItemView {
             if (scheduleLimitReached || editingThis) item.setDisabled(true);
           });
           if (scheduleLimitReached && !editingThis) addLimitHint();
+          // Left out rather than disabled: it shares the pin limit, whose hint is shown above.
+          if (!limitReached && !editingThis && hasCheckbox(memo.content)) {
+            menu.addItem((item) => {
+              item.setTitle(t("view.postMenu.repeatPin")).setIcon("repeat").onClick(async () => {
+                await this.addPin(memo, options.filePath, true);
+              });
+            });
+          }
         }
-        // Deleting is irreversible and there is no undo, so the item only exists
-        // once it has been asked for in the settings, and then only fires on the
-        // second press. Last and below a separator, like Obsidian's own file menu.
         if (this.plugin.settings.showPostDelete) {
           menu.addSeparator();
           menu.addItem((item) => {
-            // Three ways a memo is out of reach: it is the one being edited
-            // ("Cancel edit" sits one item above), it is pinned (unpin first —
-            // pinning is what marks a memo worth keeping), or one of its tags
-            // carries a rule that protects it.
-            // A scheduled memo counts as claimed too: deleting it would take the
-            // reservation with it, before the day it was made for ever arrives.
             const locked =
               this.isEditingTarget(memo) ||
               claimed ||
@@ -2582,14 +2495,10 @@ export class WrotView extends ItemView {
             if (locked) item.setDisabled(true);
 
             const itemDom = (item as { dom?: HTMLElement }).dom;
-            // Marks the row for the mobile press-state reset: this is the one
-            // menu item that outlives its own press, so the stuck touch state
-            // has to be neutralised for good, not only while armed.
+            // Read by the CSS mobile press-state reset: this row outlives its press, so its stuck touch state is always neutralised.
             itemDom?.classList.add("wrot-menu-delete");
 
-            // Menus built from DOM close themselves on a click, so the first
-            // press is swallowed here in the capture phase and the row is
-            // reworded in place. The second press falls through to onClick.
+            // DOM menus close on click: the first press is swallowed in capture and the row reworded; the second reaches onClick.
             itemDom?.addEventListener(
               "click",
               (ev) => {
@@ -2607,9 +2516,7 @@ export class WrotView extends ItemView {
             );
 
             item.onClick(() => {
-              // Arriving here unarmed means the handler above never ran: native
-              // menus have no row to reword, so the confirm becomes a second
-              // opening of the menu instead.
+              // Unarmed here means a native menu (no row to reword), so the confirm is a second opening.
               if (!armed) {
                 this.armDelete(memo);
                 // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; a failure just leaves the menu closed
@@ -2634,12 +2541,14 @@ export class WrotView extends ItemView {
       const pinIndicator = card.createSpan({ cls: "wrot-pin-indicator" });
       // Solid pin = arrived from a schedule; the two kinds spend separate allowances.
       if (options.fromSchedule) pinIndicator.addClass("wrot-pin-indicator-filled");
-      setIcon(pinIndicator, "pin");
+      setIcon(pinIndicator, this.isRepeatPinned(memo, options.filePath) ? "repeat" : "pin");
     } else if (options.waitingSchedule) {
       const scheduleIndicator = card.createSpan({
         cls: "wrot-pin-indicator wrot-schedule-indicator",
       });
       setIcon(scheduleIndicator, "clock-fading");
+    } else if (this.isRepeatPinned(memo, options.filePath)) {
+      setIcon(card.createSpan({ cls: "wrot-pin-indicator" }), "repeat");
     }
   }
 
@@ -2748,8 +2657,6 @@ export class WrotView extends ItemView {
     if (on && (this.editingMemo || !this.plugin.settings.toolbarEditEnabled)) return;
     if (this.toolbarEditing === on) return;
     this.toolbarEditing = on;
-    // A disabled button dispatches nothing at all, so it could neither be moved nor
-    // switched back on; the state is parked for the duration and handed straight back.
     for (const btn of this.toolbarBtns.values()) {
       if (on) {
         if (btn.disabled) btn.setAttr("data-wrot-was-disabled", "1");
@@ -2797,7 +2704,6 @@ export class WrotView extends ItemView {
     let moved = false;
     let startX = 0;
     let startY = 0;
-    // Where inside the button the finger took hold, so it stays under that same spot.
     let grabX = 0;
     let grabY = 0;
 
@@ -2807,18 +2713,14 @@ export class WrotView extends ItemView {
       gap.setCssStyles({ width: `${box.width}px`, height: `${box.height}px` });
       toolbar.insertBefore(gap, btn);
       btn.addClass("wrot-toolbar-dragging");
-      // Out of flow, so the row closes up and only the gap holds a place. Its own size has
-      // to be restated: nothing is laying it out any more. Deaf to the pointer as well, or
-      // it would be the thing found under the finger instead of what it is passing over.
+      // Size restated (nothing lays it out now) and pointer-transparent so hit-testing finds what it passes over.
       btn.setCssStyles({
         left: `${box.left}px`,
         top: `${box.top}px`,
         width: `${box.width}px`,
         height: `${box.height}px`,
       });
-      // Carried on the document rather than left in the bar: a transformed ancestor — which
-      // mobile puts around panes — makes a fixed child measure from that ancestor instead of
-      // the screen, and the button would then sit well away from the finger holding it.
+      // On the body: mobile wraps panes in a transformed ancestor, which would make position:fixed measure from it.
       activeDocument.body.appendChild(btn);
     };
 
@@ -2840,7 +2742,6 @@ export class WrotView extends ItemView {
     this.registerDomEvent(toolbar, "pointerdown", (e: PointerEvent) => {
       if (!this.toolbarEditing) return;
       const btn = (e.target as HTMLElement | null)?.closest<HTMLElement>(".wrot-toolbar-btn");
-      // The two ways out of arranging are not part of what is being arranged.
       if (!btn || btn === this.formatBtnEl || btn === this.toolbarDoneBtnEl) return;
       held = btn;
       moved = false;
@@ -2999,16 +2900,12 @@ export class WrotView extends ItemView {
     }
   }
 
-  // Only one menu open at a time; the trigger keeps an active class while open.
-  // yOffset nudges the menu vertically (positive = down).
+  // yOffset: positive = down.
   openMenu(
     trigger: HTMLElement,
     buildMenu: (m: Menu) => void,
     yOffset = 0,
     onHide?: () => void,
-    // Hangs the menu off the right edge of the form the trigger belongs to, rather than off
-    // the trigger itself. The button sits wherever the row of actions ends, which is not
-    // where the eye expects a menu of its width to stop.
     alignRight = false
   ): void {
     if (this.currentMenu) {
@@ -3024,7 +2921,6 @@ export class WrotView extends ItemView {
     trigger.toggleClass("wrot-toolbar-active", true);
     this.currentMenu = menu;
 
-    // Set while the menu tracks the form it hangs off, so closing stops the tracking.
     let stopTracking: (() => void) | null = null;
     let stopFitting: (() => void) | null = null;
 
@@ -3033,9 +2929,7 @@ export class WrotView extends ItemView {
       stopTracking = null;
       stopFitting?.();
       stopFitting = null;
-      // A menu opened from another menu's item outlives it, and on mobile the old
-      // one finishes closing well after. Only the menu still holding the trigger
-      // puts its light out; an older one leaves it to whoever took over.
+      // On mobile an older menu finishes closing late; only the current menu clears the trigger's light.
       if (this.currentMenu === menu) {
         trigger.toggleClass("wrot-toolbar-active", false);
         this.currentMenu = null;
@@ -3043,7 +2937,6 @@ export class WrotView extends ItemView {
       }
     });
 
-    // Anchor the menu to the button's left edge, opening rightward.
     const rect = trigger.getBoundingClientRect();
     const doc = trigger.ownerDocument ?? activeDocument;
     menu.showAtPosition({ x: rect.left, y: rect.bottom + yOffset }, doc);
@@ -3077,10 +2970,7 @@ export class WrotView extends ItemView {
       let lastLeft = Number.NaN;
       let lastTop = Number.NaN;
       let frame = 0;
-      // The pane can be dragged wider or narrower with the menu still open, and a menu left
-      // behind reads as belonging to nothing. Checked per frame rather than off a resize
-      // signal: the pane divider moves the form without resizing anything the menu can
-      // observe. Two reads and a comparison, and only a change is written.
+      // Polled per frame: dragging the pane divider moves the form without any resize signal to observe.
       const place = () => {
         const width = menuDom.getBoundingClientRect().width;
         const left = Math.max(0, host.getBoundingClientRect().right - width);

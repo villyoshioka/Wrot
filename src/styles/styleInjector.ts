@@ -10,7 +10,7 @@
  * Adds `:not(#...)` to every selector for ID-level specificity.
  *
  * Ladder: styles.css base (0-1 IDs) < bg/text stamp (2) < styles.css overrides, e.g. the RV copy
- * button (3) < tag-rule CSS (4). The boost goes before "::" because pseudo-elements must stay
+ * button (3) < tag-rule CSS (4) < a recurring pin's locked checkboxes (5). The boost goes before "::" because pseudo-elements must stay
  * last; comments are stripped first since they break selector detection.
  *
  * The ids go in one `:not()` as a single compound rather than one `:not()` each. A `:not()`
@@ -44,7 +44,6 @@ export function boostSelectors(css: string, idLevels: number): string {
  */
 export class WrStyleSheet {
   private sheets = new Map<Document, CSSStyleSheet>();
-  // Kept so a newly opened window can be given the current CSS without recomputing it.
   private css: string | null = null;
 
   /** `marker` is emitted as a custom property so the sheet stays identifiable in DevTools. */

@@ -6,20 +6,14 @@ declare const moment: typeof import("moment");
 type Moment = ReturnType<typeof moment>;
 
 interface CalendarPopoverOptions {
-  // Element the popover's right edge aligns to (the calendar button), or the caret's spot,
-  // which its left edge meets as the suggest list's does, scrolling inside when the room
-  // below cannot hold it.
+  // An element aligns the popover's right edge; a caret point aligns its left edge and caps its height.
   anchor: HTMLElement | (() => { left: number; bottom: number });
   // Element whose right edge the popover's right edge meets, when that is not the anchor's.
-  // A button sitting wherever a row of others happens to end is not where the eye expects a
-  // panel of this width to stop; the form around it is.
   alignTo?: HTMLElement;
   // Parent that actually hosts the popover (view body = wrot-container). Placed inside
   // the anchor it would overflow the sidebar when the button sits at the right edge.
   container: HTMLElement;
-  // Date used for the initial view and the selected-day highlight.
   initialDate: Moment;
-  // Earliest selectable day. Days before it render greyed out and do not respond.
   minDate?: Moment;
   // Called with the tapped day as a moment at 00:00.
   onSelect: (date: Moment) => void;
@@ -32,26 +26,20 @@ export interface CalendarPopoverHandle {
   // The popover is placed against the anchor's position at the time. Call this after
   // moving the anchor — scrolling the list under it — to place it again.
   reposition: () => void;
-  // The popover element itself, for a caller that needs to measure where it landed.
   el: HTMLElement;
 }
 
 const GRID_CELLS = 6 * 7; // fixed 6 weeks so the height never changes per month
 
-// Custom calendar popover for jumping to a date. Replaces the OS input[type=date]
-// picker for a consistent look on all platforms; date math uses Obsidian's bundled moment.
 export function openCalendarPopover(
   opts: CalendarPopoverOptions
 ): CalendarPopoverHandle {
   const { anchor, alignTo, container, initialDate, minDate, onSelect, onClose } = opts;
 
-  // Month being shown, normalized to its first day.
   let viewMonth = initialDate.clone().startOf("month");
 
   const popover = container.createDiv({ cls: "wrot-calendar-popover" });
 
-  // Place below the button, inside the container: right edge aligns to the anchor
-  // but is clamped so it never crosses the container's left edge.
   const GAP = 4;
   const EDGE = 8; // min margin from container edges
   const positionPopover = () => {
@@ -77,8 +65,6 @@ export function openCalendarPopover(
   // open → close", so pressing a nav arrow would close the popover.
   popover.addEventListener("click", (e) => e.stopPropagation());
 
-  // Display modes: month grid or year list. The month label toggles year mode;
-  // picking a year returns to month mode (year jumps, month/day preserved).
   type Mode = "month" | "year";
   let mode: Mode = "month";
   const YEARS_PER_PAGE = 12; // years per page in year mode (fits the grid)
@@ -86,7 +72,6 @@ export function openCalendarPopover(
   const header = popover.createDiv({ cls: "wrot-calendar-header" });
   const prevBtn = header.createEl("button", { cls: "wrot-calendar-nav-btn" });
   setIcon(prevBtn, "chevron-left");
-  // The month label is a button: pressing it opens year mode.
   const monthLabel = header.createEl("button", { cls: "wrot-calendar-month-label" });
   const nextBtn = header.createEl("button", { cls: "wrot-calendar-nav-btn" });
   setIcon(nextBtn, "chevron-right");
@@ -123,7 +108,6 @@ export function openCalendarPopover(
     }
   };
 
-  // Week start follows locale (e.g. ja = Sunday, most of Europe = Monday).
   const weekStart = moment.localeData().firstDayOfWeek();
   const weekdaysMin = moment.localeData().weekdaysMin(); // 7 entries, Sunday-first
 
@@ -176,7 +160,6 @@ export function openCalendarPopover(
     }
   };
 
-  // Year mode: the page of years containing viewMonth's year.
   const renderYears = () => {
     const today = moment();
     const cur = viewMonth.year();
@@ -199,12 +182,9 @@ export function openCalendarPopover(
       if (year === today.year()) {
         cell.addClass("wrot-calendar-day-today");
       }
-      // Highlight the year currently being viewed in the calendar.
       if (year === viewMonth.year()) {
         cell.addClass("wrot-calendar-day-selected");
       }
-      // A year that ends before the earliest selectable day holds nothing that can be
-      // picked, so it is out of reach here the same way those days are in month mode.
       if (minDate && year < minDate.year()) {
         cell.addClass("wrot-calendar-day-disabled");
         continue;
@@ -218,8 +198,6 @@ export function openCalendarPopover(
     }
   };
 
-  // Nothing before minDate can be picked, so the previous page is not offered once
-  // the current one already holds the earliest selectable day.
   const atEarliestPage = () => {
     if (!minDate) return false;
     if (mode === "year") {
@@ -242,7 +220,6 @@ export function openCalendarPopover(
   nextBtn.addEventListener("pointerdown", (e) => e.preventDefault());
   monthLabel.addEventListener("pointerdown", (e) => e.preventDefault());
 
-  // Arrows page by month in month mode, by YEARS_PER_PAGE years in year mode.
   prevBtn.addEventListener("click", () => {
     const unit = mode === "year" ? YEARS_PER_PAGE : 1;
     viewMonth = viewMonth.clone().subtract(unit, mode === "year" ? "year" : "month");

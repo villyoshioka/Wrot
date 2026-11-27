@@ -72,7 +72,6 @@ export class OGPCache {
     const entry = this.fresh(url);
     if (entry) return entry.data;
 
-    // Coalesce concurrent requests for the same URL
     const inflight = this.pending.get(url);
     if (inflight) return inflight;
 

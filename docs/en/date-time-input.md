@@ -1,91 +1,88 @@
 # Adding Dates and Times
 
-In Wrot, you can quickly insert a time or date simply by typing `@` at the start of a line or right after a space in the editor.
-It is an easy way to write out schedules and log events without worrying about typos.
-
-This guide walks you through inserting times, grabbing the current time, picking dates, and chaining timestamps in lists.
+Type `@` in the post form to pick a time or date and insert it.
 
 ---
 
 ## The Basics
 
-1. Type `@` at the beginning of a line or right after a space. It also works if you type a full-width `＠`.
-2. A small menu will pop up showing times from `00:00` to `23:45` in 15-minute intervals.
-3. Start typing numbers to narrow down the list.
-4. Pick the time you want. The `@` symbol will turn into your chosen time, such as `20:00`, followed by a space so you can keep typing without breaking your flow.
+1. Type `@` at the start of a line or right after a space (half-width or full-width). The full-width `＠` works too.
+2. Times from `00:00` to `23:45` are shown as suggestions in 15-minute steps.
+3. Keep typing digits to narrow the list.
+4. Choose a time, and the `@` is replaced with a time such as `20:00`, followed by a space.
 
-If you are on a line with a bullet list, checklist, numbered list, or quote block, typing `@` directly after the list marker works too.
+On a bulleted list, checklist, numbered list, or quote line, typing `@` right after the marker works too.
 
-### How to Navigate and Confirm
+### Choosing a Suggestion
 
-- **Keyboard**: The menu opens without anything selected. Use `↓` to browse from the top or `↑` to browse from the bottom, then press `Enter` or `Tab` to confirm. Hitting `Enter` before you select an item just creates a regular line break.
-- **Mouse or Tap**: Just click or tap whatever you want from the menu.
-- **Closing the Menu**: Hit `Esc` to close it. If you keep writing without picking a time, the `@` symbol will simply stay as regular text.
+- **Keyboard**: The list opens with nothing selected. Press `↓` to start from the top or `↑` to start from the bottom, then press `Enter` or `Tab` to insert it. Pressing `Enter` before choosing one inserts a normal line break.
+- **Mouse / Touch**: Click or tap a suggestion to insert it.
+- Press `Esc` to close the list. If you keep writing without choosing a time, the `@` is treated as plain text.
 
-### How the Search Works
+### Filtering
 
-- **Skipping the leading zero**: Typing `@8` shows options from `08:00` through `08:45`. Typing `@2` brings up `02:00` through `02:45` along with `20:00` through `23:45`.
-- **Specific minutes**: If you type three or four digits, that exact time will show up in the menu. For instance, typing `@830` pulls up `08:30`, and `@2037` gives you `20:37`.
-- **Full-width numbers**: Even if you type `＠２０` while using a Japanese keyboard layout, it filters the options just like regular numbers, and the final time will always be half-width.
-
----
-
-## Quick Timestamp (@now)
-
-If you type `@now` at the start of a line or right after a space and hit the spacebar or `Enter`, it instantly turns into the current time down to the minute, like `14:32`. It does not round to 15 minutes.
-
-- As soon as you type `@n`, the `@now` option will show up in the menu. You can select it right there, or just finish typing the word and press the spacebar or `Enter`.
-- If you actually want to keep the literal text `@now`, hit undo (`Ctrl + Z` / `Cmd + Z`) right after it converts, and it will switch back.
-- Make sure to type this in alphanumeric characters. If you leave Japanese input on, it will turn into "のw" instead.
+- You can leave out the leading 0. `@8` suggests `08:00` to `08:45`. `@2` suggests `02:00` to `02:45` and `20:00` to `23:45`.
+- Typing three or four digits also suggests times that aren't on a 15-minute step (for example, `@830` gives `08:30` and `@2037` gives `20:37`).
+- Typing `＠２０` with Japanese input still filters the same way as half-width digits. The inserted time is half-width.
 
 ---
 
-## Picking a Date (@date)
+## Insert the Current Time (@now)
 
-Type `@date` at the start of a line or right after a space and press the spacebar or `Enter` to bring up the date picker. Once you pick a date, `@date` is replaced by that date followed by a space. The format follows whatever you set under "Header date format" in settings, like `November 24, 2026`.
+Type `@now` at the start of a line or right after a space, then press Space or `Enter`. It's replaced with the time at that moment (for example, `14:32`). It isn't rounded to 15 minutes.
 
-- As soon as you type `@d`, the `@date` option appears in the menu. Pick it to open the picker.
-- On phones and tablets, a scroll wheel shows up. Spin it to the date you want, then tap the date shown underneath to confirm.
-- On computers, a calendar appears right beneath where you are typing. Click a date to select it.
-- The picker starts on today's date, but you can scroll back to past dates as well.
-- If you dismiss the picker without choosing anything, `@date` stays as plain text. On a computer, typing or deleting text while the calendar is visible will also close it.
-- If you want the literal text `@date` to stay, just hit undo (`Ctrl + Z` / `Cmd + Z`) right after it changes.
+- Typing `@n` shows `@now` as a suggestion. Choosing it inserts the current time.
+- Pressing `Ctrl + Z` / `Cmd + Z` right after it turns into a time brings back `@now`.
+- With Japanese input on, `now` turns into "のw", so type `@now` in English input.
 
 ---
 
-## Today's Date (@today)
+## Pick a Date (@date)
 
-Type `@today` at the start of a line or right after a space and press the spacebar or `Enter` to drop in today's date. It uses the exact same format as `@date`.
+Type `@date` at the start of a line or right after a space, then press Space or `Enter` to open the date picker. When you pick a date, `@date` is replaced with that date, followed by a space. The date uses the same format as "Header date format" in the settings (for example, `November 24, 2026`).
 
-- As soon as you type `@t`, `@today` appears in the menu. Select it to insert the date.
-- If you want to keep the actual text `@today`, press undo (`Ctrl + Z` / `Cmd + Z`) right after it changes.
-- Just like with `@now`, make sure your keyboard is set to alphanumeric input.
-
----
-
-## Timestamps in Lists
-
-When you hit `Enter` at the end of a list item that starts with a time, the next line will automatically start with an `@` and pop open the time picker right away. This is handy when you want to build out a schedule or an itinerary step by step.
-
-- **If you do not need a time**: Just hit `Backspace` once to delete the `@` and turn the line back into a standard list item. Hitting `Enter` again lets you leave the list as usual.
-- **Supported lists**: This works automatically with bullet lists, checklists, numbered lists, and lists inside quotes. It even triggers if you typed out the previous time by hand.
+- Typing `@d` shows `@date` as a suggestion. Choosing it opens the date picker.
+- On phones and tablets, a wheel appears. Turn it to the date you want, then tap the date shown below it to insert it.
+- On desktop, a calendar appears below where you're typing. Click a date to insert it.
+- The picker starts at today's date. You can pick past dates too.
+- If you close it without picking a date, `@date` is treated as plain text. On desktop, typing or deleting text while the calendar is open also closes it.
+- Pressing `Ctrl + Z` / `Cmd + Z` right after it turns into a date brings back `@date`.
 
 ---
 
-## Automatic Formatting When Posting
+## Insert Today's Date (@today)
 
-If a single-digit hour is sitting at the start of a line or right after a list marker, Wrot will pad it with a zero when you publish, turning something like `9:30` into `09:30`. Times written in the middle of a sentence will not be changed.
+Type `@today` at the start of a line or right after a space, then press Space or `Enter`. It's replaced with the date of that day, in the same format as `@date`.
+
+- Typing `@t` shows `@today` as a suggestion. Choosing it inserts today's date.
+- Pressing `Ctrl + Z` / `Cmd + Z` right after it turns into a date brings back `@today`.
+- Like `@now`, type `@date` and `@today` in English input.
+
+---
+
+## Adding Times in a List
+
+Press `Enter` at the end of a list item that starts with a time, and the next item starts with `@` and opens the time suggestions right away.
+
+- If you don't need a time, press `Backspace` once. Only the `@` is removed and the item becomes a normal list item. Press `Enter` again to leave the list as usual.
+- This works in bulleted lists, checklists, numbered lists, and lists inside quotes, including items that start with a time you typed by hand.
+
+---
+
+## Two-Digit Hours When Posting
+
+A one-digit hour at the start of a line or right after a marker is saved with two digits when you post (for example, `9:30` becomes `09:30`). Times in the middle of a sentence aren't changed.
 
 ---
 
 ## Troubleshooting
 
-### The suggestions are not popping up
+### No suggestions are shown
 
-- Make sure your `@` is placed at the very start of a line, right after a list or quote marker, or preceded by a space. It will not trigger if you type it directly against another word, which prevents email addresses from opening the menu by accident.
-- The picker will not trigger inside code blocks wrapped in `~~~` or inline code marked with backticks.
+- Check that the `@` is at the start of a line, right after a list or quote marker, or right after a space (half-width or full-width). An `@` typed right after other characters doesn't show suggestions, so you can write email addresses as usual.
+- Inside a code block (between `~~~` fences) or inline code wrapped in `` ` ``, typing `@` doesn't show suggestions.
 
-### Commands like @now, @date, or @today are not working
+### @now, @date, or @today doesn't work
 
-- Double check that the text is at the start of a line, right after a marker, or preceded by a space.
-- Make sure you were not typing with Japanese input turned on.
+- Check that it's at the start of a line, right after a list or quote marker, or right after a space.
+- Check that you aren't typing with Japanese input on.

@@ -182,6 +182,7 @@ const fr = {
   "view.postMenu.pin": "Épingler",
   "view.postMenu.pinLimitHint": "Limite maximale : {limit} épingles.",
   "view.postMenu.schedulePin": "Épingler plus tard",
+  "view.postMenu.repeatPin": "Épingler comme récurrent",
   "view.postMenu.delete": "Supprimer",
   // Shown on the same row after the first press, in place of the label above.
   "view.postMenu.deleteConfirm": "Appuyez à nouveau pour supprimer",

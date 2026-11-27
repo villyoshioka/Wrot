@@ -176,6 +176,7 @@ const de = {
   "view.postMenu.pin": "Anpinnen",
   "view.postMenu.pinLimitHint": "Maximal {limit} angepinnte Beiträge möglich.",
   "view.postMenu.schedulePin": "Später anpinnen",
+  "view.postMenu.repeatPin": "Als wiederkehrend anpinnen",
   "view.postMenu.delete": "Löschen",
   // Shown on the same row after the first press, in place of the label above.
   "view.postMenu.deleteConfirm": "Zum Bestätigen nochmals drücken",

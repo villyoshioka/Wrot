@@ -182,6 +182,7 @@ const ko = {
   "view.postMenu.pin": "상단 고정",
   "view.postMenu.pinLimitHint": "최대 {limit}개까지만 고정할 수 있습니다.",
   "view.postMenu.schedulePin": "나중에 고정",
+  "view.postMenu.repeatPin": "반복으로 고정",
   "view.postMenu.delete": "삭제",
   "view.postMenu.deleteConfirm": "다시 누르면 삭제됩니다",
 

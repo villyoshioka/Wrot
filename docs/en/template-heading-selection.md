@@ -1,123 +1,120 @@
 # How to Use Template Heading Selection
 
-Wrot plays nicely with your daily note templates. By picking a target under "Template heading selection", you can tell Wrot exactly which heading your posts should land under. It is a great way to funnel quick thoughts into a section like "Today's Log", or just slip entries into the middle of a page rather than tacking them onto the end.
+Pick a heading from your daily note template in **"Template heading selection"**, and Wrot adds your posts under that heading. You can gather posts under a heading like "Today's Log", or place them in the middle of the note.
 
-This works right out of the box with Obsidian's core templates, as well as setups powered by Templater.
-
-Here is a quick walkthrough on how to set it up, where your entries end up, how dynamic titles are handled, and what happens if something goes missing.
+Obsidian's core templates and Templater templates are both supported.
 
 ---
 
 ## 1. How to Set It Up
 
-1. Open Obsidian settings, head to "Daily notes", and make sure your template is linked under "Template file location".
-2. In Wrot settings, scroll to the "General" section and open "Template heading selection".
-3. Wrot will pull in every heading it finds in that template. Simply choose the one you want to use.
+1. In Obsidian's **"Daily notes"** settings, set your template under **"Template file location"**.
+2. In Wrot's settings, open **"Template heading selection"** in the "General" section.
+3. From the list, choose the heading you want posts added under.
 
-- Leave it set to "None" if you want things to work the old way, which drops every post at the very end of your note.
-- The list reloads fresh each time you open the screen. If you tweak your template, just back out of settings and hop back in to see the changes.
-
----
-
-## 2. Where Entries Land
-
-New posts slip right into the tail end of the section you picked.
-
-- A section runs from your target heading down to the next heading of the same or higher level.
-- Multiple posts on the same day simply stack beneath one another in the order you sent them.
-- Wrot pads each entry with a blank line above and below so your notes stay clean.
-- If you have two identical headings on the page, Wrot always targets the first one it finds.
-- Headings inside code blocks or within the text of your posts are ignored completely.
+- **None**: The default. Posts are added at the end of the note, as before.
+- The list is reloaded from the template each time you open the settings. After editing the template, reopen the settings.
 
 ---
 
-## 3. Headings with Dynamic Variables
+## 2. Where Posts Are Added
 
-You can still target headings even when they rely on variables like dates.
+Posts are added at the end of the selected heading's section.
 
-### What You Will See in the Menu
+- The section runs from the selected heading to just before the next heading of the same or a higher level.
+- Posts made later on the same day are added below the earlier ones.
+- Each post gets one blank line before and after it.
+- If the same heading appears more than once, posts go under the one nearest the top of the note.
+- Headings written in a post's text or inside code blocks are not counted.
 
-The picker displays the raw template markup rather than evaluated dates, and it drops the Markdown `#` marks to keep things readable.
+---
 
-If your template has a line like this:
+## 3. Headings with Variables
+
+You can choose a heading even if it contains variables such as dates.
+
+### How They Appear in the List
+
+The list shows the text as written in the template, before variables are replaced with dates or other values. The heading marks (`#`) are not shown.
+
+For example, if your template has this heading:
 
 ```markdown
 ## <% tp.date.now("YYYY-MM-DD") %> Log
 ```
 
-You will see `<% tp.date.now("YYYY-MM-DD") %> Log` in the list, rather than an expanded date like `2026-09-27 Log`.
+the list shows `<% tp.date.now("YYYY-MM-DD") %> Log`.
 
-### Obsidian's Built-in Variables
+### Obsidian Core Template Variables
 
-For variables like `{{date}}`, Wrot looks at the date of the note you are writing to, swaps it in, and tracks down the right heading.
+Variables such as `{{date}}` are replaced with the date of the note being posted to, and then Wrot looks for the heading.
 
-### Templater Tags
+### Templater Variables
 
-- If the heading has regular text wrapped around a tag, such as `<% tp.date.now("YYYY-MM-DD") %> Log`, Wrot uses those surrounding words as an anchor to track it down.
-- If the entire heading is just a Templater expression, Wrot knows how to evaluate the following tags on its own:
-  - `tp.date.now`, `tp.date.today`, `tp.date.tomorrow`, and `tp.date.yesterday`
+- For a heading with text besides the variable, such as `<% tp.date.now("YYYY-MM-DD") %> Log`, Wrot uses that text to find it.
+- If the whole heading is a variable, Wrot can read the following and find the heading as it actually appears:
+  - `tp.date.now`, `tp.date.today`, `tp.date.tomorrow`, `tp.date.yesterday`
   - `tp.file.title`
-- When resolving dates, Wrot checks both today's date and the date tied to the note itself, so backfilling older daily notes works without a hitch.
-- Headings made up entirely of unsupported tags, like `<% tp.file.folder() %>`, will not appear in the menu because Wrot has no plain text to anchor to.
-  - Adding even a single descriptive word outside the tag solves this, making the heading show up in your list and match reliably.
+- Wrot searches with both the date of the note being posted to and today's date, so the heading is found even when you post to a note from a past date.
+- A heading made only of other variables (for example, `<% tp.file.folder() %>`) has no text to go by, so it doesn't appear in the list.
 
 ---
 
-## 4. Templater Setup
+## 4. Using Templater
 
-To make sure your variables get expanded properly, open Templater settings and toggle on "Trigger Templater on new file creation" under "File creation". This toggle is stored locally on each device, so remember to flip it on across all your phones, tablets, and computers.
+For Templater to replace the variables in your template, turn on **"Trigger Templater on new file creation"** under "File creation" in Templater's settings on each device you use. This setting is saved per device.
 
-With this enabled, whenever Wrot spins up a brand-new daily note for your post, it gives Templater a moment to finish populating the page before dropping your text in.
+With this setting on, when Wrot creates a new daily note for a post, it adds the post after Templater has finished.
 
-- Your very first post of the day might take a second longer to appear while Templater wraps up.
-- Because Wrot waits until Templater finishes, your post text is safe from being overwritten.
-
----
-
-## 5. When Things Go Missing
-
-### When a Note Lacks the Heading
-
-Wrot simply appends the post to the end of the file instead, and pops up a quick alert letting you know the heading was not found.
-
-- This heads-up only shows once per heading selection. If you re-select the heading later on, it will remind you again.
-- Your settings stay intact, so notes that do have the heading will still catch posts in the right spot.
-
-### When the Template Cannot Be Found
-
-If your daily note template is unlinked or the file has gone missing, Wrot resets your heading choice back to "None", gives you a heads-up, and drops your post at the bottom of the page.
-
-### When the Option Is Unavailable
-
-"Template heading selection" stays locked on "None" whenever:
-
-- You have not selected a daily note template
-- The template file is missing from your vault
-- The template has no headings that Wrot can read
-
-If you delete the chosen heading from your template file, opening settings will automatically reset your choice back to "None".
+- Only the first post of the day takes a moment to appear.
+- When Templater processes the new note, your post text is not affected.
 
 ---
 
-## 6. Timeline Behavior
+## 5. When the Heading or Template Can't Be Found
 
-The timeline always lines up your posts by the exact time you sent them, latest first, regardless of where they actually sit inside the Markdown file. Posts grouped under a heading and posts tucked at the bottom of the page blend into a single chronological stream.
+### When the Note Has No Such Heading
+
+The post is added at the end of the note, and the notice "Heading not found in daily note; post was appended to the bottom." appears.
+
+- The notice appears only the first time after you choose a heading. If you choose the heading again, it appears once more.
+- The heading setting isn't cleared. In notes that have the heading, posts are still added under it.
+
+### When the Template Can't Be Found
+
+If no daily note template is set or the file can't be found when you post, "Template heading selection" goes back to "None" and a notice appears. The post is added at the end of the note.
+
+### What the Settings Show
+
+In these cases, "Template heading selection" stays at "None" and can't be changed:
+
+- No daily note template is set
+- The template file can't be found
+- The template has no headings that can be shown in the list
+
+If the heading you had chosen is removed from the template, the setting also goes back to "None" when you open the settings.
+
+---
+
+## 6. Timeline Order
+
+The timeline is sorted by post time, newest first, regardless of where posts are in the note.
 
 ---
 
 ## Troubleshooting
 
-### Headings Missing from the List
+### Headings don't appear in the list
 
-- Verify that a template is linked in Obsidian's "Daily notes" settings.
-- Make sure your template actually uses Markdown headings like `## Notes`.
-- Check if the heading is just a raw Templater tag that Wrot cannot read on its own. Adding a regular word outside the tag will bring it right up.
-- Reopen the settings panel to make sure Wrot rescans your latest changes.
+- Check that a template is set in Obsidian's "Daily notes" settings.
+- Check that the template has headings such as `## Notes`.
+- Headings made entirely of Templater variables that Wrot can't read are not shown. Adding text besides the variable makes them appear.
+- If you edited the template, reopen the settings.
 
-### Posts Not Landing Under the Heading
+### Posts aren't added under the heading
 
-- Confirm that the heading actually exists in the daily note you are writing into.
+- Check that the note you're posting to has the selected heading.
 
-### Headings Stuck as Raw Code
+### Note headings still show the variables
 
-- Check whether "Trigger Templater on new file creation" is switched on in Templater. Remember that this setting does not sync across devices and has to be enabled manually on each one.
+- Check that "Trigger Templater on new file creation" is on in Templater's settings. It's a per-device setting, so turning it on on another device has no effect.

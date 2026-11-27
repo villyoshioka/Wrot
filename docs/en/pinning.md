@@ -1,103 +1,163 @@
 # How Pinning Works
 
-Pinning lets you keep important posts right at the top of your timeline, regardless of when they were posted. It’s perfect for things you need to see constantly, like daily to-do lists or active projects.
+Pinning keeps an important post, such as a shopping list or a task in progress, at the top of the timeline no matter which date you're viewing.
 
-If you don't need a post pinned right away, you can use **"Pin later"** instead. It works just like a reminder, holding the post in place until a specific date and then pinning it automatically.
+With **"Pin later"**, you can choose a date and have the post pinned automatically when that day comes.
 
-Here is a quick breakdown of how regular Pinning and "Pin later" work, along with details on pin limits.
-
----
-
-## 1. Regular Pinning (Instant)
-
-To pin a post immediately, click the top-right menu on any post card and select **"Pin"**. This locks the post to the top of your timeline.
-
-- **Visible everywhere**: The post stays pinned at the very top, no matter which date you're looking at.
-- **No duplicate posts**: Pinned posts move to the top area and temporarily hide from their original spot in the timeline.
-- **Pin icon**: A hollow pin icon appears at the bottom right of the post so you know it’s pinned.
-- **How to unpin**: Open the menu and choose **"Unpin"**. The post will go right back to its original date in your timeline.
-
-> **Note**: You can’t delete a post while it’s pinned. This keeps you from accidentally wiping out important posts. Just unpin the post first if you want to delete it.
+With **"Pin as recurring"**, a post with checkboxes has its checks cleared each time the date changes, so you can use it as a daily checklist.
 
 ---
 
-## 2. Pin later (Scheduled)
+## 1. Pin
 
-With "Pin later," you can pick a future date and let the app automatically pin your post when that day comes.
+Choose **"Pin"** from the menu at the top right of a post card, and the post is fixed to the top of the timeline.
 
-### Scheduling an existing post
+- It stays at the top whichever date's timeline you open.
+- It no longer appears at its original date.
+- A pinned post shows an outlined pin icon at the bottom right.
+- Choose **"Unpin"** from the menu to unpin it and return it to its original date.
 
-Open the menu on the top right of a post, select **"Pin later"**, and pick a date.
-
-- **On Desktop**: This opens a standard calendar picker.
-- **On Mobile and Tablet**: This brings up a quick scroll wheel.
-- **Date options**: You can pick any date starting tomorrow. If you need something pinned today, just use regular "Pin."
-- **Changing dates**: If you need to pick a different date, unpin the post first and set it up again.
-
-### Scheduling a new post
-
-You can also schedule a pin right from the editor toolbar using the **clock icon (Pin later button)**.
-
-1. Click the clock icon and choose your date from the calendar.
-2. The icon will light up to show it's active. You can hover over it anytime to double-check the date.
-3. Write your post and hit publish. It will save with the "Pin later" date attached.
-
-- Click the highlighted clock icon again if you want to clear the schedule.
-- You can't set a schedule from the toolbar while editing a post inline. Use the card's menu instead.
-
-### Before the scheduled date arrives
-
-Until the day comes, your post stays right where it was posted in the main timeline. It won't move to the top just yet.
-
-- A small clock icon appears at the bottom right to show it’s scheduled.
-- Scheduled posts are locked from deletion, just like regular pinned posts.
-
-### When the date arrives
-
-Once midnight hits on your chosen date, the post automatically turns into a pinned post and moves up to the top.
-
-- **Icon update**: The clock icon changes to a solid pin, making it easy to tell apart from regular pinned posts.
-- **Display order**: Scheduled pins sit right below your regular pinned posts.
-- **Duration**: The post stays pinned even after the date passes until you manually unpin it.
-- **How to unpin**: Open the menu and select **"Unpin"**.
-
-* The app doesn't refresh the screen the exact second the date changes. It will automatically update the next time you switch back into Obsidian or publish a new post.
+> **Note**: To prevent accidental deletion, a pinned post can't be deleted. Unpin it first if you want to delete it.
 
 ---
 
-## 3. Keep Pinned Posts Visible While Scrolling (Sticky Mode)
+## 2. Pin later
 
-By default, your pinned posts scroll away along with the rest of your timeline.
+### On an existing post
 
-If you want your pinned section to stay visible as you scroll, go to "Advanced" and turn on **"Keep pins at the top."** This locks the pinned section to the top of your screen while allowing the main timeline below it to scroll freely.
+Choose **"Pin later"** from the menu at the top right of a post card, then pick a date.
+
+- **Desktop**: A calendar opens.
+- **Mobile / Tablet**: A wheel appears.
+- You can pick tomorrow or any later date. To pin for today, use the regular "Pin".
+- To change the date, unpin the post and set it again.
+
+### On a new post
+
+You can also set it with the **clock icon (Pin later button)** on the post form's toolbar.
+
+1. Press the clock button and pick a date from the calendar.
+2. Once set, the button stays lit. Hover over it to see the date you set.
+3. Write and post as usual, and the post is saved with "Pin later" scheduled.
+
+To cancel, press the lit clock button again.
+While you're editing an existing post, you can't set it from the toolbar. Use the post card's menu instead.
+
+### Before the date
+
+The post appears at its original date and time.
+
+- A clock icon at the bottom right of the card shows that it's scheduled.
+- Like a pinned post, a scheduled post can't be deleted.
+
+### After the date
+
+The post is pinned automatically and moves to the top of the timeline.
+
+- The icon at the bottom right changes to a filled pin. Regular pins use an outlined pin.
+- It's listed below regular pinned posts.
+- It stays pinned after the date passes until you unpin it.
+- To unpin it, choose **"Unpin"** from the menu.
+
+The change isn't applied the moment the date changes. After the date changes, it's applied when you switch to Obsidian from another app, open Wrot, or make a new post.
 
 ---
 
-## 4. Pin Limits
+## 3. Pin as recurring
 
-You can set your maximum pin limit to **1, 3, or 5 posts** under the "Advanced" section using the **"Pin limit"** option.
+This works only on posts that have checkboxes.
 
-- **Independent slots**: **Regular Pins and "Pin later" posts have completely separate limits.** For example, if your limit is set to 3, you can have 3 active pins and 3 scheduled pins at the same time (up to 6 total).
-- **Hitting the limit**: Once you reach your limit, the menu options and toolbar clock button are disabled, and a quick alert will let you know you're at capacity.
-- **Reserving a spot**: Clicking the clock icon in the editor holds a spot for your post immediately, so you won't lose your slot while typing.
-- **Slot count after activation**: Even after a scheduled post moves to the top, it keeps using a "Pin later" slot. It won't take up any of your regular pin slots.
-- **Lowering your limit**: If you reduce your pin limit in settings, any extra pinned or scheduled posts will be automatically unpinned.
+### On an existing post
+
+Choose **"Pin as recurring"** from the menu at the top right of a post card, and the post is fixed to the top of today's timeline.
+
+- If the post has no checkboxes, the item isn't shown in the menu.
+- A repeat icon is shown at the bottom right instead of a pin.
+- To unpin it, choose **"Unpin"** from the menu.
+
+### On a new post
+
+While the post form contains a checkbox, **"Pin as recurring"** is shown in the toolbar's three-dot menu.
+
+1. Choose "Pin as recurring", and it gets a check mark.
+2. Write and post as usual, and the post is pinned as recurring.
+
+To change your mind before posting, choose "Pin as recurring" in the three-dot menu again, and the check mark is removed.
+It can't be set together with "Pin later". Setting one cancels the other.
+If you remove all the checkboxes before posting, the post is posted without being pinned.
+
+### Where it's shown
+
+It's shown in the pinned area only while you're viewing today's timeline. It isn't shown on other dates' timelines.
+
+- Once the day it was posted has passed, opening that day's timeline shows the post at its original date and time, with a repeat icon at the bottom right.
+- On the day you pin it as recurring, the card shows the post's date and time. After the date changes, it shows 00:00 of that day.
+
+### When the date changes
+
+All the checks on the pinned card are cleared.
+
+- Checks are written to the post in the note only on the day it was posted. From the next day, checks are saved in Wrot and cleared each time the date changes. The post in the note stays as it was on the day it was posted.
+- The change isn't applied the moment the date changes. After the date changes, it's applied when you switch to Obsidian from another app, open Wrot, or make a new post.
+
+### Checks on the original post
+
+Once the day it was posted has passed, the checks on the original post can't be pressed and are shown in the text color. You can check and uncheck items only on today's pinned card.
+
+- This applies to the original position in the timeline and to the note in Live Preview and Reading view.
+- Choose "Unpin", and they can be pressed again.
+
+---
+
+## 4. Keep Pins at the Top While Scrolling
+
+By default, pinned posts scroll along with the timeline.
+
+To keep them in view while you scroll, turn on **"Keep pins at the top"** in the "Advanced" section of the settings. The pinned area stays fixed above the timeline, and only the list below it scrolls.
+
+---
+
+## 5. Pin Limit
+
+Choose a limit of **1, 3, or 5 posts** with **"Pin limit"** in the "Advanced" section of the settings.
+
+- **"Pin" and "Pin later" are counted separately.** With a limit of 3, you can have 3 pinned posts and 3 "Pin later" posts, 6 in total.
+- When you reach the limit, the menu item and the toolbar's clock button can't be pressed, and an alert is shown.
+- Setting the clock button in the post form reserves a slot right away, so the slot can't fill up before you post.
+- A "Pin later" post keeps counting toward the "Pin later" limit after its date comes and it moves to the top. It doesn't use a regular pin slot.
+- "Pin as recurring" counts toward the regular pin limit. When you reach the limit, it's no longer shown in the post card's menu, and it can't be pressed in the post form's menu.
+- If you lower the limit, the extra posts are unpinned or unscheduled automatically.
 
 ---
 
 ## Troubleshooting
 
-### My scheduled post didn't pin on the target date
+### A post wasn't pinned on its date
 
-- The screen doesn't instantly refresh at midnight. Try switching back into Obsidian or making a new post to trigger the timeline update.
+- The screen doesn't update the moment the date changes. After the date changes, it's applied when you switch to Obsidian from another app, open Wrot, or make a new post.
 
-### I can't select "Pin later"
+### The checks aren't cleared
 
-- Make sure you haven't already hit your maximum limit for scheduled pins.
-- You can't add a new schedule to a post that is already pinned or scheduled.
-- You can't select this option while actively editing a post in edit mode. Save or cancel your edit first.
+- The screen doesn't update the moment the date changes. After the date changes, it's applied when you switch to Obsidian from another app, open Wrot, or make a new post.
+- The checks aren't cleared while a post is being edited. They're cleared once you save or cancel the edit.
+
+### I can't press a post's checkboxes
+
+- For a post pinned as recurring, the checks on the original post can't be pressed once the day it was posted has passed. Use today's pinned card, or unpin the post.
+
+### I can't find "Pin as recurring"
+
+- Check that the post has checkboxes.
+- Check whether you've reached the limit for regular pins.
+- It isn't shown for a post that already has "Pin" or "Pin later" set, or for a post being edited.
+
+### I can't choose "Pin later"
+
+- Check whether you've reached the limit for "Pin later".
+- A post that already has "Pin" or "Pin later" set can't have another one added.
+- You can't choose it from the menu while that post is being edited. Save or cancel the edit first.
 
 ### I can't delete a post
 
-- Posts that are currently pinned or scheduled are protected to prevent accidental deletion. Select "Unpin" from the menu first, then delete the post.
-- Posts with a tag whose rule has "Disable delete button" turned on cannot be deleted either.
+- Pinned posts (including "Pin as recurring") and posts with "Pin later" set can't be deleted, to prevent mistakes. Choose "Unpin" from the menu first, then delete the post.
+- A post also can't be deleted if it has a tag whose rule has "Disable delete button" turned on.

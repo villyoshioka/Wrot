@@ -30,11 +30,9 @@ export function buildTagRuleCss(rules: TagColorRule[], highlightTheme: Record<st
       };
       const mButtons = pickMuted("buttons");
       const mQuote = pickMuted("quote");
-      // Block quotes: the rule's own sub colour where it covers quotes, else one step fainter.
       const mBlockquote = subSet && scope?.quote !== false ? userMuted : blendColor(fg, bg, 0.6);
       const mList = pickMuted("list");
       const mOgp = pickMuted("ogp");
-      // Unresolved link/embed color: same blend logic as the base palette, from this rule's fg/bg.
       const mUnresolved = blendColor(fg, bg, 0.3);
       const quoteLink = `color-mix(in srgb, ${accent ?? "var(--text-accent)"} 40%, ${bg})`;
       const cls = `wrot-tag-rule-${i}`;
@@ -42,7 +40,6 @@ export function buildTagRuleCss(rules: TagColorRule[], highlightTheme: Record<st
       // Obsidian's search-jump flash lays rgba(255, 225, 0, 0.5) over the text until the cursor moves.
       // ponytail: assumes the default flash colour; read --highlight-background if a theme changes it.
       const flashLaid = blendColor(bg, "#ffe100", 0.5);
-      // Where the text would vanish, the flash itself is shifted (hue kept) until the text reads.
       const flashBg = readableOn(flashLaid, fg);
 
       parts.push(`/* @css */
@@ -80,7 +77,6 @@ export function buildTagRuleCss(rules: TagColorRule[], highlightTheme: Record<st
       body pre.${cls} *:not(.wrot-reading-tag):not(.wrot-internal-link):not(.wrot-url):not(.wrot-reading-url):not(.wrot-blockquote):not(.wrot-quote-card-slot):not(input[type="checkbox"]):not(.copy-code-button):not(.copy-code-button *):not(.wrot-reading-tag *):not(.wrot-internal-link *):not(.wrot-url *):not(.wrot-reading-url *):not(.wrot-blockquote *):not(.wrot-quote-card-slot *):not(.token) {
         color: ${fg};
       }
-      /* Code colors are worked out again from this rule's own text and background */
       body .wrot-card.${cls},
       body div.block-language-wr.${cls},
       body pre.${cls},
@@ -161,8 +157,6 @@ export function buildTagRuleCss(rules: TagColorRule[], highlightTheme: Record<st
       body .cm-line.${cls} .wrot-quote-highlight:not(#x#y#z) {
         color: ${mBlockquote};
       }
-      /* Lists inside quotes take the rule's quote colour, markers and checkbox borders included
-         (quotes inside quote cards belong to the quoted memo) */
       body .cm-line.${cls}.wrot-blockquote-line .wrot-lp-marker:not(#x#y#z),
       body .wrot-card.${cls} .wrot-blockquote:not(.wrot-quote-card-slot .wrot-blockquote) .wrot-bullet-list > li:not(.wrot-check-item)::before,
       body .wrot-card.${cls} .wrot-blockquote:not(.wrot-quote-card-slot .wrot-blockquote) .wrot-ordered-list > li::before,
@@ -179,7 +173,6 @@ export function buildTagRuleCss(rules: TagColorRule[], highlightTheme: Record<st
         --checkbox-border-color: ${mBlockquote};
         --checkbox-border-color-hover: ${mBlockquote};
       }
-      /* Checkbox border uses the sub color; checked fill uses the rule accent */
       body .wrot-card.${cls} .wrot-check-item input[type="checkbox"],
       body div.block-language-wr.${cls} .wrot-check-item input[type="checkbox"],
       body pre.${cls} .wrot-check-item input[type="checkbox"],
@@ -222,7 +215,6 @@ export function buildTagRuleCss(rules: TagColorRule[], highlightTheme: Record<st
       body pre.${cls} .wrot-blockquote:not(.wrot-quote-card-slot .wrot-blockquote) .wrot-reading-tag {
         color: ${accent ?? "var(--text-accent)"};
       }
-      /* Links in quotes: the rule's accent faded toward its background, as in the base palette */
       body .wrot-card.${cls} .wrot-blockquote:not(.wrot-quote-card-slot .wrot-blockquote) .wrot-internal-link:not(.wrot-internal-link-unresolved),
       body .wrot-card.${cls} .wrot-blockquote:not(.wrot-quote-card-slot .wrot-blockquote) .wrot-url,
       body .wrot-card.${cls} .wrot-blockquote:not(.wrot-quote-card-slot .wrot-blockquote) .wrot-reading-url,
@@ -243,7 +235,6 @@ export function buildTagRuleCss(rules: TagColorRule[], highlightTheme: Record<st
         color: ${quoteLink};
         -webkit-text-fill-color: ${quoteLink};
       }
-      /* Border color likewise; blockquotes inside quote cards excluded (card content = quoted memo) */
       body .wrot-card.${cls} .wrot-blockquote:not(.wrot-quote-card-slot .wrot-blockquote),
       body .wrot-card.${cls} .wrot-blockquote-wrap:not(.wrot-quote-card-slot .wrot-blockquote-wrap),
       body div.block-language-wr.${cls} .wrot-blockquote:not(.wrot-quote-card-slot .wrot-blockquote),
@@ -259,7 +250,6 @@ export function buildTagRuleCss(rules: TagColorRule[], highlightTheme: Record<st
         background: ${hoverBg};
         background-color: ${hoverBg};
       }
-      /* When this rule class sits on the ancestor card, nested quote-card borders follow its sub color */
       body .wrot-card.${cls} .wrot-quote-card-slot .wrot-quote-card,
       body div.block-language-wr.${cls} .wrot-quote-card-slot .wrot-quote-card,
       body pre.${cls} .wrot-quote-card-slot .wrot-quote-card,
@@ -288,7 +278,6 @@ export function buildTagRuleCss(rules: TagColorRule[], highlightTheme: Record<st
       body .wrot-quote-card-slot .wrot-quote-card.${cls} .wrot-quote-card-body .wrot-blockquote {
         border-left-color: ${mQuote};
       }
-      /* Quote-card checkboxes (custom spans) match the card body color */
       body .wrot-quote-card-slot .wrot-quote-card.${cls} .wrot-quote-card-check {
         border-color: ${mQuote};
       }
@@ -401,7 +390,6 @@ export function buildTagRuleCss(rules: TagColorRule[], highlightTheme: Record<st
         background: ${hoverBg};
         background-color: ${hoverBg};
       }
-      /* Mobile: neutralize the sticky post-tap :hover; hover color only while :active */
       body.is-mobile .wrot-card.${cls} .wrot-ogp-card:hover,
       body.is-mobile div.block-language-wr.${cls} .wrot-ogp-card:hover,
       body.is-mobile pre.${cls} .wrot-ogp-card:hover,

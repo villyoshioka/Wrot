@@ -1,5 +1,30 @@
 import { App, TFile } from "obsidian";
 import { parseMemos } from "./memoParser";
+import { findBlockRanges } from "./blockSegmenter";
+
+const CHECKBOX_RE = /^((?:>\s?)*[ \t\u3000]*- \[)([ x])(\](?:[ \t].*)?)$/;
+
+// Code and math blocks are skipped: a "- [x]" written inside one is text, not a checkbox.
+function checkboxLines(lines: string[]): number[] {
+  const blocks = findBlockRanges(lines);
+  return lines.flatMap((line, i) =>
+    CHECKBOX_RE.test(line) && !blocks.some((b) => i >= b.startLine && i <= b.endLine) ? [i] : []
+  );
+}
+
+export function hasCheckbox(text: string): boolean {
+  return checkboxLines(text.split("\n")).length > 0;
+}
+
+/** The text with exactly the given lines (indices into its lines) checked. */
+export function withChecks(text: string, checked: number[]): string {
+  const lines = text.split("\n");
+  for (const i of checkboxLines(lines)) {
+    const m = CHECKBOX_RE.exec(lines[i])!;
+    lines[i] = `${m[1]}${checked.includes(i) ? "x" : " "}${m[3]}`;
+  }
+  return lines.join("\n");
+}
 
 // lineIndex counts lines of the trimmed memo content. Returns false when nothing matched.
 export async function setMemoCheckbox(
@@ -69,9 +94,7 @@ export async function ensureBlockIdOnFence(
   return added;
 }
 
-// Replaces only the body of the memo whose opening fence carries this timestamp.
-// The fence line itself is left untouched, so the timestamp and any block ID
-// (^wr-T) survive the edit. Returns false when no matching memo exists anymore.
+// The fence line is left untouched so the timestamp and any block ID (^wr-T) survive the edit.
 export async function updateMemo(
   app: App,
   file: TFile,
@@ -102,12 +125,7 @@ export async function updateMemo(
   return updated;
 }
 
-// Removes the whole memo block — both fences and the body — for the memo whose
-// opening fence carries this timestamp, plus one adjacent blank line so the note
-// keeps the single-blank-line separation appendMemo writes. The preceding blank
-// is taken first (it is the separator appendMemo added along with this block);
-// only when the block starts the file does the following blank go instead.
-// Returns false when no matching memo exists anymore.
+// Also removes one adjacent blank line (the preceding one first) to undo the separator appendMemo wrote.
 export async function deleteMemo(
   app: App,
   file: TFile,
@@ -124,9 +142,7 @@ export async function deleteMemo(
       return m !== null && m[2].trim() === memoTimestamp;
     };
 
-    // Two posts written in the same millisecond share a timestamp. The caller's
-    // line hint tells them apart while it still points at a matching fence;
-    // otherwise fall back to the first match, as updateMemo does.
+    // Same-millisecond posts share a timestamp; the caller's line hint picks the fence while it still matches.
     let start = -1;
     if (expectedLineStart !== undefined && matchesAt(expectedLineStart)) {
       start = expectedLineStart;

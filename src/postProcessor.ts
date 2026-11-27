@@ -105,17 +105,29 @@ function highlightAllWrBlocks(el: HTMLElement, plugin: WrotPlugin, parent: Compo
   });
 }
 
-// Reading View can move an already rendered section onto another memo's position when their text
-// matches, carrying a stale line stamp, block id and checkbox state with it. What each position
-// should hold is captured up front, then re-applied whenever the view mutates.
+// Reading View recycles sections across memos with matching text, carrying stale stamps; snapshot each position.
 interface WrViewSnapshot {
   sourcePath: string;
   memos: Memo[];
   states: boolean[][];
+  locked: boolean[];
 }
 
-function snapshotOf(file: TFile, memos: Memo[]): WrViewSnapshot {
-  return { sourcePath: file.path, memos, states: memos.map((m) => checkboxStatesOf(m)) };
+function snapshotOf(plugin: WrotPlugin, file: TFile, memos: Memo[]): WrViewSnapshot {
+  return {
+    sourcePath: file.path,
+    memos,
+    states: memos.map((m) => checkboxStatesOf(m)),
+    locked: memos.map((m) => plugin.isRepeatLocked(file.path, m.time)),
+  };
+}
+
+// Follows the memo the block is paired with, so a recycled section drops a lock it no longer owns.
+function applyChecksLock(block: HTMLElement, locked: boolean): void {
+  block.classList.toggle("wrot-checks-locked", locked);
+  block.querySelectorAll<HTMLInputElement>('input[type="checkbox"]').forEach((box) => {
+    box.disabled = locked;
+  });
 }
 
 function checkboxStatesOf(memo: Memo): boolean[] {
@@ -133,6 +145,7 @@ function applySnapshot(scope: HTMLElement, snap: WrViewSnapshot): void {
   blocks.forEach((block, i) => {
     stampWrBlockLocation(block, snap.sourcePath, snap.memos[i].lineStart);
     applyBlockIdClass(block, snap.memos[i]);
+    applyChecksLock(block, snap.locked[i]);
     const states = snap.states[i];
     const boxes = Array.from(block.querySelectorAll<HTMLInputElement>('input[type="checkbox"]'));
     if (boxes.length !== states.length) return;
@@ -142,9 +155,7 @@ function applySnapshot(scope: HTMLElement, snap: WrViewSnapshot): void {
   });
 }
 
-// Repairing from the mutation record lands in the same frame, so the stale state never paints.
-// Only childList is observed; the repair touches attributes and properties, so it cannot
-// re-trigger itself. The watch extends while the render keeps arriving in bursts.
+// Repair lands pre-paint; only childList is observed, so the attribute-only repair can't re-trigger it.
 function watchRecycling(scope: HTMLElement, snap: WrViewSnapshot): void {
   applySnapshot(scope, snap);
 
@@ -169,7 +180,7 @@ async function repairReadingViewsFor(plugin: WrotPlugin, file: TFile): Promise<v
   if (readingViewScopesFor(plugin, file).length === 0) return;
   let snap: WrViewSnapshot;
   try {
-    snap = snapshotOf(file, sortedMemosOf(await plugin.app.vault.read(file)));
+    snap = snapshotOf(plugin, file, sortedMemosOf(await plugin.app.vault.read(file)));
   } catch {
     return;
   }
@@ -214,13 +225,10 @@ async function applyBlockIdClasses(el: HTMLElement, plugin: WrotPlugin, sourcePa
     const block = wrBlockContainer(code);
     if (!block) continue;
 
-    // Preferred: the stamped fence line identifies the memo outright.
     const location = readWrBlockLocation(block);
     let memo = location ? memoByLineStart.get(location.lineStart) : undefined;
 
-    // Fallback for blocks the context never covered: pair fences with memos by order, scoped to
-    // the surrounding embed / hover preview / reading view. Scoping matters because a single
-    // document can hold several rendered files at once, and a document-wide pairing would drift.
+    // Fallback: pair by order within the enclosing embed/hover/reading view; one document can hold several files.
     if (!memo) {
       const scoped = scopedWrBlocks(wrScopeRoot(block));
       const index = scoped.indexOf(block);
@@ -229,6 +237,7 @@ async function applyBlockIdClasses(el: HTMLElement, plugin: WrotPlugin, sourcePa
     if (!memo) continue;
 
     applyBlockIdClass(block, memo);
+    applyChecksLock(block, plugin.isRepeatLocked(file.path, memo.time));
   }
 }
 
@@ -318,8 +327,6 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin, parent: Compone
     return file ? plugin.app.vault.getResourcePath(file) : null;
   };
 
-  // Posts containing a quote-card marker [[X#^wr-T]] render images inline instead of
-  // collecting them at the tail, so images stay at their written position above the card.
   const blockFullText = code.textContent || "";
    
   const hasQuoteMarker = QUOTE_MARKER_RE.test(blockFullText);
@@ -585,7 +592,6 @@ function processCodeBlock(code: HTMLElement, plugin: WrotPlugin, parent: Compone
   }
   }
 
-  // Keep the quote card at the bottom: insert tail media just before the quote-card slot.
   const blockEl = code.closest(".block-language-wr") || code.closest("pre");
   if (blockEl) {
     const quoteSlot = hasQuoteMarker
@@ -683,12 +689,19 @@ async function toggleCheckboxForBlock(
   }
   if (lineStart === null) return;
 
+  const memo = memos.find((m) => m.lineStart === lineStart);
+  if (memo && plugin.isRepeatLocked(file.path, memo.time)) {
+    // Backstop for a box whose disabled state has not caught up with a recycled section.
+    cb.checked = !cb.checked;
+    return;
+  }
+
   await toggleCheckbox(app, file, lineStart + 1 + bodyLineIndex);
 
   if (blockIdx < 0) return;
   // What the view should show is known without reading the file back: the click flipped exactly
   // one box. Arming the watch synchronously keeps the repair inside the render's own frame.
-  const snap = snapshotOf(file, memos);
+  const snap = snapshotOf(plugin, file, memos);
   const boxIdx = Array.from(
     block.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')
   ).indexOf(cb);
@@ -718,7 +731,6 @@ function convertListLines(
   const block = wrBlockContainer(code);
   if (!block) return;
 
-  // Rebuild: non-list content stays inside code; lists are placed on the parent block.
   code.textContent = "";
   const fragments: (string | HTMLElement)[] = [];
   const makeList = (tag: "ul" | "ol") => {
@@ -829,7 +841,6 @@ function convertListLines(
       const target = quoteStack[quoteStack.length - 1];
       const innerInfo = parseListLine(body);
       if (innerInfo) {
-        // A list only continues while it stays in the same blockquote at the same depth.
         if (quoteListTarget !== target || quoteListDepth !== depth) {
           resetQuoteList();
           quoteListTarget = target;

@@ -148,7 +148,6 @@ export class ListDepthTracker {
   place(item: ListLine): { depth: number; ordinal: number } {
     const width = item.indentWidth;
     const tag = tagFor(item.kind);
-    // Anything indented less than a level's own indent has stepped back out of it.
     while (this.levels.length > 0 && width < this.levels[this.levels.length - 1].indentWidth) {
       this.levels.pop();
     }

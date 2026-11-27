@@ -6,7 +6,7 @@ import {
   ViewUpdate,
 } from "@codemirror/view";
 import { RangeSetBuilder, StateEffect, StateField } from "@codemirror/state";
-import { editorLivePreviewField, getLinkpath, type App } from "obsidian";
+import { editorInfoField, editorLivePreviewField, getLinkpath, type App } from "obsidian";
 import type WrotPlugin from "./main";
 import { findBlockRanges, type BlockRange } from "./utils/blockSegmenter";
 import {
@@ -28,7 +28,6 @@ import { tokenizeLines, type TokenSpan } from "./utils/prismTokens";
 const ogpFetched = StateEffect.define<null>();
 export const tagRulesChanged = StateEffect.define<null>();
 export const vaultFilesChanged = StateEffect.define<null>();
-// Prism finished loading, so code shown raw can now be colored.
 const codeTokensReady = StateEffect.define<null>();
 
 // ViewPlugin cannot emit block decorations, so line ranges to hide are passed to
@@ -180,7 +179,6 @@ function findWrBlocks(view: EditorView, plugin: WrotPlugin | null): WrBlock[] {
 
     const ruleClass = plugin ? plugin.ruleClassFor(tags) : null;
 
-    // Block ID (^wr-T) from the opening fence, used to target the flash highlight.
     const fenceLine = doc.line(startLn).text;
     const blockIdMatch = fenceLine.match(/\^(wr-\d{17})/);
     const blockId = blockIdMatch ? blockIdMatch[1] : null;
@@ -241,12 +239,13 @@ function buildDecorations(
       const openLine = doc.line(block.startLn);
       builder.add(openLine.from, openLine.from, makeLineDeco([wrLine, memoRule, block.blockId ? `wrot-block-id-${block.blockId}` : null]));
 
-      // Live preview: cursor anywhere in the block shows it raw.
       const blockHasCursor = cursorInBlock(block);
+      const memoTime = /^\s*```wr\s+(\S+)/.exec(openLine.text)?.[1];
+      const notePath = view.state.field(editorInfoField, false)?.file?.path;
+      const checksLocked = !!memoTime && !!notePath && plugin.isRepeatLocked(notePath, memoTime);
 
       const embedImages: { src: string; alt: string }[] = [];
 
-      // Inner blocks: widget on the start line only; other lines get background classes.
       const innerBlockStartByDocLine = new Map<number, { range: BlockRange; docStart: number; docEnd: number }>();
       const innerBlockInsideDocLines = new Set<number>();
       for (const br of block.innerBlocks) {
@@ -258,8 +257,6 @@ function buildDecorations(
         }
       }
 
-      // Shown raw, code with a language keeps its colors, the way the editor colors a code
-      // block while it is being edited.
       const rawTokens = new Map<number, TokenSpan[]>();
       if (isSourceMode || blockHasCursor) {
         for (const br of block.innerBlocks) {
@@ -291,7 +288,6 @@ function buildDecorations(
 
         const innerStart = innerBlockStartByDocLine.get(j);
 
-        // Raw view keeps nested blocks as plain text too.
         if (showRaw && innerBlockInsideDocLines.has(j)) {
           builder.add(l.from, l.from, makeLineDeco([wrLine, memoRule, block.blockId ? `wrot-block-id-${block.blockId}` : null]));
           for (const t of rawTokens.get(j) ?? []) builder.add(l.from + t.from, l.from + t.to, tokenMark(t.cls));
@@ -321,7 +317,6 @@ function buildDecorations(
 
           builder.add(l.from, l.from, makeLineDeco([wrLine, memoRule, block.blockId ? `wrot-block-id-${block.blockId}` : null]));
 
-          // ViewPlugin can only emit inline replace, not block replace.
           const startLine = doc.line(docStart);
           const widget = range.kind === "codeblock"
             ? Decoration.replace({ widget: new CodeBlockWidget(widgetContent, range.lang || "", block.ruleClass) })
@@ -350,8 +345,7 @@ function buildDecorations(
         const listInfo = parseListLine(quoteDepth > 0 ? innerTextAfterQuote : l.text, true);
         const quoteInnerIsList = quoteDepth > 0 && listInfo !== null;
         const isQuoteLine = quoteDepth > 0;
-        // One line is one .cm-line here, so nesting rides on the marker's offset, not markup.
-        // A quote holds its own list, the way the rendered views treat it.
+        // One line is one .cm-line, so nesting rides on the marker's offset, not markup.
         if (quoteDepth !== lastQuoteDepth) {
           listDepth.reset();
           lastQuoteDepth = quoteDepth;
@@ -397,7 +391,6 @@ function buildDecorations(
         }
 
         const entries: { from: number; to: number; deco: Decoration }[] = [];
-        // Ranges excluded from format detection (inline code).
         const codeRanges: { from: number; to: number }[] = [];
 
         if (isQuoteLine) {
@@ -415,8 +408,7 @@ function buildDecorations(
           const indentFrom = l.from + (isQuoteLine ? quotePrefix : 0);
           const markerFrom = indentFrom + listInfo.indentLength;
           const markerTo = markerFrom + listInfo.markerLength;
-          // The indent characters give way to the depth class, so the marker stays aligned
-          // with the level's pad instead of drifting right by however it was typed.
+          // The depth class replaces the typed indent, so markers align per level however they were typed.
           if (!showRaw && listInfo.indentLength > 0) {
             entries.push({ from: indentFrom, to: markerFrom, deco: replaceHidden });
           }
@@ -428,7 +420,7 @@ function buildDecorations(
               entries.push({
                 from: markerFrom,
                 to: markerTo,
-                deco: Decoration.replace({ widget: new CheckboxWidget(listInfo.checked, listItemDepth) }),
+                deco: Decoration.replace({ widget: new CheckboxWidget(listInfo.checked, listItemDepth, checksLocked) }),
               });
             }
             if (listInfo.checked && plugin.settings.checkStrikethrough && l.to > markerTo) {
@@ -451,7 +443,6 @@ function buildDecorations(
               entries.push({
                 from: markerFrom,
                 to: markerTo,
-                // Numbered the way the rendered views number: by position, not by what was typed.
                 deco: Decoration.replace({ widget: new OlMarkerWidget(`${listItemOrdinal}.`, listItemDepth) }),
               });
             }
@@ -539,14 +530,12 @@ function buildDecorations(
               if (file) {
                 const src = app.vault.getResourcePath(file);
                 if (block.hasQuoteMarker) {
-                  // Quote-marker post: render the image inline where it is written.
                   entries.push({
                     from,
                     to,
                     deco: Decoration.replace({ widget: new InlineEmbedImageWidget(src, innerName) }),
                   });
                 } else {
-                  // No quote marker: collect into the trailing media area.
                   entries.push({ from, to, deco: replaceHidden });
                   embedImages.push({ src, alt: innerName });
                 }
@@ -575,7 +564,6 @@ function buildDecorations(
             });
             continue;
           }
-          // Raw view keeps the brackets and only colors them.
           entries.push({ from, to, deco: resolved ? internalLinkMark : internalLinkUnresolvedMark });
         }
 
@@ -613,7 +601,6 @@ function buildDecorations(
         const insideCode = (f: number, t: number) =>
           codeRanges.some((r) => f >= r.from && t <= r.to);
 
-        // Bold delimiters (and bold-italic's), masked out before italic is looked for.
         const boldRanges: { from: number; to: number; delim: number }[] = [];
 
         const boldItalicRegex = boldItalicPattern();
@@ -751,8 +738,6 @@ function buildDecorations(
         return file ? app.vault.getResourcePath(file) : null;
       };
 
-      // Quote-marker posts: one block widget at endLine.to (URL previews, then quote card —
-      // "quote at the bottom"). Skipped while editing and in source mode, which show raw markers.
       if (block.hasQuoteMarker && !blockHasCursor && !isSourceMode) {
         let quoteFileName: string | null = null;
         let quoteBlockId: string | null = null;
@@ -795,7 +780,6 @@ function buildDecorations(
           );
         }
       } else if (!block.hasQuoteMarker && block.urlTexts.length > 0 && !isSourceMode) {
-        // URL previews for posts without a quote marker (trailing); not in source mode.
         const parsedUrls = extractUrls(block.urlTexts.join(" ")).filter(
           (pu) => pu.type === "image" || !pu.url.startsWith("obsidian://")
         );
@@ -810,7 +794,6 @@ function buildDecorations(
           );
         }
       }
-      // Quote marker + cursor in block: no previews at all; editing shows only raw markers.
     }
   } catch (e) {
     console.debug("Wrot: decoration skipped", e);
@@ -913,9 +896,6 @@ export function createWrEditorExtension(ogpCache: OGPCache, app: App, plugin: Wr
             this.blocks = findWrBlocks(update.view, plugin);
             this.cursorBlockKey = cursorBlockKey(update.view, this.blocks);
           } else {
-            // Selection-only update: decorations depend on the selection solely through which
-            // blocks it touches. If that is unchanged the rebuild would produce the same set,
-            // so moving the cursor inside one memo no longer walks every block in the note.
             const key = cursorBlockKey(update.view, this.blocks);
             if (key === this.cursorBlockKey) return;
             this.cursorBlockKey = key;
@@ -934,14 +914,11 @@ export function createWrEditorExtension(ogpCache: OGPCache, app: App, plugin: Wr
           const parsedUrls = extractUrls(block.urlTexts.join(" "));
           for (const pu of parsedUrls) {
             if (pu.type === "image") continue;
-            // Skip URLs whose outcome is already known and URLs that will never be fetched
-            // (previews off, obsidian:// links, private hosts). Both used to fall through and
-            // dispatch a redraw per URL on every cursor move.
+            // Skip resolved and never-fetched URLs (previews off, obsidian://, private hosts), or every cursor move redraws.
             if (ogpCache.isResolved(pu.url)) continue;
             if (!ogpCache.canFetch(pu.url)) continue;
             // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; failure is non-critical
             ogpCache.fetchOGP(pu.url).then((data) => {
-              // Only a successful fetch changes what is rendered; a failure has nothing to show.
               if (!data) return;
               // Use the view reference that is current when the fetch completes.
               try {
@@ -963,7 +940,6 @@ export function createWrEditorExtension(ogpCache: OGPCache, app: App, plugin: Wr
           if (!(target instanceof HTMLElement)) return false;
           const urlEl = target.closest(".wrot-url-highlight");
           if (!urlEl) return false;
-          // Only URLs inside a wr fence block, to avoid false triggers.
           if (!urlEl.closest(".wrot-codeblock-line, .HyperMD-codeblock")) return false;
           const url = urlEl.textContent?.trim();
           if (!url) return false;

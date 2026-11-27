@@ -3,19 +3,14 @@ import { extractNonBlockText, findBlockRanges } from "./blockSegmenter";
 import { TAG_TOKEN_RE, inlineTokens } from "./patterns";
 import type { ComposerField } from "../editor/composerField";
 
-// Cap on stored recent tags; least-recently-used entries are dropped past
-// the cap to keep the candidate list fresh.
 const MAX_RECENT_TAGS = 200;
 
-// Max candidates shown at once (the list itself scrolls).
 const MAX_VISIBLE_ITEMS = 5;
 
 // How long a tap's delayed compatibility mouse events (ghost clicks) can trail it.
 const GHOST_CLICK_MS = 400;
 
-// Tags follow the shared inline token rules, decoration text included: # inside code, math, links or URLs is not a tag.
 
-// Extract tags (without leading #) in appearance order, deduped; code/math blocks excluded.
 export function extractTagsForHistory(text: string): string[] {
   const source = extractNonBlockText(text);
   const tags: string[] = [];
@@ -28,7 +23,6 @@ export function extractTagsForHistory(text: string): string[] {
   return tags;
 }
 
-// Move tags used this time to the front (newest-first order) and trim to the cap.
 export function mergeRecentTags(existing: string[], used: string[]): string[] {
   if (used.length === 0) return existing;
   const merged = [...used, ...existing.filter((tag) => !used.includes(tag))];
@@ -37,8 +31,6 @@ export function mergeRecentTags(existing: string[], used: string[]): string[] {
 
 interface InlineSuggestOptions {
   field: ComposerField;
-  // Parent element hosting the popover (view body = wrot-container); positioned and
-  // clamped in container coordinates, same as the calendar popover.
   container: HTMLElement;
   // Tried in order; the first one with a token at the caret and any items owns the list.
   sources: SuggestSource[];
@@ -64,9 +56,7 @@ export interface SuggestSource {
   items(query: string): SuggestItem[];
 }
 
-// After a forced commit, refocusing the textarea directly makes iOS reuse the stale
-// input session and skip drawing the caret (typing still works). Bounce focus through
-// an invisible dummy input to rebuild the session; both are editable, so the keyboard stays open.
+// Refocusing right after a forced commit makes iOS reuse a stale input session with no caret; a dummy input bounce rebuilds it.
 export function rebuildFocus(ta: ComposerField, container: HTMLElement): void {
   const dummy = container.createEl("input", {
     cls: "wrot-focus-bounce",
@@ -118,7 +108,6 @@ function detectTagToken(value: string, pos: number): ActiveToken | null {
   };
 }
 
-// Prefix matches first, then substring matches; ignores case and accents.
 function filterTags(candidates: string[], query: string): string[] {
   if (query === "") return candidates.slice(0, MAX_VISIBLE_ITEMS);
   const q = matchKey(query);
@@ -151,7 +140,6 @@ export class InlineSuggest {
   // -1 = nothing selected: the list opens unselected, so Enter/Tab type as usual until an arrow key picks one.
   private selectedIndex = -1;
   private token: ActiveToken | null = null;
-  // Finger position at pointerdown; counts as a tap if it barely moves by pointerup.
   private tapStart: { id: number; x: number; y: number } | null = null;
   // True from pointerdown to pointerup on an item. A textarea blur during this
   // window must not close the popover (the pending confirm would lose its target).
@@ -159,8 +147,6 @@ export class InlineSuggest {
   // Suppression deadline after a pointer-close: delayed ghost clicks landing on the
   // same spot would otherwise hit UI that was beneath the list.
   private suppressUiUntil = 0;
-  // True during IME composition. Rewriting value mid-composition breaks iOS input
-  // state, so confirm() force-commits the composition first.
   private composing = false;
   private onCompositionStart = (): void => {
     this.composing = true;
@@ -234,10 +220,7 @@ export class InlineSuggest {
     return false;
   }
 
-  // linger: after a tap, iOS sends its delayed compatibility mouse events (seen on device about
-  // 40ms after touchend) to whatever sits under the finger. With the list gone they would reach
-  // what lies beneath it: the form's text, a toolbar button or a post. So the list stays a
-  // moment, invisible, to absorb them with its own mousedown/click guards.
+  // linger: iOS ghost mouse events (~40ms after touchend) would hit what lies under the list, so it stays invisibly to absorb them.
   close(linger = false): void {
     if (!this.popover) return;
     activeDocument.removeEventListener("pointerdown", this.onOutside, true);
@@ -272,12 +255,8 @@ export class InlineSuggest {
   private renderItems(items: SuggestItem[]): void {
     if (!this.popover) {
       this.popover = this.opts.container.createDiv({ cls: "wrot-tag-suggest" });
-      // Keep clicks inside the popover from bubbling out (same as the calendar popover).
       this.popover.addEventListener("click", (e) => e.stopPropagation());
-      // iOS synthesizes delayed compatibility mouse events after a tap; their default
-      // action steals focus back from the textarea after confirm()'s focus(), killing all
-      // later key input. pointerdown preventDefault can't stop them, so block mousedown
-      // too (same fix as the toolbar buttons).
+      // iOS ghost mouse events after a tap steal focus from the textarea; pointerdown preventDefault can't stop them, so block mousedown.
       this.popover.addEventListener("mousedown", (e) => e.preventDefault());
       activeDocument.addEventListener("pointerdown", this.onOutside, true);
     }
@@ -351,7 +330,6 @@ export class InlineSuggest {
     this.itemEls[this.selectedIndex]?.scrollIntoView({ block: "nearest" });
   }
 
-  // Replace the active token with the chosen item; its trailing space keeps typing flowing.
   private confirm(index: number, byPointer = false): void {
     const item = this.items[index];
     const token = this.token;
@@ -359,11 +337,7 @@ export class InlineSuggest {
     const ta = this.opts.field;
     this.suppressUiUntil = Date.now() + GHOST_CLICK_MS;
     this.close(byPointer);
-    // iOS kana input keeps a composition alive the whole time you type; rewriting the
-    // value mid-composition leaves the IME with a ghost composition detached from the
-    // real text, and later single Backspaces do nothing (confirmed on device). So while
-    // composing: blur to force-commit, wait for compositionend, then replace and refocus.
-    // The forced commit doesn't change the text, so the token range stays valid.
+    // Rewriting mid-composition leaves iOS kana input with a ghost composition (Backspace dead), so blur to force-commit and replace on compositionend.
     if (this.composing) {
       let done = false;
       const finish = (): void => {
@@ -378,16 +352,11 @@ export class InlineSuggest {
       window.setTimeout(finish, 150);
       return;
     }
-    // A tap on the list, even with the focus kept, leaves iOS no longer drawing the caret or
-    // delivering keys to the form (seen on device with the English keyboard), so a tap always
-    // rebuilds the input session.
+    // On iOS a tap on the list stops caret drawing and key delivery even with focus kept, so a tap always rebuilds the input session.
     this.applyInsert(ta, token, item, byPointer && Platform.isIosApp);
   }
 
-  // Replace the token and put the caret after the insert. Refocus only if focus was
-  // lost (blurred by the forced commit) or a tap asked for it: stacking a plain focus() on an
-  // already-focused textarea can make iOS lose the keyboard session, so it goes through
-  // rebuildFocus.
+  // A plain focus() on an already-focused textarea can drop iOS's keyboard session, so refocus only via rebuildFocus when needed.
   private applyInsert(ta: ComposerField, token: ActiveToken, item: SuggestItem, rebuild = false): void {
     const insert = item.insert;
     ta.value = ta.value.slice(0, token.start) + insert + ta.value.slice(token.end);
@@ -427,7 +396,6 @@ export class InlineSuggest {
     const caretLeft = startCoords.left;
     const caretBottom = endCoords.bottom;
 
-    // Clamp within the container (same margin rules as the calendar popover).
     const GAP = 2;
     const EDGE = 8;
     const cRect = container.getBoundingClientRect();

@@ -52,10 +52,8 @@ const FALLBACK_LOCALE: LocaleCode = "en";
 let activeLocale: LocaleCode = FALLBACK_LOCALE;
 let activeDict: Translations = en;
 
-// Distinguishes an unsupported language (which falls back to en) from English itself.
 let usingFallbackLocale = false;
 
-// Resolution order: exact match → base-language fallback → null (caller falls back to en).
 function resolveLocale(raw: string | undefined | null): LocaleCode | null {
   if (!raw) return null;
   const normalized = raw.trim();
@@ -122,6 +120,5 @@ export function t(
 ): string {
   const value = activeDict[key];
   if (typeof value === "string") return applyParams(value, params);
-  // Missing dictionary key: return the key itself instead of breaking.
   return applyParams(String(key), params);
 }

@@ -35,7 +35,6 @@ export function isSafeUrl(url: string, protocols = [...HTTP_ONLY, "obsidian:"]):
 }
 
 export function cleanUrl(raw: string): string {
-  // Trailing punctuation, ASCII or full-width, is not considered part of the URL.
   return raw.replace(/[.,;:!?)。、！？）」』】]+$/, "");
 }
 
@@ -107,7 +106,6 @@ interface RenderTextCallbacks {
   onInternalLinkClick?: (linkName: string) => void;
   resolveImagePath?: (fileName: string) => string | null;
   resolveLinkTarget?: (linkName: string) => boolean;
-  // Current vault name, for telling a missing file from a link into another vault.
   vaultName?: string;
   checkStrikethrough?: boolean;
   renderCodeBlock?: (code: string, lang: string, container: HTMLElement, fenceTildes: number) => void;
@@ -598,7 +596,6 @@ export function renderUrlPreviews(
         render(host, cached);
         continue;
       }
-      // Already known to be unresolvable, or previews are off: no card, no loading flash.
       if (ogpCache.isResolved(pu.url) || !ogpCache.canFetch(pu.url)) continue;
 
       const placeholder = createDiv({ cls: "wrot-ogp-loading" });

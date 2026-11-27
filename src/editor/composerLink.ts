@@ -10,7 +10,6 @@ import { IMAGE_EXT_RE, QUOTE_MARKER_RE, inlineTokens, splitLinkAlias } from "../
 interface ComposerLink {
   from: number;
   to: number;
-  // The hidden syntax either side of the shown text.
   open: { from: number; to: number };
   close: { from: number; to: number };
   text: string;

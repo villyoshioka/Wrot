@@ -43,13 +43,15 @@ export class BulletWidget extends WidgetType {
 }
 
 export class CheckboxWidget extends WidgetType {
-  constructor(private checked: boolean, private depth: number = 0) { super(); }
+  constructor(private checked: boolean, private depth: number = 0, private locked = false) { super(); }
   toDOM(view: EditorView): HTMLElement {
     const wrap = createSpan();
     wrap.className = `wrot-lp-marker wrot-lp-check${indentClass(this.depth)}`;
+    wrap.classList.toggle("wrot-lp-check-locked", this.locked);
     const cb = createEl("input");
     cb.type = "checkbox";
     cb.checked = this.checked;
+    cb.disabled = this.locked;
     cb.addEventListener("click", (e) => {
       // updateDOM reuses DOM, so derive state from the doc at click time (listener may be stale).
       // No preventDefault: the browser would roll checked back afterward, leaving the box stale.
@@ -59,7 +61,6 @@ export class CheckboxWidget extends WidgetType {
       const quotePrefix = /^(?:>\s?)+/.exec(line.text)?.[0].length ?? 0;
       const info = parseListLine(line.text.slice(quotePrefix), true);
       if (!info || info.kind !== "check") {
-        // Position not identifiable: skip the doc write and revert the box.
         e.preventDefault();
         return;
       }
@@ -75,16 +76,17 @@ export class CheckboxWidget extends WidgetType {
     wrap.appendChild(cb);
     return wrap;
   }
-  // Reuse the DOM instead of replacing the widget; only diff the checked state.
   updateDOM(dom: HTMLElement): boolean {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- assertion needed for cross-version Obsidian typings
     const cb = dom.querySelector("input[type=\"checkbox\"]") as HTMLInputElement | null;
     if (!cb) return false;
     if (cb.checked !== this.checked) cb.checked = this.checked;
+    cb.disabled = this.locked;
+    dom.classList.toggle("wrot-lp-check-locked", this.locked);
     return true;
   }
   eq(other: CheckboxWidget): boolean {
-    return this.checked === other.checked && this.depth === other.depth;
+    return this.checked === other.checked && this.depth === other.depth && this.locked === other.locked;
   }
   // Keep events from the editor: a mousedown would move the cursor into the block,
   // opening it as raw text and diverging from RV.
@@ -116,8 +118,7 @@ function onTap(el: HTMLElement, fn: () => void): void {
   });
 }
 
-// Read-mode tag; click opens global search. A clickable mark would open the block raw
-// on mousedown, so use an ignoreEvent widget. While editing it stays plain text + tagMark.
+// A widget with ignoreEvent, not a clickable mark: a mark would open the block raw on mousedown.
 export class TagWidget extends WidgetType {
   constructor(private tag: string, private plugin: WrotPlugin) { super(); }
   toDOM(): HTMLElement {
@@ -260,7 +261,6 @@ export class CodeBlockWidget extends WidgetType {
     if (this.lang) codeEl.className = `language-${this.lang}`;
     codeEl.textContent = this.code;
 
-    // Prism token colors are already defined in Obsidian's app.css.
     if (this.lang) {
       loadPrism().then((Prism: { highlightElement: (el: HTMLElement) => void }) => {
         Prism.highlightElement(codeEl);
@@ -276,7 +276,6 @@ export class CodeBlockWidget extends WidgetType {
 }
 
 export class MathBlockWidget extends WidgetType {
-  // As in MathWidget: eq() includes MathJax readiness so lazy-load rebuilds the DOM.
   private hadMathJax = isMathJaxReady();
   constructor(private tex: string, private ruleClass: string | null) { super(); }
   toDOM(): HTMLElement {
@@ -321,7 +320,6 @@ export class EmbedImageWidget extends WidgetType {
   ignoreEvent(): boolean { return true; }
 }
 
-// Inline image for quote-marker posts, rendered at its written position.
 export class InlineEmbedImageWidget extends WidgetType {
   constructor(private src: string, private alt: string) { super(); }
   toDOM(): HTMLElement {
@@ -340,8 +338,6 @@ export class InlineEmbedImageWidget extends WidgetType {
   }
   ignoreEvent(): boolean { return true; }
 }
-
-
 
 export class UrlPreviewWidget extends WidgetType {
   private cachedSnapshot: boolean[];
@@ -399,8 +395,7 @@ export class UrlPreviewWidget extends WidgetType {
   }
 }
 
-// Block widget at endLine.to for quote-marker posts: URL previews first, quote card last
-// ("quote at the bottom"). The in-body marker is hidden separately to avoid double rendering.
+// The in-body quote marker is hidden separately so it is not rendered twice.
 export class QuoteBlockWidget extends WidgetType {
   private cachedSnapshot: boolean[];
 

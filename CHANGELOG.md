@@ -1,5 +1,18 @@
 # Release Notes
 
+## 3.7.0 - 2026-11-27
+
+### New Features
+
+- Added Pin as Recurring, which unchecks a post's checkboxes each time the date changes
+
+### Improvements
+
+- Pressing Enter on a list item that starts with a date now also lets you carry on with `@` on the next item
+- Improved translations
+
+---
+
 ## 3.6.0 - 2026-11-24
 
 ### Updates
@@ -84,7 +97,7 @@
 
 ### Improvements
 
-- Tag autocomplete now treats letters such as ø and ß like their plain counterparts
+- Tag autocomplete now treats ø, ß, and similar letters the same as o and ss
 - Adjusted the calendar size
 - Improved the internal structure
 
@@ -155,7 +168,7 @@
 
 ### Bug Fixes
 
-- Fixed the cursor disappearing instead of the menu opening when long-pressing the post editor on mobile under certain conditions
+- Fixed the cursor disappearing instead of the menu opening when long-pressing the post form on mobile under certain conditions
 
 ---
 
@@ -186,7 +199,7 @@
 ### Improvements
 
 - Improved plugin performance
-- Tags and URLs in the post editor are now shown in the accent color
+- Tags and URLs in the post form are now shown in the accent color
 - Tag suggestions now open with nothing selected
 - Tags written with a full-width "＃" are now changed to "#" once you finish typing them
 
@@ -197,7 +210,7 @@
 ### Important Changes
 
 - Raised the minimum required version to Obsidian 1.14.4.
-- Redesigned the post editor so Markdown syntax is hidden and your text looks close to how it will appear. See [New Posting Form in Ver3.0.0 and Up](https://github.com/villyoshioka/Wrot/blob/3.0.1/docs/en/posting-form-v3.md) for what has changed.
+- Redesigned the post form so Markdown syntax is hidden and your text looks close to how it will appear. See [New Posting Form in Ver3.0.0 and Up](https://github.com/villyoshioka/Wrot/blob/3.0.1/docs/en/posting-form-v3.md) for what has changed.
 - Removed the Embed button from the toolbar and merged it into the Link button. If you had customized your toolbar layout, the Embed button is removed automatically.
 
 ### Updates
@@ -246,7 +259,7 @@
 
 ### Improvements
 
-- The gradient brightness can now be chosen (choose one in the settings)
+- The gradient brightness can now be chosen
 - Adjusted the gradient style
 - Rearranged the settings
 
@@ -256,7 +269,7 @@
 
 ### Improvements
 
-- Extended the gradient to the whole compose box, and renamed the setting to "Compose box gradient"
+- Extended the gradient to the whole post form, and renamed the setting to "Post Form Gradient"
 - Adjusted the gradient colors
 - Improved translations
 
@@ -275,7 +288,7 @@
 
 ### New Features
 
-- Added Template Heading Selection, which adds posts under a heading you pick from your daily note template (choose one in "Template Heading Selection" in the settings)
+- Added Template Heading Selection, which puts your posts under a heading you pick from your daily note template (choose one in "Template Heading Selection" in the settings)
 - Added an accent-color gradient for the post button (turn on "Post Button Gradient" in the settings)
 
 ---
@@ -292,7 +305,7 @@
 
 ### Improvements
 
-- Improved internal structure
+- Improved the internal structure
 - Improved translations
 
 ### Bug Fixes
@@ -419,7 +432,7 @@
 ### Improvements
 
 - A post set with Pin Later is now pinned as soon as you come back to Obsidian on its day
-- Improved internal structure
+- Improved the internal structure
 
 ### Bug Fixes
 
@@ -459,7 +472,7 @@
 
 ### Improvements
 
-- Tidied up and simplified the descriptions in the settings
+- Shortened the descriptions in the settings
 - Moved the image folder settings below the calendar settings
 
 ### Bug Fixes
@@ -480,8 +493,8 @@
 
 ### Bug Fixes
 
-- Fixed the sub colour of a tag rule not following a change of background or text colour in the settings right away
-- Fixed the text for a missing embedded image not matching the colour of an unresolved link
+- Fixed the sub color of a tag rule not following a change of background or text color in the settings right away
+- Fixed the text for a missing embedded image not matching the color of an unresolved link
 
 ---
 
@@ -507,7 +520,7 @@
 
 ### Improvements
 
-- Added Tab in the input form to indent a list item and Shift+Tab to outdent it
+- Tab in the post form now indents a list item, and Shift+Tab outdents it
 - Made a half-width space, an ideographic space and a tab all indent by the same level
 - Made a new line keep the list level, and an empty item step out one level
 - Made numbered lists count by position rather than by the digits typed
@@ -550,7 +563,7 @@
 ### Improvements
 
 - Applied the line breaks of setting descriptions to all languages
-- Improved internal structure
+- Improved the internal structure
 
 ---
 
@@ -566,7 +579,7 @@
 
 ### New Features
 
-- Adapted the settings screen to the new API available from Obsidian 1.13.0
+- Added support for the new settings API in Obsidian 1.13.0 and later
 - Added "Hide from timeline" to tag rules
 
 ### Improvements
@@ -582,7 +595,7 @@
 
 ### Improvements
 
-- Improved internal structure
+- Improved the internal structure
 
 ---
 
@@ -590,13 +603,13 @@
 
 ### Bug Fixes
 
-- Fixed an issue where toggling a checkbox could apply to the wrong post
-- Fixed an issue where tags stayed behind after reloading during the tag integration scan
+- Fixed toggling a checkbox sometimes applying to the wrong post
+- Fixed tags staying behind after reloading during the tag integration scan
 
 ### Improvements
 
 - Reduced unnecessary work when refreshing the display
-- Improved internal structure
+- Improved the internal structure
 
 ---
 
@@ -605,7 +618,7 @@
 ### Improvements
 
 - The post button text can now be left blank for an icon-only button when an icon is set
-- Made some changes to the colors used while tag autocomplete is active
+- Changed some of the colors used while tag autocomplete is open
 
 ---
 
@@ -613,9 +626,9 @@
 
 ### Bug Fixes
 
-- Fixed an issue where quote cards and URL previews were rendered in source mode
-- Fixed an issue where the nested quote marker "QT:" inside quote cards appeared in the same accent color as links
-- Fixed an issue where the screen briefly shifted up and down when jumping to a quoted post under certain conditions
+- Fixed quote cards and URL previews being shown in source mode
+- Fixed the nested quote marker "QT:" inside quote cards appearing in the same accent color as links
+- Fixed the screen briefly shifting up and down when jumping to a quoted post under certain conditions
 
 ---
 
@@ -623,13 +636,13 @@
 
 ### Improvements
 
-- Tags inside memos can now be clicked (or tapped) to search, in Reading View and Live Preview as well
+- Tags in posts can now be pressed to search in Reading View and Live Preview as well
 - Made it easier to tell when a tag has been pressed
 - Changed the library loading order to improve plugin performance
 
 ### Notes
 
-- If you use math expressions, the first one after startup may take a moment to appear. Once loaded, rendering is immediate as before.
+- If you use math, the first expression after startup may take a moment to appear. After that, math appears right away as before.
 
 ---
 
@@ -647,11 +660,11 @@
 
 ### Bug Fixes
 
-- Fixed an issue on mobile where characters could not be deleted right after confirming a tag suggestion
+- Fixed text on phones sometimes not being deletable right after picking a suggestion
 
 ### Notes
 
-- On the first launch after updating, tag integration (graph view and tag search) may take a moment to kick in while the integration support file is newly created. Subsequent launches behave as usual.
+- On the first launch after updating, Wrot creates the file that tag integration uses, so tags may take a moment to show up in graph view and tag search. Later launches do not take this extra time.
 
 ---
 
@@ -659,7 +672,7 @@
 
 ### Bug Fixes
 
-- Fixed an issue where the vertical quote line color in Live Preview did not match the timeline and Reading View
+- Fixed the vertical quote line color in Live Preview not matching the timeline and Reading View
 
 ---
 
@@ -671,10 +684,10 @@
 
 ### Bug Fixes
 
-- Fixed an issue where the copy button could stay unlit and appear to float during the quote-jump flash on cards with a tag rule color
-- Fixed an issue where the pin indicator on mobile could be misaligned with the timestamp and the three-dot button
-- Fixed an issue where toggling a checkbox in the timeline could delay the strikethrough, including inside quote cards, and cause the display to flicker
-- Fixed an issue where the post form could twitch rapidly with certain themes that restyle buttons
+- Fixed the copy button staying unlit and appearing to float during the quote-jump flash on cards with a tag rule color
+- Fixed the pin mark on mobile being misaligned with the timestamp and the three-dot button
+- Fixed the strikethrough sometimes lagging and quote cards flickering when a checkbox was toggled in the timeline
+- Fixed the post form sometimes twitching continuously with themes that heavily restyle buttons
 
 ---
 
@@ -699,7 +712,7 @@
 
 ### Improvements
 
-- Improved internal structure
+- Improved the internal structure
 
 ---
 
@@ -707,7 +720,7 @@
 
 ### Bug Fixes
 
-- Fixed a layout break that occurred when opening Wrot in the main area on mobile
+- Fixed the layout breaking when Wrot was opened in the main area on phones
 
 ---
 
@@ -719,9 +732,9 @@
 
 ### Improvements
 
-- Fixed the three-dot menu position
-- Improved display responsiveness to width and layout
-- Buttons now scale with font-size following when enabled
+- The three-dot menu now always opens in the same position
+- Improved how the display adapts to width and layout
+- Buttons now also change size when following the font size
 
 ---
 
@@ -747,7 +760,7 @@
 ### Improvements
 
 - Aligned the vertical position of checkboxes with the text
-- Improved internal structure
+- Improved the internal structure
 
 ---
 
@@ -760,12 +773,12 @@
 ### Improvements
 
 - Tapping a URL card on mobile now gives the same visual feedback as on desktop
-- Improved internal structure
+- Improved the internal structure
 
 ### Bug Fixes
 
-- Fixed an issue where an extra blank line could appear in posts that contain a deeper quote inside a quote
-- Fixed an issue where the three-dot menu button sometimes did not change color while the menu was open
+- Fixed an extra blank line sometimes appearing in posts with a quote nested inside a quote
+- Fixed the three-dot menu button sometimes not changing color while the menu was open
 
 ---
 
@@ -782,7 +795,7 @@
 
 ### Improvements
 
-- Improved internal structure
+- Improved the internal structure
 - Balanced the left and right spacing around posts containing images in Reading View
 
 ---
@@ -791,7 +804,7 @@
 
 ### Improvements
 
-- Improved internal structure
+- Improved the internal structure
 
 ---
 
@@ -803,13 +816,13 @@
 
 ### Improvements
 
-- Added a new "Tag Rules" category in the settings, moving tag-related settings into their own dedicated section
-- Adjusted the default settings for new installs to better match the default theme
-- Adjusted the layout in Reading View so the copy button and the first line of content are properly spaced
+- Moved the tag rule settings into their own section in the settings
+- Adjusted the defaults for new installs to match Obsidian's default theme
+- Adjusted the position of the copy button relative to the first line of a post in Reading View
 
 ### Bug Fixes
 
-- Fixed an issue where an unwanted border could appear around the post input field depending on the theme
+- Fixed an extra border sometimes appearing around the post form's input field with some themes
 
 ---
 
@@ -817,7 +830,7 @@
 
 ### Bug Fixes
 
-- Fixed an issue where the post button could be pressed while empty
+- Fixed the post button being pressable while the post was empty
 
 ---
 
@@ -825,9 +838,9 @@
 
 ### Improvements
 
-- Optimized the month and year display to match the standard format for each language
-- Improved tap feedback for dates and years on mobile devices
-- Refined calendar borders and shadows for a cleaner, more natural look
+- Changed the month and year display to the natural order for each language
+- Tapping a date or year in the calendar on phones now shows what you tapped
+- Adjusted the calendar borders and shadows
 
 ---
 
@@ -839,7 +852,7 @@
 
 ### Improvements
 
-- Revamped the calendar so it looks and behaves the same across all environments (desktop, mobile, and tablet)
+- Revamped the calendar so it looks and works the same on desktop, phones, and tablets
 
 ---
 
@@ -847,7 +860,7 @@
 
 ### Bug Fixes
 
-- Fixed an issue where the behavior of blockquote blocks could become incorrect under certain conditions
+- Fixed blockquotes sometimes not working correctly under certain conditions
 
 ---
 
@@ -855,7 +868,7 @@
 
 ### Bug Fixes
 
-- Fixed an issue where the today button's color did not follow the text color setting
+- Fixed the Today button's color not following the text color setting
 
 ---
 
@@ -871,7 +884,7 @@
 
 ### Bug Fixes
 
-- Fixed an issue where the preview highlight on decoration buttons could fail to activate on the first tap
+- Fixed the highlight on formatting buttons pressed without selecting text sometimes not showing the first time
 
 ---
 
@@ -879,7 +892,7 @@
 
 ### Bug Fixes
 
-- Fixed an issue where the icon of the 3-dot menu button on a memo card did not change to the accent color while the menu was open
+- Fixed the three-dot menu button on a post not turning the accent color while the menu was open
 
 ---
 
@@ -891,12 +904,12 @@
 
 ### Bug Fixes
 
-- Fixed an issue where the right padding of memo blocks in Live View was narrower than the left padding
-- Improved an issue where the input form was slow to render on tablets when Obsidian was started or when the Wrot panel was opened while focus was inside a Live View card
+- Fixed the right padding of posts in Live Preview being narrower than the left
+- Fixed the post form being slow to appear on tablets when Wrot was opened right after Obsidian started or while the cursor was in Live Preview
 
 ### Improvements
 
-- Improved internal structure
+- Improved the internal structure
 
 ---
 
@@ -908,7 +921,7 @@
 
 ### Improvements
 
-- Improved internal structure
+- Improved the internal structure
 
 ---
 
@@ -916,7 +929,7 @@
 
 ### Improvements
 
-- Improved internal structure
+- Improved the internal structure
 
 ---
 
@@ -928,7 +941,7 @@
 
 ### Improvements
 
-- Adjusted the appearance of inline code in Live View
+- Adjusted the appearance of inline code in Live Preview
 
 ---
 
@@ -968,15 +981,15 @@
 
 ### Deprecated
 
-- Removed the "Jump to Original Note" feature that was previously added to the three-dot menu for pinned posts. It was retracted because it caused critical bugs that were difficult to fix.
+- Removed "Jump to Original Note" from the three-dot menu of pinned posts, because it caused serious bugs that were hard to fix.
 
 ### Bug Fixes
 
-- Fixed an issue where the cursor could become invisible when creating a new line immediately after closing formatting (bold/italic) while the IME was in an unconfirmed state
-- Fixed a bug where the copy button on cards with tag color rules was not displaying correctly in Reading View
-- Fixed an issue where the display of quote cards would sometimes not follow checkbox operations on the timeline
-- Fixed an issue where jumping from a quote card would occasionally not work correctly
-- Fixed a bug where the display of blockquotes could become distorted
+- Fixed the cursor sometimes disappearing when starting a new line right after closing bold or italic while text was still being composed
+- Fixed the copy button on posts with a tag rule not showing correctly in Reading View
+- Fixed quote cards sometimes not updating after a checkbox was toggled in the timeline
+- Fixed jumping from a quote card sometimes not working correctly
+- Fixed blockquotes sometimes looking broken
 - Adjusted some color schemes that were difficult to see
 
 ---
@@ -985,7 +998,7 @@
 
 ### Bug Fixes
 
-- Fixed an issue where "Jump to Original Note" did not work correctly in Live Preview
+- Fixed "Jump to Original Note" not working correctly in Live Preview
 
 ---
 
@@ -1001,10 +1014,10 @@
 
 ### Improvements
 
-- Reduced the file size of the plugin
-- Clicking on a quote card now also scrolls the target block to the center of the screen
-- The icons for the three-dot menu button and the pinning indicator now sync with the text color settings
-- Obsolete setting items are now automatically cleaned up
+- Made the plugin lighter
+- Pressing a quote card now also scrolls the target block to the center of the screen
+- The three-dot menu and pin mark icons now follow the text color setting
+- Settings that are no longer used are now cleaned up automatically
 
 ---
 
@@ -1012,7 +1025,7 @@
 
 ### Bug Fixes
 
-- Fixed a bug where clicking a date label would occasionally fail to open the Daily Note
+- Fixed clicking a date label sometimes not opening the daily note
 
 ---
 
@@ -1037,18 +1050,18 @@
 
 ### New Features
 
-- Supported quoting from posts
+- Added quoting posts
 - Added "Sub Color" settings to Tag-Specific Color Rules
 
 ### Improvements
 
-- Improved the nested representation of blockquotes (`>`)
+- Improved how nested quotes are displayed
 - Adjusted the margins for each view
-- Organized the internal structure
+- Improved the internal structure
 
 ### Bug Fixes
 
-- Fixed an issue on mobile where a white background would appear when tapping a disabled item in the post format menu
+- Fixed a white background appearing on mobile when tapping a disabled item in the toolbar's three-dot menu
 
 ---
 
@@ -1056,8 +1069,8 @@
 
 ### Improvements
 
-- Improved the response of the "Add Image" button's light-up display when closing the dialog
-- Changed the lock icon in Tag-Specific Color Rules to a design with a keyhole
+- Improved how the "Add Image" button's highlight responds when the image picker is closed
+- Changed the lock icon in Tag-Specific Color Rules to one with a keyhole
 
 ---
 
@@ -1070,7 +1083,7 @@
 ### Improvements
 
 - The "Add Image" button now also lights up with the accent color when pressed
-- Modified the internal structure
+- Improved the internal structure
 
 ---
 
@@ -1083,7 +1096,7 @@
 ### Improvements
 
 - Improved the behavior of the bold and italic buttons both when clicking and when selecting text
-- Modified the internal structure
+- Improved the internal structure
 
 ---
 
@@ -1091,7 +1104,7 @@
 
 ### Improvements
 
-- Adjusted the layout of dropdown items in the settings screen for the mobile version
+- Adjusted the layout of dropdowns in the settings on mobile
 - Changed the default background color to one that blends better with Obsidian's standard themes
 
 ---
@@ -1101,7 +1114,7 @@
 ### Improvements
 
 - Supported Obsidian's Weekly and Monthly note workflows
-- Tapping a date label again will now focus on the existing tab instead of opening a new one
+- Tapping a date label again now focuses the existing tab instead of opening a new one
 
 ---
 
@@ -1109,7 +1122,7 @@
 
 ### Improvements
 
-- Added a locking mechanism to each rule in "Change colors by tag" to prevent accidental changes
+- Added a lock to each rule in "Change colors by tag" to prevent accidental changes
 
 ---
 
@@ -1118,7 +1131,7 @@
 ### Improvements
 
 - Adjusted the position of the checkbox checkmark
-- Renamed the "Other Settings" category in the settings screen to "Display Settings."
+- Renamed the "Other Settings" category in the settings screen to "Display Settings"
 
 ---
 
@@ -1126,18 +1139,18 @@
 
 ### New Features
 
-- Added an image attachment feature to the post form
+- Added image attachments to the post form
 
 ### Improvements
 
-- Image files referenced via `obsidian://` URLs will now display as unresolved links if the file is deleted
+- Image files referenced via `obsidian://` URLs now display as unresolved links if the file is deleted
 
 ### Notes
 
-- Only one image can be attached per memo.
+- Only one image can be attached per post.
 - Only PNG, GIF, and JPEG can be selected in the file selection dialog. Pasting and drag-and-drop also accept WebP, SVG, BMP, etc.
 - Image files are saved in the format `Pasted Image YYYYMMDDHHmmss.<extension>`.
-- Copying and pasting files directly from the OS file manager (Finder / Explorer, etc.) is not supported. To add images from a file manager, use the "Add Image" button or drag and drop.
+- Copying a file in Finder or Explorer and pasting it is not supported. To add an image from Finder or Explorer, use the "Add Image" button or drag and drop it.
 
 ---
 
@@ -1145,12 +1158,12 @@
 
 ### New Features
 
-- When an image file is specified via an `obsidian://` URL (e.g., `obsidian://open?vault=MyVault&file=photo.png`), an image preview will be displayed with the same look as an `![[]]` embed
+- Added image previews, shown like an `![[]]` embed, for image files linked with an `obsidian://` URL
 
 ### Improvements
 
-- Improved the visual balance when "Follow Obsidian Font Size" is ON
-- Readjusted the wording in the settings screen
+- Improved the visual balance when "Follow Obsidian Font Size" is on
+- Adjusted the wording in the settings screen
 
 ---
 
@@ -1158,7 +1171,7 @@
 
 ### Improvements
 
-- When "Follow Obsidian Font Size" is ON, the three-dot buttons and pin icons for each memo now also follow the font size
+- When "Follow Obsidian Font Size" is on, the three-dot buttons and pin icons on each post now also follow the font size
 - Adjusted the wording in the settings screen
 
 ---
@@ -1167,18 +1180,18 @@
 
 ### New Features
 
-- Added a memo pinning feature
+- Added pinning posts
 - Added a "Pin Limit" item to the settings screen
 
 ### Improvements
 
-- Replaced the copy button next to the timestamp on each memo with a three-dot menu
-- The active button now glows with the accent color while the three-dot menu is open
+- Replaced the copy button next to the timestamp on each post with a three-dot menu
+- The button you pressed now glows with the accent color while the three-dot menu is open
 
 ### Notes
 
-- If a pinned memo is deleted from the Daily Note within Obsidian, it will automatically be unpinned.
-- If the pin limit is changed to a smaller value, the most recently pinned items will remain, and older ones will be unpinned to fit the limit.
+- If you delete a pinned post from its daily note, it is unpinned automatically.
+- If you lower the pin limit, the most recently pinned posts stay pinned and older ones are unpinned to fit.
 
 ---
 
@@ -1186,14 +1199,14 @@
 
 ### New Features
 
-- Supported code blocks (`~~~` syntax)
-- Supported math blocks (`$$...$$`)
-- The "Code" and "Math" buttons in the post form's three-dot menu now insert the block version when no text is selected
+- Added support for code blocks (`~~~` syntax)
+- Added support for math blocks (`$$...$$`)
+- Pressing "Code" or "Math" in the post form's three-dot menu without selecting text now inserts a block
 
 ### Notes
 
-- Syntax highlighting for code blocks is disabled for memos with tag color rules applied. If you want to write code with highlighting, please do not use tags or use tags not registered in the rules.
-- When writing a code block inside a memo, use `~~~` instead of ` ``` ` to avoid conflict with the outer ` ```wr ` fence.
+- Syntax highlighting in code blocks is turned off for posts with a tag color rule. To get highlighting, leave the post untagged or use a tag that is not in any rule.
+- To write a code block inside a post, use `~~~` instead of ` ``` ` so it does not clash with the outer ` ```wr ` fence.
 
 ---
 
@@ -1201,7 +1214,7 @@
 
 ### Bug Fixes
 
-- Fixed an issue where the font size for the entire timeline (post body, input fields, dates, buttons, etc.) was larger than before on mobile even when font size following was OFF
+- Fixed posts, the input field, dates, buttons, and other text on mobile appearing larger than before even when font size following was off
 
 ---
 
@@ -1209,7 +1222,7 @@
 
 ### Bug Fixes
 
-- Fixed an issue where the timestamp font size on the mobile timeline was larger than before even when font size following was OFF
+- Fixed timestamps on mobile appearing larger than before even when font size following was off
 
 ---
 
@@ -1217,11 +1230,11 @@
 
 ### New Features
 
-- Added a "Follow Obsidian Font Size" toggle to the Basic Settings
+- Added "Follow Obsidian Font Size" to the Basic Settings
 
 ### Improvements
 
-- When adding a new tag-specific card color rule, the default background and text colors will now match your current theme (Light/Dark)
+- New tag-specific card color rules now start with background and text colors that match your light or dark theme
 
 ---
 
@@ -1229,7 +1242,7 @@
 
 ### Bug Fixes
 
-- Fixed a bug where the checkmark color for a successful copy (via the timeline copy button) did not use the accent color defined in the tag-specific card color rules
+- Fixed the checkmark shown after copying with the timeline copy button not using the accent color of the tag-specific card color rule
 
 ---
 
@@ -1256,7 +1269,7 @@
 
 ### Improvements
 
-- Toolbar buttons now automatically wrap to prevent overflowing in narrow sidebars or when pinned on iPad
+- Toolbar buttons now wrap automatically instead of overflowing in narrow sidebars or when the sidebar is pinned on iPad
 - Adjusted the post card width in the mobile timeline view to match Obsidian's sidebar width
 
 ---
@@ -1291,7 +1304,7 @@
 
 ### Bug Fixes
 
-- Fixed a bug where the toolbar button remained in a selected state even after deleting the markers (`**` / `*`) in bold or italic mode
+- Fixed a toolbar button staying lit after deleting the markers (`**` / `*`) when bold or italic was pressed without selecting text
 
 ---
 
@@ -1311,7 +1324,7 @@
 
 ### Improvements
 
-- Revised the developer name and description displayed in the plugin list
+- Changed the developer name and description shown in the plugin list
 
 ---
 
@@ -1319,13 +1332,13 @@
 
 ### New Features
 
-- Added an embed button to the toolbar that converts the selection into `![[selected text]]` with a single tap
+- Added an embed button to the toolbar that turns the selection into `![[selected text]]`
 - Internal links and embed links (`[[X]]` / `![[X]]`) now display as unresolved links if the target note does not exist
 
 ### Bug Fixes
 
-- Fixed an issue in Reading View where the copy button for code blocks was always visible even without hovering
-- Fixed a bug in Live Preview where the background of the code block copy button (wr) was filled, making text at the end of the memo invisible
+- Fixed the code block copy button in Reading View always being visible, even without hovering
+- Fixed the code block copy button (wr) in Live Preview having a filled background that hid text at the end of the post
 
 ---
 
@@ -1333,7 +1346,7 @@
 
 ### Bug Fixes
 
-- Fixed a bug on mobile where the background highlight remained after tapping date navigation buttons (Previous / Next / Today)
+- Fixed the background color staying on mobile after tapping the date navigation buttons (Previous / Next / Today)
 
 ---
 
@@ -1341,7 +1354,7 @@
 
 ### Improvements
 
-- Added feedback when clicking a date label
+- Added feedback when pressing a date label
 
 ---
 
@@ -1349,8 +1362,8 @@
 
 ### Bug Fixes
 
-- Fixed a bug where the accent color was not reflected in tags, links, URLs, and math in Live Preview
-- Fixed an issue where memos could not be posted using Cmd+Enter (macOS) or Ctrl+Enter (Windows/Linux)
+- Fixed the accent color not applying to tags, links, URLs, and math in Live Preview
+- Fixed posting with Cmd+Enter (macOS) or Ctrl+Enter (Windows/Linux) not working
 
 ---
 
@@ -1360,16 +1373,16 @@ Initial release.
 
 ### Feature List
 
-- **Timeline View**: Displays a list of memos in card format in the sidebar.
+- **Timeline View**: Shows your posts as cards in the sidebar.
 - **Text Formatting**: Supports bold, italic, strikethrough, highlight, and inline code.
-- **Inline Math**: Renders LaTeX formulas using $...$ syntax.
+- **Inline Math**: Renders LaTeX math written with `$...$`.
 - **Lists**: Supports bulleted lists, numbered lists, and checklists.
 - **Quotes**: Supports blockquotes (> ).
-- **Tags**: Categorize memos with #tags and click to search.
-- **Links/Embeds**: Supports internal links (![[]]), external URLs, and obsidian:// URLs.
+- **Tags**: Categorize posts with `#tags` and press a tag to search.
+- **Links/Embeds**: Supports internal links (`![[]]`), external URLs, and obsidian:// URLs.
 - **URL Previews**: Displays OGP cards, Twitter/X embeds, and image previews.
-- **Live Preview Support**: Rich formatting and hidden markers in the editor.
-- **Reading View Support**: Rich display is also available in viewing mode.
+- **Live Preview Support**: Shows formatting in the editor with the markers hidden.
+- **Reading View Support**: Shows formatting in Reading View too.
 - **Customization**: Background and text colors can be set separately for light and dark modes.
-- **Checked Strikethrough**: Toggle strikethrough for completed checkboxes ON/OFF in settings.
+- **Checked Strikethrough**: Choose in the settings whether checked items get a strikethrough.
 - **BRAT Support**: Supports installation via BRAT.

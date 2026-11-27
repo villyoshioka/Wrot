@@ -50,14 +50,11 @@ interface Analysis {
   decorations: DecorationSet;
   atomic: DecorationSet;
   constructs: Construct[];
-  // Line markers and rendered math: deleting into one reveals it.
   revealable: Span[];
-  // The bold/italic opener armed from the toolbar, hidden while its text is being typed.
   armed: Span | null;
 }
 
 const revealEffect = StateEffect.define<Span>();
-// Hands typed text in a range back to visual mode.
 const commitEffect = StateEffect.define<Span>();
 const armEffect = StateEffect.define<{ pos: number; marker: string } | null>();
 /** Whether a ticked item's text is struck through, as the "check strikethrough" setting says. */
@@ -112,7 +109,6 @@ const rawField = StateField.define<Span[]>({
       if (e.is(commitEffect)) next = next.filter((s) => s.to <= e.value.from || s.from >= e.value.to);
     }
     if (tr.docChanged) {
-      // Enter commits the line it was pressed on, including the part carried onto the new line.
       tr.changes.iterChanges((_fa, _ta, fromB, toB, inserted) => {
         if (!inserted.toString().includes("\n")) return;
         const from = tr.state.doc.lineAt(fromB).from;
@@ -298,8 +294,7 @@ function analyze(state: EditorState, rawOverride?: Span[]): Analysis {
       const from = line.from + offset + item.indentLength;
       const span = { from, to: from + item.markerLength };
       if (!overlaps(raw, span.from, span.to)) {
-        // The marker's trailing space stays real text, so the caret at the start of the item
-        // keeps a text-wide gap from the drawn mark. Both stay one atomic unit.
+        // The marker's trailing space stays real text; marker and space remain one atomic unit.
         const marker = text.slice(span.from - line.from, span.to - line.from);
         const drawnTo = span.from + marker.trimEnd().length;
         const widget = new ListMarkerWidget(item.kind, item.checked, item.olMarker);
@@ -343,7 +338,6 @@ function analyze(state: EditorState, rawOverride?: Span[]): Analysis {
         continue;
       }
       if (token.startsWith("#")) {
-        // A tag still being typed (caret inside or at its end) stays plain until finished.
         if (!(caret > from && caret <= to)) decos.push(linkMark.range(from, to));
         continue;
       }
@@ -454,7 +448,6 @@ const deleteGuard = EditorState.transactionFilter.of((tr) => {
   const out: { from: number; to: number; insert: string }[] = [];
   const reveals: Span[] = [];
   let adjusted = false;
-  // Where the character taken in place of hidden delimiters stood.
   let takenAt: number | null = null;
 
   tr.changes.iterChanges((fromA, toA, _fb, _tb, inserted) => {
@@ -469,7 +462,6 @@ const deleteGuard = EditorState.transactionFilter.of((tr) => {
       adjusted = true;
       return;
     }
-    // Delimiters of decorations not swallowed whole by this edit stay put.
     const kept = a.constructs
       .filter((c) => !(fromA <= c.open.from && toA >= c.close.to))
       .flatMap((c) => [c.open, c.close]);
@@ -489,10 +481,8 @@ const deleteGuard = EditorState.transactionFilter.of((tr) => {
       tr.isUserEvent("delete.backward") && a.armed &&
       fromA === a.armed.from && toA === a.armed.to && start.selection.main.head === a.armed.to
     ) {
-      // Backspace with nothing typed after a pending bold/italic switches it off.
       out.push({ ...a.armed, insert: "" });
     } else if (tr.isUserEvent("delete.backward") || tr.isUserEvent("delete.forward")) {
-      // The delete landed on delimiters only: take the visible character beside them.
       const target = neighbourChar(start, tr.isUserEvent("delete.forward") ? toA : fromA, hidden, tr.isUserEvent("delete.forward"));
       if (target) {
         out.push({ ...target, insert: "" });
@@ -500,8 +490,7 @@ const deleteGuard = EditorState.transactionFilter.of((tr) => {
       }
     }
   });
-  // A decoration whose visible text this edit empties goes with it; one emptied that way can
-  // in turn empty the decoration stacked around it.
+  // Emptying one decoration can in turn empty the one stacked around it.
   const emptied: Span[] = [];
   for (let grew = true; grew; ) {
     grew = false;
@@ -583,7 +572,6 @@ const stepOverHidden = EditorState.transactionFilter.of((tr) => {
 /** Just outside the decoration whose text starts at from or ends at to, if there is one. */
 function outsideDecoration(state: EditorState, from: number, to: number): number | null {
   const constructs = state.field(visualField).constructs;
-  // Out through every decoration stacked at that end.
   const out = (pos: number, end: boolean): number | null => {
     const c = constructs.find((k) => (end ? k.close.from : k.open.to) === pos);
     if (!c) return null;

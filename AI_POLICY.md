@@ -1,8 +1,8 @@
 # AI Use Policy
 
-This policy sets out the core guidelines for any project where I use AI tools to help build and release software.
+This policy sets out the basic rules for every project I build and release with the help of AI assistants.
 
-I believe in being fully transparent about where AI fits into my workflow, what I keep strictly hands-on, and the rules I stick to while building.
+It states where I use AI in development, what I don't hand over to it, and the rules I follow.
 
 ---
 
@@ -10,75 +10,75 @@ I believe in being fully transparent about where AI fits into my workflow, what 
 
 I use **Claude** (by Anthropic) to assist with development.
 
-On top of following the [Claude Acceptable Use Policy](https://www.anthropic.com/legal/aup), I also follow my own set of internal standards.
+I follow the [Claude Acceptable Use Policy](https://www.anthropic.com/legal/aup) along with my own internal rules.
 
 ---
 
 ## How I Use AI (and Where I Don't)
 
-I take full ownership of all system design and feature planning. AI never makes those calls. It works purely as an assistant to help me turn my ideas and instructions into working code.
+I do all system design and feature planning myself. AI never makes those calls. I use it as a tool that writes code from my instructions and helps with the work.
 
 ### What AI Helps With
 
-| Focus Area                       | How It's Used                                                                                             |
-| :------------------------------- | :-------------------------------------------------------------------------------------------------------- |
-| **Writing Code** (Main Use Case) | Generating code for features and bug fixes based on my specific designs and instructions                  |
-| **Code & Security Reviews**      | Flagging potential bugs or security risks in the codebase (I decide whether to use any suggested changes) |
-| **Drafting Documentation**       | Helping write and polish READMEs, technical docs, and release notes                                       |
-| **Release Prep**                 | Helping run routine commands for builds, archiving, and updating change logs                              |
+| Area                             | How It's Used                                                                                    |
+| :------------------------------- | :----------------------------------------------------------------------------------------------- |
+| **Writing code** (main use)      | Generating code for features and bug fixes based on my designs and instructions                  |
+| **Code and security reviews**    | Pointing out possible bugs or security risks in the code (I decide whether to use any of them)   |
+| **Documentation**                | Drafting and polishing READMEs, other docs, and release notes                                    |
+| **Release work**                 | Running routine commands for builds, archives, and release notes                                 |
 
 ### What I Handle Myself
 
-| Category                            | Why It's Hands-On                                                               |
-| :---------------------------------- | :------------------------------------------------------------------------------ |
-| **Planning, Design & Architecture** | Deciding how the app works and feels for users is entirely up to me             |
-| **Logins & Sensitive Actions**      | I handle all credentials and authenticated tasks manually to keep things secure |
-| **Quality & Performance**           | I personally verify quality by running tests on real physical devices           |
-| **Release Decisions**               | I make the final call on when code gets merged and shipped                      |
+| Area                                | Why                                                                  |
+| :---------------------------------- | :------------------------------------------------------------------- |
+| **Planning, design, architecture**  | How the plugin works for users is decided by me, not delegated to AI |
+| **Logins and authenticated tasks**  | I handle these manually for security                                 |
+| **Final quality and behavior**      | I verify quality myself with tests on real devices                   |
+| **Release decisions**               | I decide when code is merged and released                            |
 
-> **Bottom Line**: A human developer signs off on every single step. AI is just a tool to speed up execution. The design, specs, and final decision to ship are always 100% on me.
+> **Important**: A human developer makes the final decision and approval at every step. AI is a tool that helps speed up the work. Design, specs, and the decision to release are always mine.
 
 ---
 
-## Standards & Principles
+## Rules I Follow
 
-### Copyright & Intellectual Property
+### Copyright and Licenses
 
-I hold AI-assisted development to strict IP standards:
+In AI-assisted development, I follow these rules:
 
-- No copying or plagiarizing third-party code.
-- No ripping off external articles or official docs.
-- No unauthorized use of images, icons, or other media assets.
-- No code that violates open-source licenses.
-- No altering or stripping out copyright notices.
+- No copying or plagiarizing third-party code
+- No reproducing external articles or official docs without permission
+- No unauthorized use of images, icons, or other media
+- No code that violates open-source licenses
+- No altering or removing copyright and license notices
 
-All code introduced into the project strictly respects existing licenses and rights.
+All code in the project is written under proper licenses and rights.
 
-### Ethics & Security
+### Ethics and Security
 
 I never ask AI to generate code or content that includes:
 
-- Malicious code like malware, backdoors, or exploit scripts
-- Features that track users or compromise their privacy
+- Malicious code such as malware, backdoors, or exploit scripts
+- Features that track users or invade their privacy
 - Intentional security flaws
-- Hateful, offensive, or inappropriate content
-- Misleading UI design or false information
-- Anything that breaks laws or platform guidelines
+- Discriminatory, offensive, or antisocial content
+- False information or designs that mislead users
+- Features that break laws or platform rules
 
-### User Data & Privacy
+### User Data
 
-- I don't collect or send user data or local files anywhere unauthorized.
-- Real user data or personal info is never fed into AI tools during development or debugging.
+- I don't collect or send users' personal or local data anywhere improperly.
+- Real user data or personal information is never given to AI during development or debugging.
 
 ---
 
 ## My Responsibility as a Developer
 
-Using AI doesn't change where the buck stops. I take full accountability for everything I ship, which means I personally handle:
+For everything built with AI, I take on these responsibilities:
 
-1. **Design & Architecture**: Shaping every feature and overall system design from the ground up.
-2. **Review & Approval**: Carefully reviewing every line of AI-generated code before incorporating it.
-3. **Real-Device Testing**: Manually testing the app on physical hardware to make sure it's stable and safe.
-4. **Final Sign-off**: Auditing the entire codebase for consistency and security before putting it out there.
+1. **Design and specs**: I design every feature and the overall architecture myself.
+2. **Review and approval**: I review AI-generated code and decide whether to use it.
+3. **Testing on real devices**: I test the plugin manually to make sure it is stable and safe.
+4. **Final check before release**: I check the whole codebase for consistency and security before publishing.
 
-Even if AI helped draft the code or copy, the final product is entirely my responsibility.
+Even when AI helped write the code or text, final responsibility for the result is entirely mine.

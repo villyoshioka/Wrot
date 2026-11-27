@@ -6,7 +6,6 @@ interface LinkPopoverOptions {
   anchor: HTMLElement;
   // Parent that hosts the popover (the view body), so it never spills out of the pane.
   container: HTMLElement;
-  // The current destination when an existing link is being edited; editing also offers unlink.
   initial?: string;
   editing: boolean;
   onSubmit: (target: string) => void;

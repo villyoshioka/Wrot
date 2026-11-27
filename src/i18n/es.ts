@@ -182,6 +182,7 @@ const es = {
   "view.postMenu.pin": "Fijar",
   "view.postMenu.pinLimitHint": "El límite es de {limit} elementos fijados.",
   "view.postMenu.schedulePin": "Fijar más tarde",
+  "view.postMenu.repeatPin": "Fijar como recurrente",
   "view.postMenu.delete": "Eliminar",
   // Shown on the same row after the first press, in place of the label above.
   "view.postMenu.deleteConfirm": "Pulsa de nuevo para eliminar",

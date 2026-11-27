@@ -1,105 +1,104 @@
 # Using the Toolbar
 
-The toolbar on the post form comes packed with your most frequently used buttons right out of the box.
-With Wrot, you have full control over your setup—choose which buttons stay on the toolbar, tuck less-used ones into the "More" menu (⋯), or disable the ones you don't need entirely. You can also reorder them anytime just by dragging and dropping.
+For each button on the post form's toolbar, you can choose whether it's shown on the toolbar, placed in the "More" menu (⋯), or disabled. You can also change the order by dragging and dropping.
 
-Moving a button to the menu won't affect how it works. Only disabled buttons are hidden from both the toolbar and the menu.
+Disabled buttons are shown in neither the toolbar nor the menu.
 
 ---
 
 ## Entering Edit Mode
 
-1. Open the **⋯ (More)** menu on the far right of the toolbar.
-2. Select **"Edit toolbar"**.
+1. Open the **⋯ (More)** menu at the right end of the toolbar.
+2. Choose **"Edit toolbar"**.
 
-This switches the toolbar into edit mode, lining up all available buttons in a single row.
+The toolbar switches to edit mode and all buttons are lined up in one row.
 
-- **Normal**: Buttons currently visible on your toolbar
-- **Semi-transparent (dimmed)**: Buttons stored in the ⋯ menu
+- **Normal**: Buttons currently shown on the toolbar
+- **Semi-transparent**: Buttons in the ⋯ menu
 - **Semi-transparent with a slash**: Disabled buttons
 
-\*If "Edit toolbar" isn't showing up in the menu, go to "Advanced" and turn on **"Show toolbar edit button"**.
+Note: If "Edit toolbar" isn't in the menu, turn on **"Show toolbar edit button"** under "Advanced" in the settings.
 
 ---
 
 ## Working in Edit Mode
 
-### 1. Toggling Button States (Click or Tap)
+### 1. Switching States (Click or Tap)
 
-Clicking or tapping a button cycles through its states in this order:
+Each time you press a button, its state changes in this order:
 
-> **Show on Toolbar** (Normal) → **Move to Menu** (Dimmed) → **Disable** (Dimmed with slash) → **Show on Toolbar**
+> **On the toolbar** (normal) → **In the menu** (semi-transparent) → **Disabled** (semi-transparent with a slash) → **On the toolbar**
 
-### 2. Rearranging Buttons (Drag and Drop)
+### 2. Changing the Order (Drag and Drop)
 
-Press and hold or drag any button to move it wherever you like.
+Press and hold or drag a button to move it anywhere you like.
 
-- Hidden and disabled buttons still hold a place in the line. That way, you can set their position now and turn them on later whenever you're ready.
+- Buttons in the menu and disabled buttons also have a place in the row. You can set their position while they're hidden and turn them on later.
 
-### 3. Saving or Canceling Edits
+### 3. Saving or Discarding Changes
 
-Action buttons will appear at the end of the toolbar while you're editing.
+While in edit mode, these buttons are shown at the end of the toolbar.
 
-| Button | Action                                                  |
-| :----: | :------------------------------------------------------ |
-| **✓**  | Saves your changes and exits edit mode.                 |
-| **✕**  | Discards your changes and restores the previous layout. |
+| Button | What it does                                        |
+| :----: | :-------------------------------------------------- |
+| **✓**  | Saves your changes and leaves edit mode             |
+| **✕**  | Discards your changes, restores the previous layout, and leaves edit mode |
 
-> **Good to Know While Editing**
+> **While editing**
 >
-> - **Don't forget to save**: Your changes won't take effect until you click **✓**.
-> - **Form locking**: While editing the toolbar, typing, posting, and managing past posts are temporarily paused (you can still switch between dates).
-> - **Finish post edits first**: You can't edit the toolbar while actively editing a post inline. Wrap up or cancel your post edit first.
+> - Changes aren't saved until you press **✓**.
+> - While editing, you can't type, post, or use the menus on past posts. You can still switch dates.
+> - You can't start editing the toolbar while you're editing a post. Save or cancel the post edit first.
 
 ---
 
-## How the "More" Menu (⋯) Works
+## How the More Menu (⋯) Works
 
-Buttons you move off the toolbar will live inside the ⋯ menu. Items in this menu follow a fixed order and won't change even if you rearrange your toolbar:
+The menu has a fixed order and lists items in this order, regardless of the toolbar order:
 
 > Image → Bulleted list → Checklist → Numbered list → Code → Math → Quote → Bold → Italic → Link → Strikethrough → Highlight → Pin later
 
-### Behavior Changes in the Menu
+### What Changes in the Menu
 
-Almost everything works the exact same way as it does on the toolbar, with just two small exceptions:
+These two work differently from when they're on the toolbar.
 
 - **Bold and Italic**:
-  On the toolbar, you can press these without selecting text and style as you type. Inside the menu, they **only work when you have text selected** and stay greyed out otherwise.
+  On the toolbar you can press them without selecting text and format as you type. In the menu, they **work only when text is selected**. Otherwise they're grayed out.
 - **Pin later**:
-  If a post is pinned for a specific date, a checkmark appears next to this item (just like the button lighting up on the toolbar).
+  When a pin for a set date is scheduled, a checkmark appears next to the menu item. It means the same thing as the button lighting up on the toolbar.
 
 ---
 
-## Resetting to Default
+## Resetting to the Default
 
-You can reset your toolbar back to its original layout anytime using **"Reset toolbar"** under "Advanced".
-To prevent accidental clicks, the first click asks for confirmation, and the second click runs the reset.
+**"Reset toolbar"** under "Advanced" in the settings restores the default layout and states.
+To prevent mistakes, the first press changes the button to a confirmation, and the second press resets the toolbar.
 
 ---
 
-## A Few Extra Notes
+## Where the Layout Is Saved
 
-- **Syncs across devices**: Your toolbar layout stays the same across desktop and mobile. It's stored in `layout.json` inside your plugin folder, so your individual notes stay untouched.
+The toolbar layout is shared between desktop and mobile. It's saved in `layout.json` in the plugin folder and isn't written to your notes.
 
 ---
 
 ## Troubleshooting
 
-### I can't see "Edit toolbar" in the menu
+### "Edit toolbar" isn't in the menu
 
-- Double-check that **"Show toolbar edit button"** is turned on under "Advanced".
-- Make sure you aren't currently editing an existing post.
+- Check that **"Show toolbar edit button"** is turned on under "Advanced" in the settings.
+- Check that you aren't in the middle of editing a past post.
 
-### Buttons aren't moving when I try to drag them
+### Buttons can't be moved or reordered
 
-- The fixed buttons on the ends (✓, ✕, and ⋯) can't be moved.
-- A quick click or tap just toggles the button's state. Make sure you press and drag to reorder.
+- The fixed buttons at the ends (✓, ✕, and ⋯ itself) can't be reordered.
+- A click (or tap) alone switches the state. To reorder, drag the button.
 
-### My custom layout didn't save
+### The order I set went back to how it was
 
-- Make sure you clicked **✓** to confirm your changes before leaving (clicking ✕ throws away your edits).
+- Check that you pressed **✓** when you finished editing.
 
-### I'm missing a button
+### I can't find a button
 
-- **Check the ⋯ menu**: Any button taken off the toolbar ends up here.
-- **Check if it's disabled**: If it's not in the menu either, it's turned off. Open "Edit toolbar" and click the slashed button to bring it back.
+- Buttons placed in the menu are all inside the ⋯ menu.
+- If it isn't in the menu either, it's disabled. Open "Edit toolbar" and click the slashed button to turn it back on.

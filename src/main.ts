@@ -28,6 +28,8 @@ import { buildTagRuleCss } from "./styles/tagRuleCss";
 import { setMathJaxReadyHandler, upgradeMathFallbacks } from "./utils/mathjax";
 import { initI18n, t, getActiveLocale, defaultTimestampFormat, defaultHeaderDateFormat } from "./i18n";
 
+declare const moment: typeof import("moment");
+
 /** State kept beside data.json, and the settings keys that used to hold it there. */
 const PINS_FILE = "pins.json";
 const TAG_RULES_FILE = "tagrules.json";
@@ -39,23 +41,17 @@ export default class WrotPlugin extends Plugin {
   settings!: WrotSettings;
   ogpCache!: OGPCache;
   graphTags!: GraphTagInjector;
-  // Tag-completion candidates (no leading #, newest first). Persisted to tags.json,
-  // not data.json, because they are rewritten automatically on every post.
+  // No leading #, newest first.
   recentTags: string[] = [];
-  // Migration buffer for candidates once stored in data.json; populated by loadSettings.
   private legacyRecentTags: string[] | null = null;
   draft = "";
   private lastWrittenDraft: string | null = null;
-  // True when data.json predates pinFixed; loadDeferredState decides its value from the pins.
   private pinFixedUnset = false;
   // Side-file read (pins, rules, layout, draft), settled after layout; writers await it so a save never lands on unread values.
   private deferredState: Promise<void> | null = null;
   private bgSheet = new WrStyleSheet("wrot-bg-override");
   private tagRuleSheet = new WrStyleSheet("wrot-tag-rule-override");
   private fontSheet = new WrStyleSheet("wrot-font-override");
-  // Documents of the open popout windows. Runtime styles go to every window Wrot can appear
-  // in, not just the focused one: with settings opened in their own window, that window would
-  // otherwise be the only one to get them.
   private popoutDocs = new Set<Document>();
   // Guards against the MathJax-ready callback re-rendering through an already
   // unregistered postProcessor (stripping wr decorations) after the plugin is disabled.
@@ -117,15 +113,8 @@ export default class WrotPlugin extends Plugin {
         this.popoutDocs.delete(win.doc);
       })
     );
-    // MathJax is fully lazy-loaded (see utils/mathjax.ts); only register the
-    // handler that redraws fallback math once loading completes.
     setMathJaxReadyHandler(() => this.onMathJaxReady());
 
-    // The palette and tag-rule sheets are built here rather than during load: adopting a
-    // sheet parses it and invalidates document style synchronously, which is dead weight in
-    // the blocking load path. Applying them once after layout is enough — adopted sheets
-    // always sort after the document's own stylesheets, so unlike the <style> elements this
-    // replaced, they no longer need re-applying to win the specificity ladder.
     this.app.workspace.onLayoutReady(() => {
       // Touching body (class, inline property, adopted sheet) during load invalidates the
       // whole document's style; the recalc then lands in the startup measurement.
@@ -166,8 +155,6 @@ export default class WrotPlugin extends Plugin {
     this.registerEvent(this.app.vault.on("rename", onAttachmentChange));
   }
 
-  // Shared entry point for tag clicks (timeline/RV/LV). Integrated, non-excluded tags use the
-  // native tag: query (same as clicking a graph tag node); others fall back to plain string search.
   openTagSearch(tag: string): void {
     const searchPlugin = (
       this.app as {
@@ -188,8 +175,7 @@ export default class WrotPlugin extends Plugin {
     }
   }
 
-  // On MathJax lazy-load completion: upgrade fallback-rendered math in place and nudge Live
-  // Preview (hadMathJax is part of widget eq(), so only fallback math widgets rebuild — no flicker).
+  // hadMathJax is part of widget eq(), so the LP nudge rebuilds only fallback math widgets.
   private onMathJaxReady(): void {
     window.setTimeout(() => {
       if (this.unloading) return;
@@ -273,7 +259,6 @@ export default class WrotPlugin extends Plugin {
     const text = key.endsWith("Dark") === isDark ? readThemeColor(activeDocument, "--text-normal") : null;
     if (!text) return FIXED_PALETTE[key];
     if (key.startsWith("text")) return darkenColor(text, 12);
-    // The card sits a step off the pane it is placed in, toward the text, so it never melts into it.
     const pane = readThemeColor(
       activeDocument,
       this.settings.viewPlacement === "main" ? "--background-primary" : "--background-secondary"
@@ -369,14 +354,11 @@ export default class WrotPlugin extends Plugin {
     }
   }
 
-  // The main window plus every open popout. `document` is the main window's own document:
-  // activeDocument would follow the focus instead, which sends styles to the wrong window
-  // as soon as anything is driven from a separate settings window.
+  // `document`, not activeDocument: the latter follows focus and would send styles to the wrong window.
   private styleDocs(): Document[] {
     return [document, ...this.popoutDocs];
   }
 
-  // Hands a newly opened window the styles that are already in effect.
   private syncStyleDocs(): void {
     const docs = this.styleDocs();
     this.bgSheet.sync(docs);
@@ -410,8 +392,6 @@ export default class WrotPlugin extends Plugin {
       '.code-block-flair[class*="wrot-tag-rule-"], ' +
       '.copy-code-button[class*="wrot-tag-rule-"], ' +
       '.wrot-flair-bg[class*="wrot-tag-rule-"]';
-    // Every window, not just the focused one: a change made from a separate settings
-    // window would otherwise never reach the notes the user is looking at.
     const docs = this.styleDocs();
     for (const doc of docs) {
       doc.querySelectorAll<HTMLElement>(sweepSelector).forEach(stripRuleClasses);
@@ -493,7 +473,6 @@ export default class WrotPlugin extends Plugin {
     setMathJaxReadyHandler(null);
     // Stop the background reconcile first: otherwise it keeps injecting after the cleanup below.
     this.graphTags?.stop();
-    // Remove every tag injected for the core integration, leaving no trace.
     this.graphTags?.removeAll();
     this.bgSheet.remove();
     this.tagRuleSheet.remove();
@@ -588,9 +567,7 @@ export default class WrotPlugin extends Plugin {
   private async startDeferredWork(): Promise<void> {
     await this.deferredState;
 
-    // Registering the tab evaluates getSettingDefinitions() right away, because the
-    // settings modal indexes every definition for its search. That work is only needed
-    // once the user opens settings, so it stays out of the blocking load path.
+    // Registering evaluates getSettingDefinitions() immediately, so it stays off the load path.
     this.addSettingTab(new WrotSettingTab(this.app, this));
     this.applyTagColorRules();
     if (this.settings.tagColorRulesEnabled && this.settings.tagColorRules.length > 0) {
@@ -603,8 +580,6 @@ export default class WrotPlugin extends Plugin {
     // shipped arrangement, so redraw it once the saved one is in hand.
     if (this.settings.toolbarLayout.length > 0) this.updateToolbarLayout();
     if (this.draft) this.forEachView((view) => view.restoreDraft());
-    // Integrate memo tags into the core graph view / native tag search:
-    // inject from the cached map immediately, reconcile diffs in the background.
     void this.graphTags.start();
     if (!this.openingPatched && this.wantsOpenOnStartup()) {
       this.openAfterStartup();
@@ -666,30 +641,24 @@ export default class WrotPlugin extends Plugin {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- value from untyped Obsidian/CodeMirror internal API
     const raw = (await this.loadData()) ?? {};
     let dirty = false;
-    // Migrate completion candidates once stored in data.json: stash the value, drop the key.
     // loadRecentTags writes tags.json only when it doesn't exist yet.
     const rawRecentTags = (raw as { recentTags?: unknown }).recentTags;
     if (Array.isArray(rawRecentTags)) {
       this.legacyRecentTags = rawRecentTags.filter((v): v is string => typeof v === "string");
     }
-    // Pins and tag rules moved out to files of their own, but their keys are deliberately
-    // left in raw here: Object.assign below carries them onto settings, and loadDeferredState
-    // clears them from data.json only once they are safely written elsewhere.
+    // Pin/rule keys stay in raw on purpose: loadDeferredState drops them only once written elsewhere.
     for (const key of ["autoLinkEnabled", "autoLinkExcludeList", "zenMode", "zenModePins", "recentTags", "cancelLabel", "composerMode"]) {
       if (key in raw) {
         delete (raw as Record<string, unknown>)[key];
         dirty = true;
       }
     }
-    // Migrate the pre-release 4-value graphTagsMode: anything except "off" carries over as enabled.
     if ("graphTagsMode" in raw) {
       const mode = (raw as { graphTagsMode?: unknown }).graphTagsMode;
       (raw as Record<string, unknown>).graphTagsEnabled = mode !== "off";
       delete (raw as Record<string, unknown>).graphTagsMode;
       dirty = true;
     }
-    // Locale-dependent defaults apply only to fresh installs; existing users'
-    // saved values arrive in raw and win via Object.assign.
     const localizedDefaults: WrotSettings = {
       ...DEFAULT_SETTINGS,
       headerDateFormat: defaultHeaderDateFormat(),
@@ -718,8 +687,7 @@ export default class WrotPlugin extends Plugin {
       dirty = true;
     }
 
-    // If Obsidian's language changed since last run, force-reset the text settings to the new
-    // locale's defaults (custom values lose meaning across languages). Missing lastLocale (pre-i18n users): record only, no reset.
+    // Missing lastLocale (pre-i18n users) only records; it must not reset.
     const currentLocale = getActiveLocale();
     const previousLocale = (raw as { lastLocale?: string }).lastLocale;
     if (previousLocale !== undefined && previousLocale !== currentLocale) {
@@ -787,7 +755,6 @@ export default class WrotPlugin extends Plugin {
       if (!(await this.app.vault.adapter.exists(path))) return null;
       return JSON.parse(await this.app.vault.adapter.read(path));
     } catch {
-      // Unreadable or malformed: treated as absent rather than failing the load.
       return null;
     }
   }
@@ -802,7 +769,6 @@ export default class WrotPlugin extends Plugin {
     }
   }
 
-  // Tag-completion history lives in tags.json, kept separate from settings (data.json).
   private tagHistoryPath(): string | null {
     return this.pluginFilePath("tags.json");
   }
@@ -817,12 +783,10 @@ export default class WrotPlugin extends Plugin {
           ? parsed.filter((v): v is string => typeof v === "string")
           : [];
       } else if (this.legacyRecentTags) {
-        // One-time migration from the data.json era: adopt the values and create tags.json.
         this.recentTags = this.legacyRecentTags;
         await this.saveRecentTags();
       }
     } catch {
-      // Unreadable file: restart empty; candidates re-accumulate with each post.
       this.recentTags = [];
     }
     this.legacyRecentTags = null;
@@ -867,9 +831,7 @@ export default class WrotPlugin extends Plugin {
       this.lastWrittenDraft = draftData;
     }
 
-    // Nothing was read, but settings already hold values: they came from data.json, which is
-    // where these used to live. Copy them out first and only then let data.json drop them --
-    // clearing the keys before the new file exists would lose them if the app stopped between.
+    // Copy out before data.json drops the keys: clearing first loses them if the app stops between.
     let migrated = false;
 
     const pins = pinData as { pins?: unknown; scheduledPins?: unknown } | null;
@@ -907,7 +869,6 @@ export default class WrotPlugin extends Plugin {
       await this.writeSideFile(LAYOUT_FILE, this.settings.toolbarLayout);
     }
 
-    // One-time: users who already had pins or scheduled pins keep the fixed box.
     if (this.pinFixedUnset) {
       this.pinFixedUnset = false;
       this.settings.pinFixed =
@@ -915,7 +876,6 @@ export default class WrotPlugin extends Plugin {
       migrated = true;
     }
 
-    // writeSettingsFile strips both, so this is what actually shortens data.json.
     if (migrated) await this.writeSettingsFile();
   }
 
@@ -927,6 +887,26 @@ export default class WrotPlugin extends Plugin {
       pins: this.settings.pins,
       scheduledPins: this.settings.scheduledPins,
     });
+  }
+
+  /**
+   * A recurring pin's post past its own day: the note keeps that day's checks as written, and
+   * the following days' checks live in the pin, changed only from today's pinned card.
+   */
+  isRepeatLocked(filePath: string, time: string): boolean {
+    return (
+      this.settings.pins.some((p) => p.repeat && p.file === filePath && p.timestamp === time) &&
+      !moment(time).isSame(moment(), "day")
+    );
+  }
+
+  /** Re-reads pins.json, so a change another device synced in is seen before acting on the pins. */
+  async reloadPins(): Promise<void> {
+    await this.deferredState;
+    const pins = (await this.readSideFile(PINS_FILE)) as { pins?: unknown; scheduledPins?: unknown } | null;
+    if (!pins) return;
+    if (Array.isArray(pins.pins)) this.settings.pins = pins.pins as PinEntry[];
+    if (Array.isArray(pins.scheduledPins)) this.settings.scheduledPins = pins.scheduledPins as ScheduledPinEntry[];
   }
 
   async saveTagRules(): Promise<void> {

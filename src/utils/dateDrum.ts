@@ -3,19 +3,14 @@ declare const moment: typeof import("moment");
 type Moment = ReturnType<typeof moment>;
 
 interface DateDrumOptions {
-  // Earliest day the drums may come to rest on.
   earliest: Moment;
-  // Day they start on; earliest when left out.
   start?: Moment;
-  // Last year the year drum reaches.
   lastYear: number;
   // Called with the day at 00:00 whenever the drums come to rest somewhere new.
   onChange: (date: Moment) => void;
 }
 
-// A drum settles by scroll snapping, and browsers report that through the same
-// scroll events as the roll itself. This is the quiet spell that tells "still
-// moving" from "come to rest".
+// Scroll snapping has no settle event, so this quiet spell between scroll events marks the drum at rest.
 const SETTLE_MS = 90;
 
 /**
@@ -54,7 +49,6 @@ export function buildDateDrum(host: HTMLElement, opts: DateDrumOptions): void {
   const dayValues = (): number[] =>
     Array.from({ length: daysInMonth(year, month) }, (_, i) => i + 1);
 
-  // A whole year or month counts as reachable while any day inside it still is.
   const yearAllowed = (y: number): boolean => y >= earliest.year();
   const monthAllowed = (m: number): boolean => year > earliest.year() || m >= earliest.month();
   const dayAllowed = (d: number): boolean =>
@@ -128,7 +122,6 @@ export function buildDateDrum(host: HTMLElement, opts: DateDrumOptions): void {
 
   const current = (): Moment => moment({ year, month, day }).startOf("day");
 
-  // Fires once the drum has stopped, not on every frame of the roll.
   const onSettle = (col: HTMLElement, handle: (index: number) => void): void => {
     let timer = 0;
     col.addEventListener("scroll", () => {
@@ -146,9 +139,7 @@ export function buildDateDrum(host: HTMLElement, opts: DateDrumOptions): void {
 
   onSettle(yearCol, (index) => {
     year = pick(yearValues.filter(yearAllowed), index);
-    // Rolling back to this year can strand the two drums below it — December of a
-    // later year has no counterpart in a year that is already half spent. Pull them
-    // up first, then redraw so both land on a row they are allowed to rest on.
+    // Rolling back to the earliest year can strand month/day before the earliest day; clamp them before redrawing.
     if (year === earliest.year() && month < earliest.month()) month = earliest.month();
     if (year === earliest.year() && month === earliest.month() && day < earliest.date()) {
       day = earliest.date();

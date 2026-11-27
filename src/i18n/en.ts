@@ -28,11 +28,11 @@ const en = {
   "settings.item.timestampFormat.desc": "Supports tokens such as YYYY, MM, DD, HH, mm, and ss.",
 
   "settings.item.bgColorLight.name": "Background color (light mode)",
-  "settings.item.bgColorLight.desc": "Used for posts and the compose box.",
+  "settings.item.bgColorLight.desc": "Used for posts and the post form.",
   "settings.item.textColorLight.name": "Text color (light mode)",
   "settings.item.textColorLight.desc": "Used for text and icons.",
   "settings.item.bgColorDark.name": "Background color (dark mode)",
-  "settings.item.bgColorDark.desc": "Used for posts and the compose box.",
+  "settings.item.bgColorDark.desc": "Used for posts and the post form.",
   "settings.item.textColorDark.name": "Text color (dark mode)",
   "settings.item.textColorDark.desc": "Used for text and icons.",
 
@@ -44,14 +44,14 @@ const en = {
   "settings.item.updateLabel.desc": "Used when editing a post. \nLeave blank for an icon-only button (requires an icon to be set).",
   "settings.item.updateIcon.name": "Update button icon",
   "settings.item.updateIcon.desc": "Copy an icon name from {linkOpen}here{linkClose}. \nLeave blank to use the Post button's icon.",
-  "settings.item.submitGradient.name": "Compose box gradient",
-  "settings.item.submitGradient.desc": "Adds a gradient accent to the compose box.",
+  "settings.item.submitGradient.name": "Post form gradient",
+  "settings.item.submitGradient.desc": "Adds a gradient accent to the post form.",
   "settings.item.submitGradientMode.name": "Gradient brightness",
   "settings.item.submitGradientMode.desc": "Auto switches based on how light your accent color is.",
   "settings.option.submitGradientMode.auto": "Auto",
   "settings.option.submitGradientMode.light": "Lighter",
   "settings.option.submitGradientMode.dark": "Darker",
-  "settings.item.inputPlaceholder.name": "Compose placeholder text",
+  "settings.item.inputPlaceholder.name": "Post form placeholder text",
   "settings.item.inputPlaceholder.desc": "Leave blank to hide.",
 
   "settings.item.tagSuggest.name": "Tag autocomplete",
@@ -66,7 +66,7 @@ const en = {
   "settings.item.pinFixed.desc": "When disabled, pinned posts scroll along with the timeline.",
 
   "settings.item.ogp.name": "Link previews",
-  "settings.item.ogp.desc": "Fetches metadata for URL previews. \nDisabling this blocks all external network requests.",
+  "settings.item.ogp.desc": "Fetches metadata for URL previews. \nWhen off, Wrot doesn't connect to external sites.",
 
   "settings.item.checkStrikethrough.name": "Strikethrough completed items",
   "settings.item.checkStrikethrough.desc": "Apply strikethrough styling to checked checklist items.",
@@ -113,18 +113,18 @@ const en = {
   "settings.tagRule.scope.buttons.name":
     "Apply secondary color to timestamps, menus, and pins",
   "settings.tagRule.scope.buttons.desc":
-    "When disabled, automatically calculated colors will be used.",
+    "When off, an automatic color is used.",
   "settings.tagRule.scope.quote.name": "Apply secondary color to blockquotes",
   "settings.tagRule.scope.quote.desc":
-    "When disabled, automatically calculated colors will be used.",
+    "When off, an automatic color is used.",
   "settings.tagRule.scope.list.name": "Apply secondary color to lists and checkboxes",
   "settings.tagRule.scope.list.desc":
-    "When disabled, automatically calculated colors will be used.",
+    "When off, an automatic color is used.",
   "settings.tagRule.scope.ogp.name": "Apply secondary color to link previews",
   "settings.tagRule.scope.ogp.desc":
-    "When disabled, automatically calculated colors will be used.",
+    "When off, an automatic color is used.",
   "settings.item.graphTags.name": "Tag integration",
-  "settings.item.graphTags.desc": "Make tags discoverable in graph view and tag: searches. \nWhen disabled, tags remain internal to Wrot.",
+  "settings.item.graphTags.desc": "Include tags in graph view and tag: searches. \nWhen disabled, tags remain internal to Wrot.",
   "settings.tagRule.noIntegration.name": "Exclude from tag integration",
   "settings.tagRule.noIntegration.desc": "Keep this tag internal to Wrot.",
   "settings.tagRule.hideTimeline.name": "Hide from timeline",
@@ -181,6 +181,7 @@ const en = {
   "view.postMenu.pin": "Pin",
   "view.postMenu.pinLimitHint": "You can pin up to {limit} posts.",
   "view.postMenu.schedulePin": "Pin later",
+  "view.postMenu.repeatPin": "Pin as recurring",
   "view.postMenu.delete": "Delete",
   // Shown on the same row after the first press, in place of the label above.
   "view.postMenu.deleteConfirm": "Press again to confirm",

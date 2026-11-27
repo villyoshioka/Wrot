@@ -12,9 +12,7 @@ interface NotePathInfo {
   format: string;
 }
 
-// getDailyNote from obsidian-daily-notes-interface misses existing files for
-// non-daily formats (weekly/monthly), so build the path ourselves.
-// format/filename are returned for reuse in template expansion.
+// getDailyNote from obsidian-daily-notes-interface misses weekly/monthly formats, so the path is built here.
 function buildNotePath(date: ReturnType<typeof moment>): NotePathInfo {
   const settings = getDailyNoteSettings();
   const format = settings?.format || "YYYY-MM-DD";

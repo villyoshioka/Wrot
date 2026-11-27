@@ -1,9 +1,7 @@
 import en from "./en";
 import type { Translations } from "./ja";
 
-// English (UK): the US dictionary with the entries that read differently over here.
-// Anything not listed falls through to en, so a new key only has to be added there
-// unless the UK wording differs.
+// Only entries that differ from en; anything not listed falls through to en.
 const enGB = {
   ...en,
   "settings.item.bgColorLight.name": "Background colour (light mode)",
@@ -18,13 +16,13 @@ const enGB = {
   "settings.tagRule.accent.desc": "Uses the theme's default accent colour if left blank.",
   "settings.tagRule.sub.name": "Secondary colour",
   "settings.tagRule.scope.buttons.name": "Apply secondary colour to timestamps, menus, and pins",
-  "settings.tagRule.scope.buttons.desc": "When disabled, automatically calculated colours will be used.",
+  "settings.tagRule.scope.buttons.desc": "When off, an automatic colour is used.",
   "settings.tagRule.scope.quote.name": "Apply secondary colour to blockquotes",
-  "settings.tagRule.scope.quote.desc": "When disabled, automatically calculated colours will be used.",
+  "settings.tagRule.scope.quote.desc": "When off, an automatic colour is used.",
   "settings.tagRule.scope.list.name": "Apply secondary colour to lists and tick boxes",
-  "settings.tagRule.scope.list.desc": "When disabled, automatically calculated colours will be used.",
+  "settings.tagRule.scope.list.desc": "When off, an automatic colour is used.",
   "settings.tagRule.scope.ogp.name": "Apply secondary colour to link previews",
-  "settings.tagRule.scope.ogp.desc": "When disabled, automatically calculated colours will be used.",
+  "settings.tagRule.scope.ogp.desc": "When off, an automatic colour is used.",
   "settings.item.submitGradientMode.desc": "Auto switches based on how light your accent colour is.",
   "settings.item.toolbarEdit.desc": "Adds an option to customise the toolbar in the toolbar menu.",
   "view.formatMenu.math": "Maths",

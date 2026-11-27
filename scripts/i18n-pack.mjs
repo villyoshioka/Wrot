@@ -10,7 +10,6 @@ const I18N_FILE = /src[\\/]i18n[\\/][\w-]+\.ts$/;
 // Locales packed as a diff over another locale (en-GB spreads en in its source).
 const DIFF_BASES = { "en-GB": "en" };
 
-// Bundles one locale file on its own (en-GB pulls in en) and evaluates it to the object.
 async function evalDict(file) {
   const result = await esbuild.build({
     entryPoints: [file],
@@ -68,7 +67,6 @@ export function i18nPackPlugin() {
         const values = keys.map((k) => dict[k]);
         const base = DIFF_BASES[path.basename(args.path, ".ts")];
         if (base) {
-          // Ship only the entries that differ from the base locale; the rest is read through it.
           const baseDict = await dictOf(path.join(I18N_DIR, `${base}.ts`));
           const diff = {};
           keys.forEach((k, i) => {

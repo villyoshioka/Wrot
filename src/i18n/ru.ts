@@ -182,6 +182,7 @@ const ru = {
   "view.postMenu.pin": "Закрепить",
   "view.postMenu.pinLimitHint": "Максимум закреплений: {limit}",
   "view.postMenu.schedulePin": "Закрепить позже",
+  "view.postMenu.repeatPin": "Закрепить как повторяющееся",
   "view.postMenu.delete": "Удалить",
   "view.postMenu.deleteConfirm": "Нажмите ещё раз для подтверждения",
 

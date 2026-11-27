@@ -1,87 +1,85 @@
 # How Tag Integration Works
 
-Since Obsidian treats Wrot posts as code blocks, any tags you write inside them won't show up in core features like the graph view or tag search.
+Obsidian treats Wrot posts as code blocks, so by default the tags in your posts don't appear in core features such as Graph View and tag search.
 
-**Tag Integration** fixes this. It makes tags inside your Wrot posts act just like normal tags in your notes, so they show up in the graph view and turn up in tag searches without a hitch.
-
-Here is a quick overview of what this feature does, how it works, and how to exclude certain tags if you want to keep things clean.
+With **Tag integration** turned on, tags in your Wrot posts appear in Graph View and are found by tag search, the same as tags in a regular note.
 
 ---
 
 ## What You Can Do
 
-### 1. Spot tags in the Graph View
+### 1. Show tags in Graph View
 
-Tags in your posts appear as nodes in the graph view, connected by lines to the daily notes where you wrote them.
+Tags in your posts appear as nodes in Graph View, connected to the daily note the post is in.
 
-- They blend seamlessly into the same node as matching tags from your regular notes or properties.
-- Note that you'll need to turn on **Tags** in your graph view display settings, as Obsidian keeps this toggled off by default.
+- A tag with the same name in a note's body or properties shares the same node.
+- Obsidian turns tags off in Graph View by default, so turn on **Tags** in the graph's filter settings.
 
-### 2. Find posts with Tag Search
+### 2. Find posts with tag search
 
-Searching for `tag:#tag-name` brings up any notes that contain posts with that tag.
+Searching for `tag:#tag-name` finds the notes that contain posts with that tag.
 
-- Search results highlight exactly where the tag sits inside your post.
-- Clicking a tag node in the graph view pulls up your posts the exact same way.
-- Tapping or clicking a tag on your timeline or inside a note instantly opens this tag search.
+- Search results highlight where the tag is in the post.
+- Clicking a tag node in Graph View shows the posts in the search results the same way.
+- Clicking (or tapping) a tag in the timeline or in a note also opens this tag search.
 
-### 3. See tags in the Tag List and Search Autocomplete
+### 3. Show tags in suggestions and the sidebar list
 
-Tags you use in Wrot get added right to your vault-wide tag list.
+Tags you use in Wrot are added to Obsidian's vault-wide tag list.
 
-- They sit right alongside your everyday tags in the sidebar's Tags pane.
-- They pop up as suggestions when you type `tag:` in the search bar.
-- They show up in the autocomplete menu when you type `#` in a regular note.
-
----
-
-## Which Tags Are Picked Up?
-
-This feature only applies to text that renders as an actual tag on your screen, using the same rules as tag autocomplete.
-
-Hashtags (`#`) inside URLs, links, inline code (` `), or formatted text aren't treated as tags. If something doesn't look like a tag on screen, it won't show up in the graph or in search results.
+- They appear in the sidebar's Tags pane alongside your other tags.
+- They are suggested when you type `tag:` in the search box.
+- They are also suggested when you type `#` in a regular note.
 
 ---
 
-## How to Set It Up
+## Which Tags Count
 
-You can toggle this on or off under **Tag integration** in the "Advanced" section. It is turned on by default.
+The same rules as tag autocomplete apply: only text that is displayed as a tag counts.
 
-- **When toggled off:** Tags go back to working strictly inside Wrot. They won't show up in the graph view or tag searches, and clicking a tag will just run a basic text search instead.
+- A `#` inside a URL, link, inline code (` `), or formatting isn't treated as a tag.
+
+---
+
+## Settings
+
+Turn **Tag integration** on or off in the "Advanced" section of the settings. It's on by default.
+
+- When it's off, tags are used only inside Wrot again. They no longer appear in Graph View or search results, and clicking a tag runs a normal text search.
 
 ### Excluding specific tags
 
-If you have quick scratchpad tags that you'd rather not clutter your main graph or tag list with, you can exclude them individually using tag rules.
+Tags you don't want mixed into the graph or tag list can be excluded one by one with tag rules.
 
-1. Go to **Tag Rules** and toggle on **Use tag rules**.
-2. Add a rule for the tag you want to leave out, then turn on **Exclude from tag integration**.
+1. In the **Tag Rules** section, turn on **Use tag rules**.
+2. Add a rule for the tag you want to exclude, then turn on **Exclude from tag integration**.
 
-Excluding a tag only hides the copies written inside Wrot from your graph and search results. Tags with the same name in your regular notes or properties won't be touched at all.
+Only the copies written inside Wrot are removed from the graph and search. Tags with the same name in a note's body or properties aren't affected.
 
-Unlike how colors are chosen, tag order doesn't matter here. Any tag set to be excluded will be left out individually across the board.
+Unlike tag colors, the order of tags in a post doesn't matter here.
 
 ---
 
-## First-Time Startup
+## First Startup
 
-When you run this feature for the first time, Wrot generates a small helper file called `integration.json` to handle your tags. Because of this, it might take a moment for things to populate in the graph or search results on your very first run. Everything will update instantly from the second time onward.
+The first time this feature runs, Wrot creates a **helper file (`integration.json`)**, so tags may take a moment to appear in the graph and search. From the second startup on, they appear right away.
 
 ---
 
 ## Troubleshooting
 
-### Tags aren't showing up in the Graph View
+### Tags don't appear in Graph View
 
-- **Check your graph settings:** Make sure the Tags filter is toggled on in your graph view settings. Obsidian leaves this off by default.
-- **Check plugin settings:** Make sure Tag integration is turned on in Wrot's settings.
-- **Check exclusion rules:** Double-check whether that tag has been set to Exclude from tag integration.
-- **Just started up?** If you just launched Obsidian or enabled the plugin, give it a moment to finish setting things up.
+- Check that "Tags" is turned on in the graph's filter settings. Obsidian turns it off by default.
+- Check that "Tag integration" is turned on in Wrot's settings.
+- Check that the tag isn't set to "Exclude from tag integration" in a tag rule.
+- Right after the first startup, wait a little for the setup to finish.
 
-### Posts aren't showing up in Tag Search
+### Tag search doesn't find my posts
 
-- **Check your search format:** Make sure you're using the `tag:#tag-name` search syntax. Standard text search works differently.
-- **Check exclusion rules:** Tags excluded in your tag rules won't show up in search results either.
+- Check that you're searching with `tag:#tag-name`. Tag search works differently from a normal text search.
+- Tags excluded with a tag rule don't appear in tag search results either.
 
-### A deleted tag is still sitting in the graph
+### A tag I deleted is still in the graph
 
-- Obsidian updates the graph when a note saves. Try waiting a few seconds, or reload Obsidian if it doesn't update right away.
+- The graph updates when a note is saved. Wait a little, or reload Obsidian.
